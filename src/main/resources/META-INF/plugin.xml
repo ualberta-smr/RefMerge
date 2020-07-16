@@ -1,0 +1,44 @@
+<idea-plugin>
+    <id>org.example.RefactoringTest1</id>
+    <name>RefTest</name>
+    <vendor email="mjellis@ualberta.ca" url="http://www.ualberta.ca"></vendor>
+
+    <description>
+        Test refactoring tool to explore refactoring capabilities
+    </description>
+
+    <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.java</depends>
+    <depends>com.intellij.java</depends>
+    <depends>Git4Idea</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+<!--        <action id="PopupActionDialog" class="PopupActionDialog" text="TestAction"-->
+<!--                description="Will refactor eventually" >-->
+<!--            <add-to-group group-id="ToolsMenu" anchor="first"/>-->
+<!--        </action>-->
+<!--        <action id="PopupRefactoringAction" class="PopupRefactoringAction" text="TestRefactoringAction"-->
+<!--                description="Will refactor target element in class" >-->
+<!--            <add-to-group group-id="ToolsMenu" anchor="first"/>-->
+<!--        </action>-->
+<!--        <action id="PopupMergeScenarioRenameAction" class="refactoring.PopupMergeScenarioRenameAction" text="TestUndoAction"-->
+<!--                description="Will refactor target element in class" >-->
+<!--            <add-to-group group-id="ToolsMenu" anchor="first"/>-->
+<!--        </action>-->
+        <action id="RefMerge" class="refactoring.core.RefMerge" text="RunRefMerge"
+                description="Will replay refactorings on merged file" >
+            <add-to-group group-id="ToolsMenu" anchor="first"/>
+        </action>
+        <action id="PipelineAction" class="PipelineAction" text="RunEvaluationPipeline"
+                description="Will run evaluation pipeline on project" >
+            <add-to-group group-id="ToolsMenu" anchor="first"/>
+        </action>
+    </actions>
+</idea-plugin>
