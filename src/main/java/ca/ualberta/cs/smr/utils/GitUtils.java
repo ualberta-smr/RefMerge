@@ -1,9 +1,8 @@
-package utils;
+package ca.ualberta.cs.smr.utils;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.vcs.log.Hash;
 import git4idea.GitCommit;
 import git4idea.GitRevisionNumber;
 import git4idea.commands.GitCommand;
@@ -12,10 +11,6 @@ import git4idea.history.GitHistoryUtils;
 import git4idea.repo.GitRepository;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.errors.StopWalkException;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.revwalk.filter.RevFilter;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,12 +41,16 @@ public class GitUtils {
         GitLineHandler resetHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.RESET);
         resetHandler.setSilent(true);
         resetHandler.addParameters("--hard");
+//        List<String> results = git4idea.commands.Git.getInstance().runCommand(resetHandler).getErrorOutput();
         String result = git4idea.commands.Git.getInstance().runCommand(resetHandler).getOutputOrThrow();
-        if(result.contains(".git/index.lock")) {
-            Utils.runSystemCommand(project.getBasePath(),
+//        for(String result : results) {
+            if(result.contains(".git/index.lock")) {
+                Utils.runSystemCommand(project.getBasePath(),
                     "rm", ".git/index.lock");
-            git4idea.commands.Git.getInstance().runCommand(resetHandler);
-        }
+                git4idea.commands.Git.getInstance().runCommand(resetHandler);
+
+            }
+//        }
     }
 
     public void checkout(String commit) throws VcsException {

@@ -1,4 +1,4 @@
-package utils;
+package ca.ualberta.cs.smr.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -8,23 +8,30 @@ import java.io.InputStreamReader;
 public class Utils {
 
     public static String runSystemCommand(String dir, String... commands) {
+        //public static String runSystemCommand(String dir, String... commands) {
         StringBuilder builder = new StringBuilder();
         try {
-            Runtime rt = Runtime.getRuntime();
-            System.out.println(dir);
-            Process proc = rt.exec(commands, null, new File(dir));
+            ProcessBuilder pb = new ProcessBuilder(commands);
+//                ProcessBuilder pb = new ProcessBuilder(commands);
+            Process p = pb.start();
+//            Runtime rt = Runtime.getRuntime();
+//            System.out.println(dir.getAbsolutePath());
+//            Process proc = rt.exec(commands, null, dir);
+//            Process proc = rt.exec(commands);
+
+
 
             BufferedReader stdInput = new BufferedReader(new
-                    InputStreamReader(proc.getInputStream()));
+                    InputStreamReader(p.getInputStream()));
 
             BufferedReader stdError = new BufferedReader(new
-                    InputStreamReader(proc.getErrorStream()));
+                    InputStreamReader(p.getErrorStream()));
 
             String s = null;
             while ((s = stdInput.readLine()) != null) {
                 builder.append(s);
                 builder.append("\n");
-//                if (verbose) log(s);
+                System.out.println(s);
             }
 
             while ((s = stdError.readLine()) != null) {
@@ -32,11 +39,12 @@ public class Utils {
                 builder.append("\n");
                 System.out.println(s);
             }
-        } catch (IOException e) {
+        } catch (IOException  e) {
             e.printStackTrace();
         }
         return builder.toString();
     }
+
 
 
 }
