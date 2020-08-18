@@ -1,8 +1,12 @@
 package ca.ualberta.cs.smr.utils;
 
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.sun.istack.NotNull;
 import git4idea.GitCommit;
 import git4idea.GitRevisionNumber;
 import git4idea.commands.GitCommand;
@@ -38,18 +42,28 @@ public class GitUtils {
     }
 
     public void gitReset() throws VcsException {
-        GitLineHandler resetHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.RESET);
-        resetHandler.setSilent(true);
-        resetHandler.addParameters("--hard");
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Git Reset", true) {
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                GitLineHandler resetHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.RESET);
+                resetHandler.setSilent(true);
+                resetHandler.addParameters("--hard");
 //        List<String> results = git4idea.commands.Git.getInstance().runCommand(resetHandler).getErrorOutput();
-        String result = git4idea.commands.Git.getInstance().runCommand(resetHandler).getOutputOrThrow();
+                String result = null;
+                try {
+                    result = git4idea.commands.Git.getInstance().runCommand(resetHandler).getOutputOrThrow();
+                } catch (VcsException e) {
+                    e.printStackTrace();
+                }
 //        for(String result : results) {
-            if(result.contains(".git/index.lock")) {
-                Utils.runSystemCommand(project.getBasePath(),
-                    "rm", ".git/index.lock");
-                git4idea.commands.Git.getInstance().runCommand(resetHandler);
+                if (result.contains(".git/index.lock")) {
+                    Utils.runSystemCommand(project.getBasePath(),
+                            "rm", ".git/index.lock");
+                    git4idea.commands.Git.getInstance().runCommand(resetHandler);
 
+                }
             }
+        });
 //        }
     }
 
