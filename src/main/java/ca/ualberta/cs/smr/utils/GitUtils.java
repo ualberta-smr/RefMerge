@@ -69,10 +69,15 @@ public class GitUtils {
 
     public void checkout(String commit) throws VcsException {
         gitReset();
-        GitLineHandler lineHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.CHECKOUT);
-        lineHandler.setSilent(true);
-        lineHandler.addParameters(commit);
-        git4idea.commands.Git.getInstance().runCommand(lineHandler);
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Git Checkout", true) {
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                GitLineHandler lineHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.CHECKOUT);
+                lineHandler.setSilent(true);
+                lineHandler.addParameters(commit);
+                git4idea.commands.Git.getInstance().runCommand(lineHandler);
+            }
+        });
     }
 
     public String getBaseCommit(String left, String right) throws VcsException {
