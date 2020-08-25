@@ -1,12 +1,25 @@
 package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.utils.Utils;
+import com.intellij.ide.UiActivity;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressIndicatorProvider;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.project.DumbService;
+import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.vfs.VirtualFileSystem;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.JavaPsiFacadeImpl;
 import com.intellij.psi.search.FilenameIndex;
@@ -29,8 +42,12 @@ import ca.ualberta.cs.smr.utils.GitUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 public class RefMerge extends AnAction {
@@ -57,7 +74,7 @@ public class RefMerge extends AnAction {
         List<GitRepository> repos = repoManager.getRepositories();
         GitRepository repo = repos.get(0);
         String mergeCommit = "98787ef5";
-        String rightCommit = "3db713ba";
+        String rightCommit = "3d9b713ba";
         String leftCommit = "5e7fcebe4";
         String baseCommit = "773d48939a2ccba";
         try {
@@ -72,12 +89,11 @@ public class RefMerge extends AnAction {
 
     public void refMerge(String mergeCommit, String rightCommit, String leftCommit, String baseCommit, Project project,
                          GitRepository repo) throws IOException, VcsException {
-        String path = "/home/mjellis/Projects/cloned/Rajawali";
         // Clear temp if not already cleared
-      //  Utils.remove("/home/mjellis/temp");
+        //  Utils.remove("/home/mjellis/temp");
         int i = 0;
 
-        File dir = new File(path);
+        File dir = new File(project.getBasePath());
         try {
             git = Git.open(dir);
         } catch (IOException ioException) {
@@ -96,12 +112,20 @@ public class RefMerge extends AnAction {
         saveContent(project, "base");
         gitUtils.checkout(rightCommit);
         // Undo right refactorings
-        undoRefactorings(rightCommit, baseCommit);
+        if(DumbService.isDumb(project)) {
+            DumbServiceImpl dumbService = DumbServiceImpl.getInstance(project);
+            dumbService.completeJustSubmittedTasks();
+        }
+        undoRefactorings(rightCommit, baseCommit, project);
         // Save right content to memory
         saveContent(project, "right");
         gitUtils.checkout(leftCommit);
         // Undo left refactorings
-        undoRefactorings(leftCommit, baseCommit);
+        if(DumbService.isDumb(project)) {
+            DumbServiceImpl dumbService = DumbServiceImpl.getInstance(project);
+            dumbService.completeJustSubmittedTasks();
+        }
+        undoRefactorings(leftCommit, baseCommit, project);
         // Save left content to memory
         saveContent(project, "left");
         // Merge
@@ -112,12 +136,14 @@ public class RefMerge extends AnAction {
 
     }
 
-    private void undoRefactorings(String commit, String baseCommit) {
+    private void undoRefactorings(String commit, String baseCommit, Project project) {
+
         try {
             List<Refactoring> refs = detectCommits(commit, baseCommit);
             System.out.println(refs);
             System.out.println(refs.get(0).toString());
             System.out.println(refs.get(0).getInvolvedClassesBeforeRefactoring() + " Before");
+
             for(Refactoring ref : refs) {
                 switch (ref.getRefactoringType()) {
                     case RENAME_CLASS:
@@ -126,13 +152,14 @@ public class RefMerge extends AnAction {
                     case MOVE_CLASS:
                         break;
                     case RENAME_METHOD:
-                        undoRenameMethod(ref);
+                        undoRenameMethod(ref, project);
                         break;
                     case MOVE_OPERATION:
                         break;
                 }
 
             }
+            FileDocumentManager.getInstance().saveAllDocuments();
         } catch (Exception exception) {
             exception.printStackTrace();
         }
@@ -158,6 +185,8 @@ public class RefMerge extends AnAction {
                 }
 
             }
+            ApplicationManager.getApplication().invokeAndWait(() -> FileDocumentManager.getInstance().saveAllDocuments());
+            //FileDocumentManager.getInstance().saveAllDocuments();
 
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -172,6 +201,7 @@ public class RefMerge extends AnAction {
         srcName = srcName.split(" ")[1];
         String qualifiedClass = refS.substring(refS.indexOf("class ") + 6, refS.length());
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(proj);
+        DumbService.isDumb(proj);
         PsiClass jClass = jPF.findClass(qualifiedClass, GlobalSearchScope.allScope(proj));
         System.out.println(qualifiedClass);
         if(jPF == null) {
@@ -186,13 +216,27 @@ public class RefMerge extends AnAction {
                 System.out.println("Method Name: " + method.getName());
                 System.out.println(destName);
                 RenameProcessor processor = new RenameProcessor(proj, method, destName, false, false);
-                processor.run();
+                //processor.run();
+                Thread thread = new Thread(){
+                    public void run(){
+                        processor.run();
+
+                    }
+                };
+                thread.start();
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
+
     }
 
-    public void undoRenameMethod(Refactoring ref) {
+    public void undoRenameMethod(Refactoring ref, Project project) {
+
         String refS = ref.toString();
         System.out.println(refS);
 
@@ -207,14 +251,12 @@ public class RefMerge extends AnAction {
         System.out.println(proj.getBasePath());
         PsiClass jClass = jPF.findClass(qualifiedClass, GlobalSearchScope.allScope(proj));
         // If the qualified class name couldn't be found, try using the class name as file name and find that file
-        if(jClass == null) {
+        RenameProcessor processor = null;
+        if (jClass == null) {
             System.out.println("Thing : " + qClass);
             qClass = qClass + ".java";
-            System.out.println("Hello");
-            // Work around?
             PsiFile[] pFiles = FilenameIndex.getFilesByName(proj, qClass, GlobalSearchScope.allScope(proj));
             PsiJavaFile pFile = (PsiJavaFile) pFiles[0];
-            //       PsiJavaFile pFile = (PsiJavaFile) pM.findFile(vFile);
             PsiClass[] jClasses = pFile.getClasses();
             for (PsiClass it : jClasses) {
                 System.out.println(it.getQualifiedName());
@@ -223,11 +265,16 @@ public class RefMerge extends AnAction {
                 }
             }
             PsiMethod[] methods = jClass.getMethods();
-            for(PsiMethod method : methods) {
-                if(method.getName().equals(destName)) {
+
+            for (PsiMethod method : methods) {
+                if (method.getName().equals(destName)) {
                     System.out.println("Method Name: " + method.getName());
-                    RenameProcessor processor = new RenameProcessor(proj, method, srcName, false, false);
-                    processor.run();
+                    processor = new RenameProcessor(proj, method, srcName, false, false);
+                    RenameProcessor finalProcessor = processor;
+                    ApplicationManager.getApplication().invokeAndWait(() -> finalProcessor.doRun(), ModalityState.current());
+                    VirtualFile vFile = pFile.getVirtualFile();
+                    vFile.refresh(false, true);
+                    break;
                 }
             }
         }
@@ -235,14 +282,19 @@ public class RefMerge extends AnAction {
         else {
             System.out.println("Class: " + qualifiedClass);
             PsiMethod[] methods = jClass.getMethods();
-            for(PsiMethod method : methods) {
-                if(method.getName().equals(destName)) {
+            for (PsiMethod method : methods) {
+                if (method.getName().equals(destName)) {
                     System.out.println("Method Name: " + method.getName());
-                    RenameProcessor processor = new RenameProcessor(proj, method, srcName, false, false);
-                    processor.run();
+                    processor = new RenameProcessor(proj, method, srcName, false, false);
+                    RenameProcessor finalProcessor = processor;
+                    ApplicationManager.getApplication().invokeAndWait(() -> finalProcessor.doRun(), ModalityState.current());
+                    VirtualFile vFile = jClass.getContainingFile().getVirtualFile();
+                    vFile.refresh(false, true);
+                    break;
                 }
             }
         }
+
     }
 
     private void undoRenameClass(Refactoring ref) {
@@ -286,6 +338,7 @@ public class RefMerge extends AnAction {
         }
         Utils.runSystemCommand(project.getBasePath(), "cp", "-r", project.getBasePath(), path);
     }
+
 
 
 

@@ -12,14 +12,8 @@ public class Utils {
         StringBuilder builder = new StringBuilder();
         try {
             ProcessBuilder pb = new ProcessBuilder(commands);
-//                ProcessBuilder pb = new ProcessBuilder(commands);
             Process p = pb.start();
-//            Runtime rt = Runtime.getRuntime();
-//            System.out.println(dir.getAbsolutePath());
-//            Process proc = rt.exec(commands, null, dir);
-//            Process proc = rt.exec(commands);
-
-
+            p.waitFor();
 
             BufferedReader stdInput = new BufferedReader(new
                     InputStreamReader(p.getInputStream()));
@@ -39,7 +33,7 @@ public class Utils {
                 builder.append("\n");
                 System.out.println(s);
             }
-        } catch (IOException  e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
         return builder.toString();

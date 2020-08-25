@@ -1,11 +1,16 @@
 package ca.ualberta.cs.smr.utils;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.sun.istack.NotNull;
 import git4idea.GitCommit;
 import git4idea.GitRevisionNumber;
@@ -42,20 +47,18 @@ public class GitUtils {
     }
 
     public void gitReset() throws VcsException {
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Git Reset", true) {
+        ProgressManager.getInstance().run(new Task.Modal(project, "Git Reset", true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 GitLineHandler resetHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.RESET);
                 resetHandler.setSilent(true);
-                resetHandler.addParameters("--hard");
-//        List<String> results = git4idea.commands.Git.getInstance().runCommand(resetHandler).getErrorOutput();
+                resetHandler.addParameters("--hard", "HEAD");
                 String result = null;
                 try {
                     result = git4idea.commands.Git.getInstance().runCommand(resetHandler).getOutputOrThrow();
                 } catch (VcsException e) {
                     e.printStackTrace();
                 }
-//        for(String result : results) {
                 if (result.contains(".git/index.lock")) {
                     Utils.runSystemCommand(project.getBasePath(),
                             "rm", ".git/index.lock");
@@ -64,20 +67,23 @@ public class GitUtils {
                 }
             }
         });
-//        }
+
     }
 
     public void checkout(String commit) throws VcsException {
         gitReset();
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Git Checkout", true) {
+        ProgressManager.getInstance().run(new Task.Modal(project, "Git Checkout", true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 GitLineHandler lineHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.CHECKOUT);
                 lineHandler.setSilent(true);
                 lineHandler.addParameters(commit);
                 git4idea.commands.Git.getInstance().runCommand(lineHandler);
+
             }
         });
+        VirtualFileManager vFM = VirtualFileManager.getInstance();
+        vFM.refreshWithoutFileWatcher(false);
     }
 
     public String getBaseCommit(String left, String right) throws VcsException {
