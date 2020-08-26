@@ -26,7 +26,6 @@ public class Merge {
         ArrayList<String> theirFiles = getFiles(theirs, new ArrayList<>());
 
 
-
     }
 
     private ArrayList<String> getFiles(String dirs, ArrayList<String> files) {
@@ -36,13 +35,13 @@ public class Merge {
         if (directoryListing != null) {
             for (File child : directoryListing) {
                 String absPath = child.getAbsolutePath();
-                String path = null;
+                String path;
                 if(child.isFile()) {
                     if(dirs.contains(project.getName())) {
-                        path = absPath.substring(absPath.indexOf(project.getName()), absPath.length());
+                        path = absPath.substring(absPath.indexOf(project.getName()));
 
                     } else if(dirs.contains("/base/")) {
-                        path = absPath.substring(absPath.indexOf("/base") + 5, absPath.length());
+                        path = absPath.substring(absPath.indexOf("/base") + 5);
                         //System.out.println(path);
                     }
                     else {
