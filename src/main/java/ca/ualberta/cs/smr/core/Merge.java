@@ -19,49 +19,46 @@ public class Merge {
         System.out.println(d);
         String ours = project.getBasePath();
         String home = System.getProperty("user.home");
-        String theirs = home + "/temp/right";
-        String base = home + "/temp/base";
+        System.out.println(home);
+        String theirs = home + "/temp/right/" + project.getName();
+        String base = home + "/temp/base/" + project.getName();
         ArrayList<String> baseFiles = getFiles(base, new ArrayList<>());
         ArrayList<String> ourFiles = getFiles(ours, new ArrayList<>());
         ArrayList<String> theirFiles = getFiles(theirs, new ArrayList<>());
 
+        for(String file : ourFiles) {
+            if (baseFiles.contains(file) && theirFiles.contains(file)) {
+                String ourFile = ours + file;
+                String theirFile = theirs + file;
+                String baseFile = base  + file;
+                String cmd = "git merge-file " + ourFile + " " + baseFile + " " + theirFile;
+                System.out.println(cmd);
 
+                Utils.runSystemCommand("git", "merge-file", ourFile, baseFile, theirFile);
+            }
+        }
     }
 
     private ArrayList<String> getFiles(String dirs, ArrayList<String> files) {
+        String name = project.getName();
+        int length = name.length();
 
         File dir = new File(dirs);
         File[] directoryListing = dir.listFiles();
         if (directoryListing != null) {
             for (File child : directoryListing) {
                 String absPath = child.getAbsolutePath();
-                String path;
+                String path = null;
                 if(child.isFile()) {
-                    if(dirs.contains(project.getName())) {
-                        path = absPath.substring(absPath.indexOf(project.getName()));
-
-                    } else if(dirs.contains("/base/")) {
-                        path = absPath.substring(absPath.indexOf("/base") + 5);
-                        //System.out.println(path);
-                    }
-                    else {
-                        path = absPath.substring(absPath.indexOf("/right") + 6);
-                    }
+                    length = project.getName().length();
+                    path = absPath.substring(absPath.indexOf(project.getName()) + length);
                     files.add(path);
                 }
                 else if(child.isDirectory()) {
-/*                      if(dirs.contains("/base/")) {
-                            path = absPath.substring(absPath.indexOf("/base") + 5, absPath.length());
-                            System.out.println(path);
-                            String mergedFile = "merged" + path;
-                            File mFile = new File(mergedFile);
-                            System.out.println(mFile.getAbsolutePath());
-                            boolean made = mFile.mkdir();
-                            if(!made) {
-                                System.exit(0);
-                            }
-                        }
-*/                      getFiles(child.getAbsolutePath(), files);
+                    if(absPath.contains("/.")) {
+                        return files;
+                    }
+                      getFiles(child.getAbsolutePath(), files);
                 }
             }
         }
