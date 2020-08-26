@@ -125,10 +125,11 @@ public class RefMerge extends AnAction {
             DumbServiceImpl dumbService = DumbServiceImpl.getInstance(project);
             dumbService.completeJustSubmittedTasks();
         }
+        //
         undoRefactorings(leftCommit, baseCommit, project);
-        // Save left content to memory
-        saveContent(project, "left");
         // Merge
+        Merge merge = new Merge(project);
+        merge.merge();
 
         // Replay refactoring operations
   //      replayRefactorings(mergeCommit, baseCommit);
@@ -336,7 +337,7 @@ public class RefMerge extends AnAction {
         else {
             System.out.println("error");
         }
-        Utils.runSystemCommand(project.getBasePath(), "cp", "-r", project.getBasePath(), path);
+        Utils.runSystemCommand("cp", "-r", project.getBasePath(), path);
     }
 
 
