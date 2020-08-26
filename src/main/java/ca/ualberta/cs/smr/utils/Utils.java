@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 
 public class Utils {
 
-    public static String runSystemCommand(String dir, String... commands) {
+    public static String runSystemCommand(String... commands) {
         //public static String runSystemCommand(String dir, String... commands) {
         StringBuilder builder = new StringBuilder();
         try {

@@ -16,10 +16,8 @@ public class Merge {
 
     public void merge() {
         String d = project.getBasePath();
-        System.out.println(d);
         String ours = project.getBasePath();
         String home = System.getProperty("user.home");
-        System.out.println(home);
         String theirs = home + "/temp/right/" + project.getName();
         String base = home + "/temp/base/" + project.getName();
         ArrayList<String> baseFiles = getFiles(base, new ArrayList<>());
@@ -32,7 +30,6 @@ public class Merge {
                 String theirFile = theirs + file;
                 String baseFile = base  + file;
                 String cmd = "git merge-file " + ourFile + " " + baseFile + " " + theirFile;
-                System.out.println(cmd);
 
                 Utils.runSystemCommand("git", "merge-file", ourFile, baseFile, theirFile);
             }
@@ -50,7 +47,6 @@ public class Merge {
                 String absPath = child.getAbsolutePath();
                 String path = null;
                 if(child.isFile()) {
-                    length = project.getName().length();
                     path = absPath.substring(absPath.indexOf(project.getName()) + length);
                     files.add(path);
                 }

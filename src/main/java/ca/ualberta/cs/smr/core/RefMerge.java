@@ -327,7 +327,7 @@ public class RefMerge extends AnAction {
 
     private void saveContent(Project project, String dir) throws IOException {
         // Save project to temporary directory using API
-        String path = "/home/mjellis/temp/" + dir;
+        String path = System.getProperty("user.home") + "/temp/" + dir;
         File file = new File(path);
         System.out.println(file.getAbsolutePath());
         boolean isDir = file.mkdirs();
