@@ -333,18 +333,28 @@ public class RefMerge extends AnAction {
         System.out.println(ref.toString());
         String srcClass = ((RenameClassRefactoring) ref).getOriginalClassName();
         String renamedClass = ((RenameClassRefactoring) ref).getRenamedClassName();
-        String renamedClassName = renamedClass.substring(renamedClass.lastIndexOf(".") + 1).trim() + ".java";
+        String srcClassName = srcClass.substring(srcClass.lastIndexOf(".") + 1).trim();
+        String renamedClassName = renamedClass.substring(renamedClass.lastIndexOf(".") + 1).trim();
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(proj);
         PsiClass jClass = jPF.findClass(renamedClass, GlobalSearchScope.allScope((proj)));
         if(jClass == null) {
-            System.out.println(renamedClassName);
-            PsiFile[] pFiles = FilenameIndex.getFilesByName(proj, renamedClassName, GlobalSearchScope.allScope(proj));
+            String qClass = renamedClassName + ".java";
+            System.out.println(qClass);
+            PsiFile[] pFiles = FilenameIndex.getFilesByName(proj, qClass, GlobalSearchScope.allScope(proj));
             PsiJavaFile pFile = (PsiJavaFile) pFiles[0];
             PsiClass[] jClasses = pFile.getClasses();
+            for(PsiClass psiClass : jClasses) {
+                if(psiClass.getQualifiedName().equals(renamedClass)) {
+                    RenameProcessor proc = new RenameProcessor(proj, psiClass, srcClassName, false, false);
+                    proc.run();
+                }
 
+            }
         }
-        RenameProcessor proc = new RenameProcessor(proj, jClass, srcClass, false, false);
-        proc.run();
+        else {
+            RenameProcessor proc = new RenameProcessor(proj, jClass, srcClassName, false, false);
+            proc.run();
+        }
     }
 
 
