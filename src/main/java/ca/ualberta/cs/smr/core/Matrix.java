@@ -18,12 +18,25 @@ public class Matrix {
         for(Refactoring rightRefactoring : rightRefactorings) {
             RefactoringType rightType = rightRefactoring.getRefactoringType();
             if(leftType == rightType) {
-                System.out.println(leftType + " " + rightType);
-            } else {
-                System.out.println("Mismatch");
+                checkIfConflicting(leftRefactoring, rightRefactoring);
             }
         }
 
     }
+
+    static void checkIfConflicting(Refactoring leftRefactoring, Refactoring rightRefactoring) {
+        RefactoringType type = leftRefactoring.getRefactoringType();
+        switch(type) {
+            case RENAME_METHOD:
+                checkRenameMethod(leftRefactoring, rightRefactoring);
+                break;
+
+        }
+    }
+
+    static void checkRenameMethod(Refactoring leftRefactoring, Refactoring rightRefactoring) {
+        
+    }
+
 
 }
