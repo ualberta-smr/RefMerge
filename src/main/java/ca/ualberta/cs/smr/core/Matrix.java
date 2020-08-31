@@ -1,9 +1,11 @@
 package ca.ualberta.cs.smr.core;
 
+import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class Matrix {
 
@@ -25,10 +27,12 @@ public class Matrix {
     }
 
     static void checkIfConflicting(Refactoring leftRefactoring, Refactoring rightRefactoring) {
+        boolean conflicting = false;
         RefactoringType type = leftRefactoring.getRefactoringType();
         switch(type) {
             case RENAME_METHOD:
-                checkRenameMethod(leftRefactoring, rightRefactoring);
+                conflicting = checkRenameMethod(leftRefactoring, rightRefactoring);
+                System.out.println(conflicting);
                 break;
             case RENAME_CLASS:
                 checkRenameClass(leftRefactoring, rightRefactoring);
@@ -37,8 +41,27 @@ public class Matrix {
         }
     }
 
-    static void checkRenameMethod(Refactoring leftRefactoring, Refactoring rightRefactoring) {
+    static boolean checkRenameMethod(Refactoring leftRefactoring, Refactoring rightRefactoring) {
+        if(renamesConflict(leftRefactoring, rightRefactoring)) {
+            return true;
+        }
 
+        return false;
+    }
+
+    static boolean renamesConflict(Refactoring leftRefactoring, Refactoring rightRefactoring) {
+        System.out.println(rightRefactoring.toString());
+        String originalLeftName = ((RenameOperationRefactoring) leftRefactoring).getOriginalOperation().getName();
+        String originalRightName = ((RenameOperationRefactoring) rightRefactoring).getOriginalOperation().getName();
+        String leftName = ((RenameOperationRefactoring) leftRefactoring).getRenamedOperation().getName();
+        String rightName = ((RenameOperationRefactoring) rightRefactoring).getRenamedOperation().getName();
+        try {
+            TimeUnit.SECONDS.sleep(5);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
     static void checkRenameClass(Refactoring leftRefactoring, Refactoring rightRefactoring) {
