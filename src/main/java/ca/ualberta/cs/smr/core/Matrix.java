@@ -30,13 +30,19 @@ public class Matrix {
             case RENAME_METHOD:
                 checkRenameMethod(leftRefactoring, rightRefactoring);
                 break;
+            case RENAME_CLASS:
+                checkRenameClass(leftRefactoring, rightRefactoring);
+                break;
 
         }
     }
 
     static void checkRenameMethod(Refactoring leftRefactoring, Refactoring rightRefactoring) {
-        
+
     }
 
+    static void checkRenameClass(Refactoring leftRefactoring, Refactoring rightRefactoring) {
+
+    }
 
 }
