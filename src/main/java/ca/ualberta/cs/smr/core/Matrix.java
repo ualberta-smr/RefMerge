@@ -4,6 +4,7 @@ import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -50,16 +51,22 @@ public class Matrix {
     }
 
     static boolean renamesConflict(Refactoring leftRefactoring, Refactoring rightRefactoring) {
-        System.out.println(rightRefactoring.toString());
         String originalLeftName = ((RenameOperationRefactoring) leftRefactoring).getOriginalOperation().getName();
         String originalRightName = ((RenameOperationRefactoring) rightRefactoring).getOriginalOperation().getName();
         String leftName = ((RenameOperationRefactoring) leftRefactoring).getRenamedOperation().getName();
         String rightName = ((RenameOperationRefactoring) rightRefactoring).getRenamedOperation().getName();
-        try {
-            TimeUnit.SECONDS.sleep(5);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        String leftClass = ((RenameOperationRefactoring) leftRefactoring).getRenamedOperation().getClassName();
+        String rightClass = ((RenameOperationRefactoring) rightRefactoring).getRenamedOperation().getClassName();
+
+        // If the methods are in different classes, they do not conflict
+        if(!leftClass.equals(rightClass)) {
+            return false;
         }
+        // If the original method names are equal but the destination names are not equal
+        else if(originalLeftName.equals(originalRightName) && !leftName.equals(rightName)) {
+            return true;
+        }
+
 
         return false;
     }
