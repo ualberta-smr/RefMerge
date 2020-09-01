@@ -89,8 +89,13 @@ public class Matrix {
         String renamedLeftClass = ((RenameClassRefactoring) leftRefactoring).getRenamedClassName();
         String renamedRightClass = ((RenameClassRefactoring) rightRefactoring).getRenamedClassName();
 
+        
         // If the original class name is renamed to two separate names
         if(originalLeftClass.equals(originalRightClass) && !renamedLeftClass.equals(renamedRightClass)) {
+            return true;
+        }
+        // If two classes are renamed to the same name
+        else if(!originalLeftClass.equals(originalRightClass) && renamedLeftClass.equals(renamedRightClass)) {
             return true;
         }
         return false;
