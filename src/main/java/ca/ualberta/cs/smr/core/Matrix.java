@@ -66,7 +66,10 @@ public class Matrix {
         else if(originalLeftName.equals(originalRightName) && !leftName.equals(rightName)) {
             return true;
         }
-
+        // If the original method names are not equal but the destination names are equal
+        else if(!originalLeftName.equals(originalRightName) && leftName.equals(rightName)) {
+            return true;
+        }
 
         return false;
     }
