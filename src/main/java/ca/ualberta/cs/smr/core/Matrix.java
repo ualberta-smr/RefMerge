@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core;
 
+import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
@@ -36,21 +37,22 @@ public class Matrix {
                 System.out.println(conflicting);
                 break;
             case RENAME_CLASS:
-                checkRenameClass(leftRefactoring, rightRefactoring);
+                conflicting = checkRenameClass(leftRefactoring, rightRefactoring);
+                System.out.println(conflicting);
                 break;
 
         }
     }
 
     static boolean checkRenameMethod(Refactoring leftRefactoring, Refactoring rightRefactoring) {
-        if(renamesConflict(leftRefactoring, rightRefactoring)) {
+        if(methodRenamesConflict(leftRefactoring, rightRefactoring)) {
             return true;
         }
 
         return false;
     }
 
-    static boolean renamesConflict(Refactoring leftRefactoring, Refactoring rightRefactoring) {
+    static boolean methodRenamesConflict(Refactoring leftRefactoring, Refactoring rightRefactoring) {
         String originalLeftName = ((RenameOperationRefactoring) leftRefactoring).getOriginalOperation().getName();
         String originalRightName = ((RenameOperationRefactoring) rightRefactoring).getOriginalOperation().getName();
         String leftName = ((RenameOperationRefactoring) leftRefactoring).getRenamedOperation().getName();
@@ -74,8 +76,25 @@ public class Matrix {
         return false;
     }
 
-    static void checkRenameClass(Refactoring leftRefactoring, Refactoring rightRefactoring) {
-
+    static boolean checkRenameClass(Refactoring leftRefactoring, Refactoring rightRefactoring) {
+        if(classRenamesConflict(leftRefactoring, rightRefactoring)) {
+            return true;
+        }
+        return false;
     }
+
+    static boolean classRenamesConflict(Refactoring leftRefactoring, Refactoring rightRefactoring) {
+        String originalLeftClass = ((RenameClassRefactoring) leftRefactoring).getOriginalClassName();
+        String originalRightClass = ((RenameClassRefactoring) rightRefactoring).getOriginalClassName();
+        String renamedLeftClass = ((RenameClassRefactoring) leftRefactoring).getRenamedClassName();
+        String renamedRightClass = ((RenameClassRefactoring) rightRefactoring).getRenamedClassName();
+
+        // If the original class name is renamed to two separate names
+        if(originalLeftClass.equals(originalRightClass) && !renamedLeftClass.equals(renamedRightClass)) {
+            return true;
+        }
+        return false;
+    }
+
 
 }
