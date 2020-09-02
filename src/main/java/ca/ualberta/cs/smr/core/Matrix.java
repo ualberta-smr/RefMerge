@@ -1,5 +1,7 @@
 package ca.ualberta.cs.smr.core;
 
+import gr.uom.java.xmi.UMLClass;
+import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
@@ -60,9 +62,9 @@ public class Matrix {
         String leftClass = ((RenameOperationRefactoring) leftRefactoring).getRenamedOperation().getClassName();
         String rightClass = ((RenameOperationRefactoring) rightRefactoring).getRenamedOperation().getClassName();
 
-        // If the methods are in different classes, they do not conflict
+        // If the methods are in different classes, check if they override
         if(!leftClass.equals(rightClass)) {
-            return false;
+            return methodInheritanceConflict(leftRefactoring, rightRefactoring);
         }
         // If the original method names are equal but the destination names are not equal
         else if(originalLeftName.equals(originalRightName) && !leftName.equals(rightName)) {
@@ -74,6 +76,34 @@ public class Matrix {
         }
 
         return false;
+    }
+
+    static boolean methodInheritanceConflict(Refactoring leftRefactoring, Refactoring rightRefactoring) {
+        UMLOperation leftOriginalMethod = ((RenameOperationRefactoring) leftRefactoring).getOriginalOperation();
+        UMLOperation rightOriginalMethod = ((RenameOperationRefactoring) rightRefactoring).getOriginalOperation();
+        UMLOperation leftRefactoredMethod = ((RenameOperationRefactoring) leftRefactoring).getRenamedOperation();
+        UMLOperation rightRefactoredMethod = ((RenameOperationRefactoring) rightRefactoring).getRenamedOperation();
+        Class leftClass = leftOriginalMethod.getClass();
+        Class rightClass = rightOriginalMethod.getClass();
+        // If One of the classes extends the other
+        if(leftClass.isAssignableFrom(rightClass) || rightClass.isAssignableFrom(leftClass)) {
+            // If a method overrides the other
+            if(leftOriginalMethod.getName().equals(rightOriginalMethod.getName())) {
+                // And the refactored names are different, they no longer override and conflict
+                if(!leftRefactoredMethod.getName().equals(rightRefactoredMethod.getName())) {
+                    return true;
+                }
+            }
+            else {
+                // If a method overrides the other after refactoring, but they do not before, then it conflicts
+                if(leftRefactoredMethod.getName().equals(rightRefactoredMethod.getName())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+
+
     }
 
     static boolean checkRenameClass(Refactoring leftRefactoring, Refactoring rightRefactoring) {
