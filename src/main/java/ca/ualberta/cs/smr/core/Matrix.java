@@ -121,9 +121,9 @@ public class Matrix {
         String leftPackage = ((RenameClassRefactoring) leftRefactoring).getOriginalClass().getPackageName();
         String rightPackage = ((RenameClassRefactoring) rightRefactoring).getOriginalClass().getPackageName();
 
-        // If the refactored classes are in different classes, they do not conflict
+        // If the refactored classes are in different classes, check if inheritance conflict occurs
         if(!leftPackage.equals(rightPackage)) {
-            return false;
+            return classInheritanceConflict(leftRefactoring, rightRefactoring);
         }
         // If the original class name is renamed to two separate names
         if(originalLeftClass.equals(originalRightClass) && !renamedLeftClass.equals(renamedRightClass)) {
@@ -132,6 +132,34 @@ public class Matrix {
         // If two classes are renamed to the same name
         else if(!originalLeftClass.equals(originalRightClass) && renamedLeftClass.equals(renamedRightClass)) {
             return true;
+        }
+        return false;
+    }
+
+    static boolean classInheritanceConflict(Refactoring leftRefactoring, Refactoring rightRefactoring) {
+        UMLClass leftOriginalClass = ((RenameClassRefactoring) leftRefactoring).getOriginalClass();
+        UMLClass rightOriginalClass = ((RenameClassRefactoring) rightRefactoring).getOriginalClass();
+        UMLClass leftRenamedClass = ((RenameClassRefactoring) leftRefactoring).getRenamedClass();
+        UMLClass rightRenamedClass = ((RenameClassRefactoring) rightRefactoring).getRenamedClass();
+        Class leftOriginal = leftOriginalClass.getClass();
+        Class rightOriginal = rightOriginalClass.getClass();
+        Class leftRenamed = leftRenamedClass.getClass();
+        Class rightRenamed = rightRenamedClass.getClass();
+
+
+        // If there is inheritance
+        if(leftOriginal.isAssignableFrom(rightOriginal) || rightOriginal.isAssignableFrom(leftOriginal)) {
+            // If there is not inheritance after the renaming and the names are different, then there was an inheritance conflict
+            if(!leftRenamed.isAssignableFrom(rightRenamed) && !rightRenamed.isAssignableFrom(leftRenamed)) {
+                return true;
+            }
+        }
+        // If there is no inheritance
+        else {
+            // Accidental inheritance conflict
+            if(leftRenamed.isAssignableFrom(rightRenamed) || rightRenamed.isAssignableFrom(leftRenamed)) {
+                return true;
+            }
         }
         return false;
     }
