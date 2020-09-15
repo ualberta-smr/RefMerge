@@ -46,7 +46,6 @@ public class Merge {
                 String theirFile = theirs + file;
                 String baseFile = base  + file;
                 // merge the set of files
-                String cmd = "git merge-file " + ourFile + " " + baseFile + " " + theirFile;
                 Utils.runSystemCommand("git", "merge-file", ourFile, baseFile, theirFile);
             }
         }
@@ -67,7 +66,7 @@ public class Merge {
             for (File child : directoryListing) {
                 // Get the absolute path of the file
                 String absPath = child.getAbsolutePath();
-                String path = null;
+                String path;
                 // If the file is not a directory
                 if(child.isFile()) {
                     // Get the relative path
