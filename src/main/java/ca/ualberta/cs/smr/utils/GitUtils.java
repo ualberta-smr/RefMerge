@@ -30,23 +30,16 @@ public class GitUtils {
 
     private Project project;
     private GitRepository repo;
-    private Git git;
 
     public GitUtils(GitRepository repository, Project proj) throws IOException {
         repo = repository;
         project = proj;
     }
 
-    public GitUtils(File repoDir) throws IOException, GitAPIException, VcsException {
-        git = Git.open(repoDir);
-        gitReset();
-    }
-
-    public GitUtils(Git git)  {
-        this.git = git;
-    }
-
-    public void gitReset() throws VcsException {
+    /*
+     * Use IntelliJ API to perform git reset.
+     */
+    public void gitReset() {
         ProgressManager.getInstance().run(new Task.Modal(project, "Git Reset", true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
@@ -59,6 +52,7 @@ public class GitUtils {
                 } catch (VcsException e) {
                     e.printStackTrace();
                 }
+                // If there's a lock, remove it and try again
                 if (result.contains(".git/index.lock")) {
                     Utils.runSystemCommand(project.getBasePath(),
                             "rm", ".git/index.lock");
@@ -70,6 +64,9 @@ public class GitUtils {
 
     }
 
+    /*
+     * Perform the git checkout with the IntelliJ API.
+     */
     public void checkout(String commit) throws VcsException {
         gitReset();
         ProgressManager.getInstance().run(new Task.Modal(project, "Git Checkout", true) {
@@ -82,10 +79,14 @@ public class GitUtils {
 
             }
         });
+        // Refresh the virtual file system after the commit
         VirtualFileManager vFM = VirtualFileManager.getInstance();
         vFM.refreshWithoutFileWatcher(false);
     }
 
+    /*
+     * Get the base commit of the merge.
+     */
     public String getBaseCommit(String left, String right) throws VcsException {
         VirtualFile root = repo.getRoot();
         GitRevisionNumber num = GitHistoryUtils.getMergeBase(project, root, left, right);
@@ -93,6 +94,9 @@ public class GitUtils {
         return base;
     }
 
+    /*
+     * Get the merge commits of a project for evaluation.
+     */
     public List<GitCommit> getMergeCommits() throws VcsException {
         // get list of commits
         VirtualFile root = repo.getRoot();
