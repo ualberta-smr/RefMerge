@@ -1,5 +1,7 @@
 package ca.ualberta.cs.smr.utils;
 
+import com.intellij.openapi.project.Project;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +41,20 @@ public class Utils {
         return builder.toString();
     }
 
+    public static void saveContent(Project project, String dir) throws IOException {
+        // Save project to temporary directory using API
+        String path = System.getProperty("user.home") + "/temp/" + dir;
+        File file = new File(path);
+        System.out.println(file.getAbsolutePath());
+        boolean isDir = file.mkdirs();
+        if(isDir) {
+            System.out.println("success");
+        }
+        else {
+            System.out.println("error");
+        }
+        Utils.runSystemCommand("cp", "-r", project.getBasePath(), path);
+    }
 
 
 }
