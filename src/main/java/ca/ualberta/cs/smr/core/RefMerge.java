@@ -24,7 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+
 
 
 public class RefMerge extends AnAction {
@@ -63,7 +63,9 @@ public class RefMerge extends AnAction {
         }
     }
 
-
+    /*
+     * Gets the directory of the project that's being merged, then it calls the function that performs the merge.
+     */
     public void refMerge(String mergeCommit, String rightCommit, String leftCommit, String baseCommit, Project project,
                          GitRepository repo) throws IOException, VcsException {
         int i = 0;
@@ -79,98 +81,113 @@ public class RefMerge extends AnAction {
 
     }
 
+    /*
+     * This method gets the refactorings that are between the base commit and the left and right commits. It uses the
+     * matrix to determine if any of the refactorings are conficting or have ordering dependencies.
+     * Then it checks out the base commit, saving it in a temporary directory. It checks out the right commit, undoes
+     * the refactorings, and saves the content into a respective temporary directory. It does the same thing for the
+     * left commit, but it uses the current directory instead of saving it to a new one. After it's undone all the
+     * refactorings, the merge function is called and it replays the refactorings.
+     */
+
     private void doMerge(String rightCommit, String leftCommit, String baseCommit, Project project,
                          GitRepository repo) throws IOException, VcsException {
 
         GitUtils gitUtils = new GitUtils(repo, project);
+        // Detect the right refactorings and store them in a list
         List<Refactoring> rightRefs = detectCommits(rightCommit, baseCommit);
+        // Detect the left refactorings and store them in a list
         List<Refactoring> leftRefs = detectCommits(leftCommit, baseCommit);
+        // Check if any of the refactorings are conflicting or have ordering dependencies
         Matrix.runMatrix(leftRefs, rightRefs);
-        try {
-            TimeUnit.SECONDS.sleep(5);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        // Checkout the base commit
         gitUtils.checkout(baseCommit);
+        // Save the base commit into the temporary directory temp/base
         Utils.saveContent(project, "base");
+        // Checkout the right commit
         gitUtils.checkout(rightCommit);
+        // To avoid a race condition, we need to wait for IntelliJ to finish indexing the files after the commit gets
+        // checked out
         if(DumbService.isDumb(project)) {
             DumbServiceImpl dumbService = DumbServiceImpl.getInstance(project);
+            // Waits for the task to finish
             dumbService.completeJustSubmittedTasks();
         }
+        // Now that IntelliJ finished indexing, undo the refactorings in the right commit
         undoRefactorings(rightRefs, project);
+        // Save the commit with the refactoring changes in temp/right
         Utils.saveContent(project, "right");
+        // Checkout the left commit
         gitUtils.checkout(leftCommit);
+        // Wait for IntelliJ to finish indexing
         if(DumbService.isDumb(project)) {
             DumbServiceImpl dumbService = DumbServiceImpl.getInstance(project);
             dumbService.completeJustSubmittedTasks();
         }
+        // Undo the refactorings in the right commit
         undoRefactorings(leftRefs, project);
+        // Merge the left and right commit now that there are no refactorings
         Merge merge = new Merge(project);
         merge.merge();
 
-        // Replay refactoring operations
+        // Wait for the changes to finish being written
         if(DumbService.isDumb(project)) {
             DumbServiceImpl dumbService = DumbServiceImpl.getInstance(project);
             dumbService.completeJustSubmittedTasks();
         }
+        // Combine the lists so we can perform all the refactorings on the merged project
         leftRefs.addAll(rightRefs);
+        // Replay all of the refactorings
         replayRefactorings(leftRefs);
 
 
     }
 
+    /*
+     * undoRefactorings takes a list of refactorings and performs the inverse for each one.
+     */
     private List<Refactoring> undoRefactorings(List<Refactoring> refs, Project project) {
-
-        System.out.println(refs);
-        System.out.println(refs.get(0).toString());
-        System.out.println(refs.get(0).getInvolvedClassesBeforeRefactoring() + " Before");
-
         UndoOperations undo = new UndoOperations(project);
 
+        // Iterate through the list of refactorings and undo each one
         for(Refactoring ref : refs) {
             switch (ref.getRefactoringType()) {
                 case RENAME_CLASS:
+                    // Undo the rename class refactoring. This is commented out because of the prompt issue
                     //undo.undoRenameClass(ref);
                     break;
-                case MOVE_CLASS:
-                    break;
                 case RENAME_METHOD:
+                    // Undo the rename method refactoring
                     undo.undoRenameMethod(ref, project);
-                    break;
-                case MOVE_OPERATION:
                     break;
             }
 
         }
+        // Save all of the refactoring changes from memory onto disk
         FileDocumentManager.getInstance().saveAllDocuments();
 
 
         return refs;
     }
 
+    /*
+     * replayRefactorings takes a list of refactorings and performs each of the refactorings.
+     */
     private void replayRefactorings(List<Refactoring> refs) {
         try {
-            System.out.println(refs);
-            System.out.println(refs.get(0).toString());
-            System.out.println(refs.get(0).getInvolvedClassesBeforeRefactoring() + " Before");
-
             ReplayOperations replay = new ReplayOperations(proj);
-
             for(Refactoring ref : refs) {
                 switch (ref.getRefactoringType()) {
                     case RENAME_CLASS:
                         break;
-                    case MOVE_CLASS:
-                        break;
                     case RENAME_METHOD:
+                        // Perform the rename method refactoring
                         replay.replayRenameMethod(ref);
-                        break;
-                    case MOVE_OPERATION:
                         break;
                 }
 
             }
+            // Save the refactoring changes from memory to disk
             FileDocumentManager.getInstance().saveAllDocuments();
 
         } catch (Exception exception) {
@@ -178,8 +195,11 @@ public class RefMerge extends AnAction {
         }
     }
 
-
+    /*
+     * detectCommits uses RefactoringMiner to get the commits between the base and commit.
+     */
     public List<Refactoring> detectCommits(String commit, String base) {
+        // Store the resulting refactorings into refResult
         List<Refactoring> refResult = new ArrayList<>();
         GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
         try {
@@ -187,7 +207,7 @@ public class RefMerge extends AnAction {
                     new RefactoringHandler() {
                         @Override
                         public void handle(String commitId, List<Refactoring> refactorings) {
-                            System.out.println("Refactorings at " + commitId);
+                            // Add each refactoring to refResult
                             for (Refactoring ref : refactorings) {
                                 refResult.add(ref);
                             }
