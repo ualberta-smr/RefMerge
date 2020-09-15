@@ -9,51 +9,30 @@ import java.io.InputStreamReader;
 
 public class Utils {
 
+    /*
+     * Runs a command such as "cp -r ..." or "git merge-files ..."
+     */
     public static String runSystemCommand(String... commands) {
-        //public static String runSystemCommand(String dir, String... commands) {
         StringBuilder builder = new StringBuilder();
         try {
             ProcessBuilder pb = new ProcessBuilder(commands);
             Process p = pb.start();
             p.waitFor();
-
-            BufferedReader stdInput = new BufferedReader(new
-                    InputStreamReader(p.getInputStream()));
-
-            BufferedReader stdError = new BufferedReader(new
-                    InputStreamReader(p.getErrorStream()));
-
-            String s = null;
-            while ((s = stdInput.readLine()) != null) {
-                builder.append(s);
-                builder.append("\n");
-                System.out.println(s);
-            }
-
-            while ((s = stdError.readLine()) != null) {
-                builder.append(s);
-                builder.append("\n");
-                System.out.println(s);
-            }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
         return builder.toString();
     }
 
+    /*
+     * Save the content of one directory to another
+     */
     public static void saveContent(Project project, String dir) throws IOException {
-        // Save project to temporary directory using API
+        // Save project to temporary directory
         String path = System.getProperty("user.home") + "/temp/" + dir;
         File file = new File(path);
-        System.out.println(file.getAbsolutePath());
-        boolean isDir = file.mkdirs();
-        if(isDir) {
-            System.out.println("success");
-        }
-        else {
-            System.out.println("error");
-        }
-        Utils.runSystemCommand("cp", "-r", project.getBasePath(), path);
+        file.mkdirs();
+        runSystemCommand("cp", "-r", project.getBasePath(), path);
     }
 
 
