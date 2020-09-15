@@ -21,65 +21,83 @@ public class UndoOperations {
         this.proj = proj;
     }
 
+    /*
+     * Undo the rename method refactoring that was performed in the commit
+     */
     public void undoRenameMethod(Refactoring ref, Project project) {
-
+        // Get the refactoring description
         String refS = ref.toString();
-        System.out.println(refS);
+        // Use the refactoring description to get the refactored method name
         String destName = refS.substring(refS.indexOf("to") + 3, refS.indexOf("(", refS.indexOf("(") + 1));
         destName = destName.substring(destName.indexOf(" ") + 1, destName.length());
+        // Use the refactoring description to get the original method name
         String srcName = refS.substring(refS.indexOf("\t"), refS.indexOf("("));
         srcName = srcName.split(" ")[1];
+        // Use the refactoring description to get the name of the qualified class
         String qualifiedClass = refS.substring(refS.indexOf("class ") + 6, refS.length());
         String qClass = qualifiedClass.substring(qualifiedClass.lastIndexOf('.') + 1, qualifiedClass.length());
 
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(proj);
-        System.out.println(proj.getBasePath());
+        // get the PSI class using the qualified class name
         PsiClass jClass = jPF.findClass(qualifiedClass, GlobalSearchScope.allScope(proj));
-        // If the qualified class name couldn't be found, try using the class name as file name and find that file
         RenameProcessor processor = null;
+        // If the qualified class name couldn't be found, try using the class name as file name and find that file
         if (jClass == null) {
-            System.out.println("Thing : " + qClass);
+            // Get the name of the java file
             qClass = qClass + ".java";
+            // Search for the java file in the project
             PsiFile[] pFiles = FilenameIndex.getFilesByName(proj, qClass, GlobalSearchScope.allScope(proj));
+            // If it couldn't be found, print an error message here for debugging purposes
+            // If it isn't found, it does not necessarily mean there's a bug. It could be that a refactoring was
+            // performed that wasn't handled yet
             if(pFiles.length == 0) {
                 System.out.println("FAILED HERE");
                 System.out.println(qClass);
                 System.out.println(srcName);
                 return;
             }
+            // Get the first java file that was found
             PsiJavaFile pFile = (PsiJavaFile) pFiles[0];
+            // Get the classes in that java file
             PsiClass[] jClasses = pFile.getClasses();
             for (PsiClass it : jClasses) {
-                System.out.println(it.getQualifiedName());
+                // Find the class that the refactoring happens in
                 if (it.getQualifiedName().equals(qualifiedClass)) {
                     jClass = it;
                 }
             }
+            // Now get the methods in that java class
             PsiMethod[] methods = jClass.getMethods();
-
+            // Find the method being refactored
             for (PsiMethod method : methods) {
                 if (method.getName().equals(destName)) {
-                    System.out.println("Method Name: " + method.getName());
+                    // Create a new rename processor using the original method name and the refactored method that we
+                    // found
                     processor = new RenameProcessor(proj, method, srcName, false, false);
                     RenameProcessor finalProcessor = processor;
+                    // Run the refactoring processor with the current modality
                     ApplicationManager.getApplication().invokeAndWait(() -> finalProcessor.doRun(), ModalityState.current());
-
+                    // Update the virtual file that contains the refactoring
                     VirtualFile vFile = pFile.getVirtualFile();
                     vFile.refresh(false, true);
                     break;
                 }
             }
         }
-        // If the class is found
+        // If the class is not null
         else {
-            System.out.println("Class: " + qualifiedClass);
+            // Get the methods in the class
             PsiMethod[] methods = jClass.getMethods();
+            // Find the method being refactored
             for (PsiMethod method : methods) {
                 if (method.getName().equals(destName)) {
-                    System.out.println("Method Name: " + method.getName());
+                    // Create a new rename processor using the original method name and the refactored method that we
+                    // found
                     processor = new RenameProcessor(proj, method, srcName, false, false);
                     RenameProcessor finalProcessor = processor;
+                    // Run the refactoring processor with the current modality
                     ApplicationManager.getApplication().invokeAndWait(() -> finalProcessor.doRun(), ModalityState.current());
+                    // Update the virtual file that contains the refactoring
                     VirtualFile vFile = jClass.getContainingFile().getVirtualFile();
                     vFile.refresh(false, true);
                     break;
@@ -89,35 +107,50 @@ public class UndoOperations {
 
     }
 
+    /*
+     * Undo the class refactoring that was originally performed.
+     */
     public void undoRenameClass(Refactoring ref) {
-        System.out.println(ref.toString());
+        // Get the original class name
         String srcClass = ((RenameClassRefactoring) ref).getOriginalClassName();
+        // Get the new class name
         String renamedClass = ((RenameClassRefactoring) ref).getRenamedClassName();
+        // Trim the names to only get the class instead of the path
         String srcClassName = srcClass.substring(srcClass.lastIndexOf(".") + 1).trim();
         String renamedClassName = renamedClass.substring(renamedClass.lastIndexOf(".") + 1).trim();
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(proj);
         PsiClass jClass = jPF.findClass(renamedClass, GlobalSearchScope.allScope((proj)));
+        // If the class isn't found, there might not have been a gradle file and we need to find the class another way
         if(jClass == null) {
+            // Get the name of the file
             String qClass = renamedClassName + ".java";
-            System.out.println(qClass);
+            // Look for the file in the project
             PsiFile[] pFiles = FilenameIndex.getFilesByName(proj, qClass, GlobalSearchScope.allScope(proj));
             PsiJavaFile pFile = (PsiJavaFile) pFiles[0];
             PsiClass[] jClasses = pFile.getClasses();
+            // Find the class that's being refactored in that file
             for(PsiClass psiClass : jClasses) {
                 if(psiClass.getQualifiedName().equals(renamedClass)) {
+                    // Create a rename processor using the original name of the class and the psi class
                     RenameProcessor processor = new RenameProcessor(proj, psiClass, srcClassName, true, true);
                     RenameProcessor finalProcessor = processor;
                     Application app = ApplicationManager.getApplication();
+                    // Run the rename class processor in the current modality state
                     app.invokeAndWait(() -> finalProcessor.run(), ModalityState.current());
+                    // Update the virtual file of the class
                     VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
                     vFile.refresh(false, true);
                 }
 
             }
         }
+        // If we could find the class
         else {
+            // Create a rename processor using the original name of the class and the psi class
             RenameProcessor proc = new RenameProcessor(proj, jClass, srcClassName, false, false);
+            // Run the rename class processor
             proc.run();
+            // Update the virtual file of the class
             VirtualFile vFile = jClass.getContainingFile().getVirtualFile();
             vFile.refresh(false, true);
         }
