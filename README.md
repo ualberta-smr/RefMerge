@@ -6,6 +6,7 @@ This project is a refactoring-aware merging IntelliJ plugin.
 * Linux
 * git
 * Java 8
+* IntelliJ (Community Addition) Version 2020.1.2
 
 ## How to run
 
@@ -13,21 +14,33 @@ This project is a refactoring-aware merging IntelliJ plugin.
 Go to your user.home (/home/username) and add a temporary director "temp". 
 The base commit and changes to the right commit will be saved here.
 
-### 2. Clone RefactoringMiner 
+For example, my temp is located at /home/max/temp.
+
+### 2. Clone and build RefactoringMiner 
 Use `Git Clone https://github.com/tsantalis/RefactoringMiner.git` to clone RefactoringMiner. 
+Then build RefactoringMiner with `./gradlew distzip`. It will be under build/distributions.
 
 ### 3. Add RefactoringMiner to your local maven repository
 You will need to add RefactoringMiner to your local maven repository to
 use it in the build.gradle. You can use `mvn install:install-file -Dfile=<path-to-file>`
 to add it to your local maven repository. You can verify that it's been installed 
-by checking the path `/home/user/.m2/repository/org/refactoringminer`.
+by checking the path `/home/username/.m2/repository/org/refactoringminer`.
 
 ### 4. Build the project
 Click on build tab in the IntelliJ IDE and select `Build Project`.
 
 ### 5. Run the plugin
 Click `Run 'Plugin'` or `Debug 'Plugin'`. When it's running, click the `Tools` tab and select
-`RunRefMerge`. This will run the plugin.
+`RunRefMerge`. This will run the plugin. The plugin will do everything else.
+The matrix will print true/false for each handled operation, then the plugin will checkout 
+the base commit and copy it to `home/username/temp/base`. After this, it checks
+out the right commit and undoes handled refactorings. The content gets copied to 
+`home/username/temp/right`. The same happens for the left commit, however the project
+directory gets used for this one. When it merges, the merged content is saved in the project directory.
+Lastly, the refactorings are replayed in the project directory. When it finishes, you can
+look in the project directory to see the results.
+
+
 
 ## Additional information 
 
