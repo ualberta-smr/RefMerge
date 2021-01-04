@@ -80,20 +80,24 @@ public class Matrix {
      * Check each similar entity and inheritance case to see if the method renames conflict.
      */
     static boolean methodRenamesConflict(Refactoring leftRefactoring, Refactoring rightRefactoring) {
+        // Get the UMLOperation for each refactoring
+        UMLOperation leftOperation = ((RenameOperationRefactoring) leftRefactoring).getRenamedOperation();
+        UMLOperation rightOperation = ((RenameOperationRefactoring) rightRefactoring).getRenamedOperation();
         // Get the name of the methods before they are refactored
-        String originalLeftName = ((RenameOperationRefactoring) leftRefactoring).getOriginalOperation().getName();
-        String originalRightName = ((RenameOperationRefactoring) rightRefactoring).getOriginalOperation().getName();
+        String originalLeftName = leftOperation.getName();
+        String originalRightName = rightOperation.getName();
         // Get the name of the methods after they are refactored
-        String leftName = ((RenameOperationRefactoring) leftRefactoring).getRenamedOperation().getName();
-        String rightName = ((RenameOperationRefactoring) rightRefactoring).getRenamedOperation().getName();
+        String leftName = leftOperation.getName();
+        String rightName = rightOperation.getName();
         // Get the names of the classes that the methods are in
-        String leftClass = ((RenameOperationRefactoring) leftRefactoring).getRenamedOperation().getClassName();
-        String rightClass = ((RenameOperationRefactoring) rightRefactoring).getRenamedOperation().getClassName();
+        String leftClass = leftOperation.getClassName();
+        String rightClass = rightOperation.getClassName();
 
         // If the methods are in different classes, check if they override
         if(!leftClass.equals(rightClass)) {
             return methodInheritanceConflict(leftRefactoring, rightRefactoring);
         }
+
         // If the original method names are equal but the destination names are not equal
         else if(originalLeftName.equals(originalRightName) && !leftName.equals(rightName)) {
             return true;
