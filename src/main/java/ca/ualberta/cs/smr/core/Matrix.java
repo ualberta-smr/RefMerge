@@ -97,8 +97,12 @@ public class Matrix {
         if(!leftClass.equals(rightClass)) {
             return methodInheritanceConflict(leftRefactoring, rightRefactoring);
         }
-
-        // If the original method names are equal but the destination names are not equal
+        // If the methods have the same name and different parameters in the same class, check for overloading
+        else if(originalLeftName.equals(originalRightName) && !leftName.equals(rightName) &&
+                !leftOperation.equalParameters(rightOperation)) {
+            return true;
+        }
+        // If the original method names are equal but the destination names are not equal, check for conflict
         else if(originalLeftName.equals(originalRightName) && !leftName.equals(rightName)) {
             return true;
         }
@@ -149,10 +153,7 @@ public class Matrix {
      */
     static boolean checkRenameClass(Refactoring leftRefactoring, Refactoring rightRefactoring) {
         // If they do conflict, return true. Otherwise return false
-        if(classRenamesConflict(leftRefactoring, rightRefactoring)) {
-            return true;
-        }
-        return false;
+        return classRenamesConflict(leftRefactoring, rightRefactoring);
     }
 
     /*
