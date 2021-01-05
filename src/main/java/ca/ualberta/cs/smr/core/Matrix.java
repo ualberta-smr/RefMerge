@@ -80,18 +80,25 @@ public class Matrix {
      * Check each similar entity and inheritance case to see if the method renames conflict.
      */
     static boolean methodRenamesConflict(Refactoring leftRefactoring, Refactoring rightRefactoring) {
-        // Get the UMLOperation for each refactoring
+        // Get the original and renamed UMLOperation for each refactoring
+        UMLOperation leftOriginalOperation = ((RenameOperationRefactoring) leftRefactoring).getOriginalOperation();
+        UMLOperation rightOriginalOperation = ((RenameOperationRefactoring) rightRefactoring).getOriginalOperation();
         UMLOperation leftOperation = ((RenameOperationRefactoring) leftRefactoring).getRenamedOperation();
         UMLOperation rightOperation = ((RenameOperationRefactoring) rightRefactoring).getRenamedOperation();
         // Get the name of the methods before they are refactored
-        String originalLeftName = leftOperation.getName();
-        String originalRightName = rightOperation.getName();
+        String originalLeftName = leftOriginalOperation.getName();
+        String originalRightName = rightOriginalOperation.getName();
         // Get the name of the methods after they are refactored
         String leftName = leftOperation.getName();
         String rightName = rightOperation.getName();
         // Get the names of the classes that the methods are in
         String leftClass = leftOperation.getClassName();
         String rightClass = rightOperation.getClassName();
+
+        // Debug info to determine if the logic is correct
+        System.out.println("Original Left Name: " + originalLeftName + " | Original Right Name: " + originalRightName);
+        System.out.println("New Left Name: " + leftName + " | New Right Name: " + rightName);
+        System.out.println("Left Class: " + leftClass + " | Right Class: " + rightClass);
 
         // If the methods are in different classes, check if they override
         if(!leftClass.equals(rightClass)) {
@@ -100,6 +107,7 @@ public class Matrix {
         // If the methods have the same name and different parameters in the same class, check for overloading
         else if(originalLeftName.equals(originalRightName) && !leftName.equals(rightName) &&
                 !leftOperation.equalParameters(rightOperation)) {
+            System.out.println("Overloading Conflict");
             return true;
         }
         // If the original method names are equal but the destination names are not equal, check for conflict
