@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.core;
+package ca.ualberta.cs.smr.core.matrix;
 
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLOperation;
@@ -17,7 +17,7 @@ public class Matrix {
     /*
      * Iterate through each of the left refactorings to compare against the right refactorings.
      */
-    static void runMatrix(List<Refactoring> leftRefactorings, List<Refactoring> rightRefactorings) {
+    static public void runMatrix(List<Refactoring> leftRefactorings, List<Refactoring> rightRefactorings) {
         // Iterates over the refactorings in the left commit
         for (Refactoring leftRefactoring : leftRefactorings) {
             // Compares the refactorings in the right commit against the left refactoring

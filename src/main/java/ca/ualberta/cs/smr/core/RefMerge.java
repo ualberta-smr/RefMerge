@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core;
 
+import ca.ualberta.cs.smr.core.matrix.Matrix;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -50,10 +51,10 @@ public class RefMerge extends AnAction {
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         List<GitRepository> repos = repoManager.getRepositories();
         GitRepository repo = repos.get(0);
-        String mergeCommit = "a1b94c2"; //"98787ef5";
-        String rightCommit = "dc37ff7"; //"3d9b713ba";
-        String leftCommit = "f3a05c1"; //"5e7fcebe4";
-        String baseCommit = "773ef6b"; //"773d48939a2ccba";
+        String mergeCommit = "27121f2"; //"98787ef5";
+        String rightCommit = "e5e397da6"; //"3d9b713ba";
+        String leftCommit = "5e59da77"; //"5e7fcebe4";
+        String baseCommit = "c382b804"; //"773d48939a2ccba";
         try {
             refMerge(mergeCommit, rightCommit, leftCommit, baseCommit, project, repo);
         } catch (IOException ioException) {
@@ -136,9 +137,9 @@ public class RefMerge extends AnAction {
             dumbService.completeJustSubmittedTasks();
         }
         // Combine the lists so we can perform all the refactorings on the merged project
-        leftRefs.addAll(rightRefs);
+       // leftRefs.addAll(rightRefs);
         // Replay all of the refactorings
-        replayRefactorings(leftRefs);
+       // replayRefactorings(leftRefs);
 
 
     }
