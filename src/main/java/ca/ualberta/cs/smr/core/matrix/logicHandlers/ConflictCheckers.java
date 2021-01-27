@@ -91,7 +91,7 @@ public class ConflictCheckers {
         return false;
     }
 
-    static public boolean checkNamingConflict(Refactoring elementRef, Refactoring visitorRef) {
+    static public boolean checkMethodNamingConflict(Refactoring elementRef, Refactoring visitorRef) {
         // Get class names
         String elementClassName = getOriginalRenameOperationClassName(elementRef);
         String visitorClassName = getOriginalRenameOperationClassName(visitorRef);
@@ -106,12 +106,35 @@ public class ConflictCheckers {
         // get new method names
         String elementNewName = getRefactoredMethodName(elementRef);
         String visitorNewName = getRefactoredMethodName(visitorRef);
+        // Check naming conflict
+        return checkNamingConflict(elementOriginalName, visitorOriginalName, elementNewName, visitorNewName);
+    }
+
+    static public boolean checkClassNamingConflict(Refactoring elementRef, Refactoring visitorRef) {
+        // Get the package for each class
+        String elementPackage = getOriginalClassPackage(elementRef);
+        String visitorPackage = getOriginalClassPackage(visitorRef);
+        // Check that the classes are in the same package
+        if(!isSameName(elementPackage, visitorPackage)) {
+            return false;
+        }
+        String elementOriginalClassName = getOriginalClassOperationName(elementRef);
+        String visitorOriginalClassName = getOriginalClassOperationName(visitorRef);
+        String elementNewClassName = getRefactoredClassOperationName(elementRef);
+        String visitorNewClassName = getRefactoredClassOperationName(visitorRef);
+
+        return checkNamingConflict(elementOriginalClassName, visitorOriginalClassName,
+                                                elementNewClassName, visitorNewClassName);
+    }
+
+    static public boolean checkNamingConflict(String elementOriginal, String visitorOriginal, String elementNew,
+                                                    String visitorNew) {
         // If the original method names are equal but the destination names are not equal, check for conflict
-        if(isSameName(elementOriginalName,visitorOriginalName) && !isSameName(elementNewName, visitorNewName)) {
+        if(isSameName(elementOriginal, visitorOriginal) && !isSameName(elementNew, visitorNew)) {
             return true;
         }
         // If the original method names are not equal but the destination names are equal
-        else if(!isSameName(elementOriginalName, visitorOriginalName) && isSameName(elementNewName, visitorNewName)) {
+        else if(!isSameName(elementOriginal, visitorOriginal) && isSameName(elementNew, visitorNew)) {
             return true;
         }
         return false;

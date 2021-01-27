@@ -1,10 +1,14 @@
 package ca.ualberta.cs.smr.core.matrix.elements;
 
 
+import ca.ualberta.cs.smr.core.matrix.logicHandlers.ConflictCheckers;
 import ca.ualberta.cs.smr.core.matrix.visitors.Visitor;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import org.refactoringminer.api.Refactoring;
+
+import static ca.ualberta.cs.smr.core.matrix.logicHandlers.ConflictCheckers.checkClassNamingConflict;
+
 
 public class RenameClassElement extends RefactoringElement {
     Refactoring elementRef;
@@ -22,12 +26,7 @@ public class RenameClassElement extends RefactoringElement {
      * Check if rename class conflicts with rename class
      */
     public boolean checkRenameClassConflict(Refactoring visitorRef) {
-        // get the original class names
-        String originalLeftClass = ((RenameClassRefactoring) elementRef).getOriginalClassName();
-        String originalRightClass = ((RenameClassRefactoring) visitorRef).getOriginalClassName();
-        // get the refactored class names
-        String renamedLeftClass = ((RenameClassRefactoring) elementRef).getRenamedClassName();
-        String renamedRightClass = ((RenameClassRefactoring) visitorRef).getRenamedClassName();
+
         // get the package of each class
         String leftPackage = ((RenameClassRefactoring) elementRef).getOriginalClass().getPackageName();
         String rightPackage = ((RenameClassRefactoring) visitorRef).getOriginalClass().getPackageName();
@@ -36,12 +35,9 @@ public class RenameClassElement extends RefactoringElement {
         if(!leftPackage.equals(rightPackage)) {
             return classInheritanceConflict(elementRef, visitorRef);
         }
-        // If the original class name is renamed to two separate names
-        if(originalLeftClass.equals(originalRightClass) && !renamedLeftClass.equals(renamedRightClass)) {
-            return true;
-        }
-        // If two classes are renamed to the same name
-        else if(!originalLeftClass.equals(originalRightClass) && renamedLeftClass.equals(renamedRightClass)) {
+        // Check class naming conflict
+        if(checkClassNamingConflict(elementRef, visitorRef)) {
+            System.out.println("Naming conflict");
             return true;
         }
         return false;

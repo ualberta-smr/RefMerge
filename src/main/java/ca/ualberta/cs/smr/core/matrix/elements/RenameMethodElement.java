@@ -39,7 +39,7 @@ public class RenameMethodElement extends RefactoringElement {
         }
         // Check for naming conflict
 
-        else if(checkNamingConflict(elementRef, visitorRef)) {
+        else if(checkMethodNamingConflict(elementRef, visitorRef)) {
             System.out.println("Naming conflict");
             return true;
         }

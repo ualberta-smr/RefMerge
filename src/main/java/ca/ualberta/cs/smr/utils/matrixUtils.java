@@ -1,6 +1,8 @@
 package ca.ualberta.cs.smr.utils;
 
+import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLOperation;
+import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 
@@ -31,5 +33,25 @@ public class matrixUtils {
 
     static public String getOriginalRenameOperationClassName(Refactoring ref) {
         return getOriginalRenameOperation(ref).getClassName();
+    }
+
+    static public UMLClass getOriginalClassOperation(Refactoring ref) {
+        return ((RenameClassRefactoring) ref).getOriginalClass();
+    }
+
+    static public UMLClass getRefactoredClassOperation(Refactoring ref) {
+        return ((RenameClassRefactoring) ref).getRenamedClass();
+    }
+
+    static public String getOriginalClassPackage(Refactoring ref) {
+        return getOriginalClassOperation(ref).getPackageName();
+    }
+
+    static public String getOriginalClassOperationName(Refactoring ref) {
+        return getOriginalClassOperation(ref).getName();
+    }
+
+    static public String getRefactoredClassOperationName(Refactoring ref) {
+        return getRefactoredClassOperation(ref).getName();
     }
 }
