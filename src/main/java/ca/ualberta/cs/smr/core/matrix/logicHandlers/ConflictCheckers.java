@@ -5,8 +5,10 @@ import gr.uom.java.xmi.UMLOperation;
 import org.refactoringminer.api.Refactoring;
 
 
-import static ca.ualberta.cs.smr.core.matrix.logicHandlers.LogicHandlers.ifClassExtends;
-import static ca.ualberta.cs.smr.core.matrix.logicHandlers.LogicHandlers.isSameName;
+import ca.ualberta.cs.smr.utils.matrixUtils;
+
+import static ca.ualberta.cs.smr.utils.matrixUtils.ifClassExtends;
+import static ca.ualberta.cs.smr.utils.matrixUtils.isSameName;
 
 
 public class ConflictCheckers {

@@ -1,7 +1,6 @@
-package ca.ualberta.cs.smr.core.matrix.logicHandlers;
+package ca.ualberta.cs.smr.utils;
 
-public class LogicHandlers {
-
+public class matrixUtils {
     static public boolean isSameName(String elementName, String visitorName) {
         return elementName.equals(visitorName);
     }
@@ -9,5 +8,4 @@ public class LogicHandlers {
     static public boolean ifClassExtends(Class elementClass, Class visitorClass) {
         return elementClass.isAssignableFrom(visitorClass) || visitorClass.isAssignableFrom(elementClass);
     }
-
 }
