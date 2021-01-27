@@ -4,6 +4,9 @@ package ca.ualberta.cs.smr.core.matrix;
 import ca.ualberta.cs.smr.core.matrix.elements.RefactoringElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
+import ca.ualberta.cs.smr.core.matrix.visitors.RefactoringVisitor;
+import ca.ualberta.cs.smr.core.matrix.visitors.RenameClassVisitor;
+import ca.ualberta.cs.smr.core.matrix.visitors.RenameMethodVisitor;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
@@ -16,9 +19,16 @@ import java.util.List;
 
 public class Matrix {
 
-    static final HashMap<RefactoringType, RefactoringElement> elementMap = new HashMap<RefactoringType, RefactoringElement>() {{
+    static final HashMap<RefactoringType, RefactoringElement> elementMap =
+                                                    new HashMap<RefactoringType, RefactoringElement>() {{
        put(RefactoringType.RENAME_METHOD, new RenameMethodElement());
        put(RefactoringType.RENAME_CLASS, new RenameClassElement());
+    }};
+
+    static final HashMap<RefactoringType, RefactoringVisitor> visitorMap =
+                                                    new HashMap<RefactoringType, RefactoringVisitor>() {{
+        put(RefactoringType.RENAME_METHOD, new RenameMethodVisitor());
+        put(RefactoringType.RENAME_CLASS, new RenameClassVisitor());
     }};
 
 
@@ -53,13 +63,24 @@ public class Matrix {
         RefactoringType leftType = leftRefactoring.getRefactoringType();
         RefactoringType rightType = rightRefactoring.getRefactoringType();
         RefactoringElement element = makeElement(leftType, leftRefactoring);
+        RefactoringVisitor visitor = makeVisitor(rightType, rightRefactoring);
+
     }
 
+    /*
+     * Use the refactoring type to get the refactoring element class from the elementMap.
+     * Set the refactoring field in the element.
+     */
     static private RefactoringElement makeElement(RefactoringType type, Refactoring ref) {
         RefactoringElement element = elementMap.get(type);
         element.set(ref);
         return element;
     }
 
+    static private RefactoringVisitor makeVisitor(RefactoringType type, Refactoring ref) {
+        RefactoringVisitor visitor = visitorMap.get(type);
+        visitor.set(ref);
+        return visitor;
+    }
 
 }
