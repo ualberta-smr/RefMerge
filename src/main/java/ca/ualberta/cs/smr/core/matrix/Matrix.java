@@ -26,134 +26,24 @@ public class Matrix {
     }
 
     /*
-     * This compares each refactoring in the right commit to see if the conflict with the left refactoring
+     * This calls dispatch for each pair of refactorings to check for conflicts.
      */
     static void compareRefactorings(Refactoring leftRefactoring, List<Refactoring> rightRefactorings) {
-        // Get the type of the left refactoring
-        RefactoringType leftType = leftRefactoring.getRefactoringType();
         // Iterate over the right refactorings
         for(Refactoring rightRefactoring : rightRefactorings) {
-            // Get the type of the right refactoring
-            RefactoringType rightType = rightRefactoring.getRefactoringType();
-            // Compare to see if the types of refactorings are the same
-            if(leftType == rightType) {
-                // If they're the same type, see if they are conflicting
-                checkIfConflicting(leftRefactoring, rightRefactoring);
-            }
+            // Dispatch the refactoring elements to the correct conflict checker
+            dispatch(leftRefactoring, rightRefactoring);
         }
 
     }
 
     /*
-     * Check if a pair of refactorings conflict.
+     * Perform double dispatch to check if the two refactoring elements conflict.
      */
-    static void checkIfConflicting(Refactoring leftRefactoring, Refactoring rightRefactoring) {
-        boolean conflicting = false;
-        RefactoringType type = leftRefactoring.getRefactoringType();
-        switch(type) {
-            case RENAME_METHOD:
-                // Check if the rename method refactorings are conflicting
-                conflicting = checkRenameMethod(leftRefactoring, rightRefactoring);
-                // Print if they're conflicting or not for debugging
-                System.out.println(conflicting);
-                break;
-            case RENAME_CLASS:
-                // Check if the rename class refactorings are conflicting
-                conflicting = checkRenameClass(leftRefactoring, rightRefactoring);
-                // Print if they're conflicting or not for debugging
-                System.out.println(conflicting);
-                break;
-
-        }
-    }
-
-    static boolean checkRenameMethod(Refactoring leftRefactoring, Refactoring rightRefactoring) {
-        // If the method renames conflict
-        if(methodRenamesConflict(leftRefactoring, rightRefactoring)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /*
-     * Check each similar entity and inheritance case to see if the method renames conflict.
-     */
-    static boolean methodRenamesConflict(Refactoring leftRefactoring, Refactoring rightRefactoring) {
-        // Get the original and renamed UMLOperation for each refactoring
-        UMLOperation leftOriginalOperation = ((RenameOperationRefactoring) leftRefactoring).getOriginalOperation();
-        UMLOperation rightOriginalOperation = ((RenameOperationRefactoring) rightRefactoring).getOriginalOperation();
-        UMLOperation leftOperation = ((RenameOperationRefactoring) leftRefactoring).getRenamedOperation();
-        UMLOperation rightOperation = ((RenameOperationRefactoring) rightRefactoring).getRenamedOperation();
-        // Get the name of the methods before they are refactored
-        String originalLeftName = leftOriginalOperation.getName();
-        String originalRightName = rightOriginalOperation.getName();
-        // Get the name of the methods after they are refactored
-        String leftName = leftOperation.getName();
-        String rightName = rightOperation.getName();
-        // Get the names of the classes that the methods are in
-        String leftClass = leftOperation.getClassName();
-        String rightClass = rightOperation.getClassName();
-
-        // Debug info to determine if the logic is correct
-        System.out.println("Original Left Name: " + originalLeftName + " | Original Right Name: " + originalRightName);
-        System.out.println("New Left Name: " + leftName + " | New Right Name: " + rightName);
-        System.out.println("Left Class: " + leftClass + " | Right Class: " + rightClass);
-
-        // If the methods are in different classes, check if they override
-        if(!leftClass.equals(rightClass)) {
-            return methodInheritanceConflict(leftRefactoring, rightRefactoring);
-        }
-        // If the methods have the same name and different parameters in the same class, check for overloading
-        else if(originalLeftName.equals(originalRightName) && !leftName.equals(rightName) &&
-                !leftOperation.equalParameters(rightOperation)) {
-            System.out.println("Overloading Conflict");
-            return true;
-        }
-        // If the original method names are equal but the destination names are not equal, check for conflict
-        else if(originalLeftName.equals(originalRightName) && !leftName.equals(rightName)) {
-            return true;
-        }
-        // If the original method names are not equal but the destination names are equal
-        else if(!originalLeftName.equals(originalRightName) && leftName.equals(rightName)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /*
-     * Check each of the inheritance cases to see if the method renames conflict
-     */
-    static boolean methodInheritanceConflict(Refactoring leftRefactoring, Refactoring rightRefactoring) {
-        // Get the name of the methods before they are renamed
-        UMLOperation leftOriginalMethod = ((RenameOperationRefactoring) leftRefactoring).getOriginalOperation();
-        UMLOperation rightOriginalMethod = ((RenameOperationRefactoring) rightRefactoring).getOriginalOperation();
-        // get the name of the methods after they are renamed
-        UMLOperation leftRefactoredMethod = ((RenameOperationRefactoring) leftRefactoring).getRenamedOperation();
-        UMLOperation rightRefactoredMethod = ((RenameOperationRefactoring) rightRefactoring).getRenamedOperation();
-        // Get the classes of the methods
-        Class leftClass = leftOriginalMethod.getClass();
-        Class rightClass = rightOriginalMethod.getClass();
-        // If one of the classes extends the other
-        if(leftClass.isAssignableFrom(rightClass) || rightClass.isAssignableFrom(leftClass)) {
-            // If a method overrides the other
-            if(leftOriginalMethod.getName().equals(rightOriginalMethod.getName())) {
-                // And the refactored names are different, they no longer override and conflict
-                if(!leftRefactoredMethod.getName().equals(rightRefactoredMethod.getName())) {
-                    return true;
-                }
-            }
-            else {
-                // If a method overrides the other after refactoring, but they do not before, then it conflicts
-                if(leftRefactoredMethod.getName().equals(rightRefactoredMethod.getName())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-
-
+    static void dispatch(Refactoring leftRefactoring, Refactoring rightRefactoring) {
+        // Get the refactoring types so we can create the corresponding element and visitor
+        String leftType = leftRefactoring.getName();
+        String rightType = rightRefactoring.getName();
     }
 
     /*
