@@ -6,13 +6,9 @@ import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 
-public class matrixUtils {
+public class MatrixUtils {
     static public boolean isSameName(String elementName, String visitorName) {
         return elementName.equals(visitorName);
-    }
-
-    static public boolean ifClassExtends(Class<?> elementClass, Class<?> visitorClass) {
-        return elementClass.isAssignableFrom(visitorClass) || visitorClass.isAssignableFrom(elementClass);
     }
 
     static public UMLOperation getOriginalRenameOperation(Refactoring ref) {
@@ -53,5 +49,9 @@ public class matrixUtils {
 
     static public String getRefactoredClassOperationName(Refactoring ref) {
         return getRefactoredClassOperation(ref).getName();
+    }
+
+    static public boolean ifClassExtends(Class<?> elementClass, Class<?> visitorClass) {
+        return elementClass.isAssignableFrom(visitorClass) || visitorClass.isAssignableFrom(elementClass);
     }
 }

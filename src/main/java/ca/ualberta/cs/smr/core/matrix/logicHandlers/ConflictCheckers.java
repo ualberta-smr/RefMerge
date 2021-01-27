@@ -4,7 +4,7 @@ import gr.uom.java.xmi.UMLOperation;
 import org.refactoringminer.api.Refactoring;
 
 
-import static ca.ualberta.cs.smr.utils.matrixUtils.*;
+import static ca.ualberta.cs.smr.utils.MatrixUtils.*;
 
 
 public class ConflictCheckers {
