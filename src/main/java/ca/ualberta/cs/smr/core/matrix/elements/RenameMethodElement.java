@@ -5,6 +5,8 @@ import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 
+import static ca.ualberta.cs.smr.core.matrix.logicHandlers.ConflictCheckers.checkOverrideConflict;
+
 /*
  * Checks if visitor refactorings confict with a rename method refactoring.
  */
@@ -39,15 +41,12 @@ public class RenameMethodElement extends RefactoringElement {
         String leftClass = leftOperation.getClassName();
         String rightClass = rightOperation.getClassName();
 
-        // Debug info to determine if the logic is correct
-        System.out.println("Original Left Name: " + originalLeftName + " | Original Right Name: " + originalRightName);
-        System.out.println("New Left Name: " + leftName + " | New Right Name: " + rightName);
-        System.out.println("Left Class: " + leftClass + " | Right Class: " + rightClass);
 
-        // If the methods are in different classes, check if they override
-        if(!leftClass.equals(rightClass)) {
-            return methodInheritanceConflict(elementRef, visitorRef);
+        // Check for a method override conflict
+        if(checkOverrideConflict(elementRef, visitorRef)) {
+            return true;
         }
+
         // If the methods have the same name and different parameters in the same class, check for overloading
         else if(originalLeftName.equals(originalRightName) && !leftName.equals(rightName) &&
                 !leftOperation.equalParameters(rightOperation)) {
@@ -66,37 +65,5 @@ public class RenameMethodElement extends RefactoringElement {
         return false;
     }
 
-
-    /*
-     * Check each of the inheritance cases to see if the method renames conflict
-     */
-    static boolean methodInheritanceConflict(Refactoring leftRefactoring, Refactoring rightRefactoring) {
-        // Get the name of the methods before they are renamed
-        UMLOperation leftOriginalMethod = ((RenameOperationRefactoring) leftRefactoring).getOriginalOperation();
-        UMLOperation rightOriginalMethod = ((RenameOperationRefactoring) rightRefactoring).getOriginalOperation();
-        // get the name of the methods after they are renamed
-        UMLOperation leftRefactoredMethod = ((RenameOperationRefactoring) leftRefactoring).getRenamedOperation();
-        UMLOperation rightRefactoredMethod = ((RenameOperationRefactoring) rightRefactoring).getRenamedOperation();
-        // Get the classes of the methods
-        Class leftClass = leftOriginalMethod.getClass();
-        Class rightClass = rightOriginalMethod.getClass();
-        // If one of the classes extends the other
-        if(leftClass.isAssignableFrom(rightClass) || rightClass.isAssignableFrom(leftClass)) {
-            // If a method overrides the other
-            if(leftOriginalMethod.getName().equals(rightOriginalMethod.getName())) {
-                // And the refactored names are different, they no longer override and conflict
-                if(!leftRefactoredMethod.getName().equals(rightRefactoredMethod.getName())) {
-                    return true;
-                }
-            }
-            else {
-                // If a method overrides the other after refactoring, but they do not before, then it conflicts
-                if(leftRefactoredMethod.getName().equals(rightRefactoredMethod.getName())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 
 }
