@@ -1,11 +1,13 @@
 package ca.ualberta.cs.smr.core.matrix;
 
-import gr.uom.java.xmi.UMLClass;
-import gr.uom.java.xmi.UMLOperation;
-import gr.uom.java.xmi.diff.RenameClassRefactoring;
-import gr.uom.java.xmi.diff.RenameOperationRefactoring;
+
+import ca.ualberta.cs.smr.core.matrix.elements.RefactoringElement;
+import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
+import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
+
+import java.util.HashMap;
 import java.util.List;
 
 /*
@@ -13,6 +15,12 @@ import java.util.List;
  */
 
 public class Matrix {
+
+    static final HashMap<RefactoringType, RefactoringElement> elementMap = new HashMap<RefactoringType, RefactoringElement>() {{
+       put(RefactoringType.RENAME_METHOD, new RenameMethodElement());
+       put(RefactoringType.RENAME_CLASS, new RenameClassElement());
+    }};
+
 
     /*
      * Iterate through each of the left refactorings to compare against the right refactorings.
@@ -42,10 +50,16 @@ public class Matrix {
      */
     static void dispatch(Refactoring leftRefactoring, Refactoring rightRefactoring) {
         // Get the refactoring types so we can create the corresponding element and visitor
-        String leftType = leftRefactoring.getName();
-        String rightType = rightRefactoring.getName();
+        RefactoringType leftType = leftRefactoring.getRefactoringType();
+        RefactoringType rightType = rightRefactoring.getRefactoringType();
+        RefactoringElement element = makeElement(leftType, leftRefactoring);
     }
 
+    static private RefactoringElement makeElement(RefactoringType type, Refactoring ref) {
+        RefactoringElement element = elementMap.get(type);
+        element.set(ref);
+        return element;
+    }
 
 
 }
