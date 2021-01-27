@@ -11,7 +11,7 @@ public class matrixUtils {
         return elementName.equals(visitorName);
     }
 
-    static public boolean ifClassExtends(Class elementClass, Class visitorClass) {
+    static public boolean ifClassExtends(Class<?> elementClass, Class<?> visitorClass) {
         return elementClass.isAssignableFrom(visitorClass) || visitorClass.isAssignableFrom(elementClass);
     }
 

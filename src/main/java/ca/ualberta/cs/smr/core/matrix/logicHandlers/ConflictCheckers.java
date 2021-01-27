@@ -1,8 +1,8 @@
 package ca.ualberta.cs.smr.core.matrix.logicHandlers;
 
-import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import gr.uom.java.xmi.UMLOperation;
 import org.refactoringminer.api.Refactoring;
+
 
 import static ca.ualberta.cs.smr.utils.matrixUtils.*;
 
@@ -26,8 +26,8 @@ public class ConflictCheckers {
             return false;
         }
         // Get the class of each method
-        Class elementClass = elementOriginalOperation.getClass();
-        Class visitorClass = visitorOriginalOperation.getClass();
+        Class<?> elementClass = elementOriginalOperation.getClass();
+        Class<?> visitorClass = visitorOriginalOperation.getClass();
         // If neither class extends each other then there is no override conflict
         if(!ifClassExtends(elementClass, visitorClass)) {
             return false;
@@ -63,7 +63,6 @@ public class ConflictCheckers {
         // Get class names
         String elementClassName = elementOriginalOperation.getClassName();
         String visitorClassName = visitorOriginalOperation.getClassName();
-
         // If the methods are in different classes, no overloading happens
         if (!isSameName(elementClassName, visitorClassName)) {
             return false;
@@ -139,6 +138,7 @@ public class ConflictCheckers {
         }
         return false;
     }
+
 }
 
 
