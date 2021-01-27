@@ -64,7 +64,7 @@ public class Matrix {
         RefactoringType rightType = rightRefactoring.getRefactoringType();
         RefactoringElement element = makeElement(leftType, leftRefactoring);
         RefactoringVisitor visitor = makeVisitor(rightType, rightRefactoring);
-
+        element.accept(visitor);
     }
 
     /*
