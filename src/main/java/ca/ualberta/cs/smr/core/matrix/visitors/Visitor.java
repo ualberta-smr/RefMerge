@@ -1,5 +1,7 @@
 package ca.ualberta.cs.smr.core.matrix.visitors;
 
+import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
+
 public interface Visitor {
-    void visit();
+    void visit(RenameMethodElement renameMethod);
 }

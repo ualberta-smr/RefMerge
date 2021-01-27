@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core.matrix.visitors;
 
+import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
 import org.refactoringminer.api.Refactoring;
 
 public class RenameMethodVisitor extends RefactoringVisitor {
@@ -10,7 +11,7 @@ public class RenameMethodVisitor extends RefactoringVisitor {
     }
 
     @Override
-    public void visit() {
-
+    public void visit(RenameMethodElement renameMethod) {
+        renameMethod.checkRenameMethodConflict();
     }
 }
