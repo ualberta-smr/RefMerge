@@ -4,11 +4,7 @@ import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import gr.uom.java.xmi.UMLOperation;
 import org.refactoringminer.api.Refactoring;
 
-
-import ca.ualberta.cs.smr.utils.matrixUtils;
-
-import static ca.ualberta.cs.smr.utils.matrixUtils.ifClassExtends;
-import static ca.ualberta.cs.smr.utils.matrixUtils.isSameName;
+import static ca.ualberta.cs.smr.utils.matrixUtils.*;
 
 
 public class ConflictCheckers {
@@ -16,11 +12,11 @@ public class ConflictCheckers {
 
     static public boolean checkOverrideConflict(Refactoring elementRef, Refactoring visitorRef) {
         // Get the original operations
-        UMLOperation elementOriginalOperation = ((RenameOperationRefactoring) elementRef).getOriginalOperation();
-        UMLOperation visitorOriginalOperation = ((RenameOperationRefactoring) visitorRef).getOriginalOperation();
+        UMLOperation elementOriginalOperation = getOriginalRenameOperation(elementRef);
+        UMLOperation visitorOriginalOperation = getOriginalRenameOperation(visitorRef);
         // Get the refactored operations
-        UMLOperation elementRefactoredOperation = ((RenameOperationRefactoring) elementRef).getRenamedOperation();
-        UMLOperation visitorRefactoredOperation = ((RenameOperationRefactoring) visitorRef).getRenamedOperation();
+        UMLOperation elementRefactoredOperation = getRefactoredRenameOperation(elementRef);
+        UMLOperation visitorRefactoredOperation = getRefactoredRenameOperation(visitorRef);
         // Get the class names
         String elementClassName = elementRefactoredOperation.getClassName();
         String visitorClassName = visitorRefactoredOperation.getClassName();
@@ -59,11 +55,11 @@ public class ConflictCheckers {
 
     static public boolean checkOverloadConflict(Refactoring elementRef, Refactoring visitorRef) {
         // Get the original operations
-        UMLOperation elementOriginalOperation = ((RenameOperationRefactoring) elementRef).getOriginalOperation();
-        UMLOperation visitorOriginalOperation = ((RenameOperationRefactoring) visitorRef).getOriginalOperation();
+        UMLOperation elementOriginalOperation = getOriginalRenameOperation(elementRef);
+        UMLOperation visitorOriginalOperation = getOriginalRenameOperation(visitorRef);
         // Get the refactored operations
-        UMLOperation elementRefactoredOperation = ((RenameOperationRefactoring) elementRef).getRenamedOperation();
-        UMLOperation visitorRefactoredOperation = ((RenameOperationRefactoring) visitorRef).getRenamedOperation();
+        UMLOperation elementRefactoredOperation = getRefactoredRenameOperation(elementRef);
+        UMLOperation visitorRefactoredOperation = getRefactoredRenameOperation(visitorRef);
         // Get class names
         String elementClassName = elementOriginalOperation.getClassName();
         String visitorClassName = visitorOriginalOperation.getClassName();
@@ -96,26 +92,20 @@ public class ConflictCheckers {
     }
 
     static public boolean checkNamingConflict(Refactoring elementRef, Refactoring visitorRef) {
-        // Get the original operations
-        UMLOperation elementOriginalOperation = ((RenameOperationRefactoring) elementRef).getOriginalOperation();
-        UMLOperation visitorOriginalOperation = ((RenameOperationRefactoring) visitorRef).getOriginalOperation();
-        // Get the refactored operations
-        UMLOperation elementRefactoredOperation = ((RenameOperationRefactoring) elementRef).getRenamedOperation();
-        UMLOperation visitorRefactoredOperation = ((RenameOperationRefactoring) visitorRef).getRenamedOperation();
         // Get class names
-        String elementClassName = elementOriginalOperation.getClassName();
-        String visitorClassName = visitorOriginalOperation.getClassName();
+        String elementClassName = getOriginalRenameOperationClassName(elementRef);
+        String visitorClassName = getOriginalRenameOperationClassName(visitorRef);
 
         // If the methods are in different classes
         if (!isSameName(elementClassName, visitorClassName)) {
             return false;
         }
         // Get original method names
-        String elementOriginalName = elementOriginalOperation.getName();
-        String visitorOriginalName = visitorOriginalOperation.getName();
+        String elementOriginalName = getOriginalMethodName(elementRef);
+        String visitorOriginalName = getOriginalMethodName(visitorRef);
         // get new method names
-        String elementNewName = elementRefactoredOperation.getName();
-        String visitorNewName = visitorRefactoredOperation.getName();
+        String elementNewName = getRefactoredMethodName(elementRef);
+        String visitorNewName = getRefactoredMethodName(visitorRef);
         // If the original method names are equal but the destination names are not equal, check for conflict
         if(isSameName(elementOriginalName,visitorOriginalName) && !isSameName(elementNewName, visitorNewName)) {
             return true;
