@@ -1,5 +1,3 @@
-package original;
-
 
 public class Main {
     public static void doStuff() {

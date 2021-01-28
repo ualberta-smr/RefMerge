@@ -1,4 +1,3 @@
-package refactored;
 
 public class Main {
     public static void checkIfClassroomWorks() {
@@ -22,7 +21,7 @@ public class Main {
     }
 }
 
-class Child extends Main {
+class ChildClass extends Main {
     public void getStudentInformation() {
         System.out.println("Do stuff");
     }

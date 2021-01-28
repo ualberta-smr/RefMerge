@@ -1,7 +1,11 @@
 package ca.ualberta.cs.smr.core.matrix.logicHandlers;
 
+import ca.ualberta.cs.smr.GetDataForTests;
 import org.junit.Assert;
 import org.junit.Test;
+import org.refactoringminer.api.Refactoring;
+
+import java.util.List;
 
 public class ConflictCheckersTest {
 
@@ -27,5 +31,15 @@ public class ConflictCheckersTest {
         expectedTrue = ConflictCheckers.checkNamingConflict(originalElement, originalVisitor,
                                                                             refactoredElement, refactoredVisitor);
         Assert.assertTrue("Expected true because two elements are renamed to the same name", expectedTrue);
+    }
+
+    @Test
+    public void testCheckClassNamingConflict() {
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS");
+        Refactoring element = refactorings.get(0);
+        Refactoring visitor = refactorings.get(1);
+        boolean expectedFalse = ConflictCheckers.checkClassNamingConflict(element, visitor);
+        Assert.assertFalse("Classes should not conflict", expectedFalse);
+
     }
 }
