@@ -1,6 +1,5 @@
 package ca.ualberta.cs.smr;
 
-import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLModel;
 import gr.uom.java.xmi.UMLModelASTReader;
 import gr.uom.java.xmi.diff.UMLModelDiff;
@@ -21,8 +20,7 @@ public class GetRefactoringsForTests {
                 UMLModel model1 = new UMLModelASTReader(new File(originalPath)).getUmlModel();
                 UMLModel model2 = new UMLModelASTReader(new File(refactoredPath)).getUmlModel();
                 UMLModelDiff modelDiff = model1.diff(model2);
-                List<Refactoring> refactorings = modelDiff.getRefactorings();
-                return refactorings;
+                return modelDiff.getRefactorings();
             } catch(IOException | RefactoringMinerTimedOutException e) {
                 System.out.println("Error: Problem getting refactoring operations");
                 e.printStackTrace();
