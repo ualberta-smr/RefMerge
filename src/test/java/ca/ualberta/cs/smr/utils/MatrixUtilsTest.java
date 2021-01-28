@@ -2,6 +2,7 @@ package ca.ualberta.cs.smr.utils;
 
 import ca.ualberta.cs.smr.GetRefactoringsForTests;
 import gr.uom.java.xmi.UMLOperation;
+import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.junit.Test;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
@@ -63,7 +64,8 @@ public class MatrixUtilsTest {
             }
         }
         String name = MatrixUtils.getOriginalMethodName(refactoring);
-        Assert.assertEquals("The original name of the rename refactoring should be \"doStuff\"", "doStuff", name);
+        String expectedName = ((RenameOperationRefactoring) refactoring).getOriginalOperation().getName();
+        Assert.assertEquals("The original name of the rename refactoring should be \"doStuff\"", expectedName, name);
     }
 
     @Test
@@ -76,7 +78,23 @@ public class MatrixUtilsTest {
             }
         }
         String name = MatrixUtils.getRefactoredMethodName(refactoring);
+        String expectedName = ((RenameOperationRefactoring) refactoring).getRenamedOperation().getName();
         Assert.assertEquals("The refactored name of the rename refactoring should be \"checkIfClassroomWorks\"",
-                "checkIfClassroomWorks", name);
+                expectedName, name);
+    }
+
+    @Test
+    public void testGetOriginalRenameOperationClassName() {
+        List<Refactoring> refs = GetRefactoringsForTests.getRefactorings();
+        Refactoring refactoring = null;
+        for(Refactoring ref : refs) {
+            if (ref.getRefactoringType() == RefactoringType.RENAME_METHOD) {
+                refactoring = ref;
+            }
+        }
+        String name = MatrixUtils.getOriginalRenameOperationClassName(refactoring);
+        String expectedName = ((RenameOperationRefactoring) refactoring).getOriginalOperation().getClassName();
+        Assert.assertEquals("The original class name of the rename refactoring should be \"Main\"",
+                expectedName, name);
     }
 }
