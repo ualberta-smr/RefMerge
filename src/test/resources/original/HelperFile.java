@@ -1,5 +1,7 @@
-public class HelperFile {
-    int diff;
+package original;
+
+class HelperFile {
+    static int diff;
 
     public static void set(int x) {
         diff = x;

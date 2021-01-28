@@ -1,21 +1,29 @@
+package refactored;
+
 public class Main {
     public static void checkIfClassroomWorks() {
         int numStudents = getStudents();
         int classroom = getClassroomSize();
         boolean canFit = false;
-        if(clasroom - numStudents >= 0) {
-            true;
+        if(classroom - numStudents >= 0) {
+            canFit = true;
         }
-        system.out.println(canFit);
+        System.out.println(canFit);
         ClassFile cf = new ClassFile();
         cf.set(classroom - numStudents);
     }
 
-    public int getStudents() {
+    public static int getStudents() {
         return 32;
     }
 
-    public int getClassroom() {
+    public static int getClassroomSize() {
         return 112;
+    }
+}
+
+class Child extends Main {
+    public void getStudentInformation() {
+        System.out.println("Do stuff");
     }
 }
