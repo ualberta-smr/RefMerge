@@ -53,5 +53,30 @@ public class MatrixUtilsTest {
                                         "checkIfClassroomWorks", name);
     }
 
+    @Test
+    public void testGetOriginalMethodName() {
+        List<Refactoring> refs = GetRefactoringsForTests.getRefactorings();
+        Refactoring refactoring = null;
+        for(Refactoring ref : refs) {
+            if (ref.getRefactoringType() == RefactoringType.RENAME_METHOD) {
+                refactoring = ref;
+            }
+        }
+        String name = MatrixUtils.getOriginalMethodName(refactoring);
+        Assert.assertEquals("The original name of the rename refactoring should be \"doStuff\"", "doStuff", name);
+    }
 
+    @Test
+    public void testGetRefactoredMethodName() {
+        List<Refactoring> refs = GetRefactoringsForTests.getRefactorings();
+        Refactoring refactoring = null;
+        for(Refactoring ref : refs) {
+            if (ref.getRefactoringType() == RefactoringType.RENAME_METHOD) {
+                refactoring = ref;
+            }
+        }
+        String name = MatrixUtils.getRefactoredMethodName(refactoring);
+        Assert.assertEquals("The refactored name of the rename refactoring should be \"checkIfClassroomWorks\"",
+                "checkIfClassroomWorks", name);
+    }
 }
