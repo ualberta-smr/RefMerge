@@ -6,9 +6,6 @@ import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.junit.Test;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
-import org.refactoringminer.api.RefactoringType;
-
-import java.util.List;
 
 public class MatrixUtilsTest {
 
@@ -25,13 +22,8 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetOriginalRenameOperation() {
-        List<Refactoring> refs = GetRefactoringsForTests.getRefactorings();
-        Refactoring refactoring = null;
-        for(Refactoring ref : refs) {
-            if (ref.getRefactoringType() == RefactoringType.RENAME_METHOD) {
-                refactoring = ref;
-            }
-        }
+        Refactoring refactoring = GetRefactoringsForTests.getRefactorings("RENAME_METHOD");
+
         UMLOperation operation = MatrixUtils.getOriginalRenameOperation(refactoring);
         Assert.assertNotNull("The refactoring operation should not be null", operation);
         String name = operation.getName();
@@ -40,13 +32,8 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetRefactoredRenameOperation() {
-        List<Refactoring> refs = GetRefactoringsForTests.getRefactorings();
-        Refactoring refactoring = null;
-        for(Refactoring ref : refs) {
-            if (ref.getRefactoringType() == RefactoringType.RENAME_METHOD) {
-                refactoring = ref;
-            }
-        }
+        Refactoring refactoring = GetRefactoringsForTests.getRefactorings("RENAME_METHOD");
+
         UMLOperation operation = MatrixUtils.getRefactoredRenameOperation(refactoring);
         Assert.assertNotNull("The refactoring operation should not be null", operation);
         String name = operation.getName();
@@ -56,28 +43,20 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetOriginalMethodName() {
-        List<Refactoring> refs = GetRefactoringsForTests.getRefactorings();
-        Refactoring refactoring = null;
-        for(Refactoring ref : refs) {
-            if (ref.getRefactoringType() == RefactoringType.RENAME_METHOD) {
-                refactoring = ref;
-            }
-        }
+        Refactoring refactoring = GetRefactoringsForTests.getRefactorings("RENAME_METHOD");
+
         String name = MatrixUtils.getOriginalMethodName(refactoring);
+        assert refactoring != null;
         String expectedName = ((RenameOperationRefactoring) refactoring).getOriginalOperation().getName();
         Assert.assertEquals("The original name of the rename refactoring should be \"doStuff\"", expectedName, name);
     }
 
     @Test
     public void testGetRefactoredMethodName() {
-        List<Refactoring> refs = GetRefactoringsForTests.getRefactorings();
-        Refactoring refactoring = null;
-        for(Refactoring ref : refs) {
-            if (ref.getRefactoringType() == RefactoringType.RENAME_METHOD) {
-                refactoring = ref;
-            }
-        }
+        Refactoring refactoring = GetRefactoringsForTests.getRefactorings("RENAME_METHOD");
+
         String name = MatrixUtils.getRefactoredMethodName(refactoring);
+        assert refactoring != null;
         String expectedName = ((RenameOperationRefactoring) refactoring).getRenamedOperation().getName();
         Assert.assertEquals("The refactored name of the rename refactoring should be \"checkIfClassroomWorks\"",
                 expectedName, name);
@@ -85,14 +64,10 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetOriginalRenameOperationClassName() {
-        List<Refactoring> refs = GetRefactoringsForTests.getRefactorings();
-        Refactoring refactoring = null;
-        for(Refactoring ref : refs) {
-            if (ref.getRefactoringType() == RefactoringType.RENAME_METHOD) {
-                refactoring = ref;
-            }
-        }
+        Refactoring refactoring = GetRefactoringsForTests.getRefactorings("RENAME_METHOD");
+
         String name = MatrixUtils.getOriginalRenameOperationClassName(refactoring);
+        assert refactoring != null;
         String expectedName = ((RenameOperationRefactoring) refactoring).getOriginalOperation().getClassName();
         Assert.assertEquals("The original class name of the rename refactoring should be \"Main\"",
                 expectedName, name);
