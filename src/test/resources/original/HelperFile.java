@@ -1,4 +1,4 @@
-package original;
+
 
 class HelperFile {
     static int diff;

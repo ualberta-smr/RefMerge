@@ -58,8 +58,7 @@ public class MatrixUtils {
     }
 
 
-    static public PsiClass getClass(String qualifiedClass) {
-        Project proj = ProjectManager.getInstance().getOpenProjects()[0];
+    static public PsiClass getClass(Project proj, String qualifiedClass) {
         proj.getProjectFile();
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(proj);
         return jPF.findClass(qualifiedClass, GlobalSearchScope.allScope(proj));

@@ -1,4 +1,4 @@
-package refactored;
+
 
 class ClassFile {
     static int diff;

@@ -1,13 +1,22 @@
 package ca.ualberta.cs.smr.utils;
 
-import ca.ualberta.cs.smr.GetRefactoringsForTests;
+import ca.ualberta.cs.smr.GetDataForTests;
+import ca.ualberta.cs.smr.core.matrix.Matrix;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
+import com.intellij.psi.PsiClass;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
+import org.jdom.JDOMException;
 import org.junit.Test;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
+
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.List;
 
 public class MatrixUtilsTest {
 
@@ -24,7 +33,7 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetOriginalRenameOperation() {
-        Refactoring refactoring = GetRefactoringsForTests.getRefactorings("RENAME_METHOD");
+        Refactoring refactoring = GetDataForTests.getRefactorings("RENAME_METHOD");
 
         UMLOperation operation = MatrixUtils.getOriginalRenameOperation(refactoring);
         Assert.assertNotNull("The refactoring operation should not be null", operation);
@@ -34,7 +43,7 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetRefactoredRenameOperation() {
-        Refactoring refactoring = GetRefactoringsForTests.getRefactorings("RENAME_METHOD");
+        Refactoring refactoring = GetDataForTests.getRefactorings("RENAME_METHOD");
 
         UMLOperation operation = MatrixUtils.getRefactoredRenameOperation(refactoring);
         Assert.assertNotNull("The refactoring operation should not be null", operation);
@@ -45,7 +54,7 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetOriginalMethodName() {
-        Refactoring refactoring = GetRefactoringsForTests.getRefactorings("RENAME_METHOD");
+        Refactoring refactoring = GetDataForTests.getRefactorings("RENAME_METHOD");
 
         String name = MatrixUtils.getOriginalMethodName(refactoring);
         assert refactoring != null;
@@ -55,7 +64,7 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetRefactoredMethodName() {
-        Refactoring refactoring = GetRefactoringsForTests.getRefactorings("RENAME_METHOD");
+        Refactoring refactoring = GetDataForTests.getRefactorings("RENAME_METHOD");
 
         String name = MatrixUtils.getRefactoredMethodName(refactoring);
         assert refactoring != null;
@@ -66,7 +75,7 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetOriginalRenameOperationClassName() {
-        Refactoring refactoring = GetRefactoringsForTests.getRefactorings("RENAME_METHOD");
+        Refactoring refactoring = GetDataForTests.getRefactorings("RENAME_METHOD");
 
         String name = MatrixUtils.getOriginalRenameOperationClassName(refactoring);
         assert refactoring != null;
@@ -77,7 +86,7 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetOriginalClassOperation() {
-        Refactoring refactoring = GetRefactoringsForTests.getRefactorings("RENAME_CLASS");
+        Refactoring refactoring = GetDataForTests.getRefactorings("RENAME_CLASS");
         Assert.assertNotNull(refactoring);
         UMLClass umlClass = MatrixUtils.getOriginalClassOperation(refactoring);
         Assert.assertNotNull("The class should not be null", umlClass);
@@ -87,7 +96,7 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetRefactoredClassOperation() {
-        Refactoring refactoring = GetRefactoringsForTests.getRefactorings("RENAME_CLASS");
+        Refactoring refactoring = GetDataForTests.getRefactorings("RENAME_CLASS");
         Assert.assertNotNull(refactoring);
         UMLClass umlClass = MatrixUtils.getRefactoredClassOperation(refactoring);
         Assert.assertNotNull("The class should not be null", umlClass);
@@ -97,10 +106,30 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetOriginalClassPackage() {
-        Refactoring refactoring = GetRefactoringsForTests.getRefactorings("RENAME_CLASS");
+        Refactoring refactoring = GetDataForTests.getRefactorings("RENAME_CLASS");
         Assert.assertNotNull(refactoring);
         String name = MatrixUtils.getOriginalClassPackage(refactoring);
         String expectedName = ((RenameClassRefactoring) refactoring).getOriginalClass().getPackageName();
         Assert.assertEquals(name, expectedName);
     }
+
+    @Test
+    public void testGetOriginalClassOperationName() {
+        Refactoring refactoring = GetDataForTests.getRefactorings("RENAME_CLASS");
+        Assert.assertNotNull(refactoring);
+        String name = MatrixUtils.getOriginalClassOperationName(refactoring);
+        String expectedName = ((RenameClassRefactoring) refactoring).getOriginalClass().getName();
+        Assert.assertEquals("The original name of the class should be \"HelperFile\"", name, expectedName);
+
+    }
+
+    @Test
+    public void testGetRefactoredClassOperationName() {
+        Refactoring refactoring = GetDataForTests.getRefactorings("RENAME_CLASS");
+        Assert.assertNotNull(refactoring);
+        String name = MatrixUtils.getRefactoredClassOperationName(refactoring);
+        String expectedName = ((RenameClassRefactoring) refactoring).getRenamedClass().getName();
+        Assert.assertEquals("The original name of the class should be \"ClassFile\"", name, expectedName);
+    }
+
 }
