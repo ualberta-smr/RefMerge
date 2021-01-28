@@ -1,6 +1,8 @@
 package ca.ualberta.cs.smr.core.matrix.logicHandlers;
 
 import ca.ualberta.cs.smr.utils.MatrixUtils;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.psi.PsiClass;
 import gr.uom.java.xmi.UMLOperation;
 import org.refactoringminer.api.Refactoring;
@@ -27,8 +29,9 @@ public class ConflictCheckers {
             return false;
         }
         // Get the class of each method
-        PsiClass elementClass = MatrixUtils.getClass(elementClassName);
-        PsiClass visitorClass = MatrixUtils.getClass(visitorClassName);
+        Project proj = ProjectManager.getInstance().getOpenProjects()[0];
+        PsiClass elementClass = MatrixUtils.getClass(proj, elementClassName);
+        PsiClass visitorClass = MatrixUtils.getClass(proj, visitorClassName);
         // If neither class extends each other then there is no override conflict
         if(!ifClassExtends(elementClass, visitorClass)) {
             return false;
