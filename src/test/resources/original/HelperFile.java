@@ -1,5 +1,7 @@
 public class HelperFile {
-    public static void FILE(int x) {
+    int diff;
+
+    public static void set(int x) {
         diff = x;
     }
 }

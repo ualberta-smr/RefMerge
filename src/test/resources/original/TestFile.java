@@ -7,7 +7,8 @@ public class Main {
             true;
         }
         system.out.println(canFit);
-        HelperFile f = new HelperFile(classroom - numStudents);
+        HelperFile f = new HelperFile();
+        f.set(classroom - numStudents);
     }
 
     public int getStudents() {
