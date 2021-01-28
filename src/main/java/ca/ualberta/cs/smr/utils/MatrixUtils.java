@@ -1,5 +1,11 @@
 package ca.ualberta.cs.smr.utils;
 
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.impl.JavaPsiFacadeImpl;
+import com.intellij.psi.search.GlobalSearchScope;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
@@ -51,7 +57,24 @@ public class MatrixUtils {
         return getRefactoredClassOperation(ref).getName();
     }
 
-    static public boolean ifClassExtends(Class<?> elementClass, Class<?> visitorClass) {
-        return elementClass.isAssignableFrom(visitorClass) || visitorClass.isAssignableFrom(elementClass);
+
+    static public PsiClass getClass(String qualifiedClass) {
+        Project proj = ProjectManager.getInstance().getOpenProjects()[0];
+        proj.getProjectFile();
+        JavaPsiFacade jPF = new JavaPsiFacadeImpl(proj);
+        return jPF.findClass(qualifiedClass, GlobalSearchScope.allScope(proj));
+
+
+    }
+
+    static public boolean ifClassExtends(PsiClass elementClass, PsiClass visitorClass) {
+        String visitorName = visitorClass.getQualifiedName();
+        String elementName = elementClass.getQualifiedName();
+        String visitorSuper = visitorClass.getSuperClass().getQualifiedName();
+        String elementSuper = elementClass.getSuperClass().getQualifiedName();
+        if(visitorName.equals(elementSuper) || elementName.equals(visitorSuper)) {
+            return true;
+        }
+        return false;
     }
 }

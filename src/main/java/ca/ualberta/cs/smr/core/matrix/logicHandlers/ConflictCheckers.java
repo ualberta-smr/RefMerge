@@ -1,14 +1,16 @@
 package ca.ualberta.cs.smr.core.matrix.logicHandlers;
 
+import ca.ualberta.cs.smr.utils.MatrixUtils;
+import com.intellij.psi.PsiClass;
 import gr.uom.java.xmi.UMLOperation;
 import org.refactoringminer.api.Refactoring;
+
 
 
 import static ca.ualberta.cs.smr.utils.MatrixUtils.*;
 
 
 public class ConflictCheckers {
-
 
     static public boolean checkOverrideConflict(Refactoring elementRef, Refactoring visitorRef) {
         // Get the original operations
@@ -20,14 +22,13 @@ public class ConflictCheckers {
         // Get the class names
         String elementClassName = elementRefactoredOperation.getClassName();
         String visitorClassName = visitorRefactoredOperation.getClassName();
-
         // If the rename methods happen in the same class then there is no override conflict
         if(isSameName(elementClassName, visitorClassName)) {
             return false;
         }
         // Get the class of each method
-        Class<?> elementClass = elementOriginalOperation.getClass();
-        Class<?> visitorClass = visitorOriginalOperation.getClass();
+        PsiClass elementClass = MatrixUtils.getClass(elementClassName);
+        PsiClass visitorClass = MatrixUtils.getClass(visitorClassName);
         // If neither class extends each other then there is no override conflict
         if(!ifClassExtends(elementClass, visitorClass)) {
             return false;
