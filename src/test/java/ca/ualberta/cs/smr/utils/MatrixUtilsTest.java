@@ -3,6 +3,7 @@ package ca.ualberta.cs.smr.utils;
 import ca.ualberta.cs.smr.GetRefactoringsForTests;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLOperation;
+import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.junit.Test;
 import org.junit.Assert;
@@ -92,5 +93,14 @@ public class MatrixUtilsTest {
         Assert.assertNotNull("The class should not be null", umlClass);
         String name = umlClass.getName();
         Assert.assertEquals("The name should be \"ClassFile\"","ClassFile", name);
+    }
+
+    @Test
+    public void testGetOriginalClassPackage() {
+        Refactoring refactoring = GetRefactoringsForTests.getRefactorings("RENAME_CLASS");
+        Assert.assertNotNull(refactoring);
+        String name = MatrixUtils.getOriginalClassPackage(refactoring);
+        String expectedName = ((RenameClassRefactoring) refactoring).getOriginalClass().getPackageName();
+        Assert.assertEquals(name, expectedName);
     }
 }
