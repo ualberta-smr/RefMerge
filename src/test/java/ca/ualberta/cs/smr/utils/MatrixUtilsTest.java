@@ -146,6 +146,18 @@ public class MatrixUtilsTest {
     }
 
     @Test
+    public void testGetUMLClass() {
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/resources/original";
+        String className = "Main";
+        UMLClass umlClass = MatrixUtils.getUMLClass(className, originalPath);
+        Assert.assertNotNull("The UML class should not be null", umlClass);
+        Assert.assertEquals("The name of the UML class should be \"Main\"", umlClass.getName(), className);
+        umlClass = MatrixUtils.getUMLClass("", "");
+        Assert.assertNull("getUMLClass should return null", umlClass);
+    }
+
+    @Test
     public void testIfClassExtends() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/original";
@@ -163,6 +175,8 @@ public class MatrixUtilsTest {
         Assert.assertFalse("Null check for super classes", expectedFalse);
         expectedFalse = MatrixUtils.ifClassExtends(elementChild, elementOther);
         Assert.assertFalse("Check for child extends another class", expectedFalse);
+        expectedFalse = MatrixUtils.ifClassExtends(elementOther, elementChild);
+        Assert.assertFalse("Check for child extends another class, called in reverse order", expectedFalse);
     }
 
 }
