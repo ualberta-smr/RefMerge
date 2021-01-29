@@ -15,30 +15,34 @@ public class ConflictCheckersTest {
         String originalVisitor = "bar";
         String refactoredElement = "newFoo";
         String refactoredVisitor = "newBar";
-        boolean expectedFalse = ConflictCheckers.checkNamingConflict(originalElement, originalVisitor,
+        String path = System.getProperty("user.dir");
+        ConflictCheckers conflictCheckers = new ConflictCheckers(path);
+        boolean expectedFalse = conflictCheckers.checkNamingConflict(originalElement, originalVisitor,
                                                                             refactoredElement, refactoredVisitor);
         Assert.assertFalse("Expected false because the renamings do not conflict", expectedFalse);
 
         originalVisitor = "foo";
-        boolean expectedTrue = ConflictCheckers.checkNamingConflict(originalElement, originalVisitor,
+        boolean expectedTrue = conflictCheckers.checkNamingConflict(originalElement, originalVisitor,
                                                                             refactoredElement, refactoredVisitor);
         Assert.assertTrue("Expected true because an element is renamed to two names", expectedTrue);
         refactoredVisitor = "newFoo";
-        expectedFalse = ConflictCheckers.checkNamingConflict(originalElement, originalVisitor,
+        expectedFalse = conflictCheckers.checkNamingConflict(originalElement, originalVisitor,
                                                                             refactoredElement, refactoredVisitor);
         Assert.assertFalse("Expected false because the renamings are the same", expectedFalse);
         originalVisitor = "bar";
-        expectedTrue = ConflictCheckers.checkNamingConflict(originalElement, originalVisitor,
+        expectedTrue = conflictCheckers.checkNamingConflict(originalElement, originalVisitor,
                                                                             refactoredElement, refactoredVisitor);
         Assert.assertTrue("Expected true because two elements are renamed to the same name", expectedTrue);
     }
 
     @Test
     public void testCheckClassNamingConflict() {
+        String path = System.getProperty("user.dir");
+        ConflictCheckers conflictCheckers = new ConflictCheckers(path);
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS");
         Refactoring element = refactorings.get(0);
         Refactoring visitor = refactorings.get(1);
-        boolean expectedFalse = ConflictCheckers.checkClassNamingConflict(element, visitor);
+        boolean expectedFalse = conflictCheckers.checkClassNamingConflict(element, visitor);
         Assert.assertFalse("Classes should not conflict", expectedFalse);
 
     }

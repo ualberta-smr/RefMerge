@@ -142,4 +142,15 @@ public class MatrixUtilsTest {
         Assert.assertEquals("The original name of the class should be \"ClassFile\"", name, expectedName);
     }
 
+    @Test
+    public void testIfClassExtends() {
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/resources/original";
+        String refactoredPath = basePath + "/src/test/resources/refactored";
+        UMLClass elementParent = GetDataForTests.getClass(originalPath, "Main");
+        UMLClass elementChild = GetDataForTests.getClass(originalPath, "Child");
+        boolean expectTrue = MatrixUtils.ifClassExtends(elementParent, elementChild);
+        Assert.assertTrue("Child extends Parent", expectTrue);
+    }
+
 }

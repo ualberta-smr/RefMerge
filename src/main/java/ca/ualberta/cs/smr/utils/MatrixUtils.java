@@ -57,7 +57,7 @@ public class MatrixUtils {
     }
 
     static public UMLClass getUMLClass(String name, String path) {
-        UMLModel model = null;
+        UMLModel model;
         UMLClass umlClass = null;
         try {
             model = new UMLModelASTReader(new File(path)).getUmlModel();
@@ -77,8 +77,22 @@ public class MatrixUtils {
     static public boolean ifClassExtends(UMLClass elementClass, UMLClass visitorClass) {
         UMLType elementSuperClassType = elementClass.getSuperclass();
         UMLType visitorSuperClassType = visitorClass.getSuperclass();
-        if(elementSuperClassType.equals(null) && visitorSuperClassType.equals(null)) {
+        if(elementSuperClassType == null && visitorSuperClassType == null) {
             return false;
+        }
+        if(elementSuperClassType != null) {
+            String elementSuperClassName = elementSuperClassType.getClassType();
+            String visitorClassName = visitorClass.getName();
+            if(visitorClassName.equals(elementSuperClassName)) {
+                return true;
+            }
+        }
+        else if(visitorSuperClassType != null) {
+            String visitorSuperClassName = visitorSuperClassType.getClassType();
+            String elementClassName = elementClass.getName();
+            if(elementClassName.equals(visitorSuperClassName)) {
+                return true;
+            }
         }
         return false;
     }
