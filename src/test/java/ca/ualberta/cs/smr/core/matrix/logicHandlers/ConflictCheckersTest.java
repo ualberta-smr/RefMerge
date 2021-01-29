@@ -36,10 +36,33 @@ public class ConflictCheckersTest {
     }
 
     @Test
+    public void testCheckMethodNamingConflict() {
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/resources/original/MethodNamingConflict";
+        String refactoredPath = basePath + "/src/test/resources/refactored/MethodNamingConflict";
+        ConflictCheckers conflictCheckers = new ConflictCheckers(basePath);
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
+        assert refactorings != null;
+        Refactoring elementRef = refactorings.get(1);
+        Refactoring visitorRef = refactorings.get(2);
+        boolean expectedFalse = conflictCheckers.checkMethodNamingConflict(elementRef, visitorRef);
+        Assert.assertFalse("Methods in different classes should not have naming conflicts", expectedFalse);
+        visitorRef = refactorings.get(0);
+        boolean expectedTrue = conflictCheckers.checkMethodNamingConflict(elementRef, visitorRef);
+        Assert.assertTrue("Methods renamed to the same name in the same class should return true", expectedTrue);
+        expectedTrue = conflictCheckers.checkMethodNamingConflict(visitorRef, elementRef);
+        Assert.assertTrue("The same refactorings in a different order should return true", expectedTrue);
+        expectedFalse = conflictCheckers.checkMethodNamingConflict(visitorRef, visitorRef);
+        Assert.assertFalse("A method renamed to the same name in both versions should not conflict", expectedFalse);
+    }
+
+    @Test
     public void testCheckClassNamingConflict() {
-        String path = System.getProperty("user.dir");
-        ConflictCheckers conflictCheckers = new ConflictCheckers(path);
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS");
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/resources/original/MatrixUtilsTests";
+        String refactoredPath = basePath + "/src/test/resources/refactored/MatrixUtilsTests";
+        ConflictCheckers conflictCheckers = new ConflictCheckers(basePath);
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring element = refactorings.get(0);
         Refactoring visitor = refactorings.get(1);
