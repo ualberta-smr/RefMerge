@@ -83,14 +83,5 @@ public class MatrixUtils {
         return false;
     }
 
-    static public boolean ifClassExtends(PsiClass elementClass, PsiClass visitorClass) {
-        String visitorName = visitorClass.getQualifiedName();
-        String elementName = elementClass.getQualifiedName();
-        String visitorSuper = visitorClass.getSuperClass().getQualifiedName();
-        String elementSuper = elementClass.getSuperClass().getQualifiedName();
-        if(visitorName.equals(elementSuper) || elementName.equals(visitorSuper)) {
-            return true;
-        }
-        return false;
-    }
+
 }
