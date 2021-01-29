@@ -1,7 +1,6 @@
 package ca.ualberta.cs.smr.utils;
 
 
-import com.intellij.psi.PsiClass;
 import gr.uom.java.xmi.*;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
@@ -58,7 +57,6 @@ public class MatrixUtils {
 
     static public UMLClass getUMLClass(String name, String path) {
         UMLModel model;
-        UMLClass umlClass = null;
         try {
             model = new UMLModelASTReader(new File(path)).getUmlModel();
             List<UMLClass> umlClasses = model.getClassList();
@@ -70,7 +68,7 @@ public class MatrixUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return umlClass;
+        return null;
     }
 
 
@@ -83,18 +81,13 @@ public class MatrixUtils {
         if(elementSuperClassType != null) {
             String elementSuperClassName = elementSuperClassType.getClassType();
             String visitorClassName = visitorClass.getName();
-            if(visitorClassName.equals(elementSuperClassName)) {
-                return true;
-            }
+            return visitorClassName.equals(elementSuperClassName);
         }
-        else if(visitorSuperClassType != null) {
+        else {
             String visitorSuperClassName = visitorSuperClassType.getClassType();
             String elementClassName = elementClass.getName();
-            if(elementClassName.equals(visitorSuperClassName)) {
-                return true;
-            }
+            return elementClassName.equals(visitorSuperClassName);
         }
-        return false;
     }
 
 

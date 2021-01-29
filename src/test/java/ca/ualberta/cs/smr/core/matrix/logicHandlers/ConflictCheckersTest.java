@@ -40,6 +40,7 @@ public class ConflictCheckersTest {
         String path = System.getProperty("user.dir");
         ConflictCheckers conflictCheckers = new ConflictCheckers(path);
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS");
+        assert refactorings != null;
         Refactoring element = refactorings.get(0);
         Refactoring visitor = refactorings.get(1);
         boolean expectedFalse = conflictCheckers.checkClassNamingConflict(element, visitor);
