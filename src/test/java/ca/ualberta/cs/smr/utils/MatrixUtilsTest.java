@@ -26,7 +26,10 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetOriginalRenameOperation() {
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD");
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/resources/original/MatrixUtilsTests";
+        String refactoredPath = basePath + "/src/test/resources/refactored/MatrixUtilsTests";
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring refactoring = refactorings.get(0);
 
@@ -38,7 +41,10 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetRefactoredRenameOperation() {
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD");
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/resources/original/MatrixUtilsTests";
+        String refactoredPath = basePath + "/src/test/resources/refactored/MatrixUtilsTests";
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring refactoring = refactorings.get(0);
 
@@ -51,7 +57,10 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetOriginalMethodName() {
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD");
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/resources/original/MatrixUtilsTests";
+        String refactoredPath = basePath + "/src/test/resources/refactored/MatrixUtilsTests";
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring refactoring = refactorings.get(0);
 
@@ -63,7 +72,10 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetRefactoredMethodName() {
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD");
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/resources/original/MatrixUtilsTests";
+        String refactoredPath = basePath + "/src/test/resources/refactored/MatrixUtilsTests";
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring refactoring = refactorings.get(0);
 
@@ -76,7 +88,10 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetOriginalRenameOperationClassName() {
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD");
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/resources/original/MatrixUtilsTests";
+        String refactoredPath = basePath + "/src/test/resources/refactored/MatrixUtilsTests";
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring refactoring = refactorings.get(0);
 
@@ -89,7 +104,10 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetOriginalClassOperation() {
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS");
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/resources/original/MatrixUtilsTests";
+        String refactoredPath = basePath + "/src/test/resources/refactored/MatrixUtilsTests";
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring refactoring = refactorings.get(0);
         Assert.assertNotNull(refactoring);
@@ -101,7 +119,10 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetRefactoredClassOperation() {
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS");
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/resources/original/MatrixUtilsTests";
+        String refactoredPath = basePath + "/src/test/resources/refactored/MatrixUtilsTests";
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring refactoring = refactorings.get(0);
         Assert.assertNotNull(refactoring);
@@ -113,7 +134,10 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetOriginalClassPackage() {
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS");
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/resources/original/MatrixUtilsTests";
+        String refactoredPath = basePath + "/src/test/resources/refactored/MatrixUtilsTests";
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring refactoring = refactorings.get(0);
         Assert.assertNotNull(refactoring);
@@ -124,7 +148,10 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetOriginalClassOperationName() {
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS");
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/resources/original/MatrixUtilsTests";
+        String refactoredPath = basePath + "/src/test/resources/refactored/MatrixUtilsTests";
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring refactoring = refactorings.get(0);
         Assert.assertNotNull(refactoring);
@@ -136,7 +163,10 @@ public class MatrixUtilsTest {
 
     @Test
     public void testGetRefactoredClassOperationName() {
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS");
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/resources/original/MatrixUtilsTests";
+        String refactoredPath = basePath + "/src/test/resources/refactored/MatrixUtilsTests";
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring refactoring = refactorings.get(0);
         Assert.assertNotNull(refactoring);
@@ -148,7 +178,7 @@ public class MatrixUtilsTest {
     @Test
     public void testGetUMLClass() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/original";
+        String originalPath = basePath + "/src/test/resources/original/MatrixUtilsTests";
         String className = "Main";
         UMLClass umlClass = MatrixUtils.getUMLClass(className, originalPath);
         Assert.assertNotNull("The UML class should not be null", umlClass);
@@ -160,7 +190,7 @@ public class MatrixUtilsTest {
     @Test
     public void testIfClassExtends() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/original";
+        String originalPath = basePath + "/src/test/resources/original/MatrixUtilsTests";
         UMLClass elementParent = GetDataForTests.getClass(originalPath, "Main");
         UMLClass elementChild = GetDataForTests.getClass(originalPath, "Child");
         UMLClass elementOther = GetDataForTests.getClass(originalPath, "HelperFile");

@@ -14,10 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GetDataForTests {
-        public static List<Refactoring> getRefactorings(String type) {
-            String basePath = System.getProperty("user.dir");
-            String originalPath = basePath + "/src/test/resources/original";
-            String refactoredPath = basePath + "/src/test/resources/refactored";
+        public static List<Refactoring> getRefactorings(String type, String originalPath, String refactoredPath) {
+
             List<Refactoring> refs = new ArrayList<>();
             try {
 
