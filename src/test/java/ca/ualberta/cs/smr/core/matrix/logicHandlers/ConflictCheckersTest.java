@@ -1,12 +1,10 @@
 package ca.ualberta.cs.smr.core.matrix.logicHandlers;
 
 import ca.ualberta.cs.smr.GetDataForTests;
-import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.junit.Assert;
 import org.junit.Test;
 import org.refactoringminer.api.Refactoring;
 
-import java.sql.Ref;
 import java.util.List;
 
 public class ConflictCheckersTest {
@@ -35,6 +33,33 @@ public class ConflictCheckersTest {
         expectedTrue = conflictCheckers.checkNamingConflict(originalElement, originalVisitor,
                                                                             refactoredElement, refactoredVisitor);
         Assert.assertTrue("Expected true because two elements are renamed to the same name", expectedTrue);
+    }
+
+    @Test
+    public void testCheckOverrideConflict() {
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/resources/original/MethodOverrideConflict";
+        String refactoredPath = basePath + "/src/test/resources/refactored/MethodOverrideConflict";
+        ConflictCheckers conflictCheckers = new ConflictCheckers(basePath);
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
+        assert refactorings != null;
+        assert refactorings.size() == 5;
+        Refactoring renameParentFooMethod = refactorings.get(0);
+        Refactoring renameOtherFooMethod = refactorings.get(1);
+        Refactoring renameChildBarMethod = refactorings.get(2);
+        Refactoring renameOtherBarMethod = refactorings.get(3);
+        Refactoring renameFooBarMethod = refactorings.get(4);
+        boolean isConflicting = conflictCheckers.checkOverrideConflict(renameParentFooMethod, renameOtherFooMethod);
+        Assert.assertFalse("Renamings in the same class should not result in override conflict", isConflicting);
+        isConflicting = conflictCheckers.checkOverrideConflict(renameParentFooMethod, renameChildBarMethod);
+        Assert.assertTrue("Originally overriding methods that are renamed to different names conflict", isConflicting);
+        isConflicting = conflictCheckers.checkOverrideConflict(renameOtherFooMethod, renameChildBarMethod);
+        Assert.assertTrue("Methods that do not override but override after refactoring should conflict", isConflicting);
+        isConflicting = conflictCheckers.checkOverrideConflict(renameParentFooMethod, renameOtherBarMethod);
+        Assert.assertFalse("Methods that have no override relation, before or after, should not conflict", isConflicting);
+        isConflicting = conflictCheckers.checkOverrideConflict(renameParentFooMethod, renameFooBarMethod);
+        Assert.assertFalse("Classes that have no inheritance should not result in override conflicts", isConflicting);
+
     }
 
     @Test
