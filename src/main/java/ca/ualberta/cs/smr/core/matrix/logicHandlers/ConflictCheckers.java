@@ -42,19 +42,9 @@ public class ConflictCheckers {
         // get new method names
         String elementNewMethodName = elementRefactoredOperation.getName();
         String visitorNewMethodName = visitorRefactoredOperation.getName();
-        // If the methods start with the same name and end with the same names, then there is no override conflict
-        if(isSameName(elementOriginalMethodName, visitorOriginalMethodName) &&
-                                                isSameName(elementNewMethodName, visitorNewMethodName)) {
-            return false;
-        }
-        // Otherwise if the methods start with different names and end with different names, there is no override conflict
-        else if(!isSameName(elementOriginalMethodName, visitorOriginalMethodName) &&
-                                                !isSameName(elementNewMethodName, visitorNewMethodName)) {
-            return false;
-        }
-        // If the method starts with the same name and has two different names after the refactoring, or two methods
-        // are renamed to the same name, there is a conflict
-        return true;
+        // Check if the methods start with the same name and end with different names, or if they end with the same name
+        // and start with different names. If they do, then there's a likely override conflict.
+        return checkNamingConflict(elementOriginalMethodName, visitorOriginalMethodName, elementNewMethodName, visitorNewMethodName);
     }
 
     static public boolean checkOverloadConflict(Refactoring elementRef, Refactoring visitorRef) {
