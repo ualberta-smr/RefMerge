@@ -7,28 +7,30 @@ import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import org.refactoringminer.api.Refactoring;
 
-import static ca.ualberta.cs.smr.core.matrix.logicHandlers.ConflictCheckers.checkClassNamingConflict;
+
 
 
 public class RenameClassElement extends RefactoringElement {
     Refactoring elementRef;
+    String path;
 
     @Override
     public void accept(Visitor v) {
         v.visit(this);
     }
 
-    public void set(Refactoring ref) {
+    public void set(Refactoring ref, String projectPath) {
         elementRef = ref;
+        path = projectPath;
     }
 
     /*
      * Check if rename class conflicts with rename class
      */
     public boolean checkRenameClassConflict(Refactoring visitorRef) {
-
+        ConflictCheckers conflictCheckers = new ConflictCheckers(path);
         // Check class naming conflict
-        if(checkClassNamingConflict(elementRef, visitorRef)) {
+        if(conflictCheckers.checkClassNamingConflict(elementRef, visitorRef)) {
             System.out.println("Naming conflict");
             return true;
         }

@@ -18,7 +18,7 @@ import java.util.List;
  */
 
 public class Matrix {
-
+    static String path;
     static final HashMap<RefactoringType, RefactoringElement> elementMap =
                                                     new HashMap<RefactoringType, RefactoringElement>() {{
        put(RefactoringType.RENAME_METHOD, new RenameMethodElement());
@@ -31,6 +31,9 @@ public class Matrix {
         put(RefactoringType.RENAME_CLASS, new RenameClassVisitor());
     }};
 
+    public Matrix(String projectPath) {
+        path = projectPath;
+    }
 
     /*
      * Iterate through each of the left refactorings to compare against the right refactorings.
@@ -73,7 +76,7 @@ public class Matrix {
      */
     static private RefactoringElement makeElement(RefactoringType type, Refactoring ref) {
         RefactoringElement element = elementMap.get(type);
-        element.set(ref);
+        element.set(ref, path);
         return element;
     }
 

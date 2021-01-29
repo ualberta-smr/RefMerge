@@ -51,10 +51,11 @@ public class RefMerge extends AnAction {
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         List<GitRepository> repos = repoManager.getRepositories();
         GitRepository repo = repos.get(0);
-        String mergeCommit = "27121f2"; //"98787ef5";
+        String mergeCommit = "27121f2";//"98787ef5";
         String rightCommit = "e5e397da6"; //"3d9b713ba";
         String leftCommit = "5e59da77"; //"5e7fcebe4";
         String baseCommit = "c382b804"; //"773d48939a2ccba";
+
         try {
             refMerge(mergeCommit, rightCommit, leftCommit, baseCommit, project, repo);
         } catch (IOException ioException) {
@@ -100,7 +101,8 @@ public class RefMerge extends AnAction {
         // Detect the left refactorings and store them in a list
         List<Refactoring> leftRefs = detectCommits(leftCommit, baseCommit);
         // Check if any of the refactorings are conflicting or have ordering dependencies
-        Matrix.runMatrix(leftRefs, rightRefs);
+        Matrix matrix = new Matrix(proj.getBasePath());
+        matrix.runMatrix(leftRefs, rightRefs);
         // Checkout the base commit
         gitUtils.checkout(baseCommit);
         // Save the base commit into the temporary directory temp/base
