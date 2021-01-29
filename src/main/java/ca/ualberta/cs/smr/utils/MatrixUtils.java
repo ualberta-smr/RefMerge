@@ -1,16 +1,15 @@
 package ca.ualberta.cs.smr.utils;
 
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
-import com.intellij.psi.JavaPsiFacade;
+
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.impl.JavaPsiFacadeImpl;
-import com.intellij.psi.search.GlobalSearchScope;
-import gr.uom.java.xmi.UMLClass;
-import gr.uom.java.xmi.UMLOperation;
+import gr.uom.java.xmi.*;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 public class MatrixUtils {
     static public boolean isSameName(String elementName, String visitorName) {
@@ -57,13 +56,31 @@ public class MatrixUtils {
         return getRefactoredClassOperation(ref).getName();
     }
 
+    static public UMLClass getUMLClass(String name, String path) {
+        UMLModel model = null;
+        UMLClass umlClass = null;
+        try {
+            model = new UMLModelASTReader(new File(path)).getUmlModel();
+            List<UMLClass> umlClasses = model.getClassList();
+            for(UMLClass uml : umlClasses) {
+                if(uml.getName().equals(name)) {
+                    return uml;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return umlClass;
+    }
 
-    static public PsiClass getClass(Project proj, String qualifiedClass) {
-        proj.getProjectFile();
-        JavaPsiFacade jPF = new JavaPsiFacadeImpl(proj);
-        return jPF.findClass(qualifiedClass, GlobalSearchScope.allScope(proj));
 
-
+    static public boolean ifClassExtends(UMLClass elementClass, UMLClass visitorClass) {
+        UMLType elementSuperClassType = elementClass.getSuperclass();
+        UMLType visitorSuperClassType = visitorClass.getSuperclass();
+        if(elementSuperClassType.equals(null) && visitorSuperClassType.equals(null)) {
+            return false;
+        }
+        return false;
     }
 
     static public boolean ifClassExtends(PsiClass elementClass, PsiClass visitorClass) {

@@ -1,9 +1,7 @@
 package ca.ualberta.cs.smr.core.matrix.logicHandlers;
 
 import ca.ualberta.cs.smr.utils.MatrixUtils;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
-import com.intellij.psi.PsiClass;
+import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLOperation;
 import org.refactoringminer.api.Refactoring;
 
@@ -13,8 +11,14 @@ import static ca.ualberta.cs.smr.utils.MatrixUtils.*;
 
 
 public class ConflictCheckers {
+    static String path;
 
-    static public boolean checkOverrideConflict(Refactoring elementRef, Refactoring visitorRef) {
+
+    public ConflictCheckers(String projectPath) {
+        path = projectPath;
+    }
+
+    public boolean checkOverrideConflict(Refactoring elementRef, Refactoring visitorRef) {
         // Get the original operations
         UMLOperation elementOriginalOperation = getOriginalRenameOperation(elementRef);
         UMLOperation visitorOriginalOperation = getOriginalRenameOperation(visitorRef);
@@ -24,15 +28,15 @@ public class ConflictCheckers {
         // Get the class names
         String elementClassName = elementRefactoredOperation.getClassName();
         String visitorClassName = visitorRefactoredOperation.getClassName();
+
         // If the rename methods happen in the same class then there is no override conflict
         if(isSameName(elementClassName, visitorClassName)) {
             return false;
         }
         // Get the class of each method
-        Project proj = ProjectManager.getInstance().getOpenProjects()[0];
-        PsiClass elementClass = MatrixUtils.getClass(proj, elementClassName);
-        PsiClass visitorClass = MatrixUtils.getClass(proj, visitorClassName);
-        // If neither class extends each other then there is no override conflict
+        UMLClass elementClass = MatrixUtils.getUMLClass(elementClassName, path);
+        UMLClass visitorClass = MatrixUtils.getUMLClass(visitorClassName, path);
+
         if(!ifClassExtends(elementClass, visitorClass)) {
             return false;
         }
@@ -47,7 +51,7 @@ public class ConflictCheckers {
         return checkNamingConflict(elementOriginalMethodName, visitorOriginalMethodName, elementNewMethodName, visitorNewMethodName);
     }
 
-    static public boolean checkOverloadConflict(Refactoring elementRef, Refactoring visitorRef) {
+    public boolean checkOverloadConflict(Refactoring elementRef, Refactoring visitorRef) {
         // Get the original operations
         UMLOperation elementOriginalOperation = getOriginalRenameOperation(elementRef);
         UMLOperation visitorOriginalOperation = getOriginalRenameOperation(visitorRef);
@@ -84,7 +88,7 @@ public class ConflictCheckers {
         return false;
     }
 
-    static public boolean checkMethodNamingConflict(Refactoring elementRef, Refactoring visitorRef) {
+    public boolean checkMethodNamingConflict(Refactoring elementRef, Refactoring visitorRef) {
         // Get class names
         String elementClassName = getOriginalRenameOperationClassName(elementRef);
         String visitorClassName = getOriginalRenameOperationClassName(visitorRef);
@@ -103,7 +107,7 @@ public class ConflictCheckers {
         return checkNamingConflict(elementOriginalName, visitorOriginalName, elementNewName, visitorNewName);
     }
 
-    static public boolean checkClassNamingConflict(Refactoring elementRef, Refactoring visitorRef) {
+    public boolean checkClassNamingConflict(Refactoring elementRef, Refactoring visitorRef) {
         // Get the package for each class
         String elementPackage = getOriginalClassPackage(elementRef);
         String visitorPackage = getOriginalClassPackage(visitorRef);
@@ -120,7 +124,7 @@ public class ConflictCheckers {
                                                 elementNewClassName, visitorNewClassName);
     }
 
-    static public boolean checkNamingConflict(String elementOriginal, String visitorOriginal, String elementNew,
+    public boolean checkNamingConflict(String elementOriginal, String visitorOriginal, String elementNew,
                                                     String visitorNew) {
         // If the original method names are equal but the destination names are not equal, check for conflict
         if(isSameName(elementOriginal, visitorOriginal) && !isSameName(elementNew, visitorNew)) {
