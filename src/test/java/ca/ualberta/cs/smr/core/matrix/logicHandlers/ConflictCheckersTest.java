@@ -1,6 +1,7 @@
 package ca.ualberta.cs.smr.core.matrix.logicHandlers;
 
 import ca.ualberta.cs.smr.GetDataForTests;
+import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import org.junit.Assert;
 import org.junit.Test;
 import org.refactoringminer.api.Refactoring;
@@ -110,15 +111,18 @@ public class ConflictCheckersTest {
     @Test
     public void testCheckClassNamingConflict() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/original/MatrixUtilsTests";
-        String refactoredPath = basePath + "/src/test/resources/refactored/MatrixUtilsTests";
+        String originalPath = basePath + "/src/test/resources/original/RenameClassConflict";
+        String refactoredPath = basePath + "/src/test/resources/refactored/RenameClassConflict";
         ConflictCheckers conflictCheckers = new ConflictCheckers(basePath);
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
-        assert refactorings != null;
-        Refactoring element = refactorings.get(0);
-        Refactoring visitor = refactorings.get(1);
-        boolean expectedFalse = conflictCheckers.checkClassNamingConflict(element, visitor);
-        Assert.assertFalse("Classes should not conflict", expectedFalse);
+        assert refactorings != null && refactorings.size() == 3;
+        Refactoring foo = refactorings.get(0);
+        Refactoring foo2 = refactorings.get(1);
+        Refactoring bar = refactorings.get(2);
+        boolean isConflicting = conflictCheckers.checkClassNamingConflict(foo, bar);
+        Assert.assertFalse("Classes without related refactorings should not conflict", isConflicting);
+        isConflicting = conflictCheckers.checkClassNamingConflict(foo, foo2);
+        Assert.assertTrue("Classes renamed to the same name in the same package conflict", isConflicting);
 
     }
 }
