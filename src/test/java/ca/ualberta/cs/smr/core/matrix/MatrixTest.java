@@ -19,9 +19,8 @@ import org.refactoringminer.api.RefactoringType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MatrixTest {
@@ -106,7 +105,7 @@ public class MatrixTest {
     }
 
     @Test
-    public void verifyDispatch() {
+    public void testDispatch() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/original/MethodOverloadConflict";
         String refactoredPath = basePath + "/src/test/resources/refactored/MethodOverloadConflict";
@@ -125,5 +124,29 @@ public class MatrixTest {
     public void restoreStreams() {
         System.setOut(originalOut);
         System.setErr(originalErr);
+    }
+
+    @Test
+    public void testCompareRefactorings() {
+        Matrix matrix = Mockito.mock(Matrix.class);
+        Refactoring ref = Mockito.mock(Refactoring.class);
+        List<Refactoring> refList = new ArrayList<>();
+        refList.add(ref);
+        Mockito.doCallRealMethod().when(matrix).compareRefactorings(ref, refList);
+        matrix.compareRefactorings(ref, refList);
+        Mockito.verify(matrix, Mockito.times(1)).dispatch(ref, ref);
+
+    }
+
+    @Test
+    public void testRunMatrix() {
+        Matrix matrix = Mockito.mock(Matrix.class);
+        Refactoring ref = Mockito.mock(Refactoring.class);
+        List<Refactoring> refList = new ArrayList<>();
+        refList.add(ref);
+        Mockito.doCallRealMethod().when(matrix).runMatrix(refList, refList);
+        matrix.runMatrix(refList, refList);
+        Mockito.verify(matrix, Mockito.times(1)).compareRefactorings(ref, refList);
+
     }
 }
