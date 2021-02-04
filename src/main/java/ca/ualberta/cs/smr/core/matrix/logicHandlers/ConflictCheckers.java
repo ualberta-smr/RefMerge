@@ -76,13 +76,13 @@ public class ConflictCheckers {
         // names, there is an overloading conflict
         if (isSameName(elementOriginalMethodName, visitorOriginalMethodName) &&
                 !isSameName(elementNewMethodName, visitorNewMethodName) &&
-                !elementOriginalOperation.equalSignature(visitorOriginalOperation)) {
+                !elementOriginalOperation.equalParameters(visitorOriginalOperation)) {
             return true;
         }
         // If two methods with different signatures are renamed to the same method, overloading conflict
         else if(!isSameName(elementOriginalMethodName, visitorOriginalMethodName) &&
                 isSameName(elementNewMethodName, visitorNewMethodName) &&
-                !elementRefactoredOperation.equalSignature(visitorOriginalOperation)) {
+                !elementRefactoredOperation.equalParameters(visitorOriginalOperation)) {
             return true;
         }
         return false;
