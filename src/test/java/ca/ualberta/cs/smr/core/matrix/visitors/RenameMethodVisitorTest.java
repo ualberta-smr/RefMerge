@@ -13,13 +13,6 @@ import java.util.List;
 import static org.mockito.Mockito.*;
 
 public class RenameMethodVisitorTest {
-    @Test
-    public void testVisit() {
-        RenameMethodVisitor visitor = Mockito.mock(RenameMethodVisitor.class);
-        RenameClassElement element = new RenameClassElement();
-        element.accept(visitor);
-        Mockito.verify(visitor, times(1)).visit(element);
-    }
 
     @Test
     public void testSet() {
@@ -36,16 +29,16 @@ public class RenameMethodVisitorTest {
 
     @Test
     public void testRenameMethodElementVisit() {
-        String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/original/MethodNamingConflict";
-        String refactoredPath = basePath + "/src/test/resources/refactored/MethodNamingConflict";
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
-        assert refactorings != null;
-        Refactoring ref = refactorings.get(0);
         RenameMethodElement element = new RenameMethodElement();
         RenameMethodVisitor visitor = mock(RenameMethodVisitor.class);
-        element.set(ref, ref.getName());
-        visitor.set(ref);
+        element.accept(visitor);
+        verify(visitor, times(1)).visit(element);
+    }
+
+    @Test
+    public void testRenameClassElementVisit() {
+        RenameClassElement element = new RenameClassElement();
+        RenameMethodVisitor visitor = mock(RenameMethodVisitor.class);
         element.accept(visitor);
         verify(visitor, times(1)).visit(element);
     }
