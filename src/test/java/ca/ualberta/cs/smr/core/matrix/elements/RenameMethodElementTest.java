@@ -1,7 +1,6 @@
 package ca.ualberta.cs.smr.core.matrix.elements;
 
 import ca.ualberta.cs.smr.GetDataForTests;
-import ca.ualberta.cs.smr.core.matrix.logicHandlers.ConflictCheckers;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameMethodVisitor;
 import org.junit.Assert;
 import org.junit.Test;
@@ -17,7 +16,7 @@ public class RenameMethodElementTest {
     @Test
     public void testAccept() {
         RenameMethodElement element = Mockito.mock(RenameMethodElement.class);
-        RenameMethodVisitor visitor = Mockito.mock(RenameMethodVisitor.class);
+        RenameMethodVisitor visitor = new RenameMethodVisitor();
         element.accept(visitor);
         Mockito.verify(element, times(1)).accept(visitor);
     }

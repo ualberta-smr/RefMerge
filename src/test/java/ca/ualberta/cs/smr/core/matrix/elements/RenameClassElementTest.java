@@ -1,9 +1,7 @@
 package ca.ualberta.cs.smr.core.matrix.elements;
 
 import ca.ualberta.cs.smr.GetDataForTests;
-import ca.ualberta.cs.smr.core.matrix.logicHandlers.ConflictCheckers;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameMethodVisitor;
-import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
