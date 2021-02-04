@@ -3,8 +3,6 @@ package ca.ualberta.cs.smr.core.matrix.elements;
 
 import ca.ualberta.cs.smr.core.matrix.logicHandlers.ConflictCheckers;
 import ca.ualberta.cs.smr.core.matrix.visitors.Visitor;
-import gr.uom.java.xmi.UMLClass;
-import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import org.refactoringminer.api.Refactoring;
 
 
