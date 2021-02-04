@@ -19,7 +19,7 @@ public class RenameClassElementTest {
     @Test
     public void testAccept() {
         RenameClassElement element = Mockito.mock(RenameClassElement.class);
-        RenameMethodVisitor visitor = Mockito.mock(RenameMethodVisitor.class);
+        RenameMethodVisitor visitor = new RenameMethodVisitor();
         element.accept(visitor);
         Mockito.verify(element, times(1)).accept(visitor);
     }
@@ -27,9 +27,9 @@ public class RenameClassElementTest {
     @Test
     public void testSet() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/original/MethodOverloadConflict";
-        String refactoredPath = basePath + "/src/test/resources/refactored/MethodOverloadConflict";
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
+        String originalPath = basePath + "/src/test/resources/original/RenameClassConflict";
+        String refactoredPath = basePath + "/src/test/resources/refactored/RenameClassConflict";
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
         RenameClassElement element = new RenameClassElement();
