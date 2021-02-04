@@ -18,7 +18,7 @@ import java.util.List;
  */
 
 public class Matrix {
-    static String path;
+    final String path;
     static final HashMap<RefactoringType, RefactoringElement> elementMap =
                                                     new HashMap<RefactoringType, RefactoringElement>() {{
        put(RefactoringType.RENAME_METHOD, new RenameMethodElement());
@@ -38,7 +38,7 @@ public class Matrix {
     /*
      * Iterate through each of the left refactorings to compare against the right refactorings.
      */
-    static public void runMatrix(List<Refactoring> leftRefactorings, List<Refactoring> rightRefactorings) {
+    public void runMatrix(List<Refactoring> leftRefactorings, List<Refactoring> rightRefactorings) {
         // Iterates over the refactorings in the left commit
         for (Refactoring leftRefactoring : leftRefactorings) {
             // Compares the refactorings in the right commit against the left refactoring
@@ -49,7 +49,7 @@ public class Matrix {
     /*
      * This calls dispatch for each pair of refactorings to check for conflicts.
      */
-    static void compareRefactorings(Refactoring leftRefactoring, List<Refactoring> rightRefactorings) {
+    void compareRefactorings(Refactoring leftRefactoring, List<Refactoring> rightRefactorings) {
         // Iterate over the right refactorings
         for(Refactoring rightRefactoring : rightRefactorings) {
             // Dispatch the refactoring elements to the correct conflict checker
@@ -61,7 +61,7 @@ public class Matrix {
     /*
      * Perform double dispatch to check if the two refactoring elements conflict.
      */
-    static void dispatch(Refactoring leftRefactoring, Refactoring rightRefactoring) {
+    void dispatch(Refactoring leftRefactoring, Refactoring rightRefactoring) {
         // Get the refactoring types so we can create the corresponding element and visitor
         RefactoringType leftType = leftRefactoring.getRefactoringType();
         RefactoringType rightType = rightRefactoring.getRefactoringType();
@@ -74,13 +74,13 @@ public class Matrix {
      * Use the refactoring type to get the refactoring element class from the elementMap.
      * Set the refactoring field in the element.
      */
-    static private RefactoringElement makeElement(RefactoringType type, Refactoring ref) {
+    public RefactoringElement makeElement(RefactoringType type, Refactoring ref) {
         RefactoringElement element = elementMap.get(type);
         element.set(ref, path);
         return element;
     }
 
-    static private RefactoringVisitor makeVisitor(RefactoringType type, Refactoring ref) {
+    public RefactoringVisitor makeVisitor(RefactoringType type, Refactoring ref) {
         RefactoringVisitor visitor = visitorMap.get(type);
         visitor.set(ref);
         return visitor;
