@@ -1,7 +1,6 @@
 package ca.ualberta.cs.smr.core.matrix.logicHandlers;
 
 import ca.ualberta.cs.smr.GetDataForTests;
-import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import org.junit.Assert;
 import org.junit.Test;
 import org.refactoringminer.api.Refactoring;
@@ -9,6 +8,14 @@ import org.refactoringminer.api.Refactoring;
 import java.util.List;
 
 public class ConflictCheckersTest {
+
+    @Test
+    public void testSet() {
+        String path = "testPath";
+        ConflictCheckers conflictCheckers = new ConflictCheckers(path);
+        Assert.assertEquals(path, conflictCheckers.path);
+
+    }
 
     @Test
     public void testCheckNamingConflict() {
