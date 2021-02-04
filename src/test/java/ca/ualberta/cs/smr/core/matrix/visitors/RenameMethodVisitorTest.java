@@ -5,7 +5,6 @@ import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.refactoringminer.api.Refactoring;
 
 import java.util.List;
