@@ -7,14 +7,25 @@ import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
 import ca.ualberta.cs.smr.core.matrix.visitors.RefactoringVisitor;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameClassVisitor;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameMethodVisitor;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.List;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
+@RunWith(MockitoJUnitRunner.class)
 public class MatrixTest {
+
 
     @Test
     public void testMatrixConstructor() {
@@ -80,5 +91,39 @@ public class MatrixTest {
         RefactoringVisitor visitor = matrix.makeVisitor(ref.getRefactoringType(), ref);
         boolean equals = visitor.getClass().equals(mockVisitor.getClass());
         Assert.assertTrue(equals);
+    }
+
+
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+    private final PrintStream originalOut = System.out;
+    private final PrintStream originalErr = System.err;
+
+    @Before
+    public void setUpStreams() {
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+    }
+
+    @Test
+    public void verifyDispatch() {
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/resources/original/MethodOverloadConflict";
+        String refactoredPath = basePath + "/src/test/resources/refactored/MethodOverloadConflict";
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
+        assert refactorings != null;
+        Refactoring elementRef = refactorings.get(0);
+        Refactoring visitorRef = refactorings.get(1);
+        Matrix matrix = new Matrix(basePath);
+        matrix.dispatch(elementRef, visitorRef);
+        String message = "Overload conflict\n" + "Rename Method/Rename Method conflict: true\n";
+        Assert.assertEquals(message, outContent.toString());
+
+    }
+
+    @After
+    public void restoreStreams() {
+        System.setOut(originalOut);
+        System.setErr(originalErr);
     }
 }
