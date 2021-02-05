@@ -63,10 +63,8 @@ public class Matrix {
      */
     void dispatch(Refactoring leftRefactoring, Refactoring rightRefactoring) {
         // Get the refactoring types so we can create the corresponding element and visitor
-        RefactoringType leftType = leftRefactoring.getRefactoringType();
-        RefactoringType rightType = rightRefactoring.getRefactoringType();
-        RefactoringElement element = makeElement(leftType, leftRefactoring);
-        RefactoringVisitor visitor = makeVisitor(rightType, rightRefactoring);
+        RefactoringElement element = makeElement(leftRefactoring);
+        RefactoringVisitor visitor = makeVisitor(rightRefactoring);
         element.accept(visitor);
     }
 
@@ -74,13 +72,15 @@ public class Matrix {
      * Use the refactoring type to get the refactoring element class from the elementMap.
      * Set the refactoring field in the element.
      */
-    public RefactoringElement makeElement(RefactoringType type, Refactoring ref) {
+    public RefactoringElement makeElement(Refactoring ref) {
+        RefactoringType type = ref.getRefactoringType();
         RefactoringElement element = elementMap.get(type);
         element.set(ref, path);
         return element;
     }
 
-    public RefactoringVisitor makeVisitor(RefactoringType type, Refactoring ref) {
+    public RefactoringVisitor makeVisitor(Refactoring ref) {
+        RefactoringType type = ref.getRefactoringType();
         RefactoringVisitor visitor = visitorMap.get(type);
         visitor.set(ref);
         return visitor;
