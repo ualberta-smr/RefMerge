@@ -70,7 +70,7 @@ public class MatrixTest {
         Refactoring ref = refactorings.get(0);
         RenameMethodElement mockElement = new RenameMethodElement();
         Matrix matrix = new Matrix(basePath);
-        RefactoringElement element = matrix.makeElement(ref.getRefactoringType(), ref);
+        RefactoringElement element = matrix.makeElement(ref);
         boolean equals = element.getClass().equals(mockElement.getClass());
         Assert.assertTrue(equals);
 
@@ -87,7 +87,7 @@ public class MatrixTest {
         Refactoring ref = refactorings.get(0);
         RenameMethodVisitor mockVisitor = new RenameMethodVisitor();
         Matrix matrix = new Matrix(basePath);
-        RefactoringVisitor visitor = matrix.makeVisitor(ref.getRefactoringType(), ref);
+        RefactoringVisitor visitor = matrix.makeVisitor(ref);
         boolean equals = visitor.getClass().equals(mockVisitor.getClass());
         Assert.assertTrue(equals);
     }
