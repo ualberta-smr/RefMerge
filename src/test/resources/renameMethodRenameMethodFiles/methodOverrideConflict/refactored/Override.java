@@ -1,5 +1,10 @@
+public class ParentClass {
+    String foo;
 
-public class Foo {
+    public FooClass() {
+        foo = "foo";
+    }
+
     public void numbers() {
         int x = 5;
         int y = x + x;
@@ -12,9 +17,20 @@ public class Foo {
         int y = x * x;
         int z = y * x;
     }
+
+    public void doStuffWithValues() {
+        System.out.println("Doing stuff with values");
+    }
 }
 
-class Bar extends Foo {
+public class ChildClass extends ParentClass {
+    String foo;
+
+    public BarClass(String fooS) {
+        super();
+    }
+
+
     public void numbers() {
         int x = 4;
         int y = x + x;
@@ -25,6 +41,10 @@ class Bar extends Foo {
         int x = 5;
         int y = x - x;
         int z = y - x;
+    }
+
+    public void doStuffWithValues() {
+        System.out.println("Doing stuff with values");
     }
 }
 
