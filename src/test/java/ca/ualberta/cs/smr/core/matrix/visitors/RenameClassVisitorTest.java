@@ -16,8 +16,8 @@ public class RenameClassVisitorTest {
     @Test
     public void testSet() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/original/RenameClassConflict";
-        String refactoredPath = basePath + "/src/test/resources/refactored/RenameClassConflict";
+        String originalPath = basePath + "/src/test/resources/renameClassRenameClassFiles/renameClassNamingConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameClassRenameClassFiles/renameClassNamingConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
@@ -50,8 +50,8 @@ public class RenameClassVisitorTest {
     @Test
     public void testCheckRenameClassConflictCall() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/original/RenameClassConflict";
-        String refactoredPath = basePath + "/src/test/resources/refactored/RenameClassConflict";
+        String originalPath = basePath + "/src/test/resources/renameClassRenameClassFiles/renameClassNamingConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameClassRenameClassFiles/renameClassNamingConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null && refactorings.size() == 3;
         Refactoring ref = refactorings.get(0);

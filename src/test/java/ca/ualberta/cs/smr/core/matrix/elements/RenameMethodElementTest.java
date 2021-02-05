@@ -24,8 +24,8 @@ public class RenameMethodElementTest {
     @Test
     public void testSet() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/original/MethodOverloadConflict";
-        String refactoredPath = basePath + "/src/test/resources/refactored/MethodOverloadConflict";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
@@ -39,8 +39,8 @@ public class RenameMethodElementTest {
     @Test
     public void testCheckRenameMethodOverrideConflict() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/original/MethodOverrideConflict";
-        String refactoredPath = basePath + "/src/test/resources/refactored/MethodOverrideConflict";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverrideConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverrideConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         assert refactorings.size() == 5;
@@ -55,8 +55,8 @@ public class RenameMethodElementTest {
     @Test
     public void testCheckRenameMethodOverloadConflict() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/original/MethodOverloadConflict";
-        String refactoredPath = basePath + "/src/test/resources/refactored/MethodOverloadConflict";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         assert refactorings.size() == 4;
@@ -71,8 +71,8 @@ public class RenameMethodElementTest {
     @Test
     public void testCheckRenameMethodNamingConflict() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/original/MethodNamingConflict";
-        String refactoredPath = basePath + "/src/test/resources/refactored/MethodNamingConflict";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring elementRef = refactorings.get(0);
@@ -86,8 +86,8 @@ public class RenameMethodElementTest {
     @Test
     public void testCheckRenameMethodNoConflict() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/original/MethodNamingConflict";
-        String refactoredPath = basePath + "/src/test/resources/refactored/MethodNamingConflict";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring elementRef = refactorings.get(1);

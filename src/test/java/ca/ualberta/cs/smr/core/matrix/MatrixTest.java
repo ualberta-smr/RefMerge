@@ -63,8 +63,8 @@ public class MatrixTest {
     @Test
     public void testMakeElement() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/original/MethodOverloadConflict";
-        String refactoredPath = basePath + "/src/test/resources/refactored/MethodOverloadConflict";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
@@ -80,8 +80,8 @@ public class MatrixTest {
     @Test
     public void testMakeVisitor() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/original/MethodOverloadConflict";
-        String refactoredPath = basePath + "/src/test/resources/refactored/MethodOverloadConflict";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
@@ -107,8 +107,8 @@ public class MatrixTest {
     @Test
     public void testDispatch() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/original/MethodOverloadConflict";
-        String refactoredPath = basePath + "/src/test/resources/refactored/MethodOverloadConflict";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring elementRef = refactorings.get(0);

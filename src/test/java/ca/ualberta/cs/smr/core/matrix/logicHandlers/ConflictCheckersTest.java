@@ -46,8 +46,8 @@ public class ConflictCheckersTest {
     @Test
     public void testCheckOverrideConflict() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/original/MethodOverrideConflict";
-        String refactoredPath = basePath + "/src/test/resources/refactored/MethodOverrideConflict";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverrideConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverrideConflict/refactored";
         ConflictCheckers conflictCheckers = new ConflictCheckers(basePath);
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
@@ -59,22 +59,21 @@ public class ConflictCheckersTest {
         Refactoring renameFooBarMethod = refactorings.get(4);
         boolean isConflicting = conflictCheckers.checkOverrideConflict(renameParentFooMethod, renameOtherFooMethod);
         Assert.assertFalse("Renamings in the same class should not result in override conflict", isConflicting);
-        isConflicting = conflictCheckers.checkOverrideConflict(renameParentFooMethod, renameChildBarMethod);
-        Assert.assertTrue("Originally overriding methods that are renamed to different names conflict", isConflicting);
         isConflicting = conflictCheckers.checkOverrideConflict(renameOtherFooMethod, renameChildBarMethod);
         Assert.assertTrue("Methods that do not override but override after refactoring should conflict", isConflicting);
         isConflicting = conflictCheckers.checkOverrideConflict(renameParentFooMethod, renameOtherBarMethod);
         Assert.assertFalse("Methods that have no override relation, before or after, should not conflict", isConflicting);
         isConflicting = conflictCheckers.checkOverrideConflict(renameParentFooMethod, renameFooBarMethod);
         Assert.assertFalse("Classes that have no inheritance should not result in override conflicts", isConflicting);
-
+        isConflicting = conflictCheckers.checkOverrideConflict(renameParentFooMethod, renameChildBarMethod);
+        Assert.assertTrue("Originally overriding methods that are renamed to different names conflict", isConflicting);
     }
 
     @Test
     public void testCheckOverloadConflict() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/original/MethodOverloadConflict";
-        String refactoredPath = basePath + "/src/test/resources/refactored/MethodOverloadConflict";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
         ConflictCheckers conflictCheckers = new ConflictCheckers(basePath);
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
@@ -97,8 +96,8 @@ public class ConflictCheckersTest {
     @Test
     public void testCheckMethodNamingConflict() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/original/MethodNamingConflict";
-        String refactoredPath = basePath + "/src/test/resources/refactored/MethodNamingConflict";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
         ConflictCheckers conflictCheckers = new ConflictCheckers(basePath);
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
@@ -118,8 +117,8 @@ public class ConflictCheckersTest {
     @Test
     public void testCheckClassNamingConflict() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/original/RenameClassConflict";
-        String refactoredPath = basePath + "/src/test/resources/refactored/RenameClassConflict";
+        String originalPath = basePath + "/src/test/resources/renameClassRenameClassFiles/renameClassNamingConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameClassRenameClassFiles/renameClassNamingConflict/refactored";
         ConflictCheckers conflictCheckers = new ConflictCheckers(basePath);
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null && refactorings.size() == 3;
