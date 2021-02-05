@@ -87,8 +87,6 @@ public class ConflictCheckersTest {
         isConflicting = conflictCheckers.checkOverloadConflict(changeFirstOverloaded, changeOtherMethodToSecondOverloaded);
         Assert.assertFalse("Methods in the same class that do not have related names " +
                 "before or after being refactored should not conflict", isConflicting);
-        isConflicting = conflictCheckers.checkOverloadConflict(changeFirstOverloaded, changeSecondOverloaded);
-        Assert.assertTrue("Methods that start overloaded and get changed to different names should conflict", isConflicting);
         isConflicting = conflictCheckers.checkOverloadConflict(changeSecondOverloaded, changeOtherMethodToSecondOverloaded);
         Assert.assertTrue("Methods that overload after refactoring should conflict", isConflicting);
     }

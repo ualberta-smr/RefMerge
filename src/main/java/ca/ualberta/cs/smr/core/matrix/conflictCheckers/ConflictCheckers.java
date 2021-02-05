@@ -72,15 +72,9 @@ public class ConflictCheckers {
         String elementNewMethodName = elementRefactoredOperation.getName();
         String visitorNewMethodName = visitorRefactoredOperation.getName();
 
-        // If the methods have the same name but different signatures, and the methods are refactored to two different
-        // names, there is an overloading conflict
-        if (isSameName(elementOriginalMethodName, visitorOriginalMethodName) &&
-                !isSameName(elementNewMethodName, visitorNewMethodName) &&
-                !elementOriginalOperation.equalParameters(visitorOriginalOperation)) {
-            return true;
-        }
+
         // If two methods with different signatures are renamed to the same method, overloading conflict
-        else if(!isSameName(elementOriginalMethodName, visitorOriginalMethodName) &&
+        if(!isSameName(elementOriginalMethodName, visitorOriginalMethodName) &&
                 isSameName(elementNewMethodName, visitorNewMethodName) &&
                 !elementRefactoredOperation.equalParameters(visitorOriginalOperation)) {
             return true;

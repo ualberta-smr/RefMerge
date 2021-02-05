@@ -111,8 +111,8 @@ public class MatrixTest {
         String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
-        Refactoring elementRef = refactorings.get(0);
-        Refactoring visitorRef = refactorings.get(1);
+        Refactoring elementRef = refactorings.get(1);
+        Refactoring visitorRef = refactorings.get(2);
         Matrix matrix = new Matrix(basePath);
         matrix.dispatch(elementRef, visitorRef);
         String message = "Overload conflict\n" + "Rename Method/Rename Method conflict: true\n";
