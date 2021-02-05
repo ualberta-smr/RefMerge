@@ -1,6 +1,6 @@
 package ca.ualberta.cs.smr.core.matrix.elements;
 
-import ca.ualberta.cs.smr.core.matrix.logicHandlers.ConflictCheckers;
+import ca.ualberta.cs.smr.core.matrix.conflictCheckers.ConflictCheckers;
 import ca.ualberta.cs.smr.core.matrix.visitors.Visitor;
 import org.refactoringminer.api.Refactoring;
 

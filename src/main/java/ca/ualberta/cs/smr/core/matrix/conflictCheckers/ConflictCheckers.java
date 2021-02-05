@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.core.matrix.logicHandlers;
+package ca.ualberta.cs.smr.core.matrix.conflictCheckers;
 
 import ca.ualberta.cs.smr.utils.MatrixUtils;
 import gr.uom.java.xmi.UMLClass;
