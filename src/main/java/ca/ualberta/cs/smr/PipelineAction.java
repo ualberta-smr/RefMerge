@@ -1,22 +1,19 @@
+package ca.ualberta.cs.smr;
+
+import ca.ualberta.cs.smr.utils.GitUtils;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
 import com.intellij.openapi.vcs.VcsException;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.vcs.log.Hash;
 import git4idea.GitCommit;
-import git4idea.commands.Git;
-import git4idea.commands.GitCommand;
-import git4idea.commands.GitLineHandler;
-import git4idea.history.GitHistoryUtils;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import refactoring.core.RefMerge;
-import utils.GitUtils;
+import ca.ualberta.cs.smr.core.RefMerge;
 
 import java.io.File;
 import java.io.IOException;
