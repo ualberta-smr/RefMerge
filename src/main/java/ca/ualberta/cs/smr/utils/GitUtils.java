@@ -1,12 +1,9 @@
 package ca.ualberta.cs.smr.utils;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
-import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -18,18 +15,15 @@ import git4idea.commands.GitCommand;
 import git4idea.commands.GitLineHandler;
 import git4idea.history.GitHistoryUtils;
 import git4idea.repo.GitRepository;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GitUtils {
 
-    private Project project;
-    private GitRepository repo;
+    private final Project project;
+    private final GitRepository repo;
 
     public GitUtils(GitRepository repository, Project proj) throws IOException {
         repo = repository;
@@ -61,6 +55,11 @@ public class GitUtils {
                 }
             }
         });
+        VirtualFileManager vFM = VirtualFileManager.getInstance();
+        vFM.refreshWithoutFileWatcher(false);
+        VirtualFile virtualFile = project.getProjectFile();
+        virtualFile.refresh(false, true);
+        FileDocumentManager.getInstance().saveAllDocuments();
 
     }
 
@@ -69,6 +68,7 @@ public class GitUtils {
      */
     public void checkout(String commit) throws VcsException {
         gitReset();
+
         ProgressManager.getInstance().run(new Task.Modal(project, "Git Checkout", true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
@@ -82,6 +82,11 @@ public class GitUtils {
         // Refresh the virtual file system after the commit
         VirtualFileManager vFM = VirtualFileManager.getInstance();
         vFM.refreshWithoutFileWatcher(false);
+        VirtualFile virtualFile = project.getProjectFile();
+        virtualFile.refresh(false, true);
+        FileDocumentManager.getInstance().saveAllDocuments();
+//        VirtualFileManager vFM = VirtualFileManager.getInstance();
+//        vFM.refreshWithoutFileWatcher(false);
     }
 
     /*
@@ -90,8 +95,7 @@ public class GitUtils {
     public String getBaseCommit(String left, String right) throws VcsException {
         VirtualFile root = repo.getRoot();
         GitRevisionNumber num = GitHistoryUtils.getMergeBase(project, root, left, right);
-        String base = num.getRev();
-        return base;
+        return num.getRev();
     }
 
     /*

@@ -66,6 +66,7 @@ public class UndoOperations {
             }
         }
         // Get the methods in the class
+        assert jClass != null;
         PsiMethod[] methods = jClass.getMethods();
         // Find the method being refactored
         for (PsiMethod method : methods) {
@@ -73,9 +74,10 @@ public class UndoOperations {
                 // Create a new rename processor using the original method name and the refactored method that we
                 // found
                 processor = new RenameProcessor(proj, method, srcName, false, false);
-                RenameProcessor finalProcessor = processor;
-                // Run the refactoring processor with the current modality
-                ApplicationManager.getApplication().invokeAndWait(() -> finalProcessor.doRun(), ModalityState.current());
+                Application app = ApplicationManager.getApplication();
+                // Run the rename class processor in the current modality state
+                app.invokeAndWait(processor::run, ModalityState.current());
+                //processor.doRun();
                 // Update the virtual file that contains the refactoring
                 VirtualFile vFile = jClass.getContainingFile().getVirtualFile();
                 vFile.refresh(false, true);
@@ -96,9 +98,9 @@ public class UndoOperations {
         String srcClassName = srcClass.substring(srcClass.lastIndexOf(".") + 1).trim();
         String renamedClassName = renamedClass.substring(renamedClass.lastIndexOf(".") + 1).trim();
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(proj);
-        PsiClass jClass = jPF.findClass(renamedClass, GlobalSearchScope.allScope((proj)));
+        PsiClass psiClass = jPF.findClass(renamedClass, GlobalSearchScope.allScope((proj)));
         // If the class isn't found, there might not have been a gradle file and we need to find the class another way
-        if(jClass == null) {
+        if(psiClass == null) {
             // Get the name of the file
             String qClass = renamedClassName + ".java";
             // Look for the file in the project
@@ -106,34 +108,22 @@ public class UndoOperations {
             PsiJavaFile pFile = (PsiJavaFile) pFiles[0];
             PsiClass[] jClasses = pFile.getClasses();
             // Find the class that's being refactored in that file
-            for(PsiClass psiClass : jClasses) {
-                if(psiClass.getQualifiedName().equals(renamedClass)) {
-                    // Create a rename processor using the original name of the class and the psi class
-                    RenameProcessor processor = new RenameProcessor(proj, psiClass, srcClassName, true, true);
-                    RenameProcessor finalProcessor = processor;
-                    Application app = ApplicationManager.getApplication();
-                    // Run the rename class processor in the current modality state
-                    app.invokeAndWait(() -> finalProcessor.run(), ModalityState.current());
-                    // Update the virtual file of the class
-                    VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
-                    vFile.refresh(false, true);
+            for (PsiClass jClass : jClasses) {
+                if (psiClass.getQualifiedName().equals(renamedClass)) {
+                    psiClass = jClass;
+                    break;
                 }
-
             }
         }
-        // If we could find the class
-        else {
-            // Create a rename processor using the original name of the class and the psi class
-            RenameProcessor proc = new RenameProcessor(proj, jClass, srcClassName, false, false);
-            // Run the rename class processor
-            proc.run();
-            // Update the virtual file of the class
-            VirtualFile vFile = jClass.getContainingFile().getVirtualFile();
-            vFile.refresh(false, true);
-        }
+        // Create a rename processor using the original name of the class and the psi class
+        RenameProcessor processor = new RenameProcessor(proj, psiClass, srcClassName, true, true);
+        Application app = ApplicationManager.getApplication();
+        // Run the rename class processor in the current modality state
+        app.invokeAndWait(processor::run, ModalityState.current());
+        // Update the virtual file of the class
+        VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
+        vFile.refresh(false, true);
+
     }
-
-
-
 
 }
