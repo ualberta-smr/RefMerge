@@ -10,7 +10,9 @@ import com.intellij.psi.impl.JavaPsiFacadeImpl;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.refactoring.rename.RenameProcessor;
+import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
+import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 
 public class UndoOperations {
@@ -25,17 +27,14 @@ public class UndoOperations {
      * Undo the rename method refactoring that was performed in the commit
      */
     public void undoRenameMethod(Refactoring ref, Project project) {
-        // Get the refactoring description
-        String refS = ref.toString();
-        // Use the refactoring description to get the refactored method name
-        String destName = refS.substring(refS.indexOf("to") + 3, refS.indexOf("(", refS.indexOf("(") + 1));
-        destName = destName.substring(destName.indexOf(" ") + 1, destName.length());
-        // Use the refactoring description to get the original method name
-        String srcName = refS.substring(refS.indexOf("\t"), refS.indexOf("("));
-        srcName = srcName.split(" ")[1];
-        // Use the refactoring description to get the name of the qualified class
-        String qualifiedClass = refS.substring(refS.indexOf("class ") + 6, refS.length());
-        String qClass = qualifiedClass.substring(qualifiedClass.lastIndexOf('.') + 1, qualifiedClass.length());
+        UMLOperation original = ((RenameOperationRefactoring) ref).getOriginalOperation();
+        UMLOperation renamed = ((RenameOperationRefactoring) ref).getRenamedOperation();
+        // Get the original method name
+        String srcName = original.getName();
+        // Get the refactored method name
+        String destName = renamed.getName();
+        String qualifiedClass = original.getClassName();
+        String className = original.getNonQualifiedClassName();
 
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(proj);
         // get the PSI class using the qualified class name
@@ -44,15 +43,15 @@ public class UndoOperations {
         // If the qualified class name couldn't be found, try using the class name as file name and find that file
         if (jClass == null) {
             // Get the name of the java file
-            qClass = qClass + ".java";
+            className = className + ".java";
             // Search for the java file in the project
-            PsiFile[] pFiles = FilenameIndex.getFilesByName(proj, qClass, GlobalSearchScope.allScope(proj));
+            PsiFile[] pFiles = FilenameIndex.getFilesByName(proj, className, GlobalSearchScope.allScope(proj));
             // If it couldn't be found, print an error message here for debugging purposes
             // If it isn't found, it does not necessarily mean there's a bug. It could be that a refactoring was
             // performed that wasn't handled yet
             if(pFiles.length == 0) {
                 System.out.println("FAILED HERE");
-                System.out.println(qClass);
+                System.out.println(className);
                 System.out.println(srcName);
                 return;
             }
