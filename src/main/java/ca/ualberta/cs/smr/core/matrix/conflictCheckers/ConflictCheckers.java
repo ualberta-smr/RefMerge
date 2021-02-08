@@ -11,7 +11,7 @@ import static ca.ualberta.cs.smr.utils.MatrixUtils.*;
 
 
 public class ConflictCheckers {
-    static String path;
+    String path;
 
 
     public ConflictCheckers(String projectPath) {
@@ -48,7 +48,9 @@ public class ConflictCheckers {
         String visitorNewMethodName = visitorRefactoredOperation.getName();
         // Check if the methods start with the same name and end with different names, or if they end with the same name
         // and start with different names. If they do, then there's a likely override conflict.
-        return checkNamingConflict(elementOriginalMethodName, visitorOriginalMethodName, elementNewMethodName, visitorNewMethodName);
+        return !isSameName(elementOriginalMethodName, visitorOriginalMethodName) &&
+                isSameName(elementNewMethodName, visitorNewMethodName) &&
+                elementRefactoredOperation.equalSignature(visitorRefactoredOperation);
     }
 
     public boolean checkOverloadConflict(Refactoring elementRef, Refactoring visitorRef) {
@@ -74,12 +76,9 @@ public class ConflictCheckers {
 
 
         // If two methods with different signatures are renamed to the same method, overloading conflict
-        if(!isSameName(elementOriginalMethodName, visitorOriginalMethodName) &&
+        return !isSameName(elementOriginalMethodName, visitorOriginalMethodName) &&
                 isSameName(elementNewMethodName, visitorNewMethodName) &&
-                !elementRefactoredOperation.equalParameters(visitorOriginalOperation)) {
-            return true;
-        }
-        return false;
+                !elementRefactoredOperation.equalParameters(visitorOriginalOperation);
     }
 
     public boolean checkMethodNamingConflict(Refactoring elementRef, Refactoring visitorRef) {
@@ -125,10 +124,7 @@ public class ConflictCheckers {
             return true;
         }
         // If the original method names are not equal but the destination names are equal
-        else if(!isSameName(elementOriginal, visitorOriginal) && isSameName(elementNew, visitorNew)) {
-            return true;
-        }
-        return false;
+        else return !isSameName(elementOriginal, visitorOriginal) && isSameName(elementNew, visitorNew);
     }
 
 }
