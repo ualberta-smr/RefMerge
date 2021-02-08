@@ -129,9 +129,10 @@ public class RefMerge extends AnAction {
         }
         // Undo the refactorings in the right commit
         undoRefactorings(leftRefs, project);
+        Utils.saveContent(project, "left");
         // Merge the left and right commit now that there are no refactorings
-        Merge merge = new Merge(project);
-        merge.merge();
+//        Merge merge = new Merge(project);
+//        merge.merge();
 
         // Wait for the changes to finish being written
         if(DumbService.isDumb(project)) {
@@ -161,7 +162,7 @@ public class RefMerge extends AnAction {
                     break;
                 case RENAME_METHOD:
                     // Undo the rename method refactoring
-                    undo.undoRenameMethod(ref, project);
+                    undo.undoRenameMethod(ref);
                     break;
             }
 
