@@ -59,8 +59,6 @@ public class ConflictCheckersTest {
         Refactoring renameFooBarMethod = refactorings.get(4);
         boolean isConflicting = conflictCheckers.checkOverrideConflict(renameParentFooMethod, renameOtherFooMethod);
         Assert.assertFalse("Renamings in the same class should not result in override conflict", isConflicting);
-        isConflicting = conflictCheckers.checkOverrideConflict(renameOtherFooMethod, renameChildBarMethod);
-        Assert.assertTrue("Methods that do not override but override after refactoring should conflict", isConflicting);
         isConflicting = conflictCheckers.checkOverrideConflict(renameParentFooMethod, renameOtherBarMethod);
         Assert.assertFalse("Methods that have no override relation, before or after, should not conflict", isConflicting);
         isConflicting = conflictCheckers.checkOverrideConflict(renameParentFooMethod, renameFooBarMethod);
