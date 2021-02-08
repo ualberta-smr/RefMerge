@@ -88,7 +88,6 @@ public class RefMerge extends AnAction {
      * left commit, but it uses the current directory instead of saving it to a new one. After it's undone all the
      * refactorings, the merge function is called and it replays the refactorings.
      */
-
     private void doMerge(String rightCommit, String leftCommit, String baseCommit,
                          GitRepository repo) throws IOException, VcsException {
 
@@ -111,6 +110,7 @@ public class RefMerge extends AnAction {
         dumbServiceHandler(proj);
         // Now that IntelliJ finished indexing, undo the refactorings in the right commit
         undoRefactorings(rightRefs);
+        dumbServiceHandler(proj);
         // Save the commit with the refactoring changes in temp/right
         Utils.saveContent(proj, "right");
         // Checkout the left commit

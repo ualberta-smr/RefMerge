@@ -3,6 +3,7 @@ package ca.ualberta.cs.smr.core;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
@@ -36,6 +37,7 @@ public class UndoOperations {
         String qualifiedClass = original.getClassName();
         String className = original.getNonQualifiedClassName();
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(proj);
+        DumbService.isDumb(proj);
         // get the PSI class using the qualified class name
         PsiClass jClass = jPF.findClass(qualifiedClass, GlobalSearchScope.allScope(proj));
         RenameProcessor processor;
@@ -62,6 +64,7 @@ public class UndoOperations {
                 // Find the class that the refactoring happens in
                 if (it.getQualifiedName().equals(qualifiedClass)) {
                     jClass = it;
+                    break;
                 }
             }
         }

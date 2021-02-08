@@ -10,13 +10,14 @@ import com.intellij.psi.impl.JavaPsiFacadeImpl;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.refactoring.rename.RenameProcessor;
+import gr.uom.java.xmi.UMLOperation;
+import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 
 public class ReplayOperations {
 
     Project proj;
 
-    // Get the IntelliJ project
     public ReplayOperations(Project proj) {
         this.proj = proj;
     }
@@ -25,35 +26,30 @@ public class ReplayOperations {
      * replayRenameMethod performs the rename method refactoring.
      */
     public void replayRenameMethod(Refactoring ref) {
-        // Get the refactoring description
-        String refS = ref.toString();
-        // Get the name of the method after the refactoring happens
-        String destName = refS.substring(refS.indexOf("to") + 3, refS.indexOf("(", refS.indexOf("(") + 1));
-        destName = destName.substring(destName.indexOf(" ") + 1, destName.length());
-        // get the name of the method before the refactoring happens
-        String srcName = refS.substring(refS.indexOf("\t"), refS.indexOf("("));
-        srcName = srcName.split(" ")[1];
-        // Get the name of the qualified class that the refactoring happens in
-        String qualifiedClass = refS.substring(refS.indexOf("class ") + 6, refS.length());
-        String qClass = qualifiedClass.substring(qualifiedClass.lastIndexOf('.') + 1, qualifiedClass.length());
+        UMLOperation original = ((RenameOperationRefactoring) ref).getOriginalOperation();
+        UMLOperation renamed = ((RenameOperationRefactoring) ref).getRenamedOperation();
+        String destName = renamed.getName();
+        String srcName = original.getName();
+        String qualifiedClass = renamed.getClassName();
+        String className = original.getNonQualifiedClassName();
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(proj);
         DumbService.isDumb(proj);
         // Get the PSI class using the qualified class name
         PsiClass jClass = jPF.findClass(qualifiedClass, GlobalSearchScope.allScope(proj));
-        RenameProcessor processor = null;
+        RenameProcessor processor;
         // If the PSI class is null, then this part of the project wasn't built and we need to find the PSI class
         // another way
         if(jClass == null) {
             // Get the name of the java file
-            qClass = qClass + ".java";
+            String fileName = className + ".java";
             // Get a list of java files with the name qClass in the project
-            PsiFile[] pFiles = FilenameIndex.getFilesByName(proj, qClass, GlobalSearchScope.allScope(proj));
+            PsiFile[] pFiles = FilenameIndex.getFilesByName(proj, fileName, GlobalSearchScope.allScope(proj));
             // If no files are found, give an error message for debugging
             // If it is not found, it does not mean there is a bug necessarily. It could be that another refactoring
             // was performed and isn't handled yet
             if(pFiles.length == 0) {
                 System.out.println("FAILED HERE");
-                System.out.println(qClass);
+                System.out.println(fileName);
                 System.out.println(srcName);
                 return;
             }
@@ -65,44 +61,27 @@ public class ReplayOperations {
                 // Find the class that the refactoring happens in
                 if (it.getQualifiedName().equals(qualifiedClass)) {
                     jClass = it;
+                    break;
                 }
             }
             // Get the methods inside that class
-            PsiMethod[] methods = jClass.getMethods();
 
-            for (PsiMethod method : methods) {
-                // If we find the method that needs to be refactored
-                if (method.getName().equals(srcName)) {
-                    // Create a rename processor using the method and the name that we're refactoring it to
-                    processor = new RenameProcessor(proj, method, destName, false, false);
-                    RenameProcessor finalProcessor = processor;
-                    // Run the refactoring processor
-                    ApplicationManager.getApplication().invokeAndWait(() -> finalProcessor.doRun(), ModalityState.current());
-                    // Update the virtual file containing the refactoring
-                    VirtualFile vFile = pFile.getVirtualFile();
-                    vFile.refresh(false, true);
-                    break;
-                }
+        }
+        PsiMethod[] methods = jClass.getMethods();
+        for (PsiMethod method : methods) {
+            // If we find the method that needs to be refactored
+            if (method.getName().equals(srcName)) {
+                // Create a rename processor using the method and the name that we're refactoring it to
+                processor = new RenameProcessor(proj, method, destName, false, false);
+                // Run the refactoring processor
+                ApplicationManager.getApplication().invokeAndWait(processor::doRun, ModalityState.current());
+                // Update the virtual file containing the refactoring
+                VirtualFile vFile = jClass.getContainingFile().getVirtualFile();
+                vFile.refresh(false, true);
+                break;
             }
         }
-        // If the PSI class was found in the built project
-        else {
-            PsiMethod[] methods = jClass.getMethods();
-            for (PsiMethod method : methods) {
-                // If we find the method that needs to be refactored
-                if (method.getName().equals(srcName)) {
-                    // Create a rename processor using the method and the name that we're refactoring it to
-                    processor = new RenameProcessor(proj, method, destName, false, false);
-                    RenameProcessor finalProcessor = processor;
-                    // Run the refactoring processor
-                    ApplicationManager.getApplication().invokeAndWait(() -> finalProcessor.doRun(), ModalityState.current());
-                    // Update the virtual file containing the refactoring
-                    VirtualFile vFile = jClass.getContainingFile().getVirtualFile();
-                    vFile.refresh(false, true);
-                    break;
-                }
-            }
-        }
+
 
 
 
