@@ -2,18 +2,15 @@ package ca.ualberta.cs.smr.utils;
 
 import com.intellij.openapi.project.Project;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 public class Utils {
 
     /*
      * Runs a command such as "cp -r ..." or "git merge-files ..."
      */
-    public static String runSystemCommand(String... commands) {
-        StringBuilder builder = new StringBuilder();
+    public static void runSystemCommand(String... commands) {
         try {
             ProcessBuilder pb = new ProcessBuilder(commands);
             Process p = pb.start();
@@ -21,7 +18,6 @@ public class Utils {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        return builder.toString();
     }
 
     /*
@@ -35,5 +31,17 @@ public class Utils {
         runSystemCommand("cp", "-r", project.getBasePath(), path);
     }
 
-
+    /*
+     * Remove the temp files
+     */
+    public static void clearTemp() throws IOException {
+        String path = System.getProperty("user.home") + "/temp/right";
+        File file = new File(path);
+        file.mkdirs();
+        runSystemCommand("rm", "-rf", path);
+        path = System.getProperty("user.home") + "/temp/left";
+        runSystemCommand("rm", "-rf", path);
+        path = System.getProperty("user.home") + "/temp/base";
+        runSystemCommand("rm", "-rf", path);
+    }
 }

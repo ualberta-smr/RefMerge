@@ -58,10 +58,8 @@ public class RefMerge extends AnAction {
 
         try {
             refMerge(mergeCommit, rightCommit, leftCommit, baseCommit, project, repo);
-        } catch (IOException ioException) {
+        } catch (IOException | VcsException ioException) {
             ioException.printStackTrace();
-        } catch (VcsException vcsException) {
-            vcsException.printStackTrace();
         }
     }
 
@@ -70,8 +68,7 @@ public class RefMerge extends AnAction {
      */
     public void refMerge(String mergeCommit, String rightCommit, String leftCommit, String baseCommit, Project project,
                          GitRepository repo) throws IOException, VcsException {
-        int i = 0;
-
+        Utils.clearTemp();
         File dir = new File(project.getBasePath());
         try {
             git = Git.open(dir);
@@ -79,7 +76,7 @@ public class RefMerge extends AnAction {
             ioException.printStackTrace();
         }
 
-        doMerge(rightCommit, leftCommit, baseCommit, project, repo);
+        doMerge(rightCommit, leftCommit, baseCommit, repo);
 
     }
 
@@ -92,10 +89,10 @@ public class RefMerge extends AnAction {
      * refactorings, the merge function is called and it replays the refactorings.
      */
 
-    private void doMerge(String rightCommit, String leftCommit, String baseCommit, Project project,
+    private void doMerge(String rightCommit, String leftCommit, String baseCommit,
                          GitRepository repo) throws IOException, VcsException {
 
-        GitUtils gitUtils = new GitUtils(repo, project);
+        GitUtils gitUtils = new GitUtils(repo, proj);
         // Detect the right refactorings and store them in a list
         List<Refactoring> rightRefs = detectCommits(rightCommit, baseCommit);
         // Detect the left refactorings and store them in a list
@@ -106,43 +103,34 @@ public class RefMerge extends AnAction {
         // Checkout the base commit
         gitUtils.checkout(baseCommit);
         // Save the base commit into the temporary directory temp/base
-        Utils.saveContent(project, "base");
+        Utils.saveContent(proj, "base");
         // Checkout the right commit
         gitUtils.checkout(rightCommit);
-        // To avoid a race condition, we need to wait for IntelliJ to finish indexing the files after the commit gets
-        // checked out
-        if(DumbService.isDumb(project)) {
-            DumbServiceImpl dumbService = DumbServiceImpl.getInstance(project);
-            // Waits for the task to finish
-            dumbService.completeJustSubmittedTasks();
-        }
+        // To avoid a race condition, we need to wait for IntelliJ to finish indexing the files after the
+        // commit gets checked out
+        dumbServiceHandler(proj);
         // Now that IntelliJ finished indexing, undo the refactorings in the right commit
-        undoRefactorings(rightRefs, project);
+        undoRefactorings(rightRefs);
         // Save the commit with the refactoring changes in temp/right
-        Utils.saveContent(project, "right");
+        Utils.saveContent(proj, "right");
         // Checkout the left commit
+        // Run the rename class processor in the current modality state
         gitUtils.checkout(leftCommit);
         // Wait for IntelliJ to finish indexing
-        if(DumbService.isDumb(project)) {
-            DumbServiceImpl dumbService = DumbServiceImpl.getInstance(project);
-            dumbService.completeJustSubmittedTasks();
-        }
+        dumbServiceHandler(proj);
         // Undo the refactorings in the right commit
-        undoRefactorings(leftRefs, project);
-        Utils.saveContent(project, "left");
+        undoRefactorings(leftRefs);
+        Utils.saveContent(proj, "left");
         // Merge the left and right commit now that there are no refactorings
-//        Merge merge = new Merge(project);
-//        merge.merge();
+        Merge merge = new Merge(proj);
+        merge.merge();
 
         // Wait for the changes to finish being written
-        if(DumbService.isDumb(project)) {
-            DumbServiceImpl dumbService = DumbServiceImpl.getInstance(project);
-            dumbService.completeJustSubmittedTasks();
-        }
+        dumbServiceHandler(proj);
         // Combine the lists so we can perform all the refactorings on the merged project
-       // leftRefs.addAll(rightRefs);
+        leftRefs.addAll(rightRefs);
         // Replay all of the refactorings
-       // replayRefactorings(leftRefs);
+        replayRefactorings(leftRefs);
 
 
     }
@@ -150,15 +138,15 @@ public class RefMerge extends AnAction {
     /*
      * undoRefactorings takes a list of refactorings and performs the inverse for each one.
      */
-    private List<Refactoring> undoRefactorings(List<Refactoring> refs, Project project) {
-        UndoOperations undo = new UndoOperations(project);
+    private List<Refactoring> undoRefactorings(List<Refactoring> refs) {
+        UndoOperations undo = new UndoOperations(proj);
 
         // Iterate through the list of refactorings and undo each one
         for(Refactoring ref : refs) {
             switch (ref.getRefactoringType()) {
                 case RENAME_CLASS:
                     // Undo the rename class refactoring. This is commented out because of the prompt issue
-                    //undo.undoRenameClass(ref);
+                    undo.undoRenameClass(ref);
                     break;
                 case RENAME_METHOD:
                     // Undo the rename method refactoring
@@ -223,7 +211,13 @@ public class RefMerge extends AnAction {
         return refResult;
     }
 
-
+    public void dumbServiceHandler(Project project) {
+        if(DumbService.isDumb(project)) {
+            DumbServiceImpl dumbService = DumbServiceImpl.getInstance(project);
+            // Waits for the task to finish
+            dumbService.completeJustSubmittedTasks();
+        }
+    }
 
 
 }
