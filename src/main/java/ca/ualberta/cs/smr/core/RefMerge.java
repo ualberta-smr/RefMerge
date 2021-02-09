@@ -6,8 +6,6 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.project.DumbService;
-import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.vcs.VcsException;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
@@ -82,7 +80,7 @@ public class RefMerge extends AnAction {
 
     /*
      * This method gets the refactorings that are between the base commit and the left and right commits. It uses the
-     * matrix to determine if any of the refactorings are conficting or have ordering dependencies.
+     * matrix to determine if any of the refactorings are conflicting or have ordering dependencies.
      * Then it checks out the base commit, saving it in a temporary directory. It checks out the right commit, undoes
      * the refactorings, and saves the content into a respective temporary directory. It does the same thing for the
      * left commit, but it uses the current directory instead of saving it to a new one. After it's undone all the
@@ -99,34 +97,29 @@ public class RefMerge extends AnAction {
         // Check if any of the refactorings are conflicting or have ordering dependencies
         Matrix matrix = new Matrix(proj.getBasePath());
         matrix.runMatrix(leftRefs, rightRefs);
-        // Checkout the base commit
+
+        // Checkout base commit and store it in temp/base
         gitUtils.checkout(baseCommit);
-        // Save the base commit into the temporary directory temp/base
+        Utils.dumbServiceHandler(proj);
         Utils.saveContent(proj, "base");
-        // Checkout the right commit
+
         gitUtils.checkout(rightCommit);
-        // To avoid a race condition, we need to wait for IntelliJ to finish indexing the files after the
-        // commit gets checked out
-        dumbServiceHandler(proj);
-        // Now that IntelliJ finished indexing, undo the refactorings in the right commit
+        Utils.dumbServiceHandler(proj);
         undoRefactorings(rightRefs);
-        dumbServiceHandler(proj);
-        // Save the commit with the refactoring changes in temp/right
         Utils.saveContent(proj, "right");
-        // Checkout the left commit
-        // Run the rename class processor in the current modality state
+
+        // Breaks here?
         gitUtils.checkout(leftCommit);
-        // Wait for IntelliJ to finish indexing
-        dumbServiceHandler(proj);
-        // Undo the refactorings in the right commit
+        Utils.dumbServiceHandler(proj);
         undoRefactorings(leftRefs);
         Utils.saveContent(proj, "left");
+
         // Merge the left and right commit now that there are no refactorings
         Merge merge = new Merge(proj);
         merge.merge();
 
         // Wait for the changes to finish being written
-        dumbServiceHandler(proj);
+        Utils.dumbServiceHandler(proj);
         // Combine the lists so we can perform all the refactorings on the merged project
         leftRefs.addAll(rightRefs);
         // Replay all of the refactorings
@@ -138,7 +131,7 @@ public class RefMerge extends AnAction {
     /*
      * undoRefactorings takes a list of refactorings and performs the inverse for each one.
      */
-    private List<Refactoring> undoRefactorings(List<Refactoring> refs) {
+    private void undoRefactorings(List<Refactoring> refs) throws IOException {
         UndoOperations undo = new UndoOperations(proj);
 
         // Iterate through the list of refactorings and undo each one
@@ -157,9 +150,6 @@ public class RefMerge extends AnAction {
         }
         // Save all of the refactoring changes from memory onto disk
         FileDocumentManager.getInstance().saveAllDocuments();
-
-
-        return refs;
     }
 
     /*
@@ -179,12 +169,12 @@ public class RefMerge extends AnAction {
                 }
 
             }
-            // Save the refactoring changes from memory to disk
-            FileDocumentManager.getInstance().saveAllDocuments();
 
         } catch (Exception exception) {
             exception.printStackTrace();
         }
+        // Save all of the refactoring changes from memory onto disk
+        FileDocumentManager.getInstance().saveAllDocuments();
     }
 
     /*
@@ -210,14 +200,5 @@ public class RefMerge extends AnAction {
         }
         return refResult;
     }
-
-    public void dumbServiceHandler(Project project) {
-        if(DumbService.isDumb(project)) {
-            DumbServiceImpl dumbService = DumbServiceImpl.getInstance(project);
-            // Waits for the task to finish
-            dumbService.completeJustSubmittedTasks();
-        }
-    }
-
 
 }

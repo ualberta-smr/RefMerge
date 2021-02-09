@@ -1,9 +1,9 @@
 package ca.ualberta.cs.smr.core;
 
+import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
@@ -11,10 +11,14 @@ import com.intellij.psi.impl.JavaPsiFacadeImpl;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.refactoring.rename.RenameProcessor;
+import com.intellij.util.FileContentUtil;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 public class UndoOperations {
 
@@ -27,7 +31,7 @@ public class UndoOperations {
     /*
      * Undo the rename method refactoring that was performed in the commit
      */
-    public void undoRenameMethod(Refactoring ref) {
+    public void undoRenameMethod(Refactoring ref) throws IOException {
         UMLOperation original = ((RenameOperationRefactoring) ref).getOriginalOperation();
         UMLOperation renamed = ((RenameOperationRefactoring) ref).getRenamedOperation();
         // Get the original method name
@@ -37,22 +41,21 @@ public class UndoOperations {
         String qualifiedClass = original.getClassName();
         String className = original.getNonQualifiedClassName();
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(proj);
-        DumbService.isDumb(proj);
         // get the PSI class using the qualified class name
         PsiClass jClass = jPF.findClass(qualifiedClass, GlobalSearchScope.allScope(proj));
         RenameProcessor processor;
         // If the qualified class name couldn't be found, try using the class name as file name and find that file
         if (jClass == null) {
             // Get the name of the java file
-            className = className + ".java";
+            String fileName = original.getLocationInfo().getFilePath();
             // Search for the java file in the project
-            PsiFile[] pFiles = FilenameIndex.getFilesByName(proj, className, GlobalSearchScope.allScope(proj));
+            PsiFile[] pFiles = FilenameIndex.getFilesByName(proj, fileName, GlobalSearchScope.allScope(proj));
             // If it couldn't be found, print an error message here for debugging purposes
             // If it isn't found, it does not necessarily mean there's a bug. It could be that a refactoring was
             // performed that wasn't handled yet
             if(pFiles.length == 0) {
                 System.out.println("FAILED HERE");
-                System.out.println(className);
+                System.out.println(fileName);
                 System.out.println(srcName);
                 return;
             }
@@ -70,6 +73,7 @@ public class UndoOperations {
         }
         // Get the methods in the class
         assert jClass != null;
+        VirtualFile vFile = jClass.getContainingFile().getVirtualFile();
         PsiMethod[] methods = jClass.getMethods();
         // Find the method being refactored
         for (PsiMethod method : methods) {
@@ -80,13 +84,15 @@ public class UndoOperations {
                 Application app = ApplicationManager.getApplication();
                 // Run the rename class processor in the current modality state
                 app.invokeAndWait(processor::run, ModalityState.current());
-                //processor.doRun();
                 // Update the virtual file that contains the refactoring
-                VirtualFile vFile = jClass.getContainingFile().getVirtualFile();
                 vFile.refresh(false, true);
                 break;
             }
         }
+        ArrayList<VirtualFile> vFileCollection = new ArrayList<>();
+        vFileCollection.add(vFile);
+        FileContentUtil.reparseFiles(proj, vFileCollection, true);
+        Utils.dumbServiceHandler(proj);
     }
 
     /*
