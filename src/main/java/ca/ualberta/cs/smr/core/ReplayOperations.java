@@ -33,7 +33,6 @@ public class ReplayOperations {
         String qualifiedClass = renamed.getClassName();
         String className = original.getNonQualifiedClassName();
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(proj);
-        DumbService.isDumb(proj);
         // Get the PSI class using the qualified class name
         PsiClass jClass = jPF.findClass(qualifiedClass, GlobalSearchScope.allScope(proj));
         RenameProcessor processor;

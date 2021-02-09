@@ -1,21 +1,20 @@
 package ca.ualberta.cs.smr.utils;
 
-import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
-import com.sun.istack.NotNull;
+import com.intellij.util.FileContentUtil;
 import git4idea.GitCommit;
 import git4idea.GitRevisionNumber;
-import git4idea.commands.GitCommand;
-import git4idea.commands.GitLineHandler;
+import git4idea.commands.Git;
+import git4idea.commands.GitCommandResult;
 import git4idea.history.GitHistoryUtils;
 import git4idea.repo.GitRepository;
+import git4idea.reset.GitResetMode;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,62 +30,28 @@ public class GitUtils {
     }
 
     /*
-     * Use IntelliJ API to perform git reset.
-     */
-    public void gitReset() {
-        ProgressManager.getInstance().run(new Task.Modal(project, "Git Reset", true) {
-            @Override
-            public void run(@NotNull ProgressIndicator indicator) {
-                GitLineHandler resetHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.RESET);
-                resetHandler.setSilent(true);
-                resetHandler.addParameters("--hard", "HEAD");
-                String result = null;
-                try {
-                    result = git4idea.commands.Git.getInstance().runCommand(resetHandler).getOutputOrThrow();
-                } catch (VcsException e) {
-                    e.printStackTrace();
-                }
-                // If there's a lock, remove it and try again
-                if (result.contains(".git/index.lock")) {
-                    Utils.runSystemCommand(project.getBasePath(),
-                            "rm", ".git/index.lock");
-                    git4idea.commands.Git.getInstance().runCommand(resetHandler);
-
-                }
-            }
-        });
-        VirtualFileManager vFM = VirtualFileManager.getInstance();
-        vFM.refreshWithoutFileWatcher(false);
-        VirtualFile virtualFile = project.getProjectFile();
-        virtualFile.refresh(false, true);
-        FileDocumentManager.getInstance().saveAllDocuments();
-
-    }
-
-    /*
      * Perform the git checkout with the IntelliJ API.
      */
     public void checkout(String commit) throws VcsException {
-        gitReset();
-
-        ProgressManager.getInstance().run(new Task.Modal(project, "Git Checkout", true) {
-            @Override
-            public void run(@NotNull ProgressIndicator indicator) {
-                GitLineHandler lineHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.CHECKOUT);
-                lineHandler.setSilent(true);
-                lineHandler.addParameters(commit);
-                git4idea.commands.Git.getInstance().runCommand(lineHandler);
-
-            }
-        });
+        GitThread thread = new GitThread(repo, commit);
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         // Refresh the virtual file system after the commit
         VirtualFileManager vFM = VirtualFileManager.getInstance();
         vFM.refreshWithoutFileWatcher(false);
-        VirtualFile virtualFile = project.getProjectFile();
-        virtualFile.refresh(false, true);
-        FileDocumentManager.getInstance().saveAllDocuments();
-//        VirtualFileManager vFM = VirtualFileManager.getInstance();
-//        vFM.refreshWithoutFileWatcher(false);
+        // Update the PSI classes after the commit
+        ArrayList<VirtualFile> vFileCollection = new ArrayList<>();
+        File file = new File(project.getBasePath());
+        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file);
+        VirtualFile[] vFileArray = virtualFile.getChildren();
+        for(VirtualFile vFile : vFileArray) {
+            vFileCollection.add(vFile);
+        }
+        FileContentUtil.reparseFiles(project, vFileCollection, true);
     }
 
     /*
@@ -117,4 +82,23 @@ public class GitUtils {
         return mergeCommits;
     }
 
+}
+
+
+class GitThread extends Thread {
+    final GitRepository repo;
+    final String commit;
+
+    public GitThread(GitRepository repo, String commit) {
+        this.repo = repo;
+        this.commit = commit;
+    }
+
+    @Override
+    public void run()
+    {
+        Git.getInstance().reset(repo, GitResetMode.HARD, "HEAD");
+        GitCommandResult res = Git.getInstance().checkout(repo, commit, null, true, false, false);
+        System.out.println(res);
+    }
 }

@@ -1,5 +1,7 @@
 package ca.ualberta.cs.smr.utils;
 
+import com.intellij.openapi.project.DumbService;
+import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.project.Project;
 
 import java.io.File;
@@ -44,4 +46,13 @@ public class Utils {
         path = System.getProperty("user.home") + "/temp/base";
         runSystemCommand("rm", "-rf", path);
     }
+
+    public static void dumbServiceHandler(Project project) {
+        if(DumbService.isDumb(project)) {
+            DumbServiceImpl dumbService = DumbServiceImpl.getInstance(project);
+            // Waits for the task to finish
+            dumbService.completeJustSubmittedTasks();
+        }
+    }
 }
+
