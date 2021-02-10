@@ -53,18 +53,15 @@ public class RefMerge extends AnAction {
         String leftCommit = "5e59da77"; //"5e7fcebe4";
         String baseCommit = "c382b804"; //"773d48939a2ccba";
 
-        try {
-            refMerge(mergeCommit, rightCommit, leftCommit, baseCommit, project, repo);
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
-        }
+        refMerge(mergeCommit, rightCommit, leftCommit, baseCommit, project, repo);
+
     }
 
     /*
      * Gets the directory of the project that's being merged, then it calls the function that performs the merge.
      */
     public void refMerge(String mergeCommit, String rightCommit, String leftCommit, String baseCommit, Project project,
-                         GitRepository repo) throws IOException {
+                         GitRepository repo) {
         Utils.clearTemp();
         File dir = new File(Objects.requireNonNull(project.getBasePath()));
         try {
@@ -86,7 +83,7 @@ public class RefMerge extends AnAction {
      * refactorings, the merge function is called and it replays the refactorings.
      */
     private void doMerge(String rightCommit, String leftCommit, String baseCommit,
-                         GitRepository repo) throws IOException {
+                         GitRepository repo) {
 
         GitUtils gitUtils = new GitUtils(repo, project);
         // Detect the right refactorings and store them in a list

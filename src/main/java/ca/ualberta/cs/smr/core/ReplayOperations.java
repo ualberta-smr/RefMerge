@@ -31,7 +31,6 @@ public class ReplayOperations {
         UMLOperation original = ((RenameOperationRefactoring) ref).getOriginalOperation();
         UMLOperation renamed = ((RenameOperationRefactoring) ref).getRenamedOperation();
         String destName = renamed.getName();
-        String srcName = original.getName();
         String qualifiedClass = renamed.getClassName();
         String className = original.getNonQualifiedClassName();
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(project);
@@ -51,7 +50,6 @@ public class ReplayOperations {
             if(pFiles.length == 0) {
                 System.out.println("FAILED HERE");
                 System.out.println(fileName);
-                System.out.println(srcName);
                 return;
             }
             // Assuming that it is the first file that is returned
