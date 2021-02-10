@@ -2,10 +2,8 @@ package ca.ualberta.cs.smr.utils;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
-import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
-import com.intellij.util.FileContentUtil;
 import git4idea.GitCommit;
 import git4idea.GitRevisionNumber;
 import git4idea.commands.Git;
@@ -14,8 +12,6 @@ import git4idea.history.GitHistoryUtils;
 import git4idea.repo.GitRepository;
 import git4idea.reset.GitResetMode;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +20,7 @@ public class GitUtils {
     private final Project project;
     private final GitRepository repo;
 
-    public GitUtils(GitRepository repository, Project proj) throws IOException {
+    public GitUtils(GitRepository repository, Project proj) {
         repo = repository;
         project = proj;
     }
@@ -32,7 +28,7 @@ public class GitUtils {
     /*
      * Perform the git checkout with the IntelliJ API.
      */
-    public void checkout(String commit) throws VcsException {
+    public void checkout(String commit) {
         GitThread thread = new GitThread(repo, commit);
         thread.start();
         try {
@@ -43,15 +39,6 @@ public class GitUtils {
         // Refresh the virtual file system after the commit
         VirtualFileManager vFM = VirtualFileManager.getInstance();
         vFM.refreshWithoutFileWatcher(false);
-        // Update the PSI classes after the commit
-        ArrayList<VirtualFile> vFileCollection = new ArrayList<>();
-        File file = new File(project.getBasePath());
-        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file);
-        VirtualFile[] vFileArray = virtualFile.getChildren();
-        for(VirtualFile vFile : vFileArray) {
-            vFileCollection.add(vFile);
-        }
-        FileContentUtil.reparseFiles(project, vFileCollection, true);
     }
 
     /*
@@ -60,6 +47,7 @@ public class GitUtils {
     public String getBaseCommit(String left, String right) throws VcsException {
         VirtualFile root = repo.getRoot();
         GitRevisionNumber num = GitHistoryUtils.getMergeBase(project, root, left, right);
+        assert num != null;
         return num.getRev();
     }
 
