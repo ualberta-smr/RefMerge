@@ -31,7 +31,7 @@ public class RefMerge extends AnAction {
     Project project;
 
     @Override
-    public void update(AnActionEvent e) {
+    public void update(@NotNull AnActionEvent e) {
         // Using the event, evaluate the context, and enable or disable the action.
     }
     // Example: multiple rename methods
@@ -118,7 +118,6 @@ public class RefMerge extends AnAction {
         Merge merge = new Merge(project);
         merge.merge();
 
-        // Wait for the changes to finish being written
         // Combine the lists so we can perform all the refactorings on the merged project
         leftRefs.addAll(rightRefs);
         // Replay all of the refactorings
@@ -189,9 +188,7 @@ public class RefMerge extends AnAction {
                         @Override
                         public void handle(String commitId, List<Refactoring> refactorings) {
                             // Add each refactoring to refResult
-                            for (Refactoring ref : refactorings) {
-                                refResult.add(ref);
-                            }
+                            refResult.addAll(refactorings);
                         }
                     });
         } catch (Exception e) {
