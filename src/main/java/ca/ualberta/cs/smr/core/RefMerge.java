@@ -6,7 +6,6 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.vcs.VcsException;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Objects;
 
 
 public class RefMerge extends AnAction {
@@ -56,7 +55,7 @@ public class RefMerge extends AnAction {
 
         try {
             refMerge(mergeCommit, rightCommit, leftCommit, baseCommit, project, repo);
-        } catch (IOException | VcsException ioException) {
+        } catch (IOException ioException) {
             ioException.printStackTrace();
         }
     }
@@ -65,9 +64,9 @@ public class RefMerge extends AnAction {
      * Gets the directory of the project that's being merged, then it calls the function that performs the merge.
      */
     public void refMerge(String mergeCommit, String rightCommit, String leftCommit, String baseCommit, Project project,
-                         GitRepository repo) throws IOException, VcsException {
+                         GitRepository repo) throws IOException {
         Utils.clearTemp();
-        File dir = new File(project.getBasePath());
+        File dir = new File(Objects.requireNonNull(project.getBasePath()));
         try {
             git = Git.open(dir);
         } catch (IOException ioException) {
@@ -87,7 +86,7 @@ public class RefMerge extends AnAction {
      * refactorings, the merge function is called and it replays the refactorings.
      */
     private void doMerge(String rightCommit, String leftCommit, String baseCommit,
-                         GitRepository repo) throws IOException, VcsException {
+                         GitRepository repo) throws IOException {
 
         GitUtils gitUtils = new GitUtils(repo, project);
         // Detect the right refactorings and store them in a list
@@ -134,7 +133,7 @@ public class RefMerge extends AnAction {
     /*
      * undoRefactorings takes a list of refactorings and performs the inverse for each one.
      */
-    private void undoRefactorings(List<Refactoring> refs) throws IOException {
+    private void undoRefactorings(List<Refactoring> refs) {
         UndoOperations undo = new UndoOperations(project);
 
         // Iterate through the list of refactorings and undo each one
