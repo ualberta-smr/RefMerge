@@ -89,9 +89,7 @@ public class UndoOperations {
                 break;
             }
         }
-        ArrayList<VirtualFile> vFileCollection = new ArrayList<>();
-        vFileCollection.add(vFile);
-        FileContentUtil.reparseFiles(proj, vFileCollection, true);
+
     }
 
     /*
