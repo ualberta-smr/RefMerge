@@ -119,7 +119,6 @@ public class RefMerge extends AnAction {
         merge.merge();
 
         // Wait for the changes to finish being written
-        Utils.dumbServiceHandler(proj);
         // Combine the lists so we can perform all the refactorings on the merged project
         leftRefs.addAll(rightRefs);
         // Replay all of the refactorings
