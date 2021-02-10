@@ -3,9 +3,13 @@ package ca.ualberta.cs.smr.utils;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.FileContentUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class Utils {
 
@@ -53,6 +57,17 @@ public class Utils {
             // Waits for the task to finish
             dumbService.completeJustSubmittedTasks();
         }
+    }
+
+    public static void reparsePSIClasses(Project project) {
+        ArrayList<VirtualFile> vFileCollection = new ArrayList<>();
+        File file = new File(project.getBasePath());
+        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file);
+        VirtualFile[] vFileArray = virtualFile.getChildren();
+        for(VirtualFile vFile : vFileArray) {
+            vFileCollection.add(vFile);
+        }
+        FileContentUtil.reparseFiles(project, vFileCollection, true);
     }
 }
 

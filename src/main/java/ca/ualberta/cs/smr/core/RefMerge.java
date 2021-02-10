@@ -29,7 +29,7 @@ import java.util.List;
 public class RefMerge extends AnAction {
 
     Git git;
-    Project proj;
+    Project project;
 
     @Override
     public void update(AnActionEvent e) {
@@ -44,8 +44,8 @@ public class RefMerge extends AnAction {
     // base: 773d48939a2ccba
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        this.proj = ProjectManager.getInstance().getOpenProjects()[0];
-        Project project = proj;
+        this.project = ProjectManager.getInstance().getOpenProjects()[0];
+        Project project = this.project;
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         List<GitRepository> repos = repoManager.getRepositories();
         GitRepository repo = repos.get(0);
@@ -89,33 +89,37 @@ public class RefMerge extends AnAction {
     private void doMerge(String rightCommit, String leftCommit, String baseCommit,
                          GitRepository repo) throws IOException, VcsException {
 
-        GitUtils gitUtils = new GitUtils(repo, proj);
+        GitUtils gitUtils = new GitUtils(repo, project);
         // Detect the right refactorings and store them in a list
         List<Refactoring> rightRefs = detectCommits(rightCommit, baseCommit);
         // Detect the left refactorings and store them in a list
         List<Refactoring> leftRefs = detectCommits(leftCommit, baseCommit);
         // Check if any of the refactorings are conflicting or have ordering dependencies
-        Matrix matrix = new Matrix(proj.getBasePath());
+        Matrix matrix = new Matrix(project.getBasePath());
         matrix.runMatrix(leftRefs, rightRefs);
 
         // Checkout base commit and store it in temp/base
         gitUtils.checkout(baseCommit);
-        Utils.dumbServiceHandler(proj);
-        Utils.saveContent(proj, "base");
+        Utils.dumbServiceHandler(project);
+        Utils.saveContent(project, "base");
 
         gitUtils.checkout(rightCommit);
-        Utils.dumbServiceHandler(proj);
+        // Update the PSI classes after the commit
+        Utils.reparsePSIClasses(project);
+        Utils.dumbServiceHandler(project);
         undoRefactorings(rightRefs);
-        Utils.saveContent(proj, "right");
+        Utils.saveContent(project, "right");
 
         // Breaks here?
         gitUtils.checkout(leftCommit);
-        Utils.dumbServiceHandler(proj);
+        // Update the PSI classes after the commit
+        Utils.reparsePSIClasses(project);
+        Utils.dumbServiceHandler(project);
         undoRefactorings(leftRefs);
-        Utils.saveContent(proj, "left");
+        Utils.saveContent(project, "left");
 
         // Merge the left and right commit now that there are no refactorings
-        Merge merge = new Merge(proj);
+        Merge merge = new Merge(project);
         merge.merge();
 
         // Wait for the changes to finish being written
@@ -131,7 +135,7 @@ public class RefMerge extends AnAction {
      * undoRefactorings takes a list of refactorings and performs the inverse for each one.
      */
     private void undoRefactorings(List<Refactoring> refs) throws IOException {
-        UndoOperations undo = new UndoOperations(proj);
+        UndoOperations undo = new UndoOperations(project);
 
         // Iterate through the list of refactorings and undo each one
         for(Refactoring ref : refs) {
@@ -156,7 +160,7 @@ public class RefMerge extends AnAction {
      */
     private void replayRefactorings(List<Refactoring> refs) {
         try {
-            ReplayOperations replay = new ReplayOperations(proj);
+            ReplayOperations replay = new ReplayOperations(project);
             for(Refactoring ref : refs) {
                 switch (ref.getRefactoringType()) {
                     case RENAME_CLASS:
