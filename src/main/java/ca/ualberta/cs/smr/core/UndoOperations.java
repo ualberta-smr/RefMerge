@@ -92,7 +92,6 @@ public class UndoOperations {
         ArrayList<VirtualFile> vFileCollection = new ArrayList<>();
         vFileCollection.add(vFile);
         FileContentUtil.reparseFiles(proj, vFileCollection, true);
-        Utils.dumbServiceHandler(proj);
     }
 
     /*
