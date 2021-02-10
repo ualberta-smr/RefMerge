@@ -10,7 +10,6 @@ import com.intellij.psi.*;
 import com.intellij.psi.impl.JavaPsiFacadeImpl;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.MethodSignature;
 import com.intellij.refactoring.rename.RenameProcessor;
 
 import gr.uom.java.xmi.UMLOperation;
@@ -38,7 +37,6 @@ public class UndoOperations {
         // Get the original method name
         String srcName = original.getName();
         // Get the refactored method name
-        String destName = renamed.getName();
         String qualifiedClass = original.getClassName();
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(project);
         // get the PSI class using the qualified class name
@@ -77,12 +75,6 @@ public class UndoOperations {
         PsiMethod[] methods = jClass.getMethods();
         // Find the method being refactored
         for (PsiMethod method : methods) {
-            MethodSignature methodSignature = method.getSignature(PsiSubstitutor.EMPTY);
-            HierarchicalMethodSignature h = method.getHierarchicalMethodSignature();
-            h.getName();
-            h.getSubstitutor();
-            System.out.println(methodSignature.getName());
-            ref.toString();
             // Check that the signatures are the same
             if(Utils.ifSameMethods(method, renamed)) {
                 // Create a new rename processor using the original method name and the refactored method that we
@@ -130,7 +122,7 @@ public class UndoOperations {
         }
         // Create a rename processor using the original name of the class and the psi class
         assert psiClass != null;
-        RenameProcessor processor = new RenameProcessor(project, psiClass, srcClassName, true, true);
+        RenameProcessor processor = new RenameProcessor(project, psiClass, srcClassName, false, false);
         Application app = ApplicationManager.getApplication();
         // Run the rename class processor in the current modality state
         app.invokeAndWait(processor, ModalityState.current());

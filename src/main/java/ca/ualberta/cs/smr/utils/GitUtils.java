@@ -7,7 +7,6 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import git4idea.GitCommit;
 import git4idea.GitRevisionNumber;
 import git4idea.commands.Git;
-import git4idea.commands.GitCommandResult;
 import git4idea.history.GitHistoryUtils;
 import git4idea.repo.GitRepository;
 import git4idea.reset.GitResetMode;
@@ -86,7 +85,6 @@ class GitThread extends Thread {
     public void run()
     {
         Git.getInstance().reset(repo, GitResetMode.HARD, "HEAD");
-        GitCommandResult res = Git.getInstance().checkout(repo, commit, null, true, false, false);
-        System.out.println(res);
+        Git.getInstance().checkout(repo, commit, null, true, false, false);
     }
 }
