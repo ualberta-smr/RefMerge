@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core;
 
+import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -9,6 +10,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.impl.JavaPsiFacadeImpl;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.util.MethodSignature;
 import com.intellij.refactoring.rename.RenameProcessor;
 
 import gr.uom.java.xmi.UMLOperation;
@@ -75,7 +77,14 @@ public class UndoOperations {
         PsiMethod[] methods = jClass.getMethods();
         // Find the method being refactored
         for (PsiMethod method : methods) {
-            if (method.getName().equals(destName)) {
+            MethodSignature methodSignature = method.getSignature(PsiSubstitutor.EMPTY);
+            HierarchicalMethodSignature h = method.getHierarchicalMethodSignature();
+            h.getName();
+            h.getSubstitutor();
+            System.out.println(methodSignature.getName());
+            ref.toString();
+            // Check that the signatures are the same
+            if(Utils.ifSameMethods(method, renamed)) {
                 // Create a new rename processor using the original method name and the refactored method that we
                 // found
                 processor = new RenameProcessor(project, method, srcName, false, false);

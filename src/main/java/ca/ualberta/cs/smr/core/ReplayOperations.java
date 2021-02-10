@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core;
 
+import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
@@ -71,7 +72,7 @@ public class ReplayOperations {
         PsiMethod[] methods = jClass.getMethods();
         for (PsiMethod method : methods) {
             // If we find the method that needs to be refactored
-            if (method.getName().equals(srcName)) {
+            if(Utils.ifSameMethods(method, original)) {
                 // Create a rename processor using the method and the name that we're refactoring it to
                 processor = new RenameProcessor(project, method, destName, false, false);
                 // Run the refactoring processor
