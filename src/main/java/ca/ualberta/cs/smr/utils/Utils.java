@@ -10,6 +10,7 @@ import com.intellij.util.FileContentUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Utils {
 
@@ -29,7 +30,7 @@ public class Utils {
     /*
      * Save the content of one directory to another
      */
-    public static void saveContent(Project project, String dir) throws IOException {
+    public static void saveContent(Project project, String dir) {
         // Save project to temporary directory
         String path = System.getProperty("user.home") + "/temp/" + dir;
         File file = new File(path);
@@ -40,7 +41,7 @@ public class Utils {
     /*
      * Remove the temp files
      */
-    public static void clearTemp() throws IOException {
+    public static void clearTemp() {
         String path = System.getProperty("user.home") + "/temp/right";
         File file = new File(path);
         file.mkdirs();
@@ -60,13 +61,12 @@ public class Utils {
     }
 
     public static void reparsePSIClasses(Project project) {
-        ArrayList<VirtualFile> vFileCollection = new ArrayList<>();
         File file = new File(project.getBasePath());
         VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file);
+        assert virtualFile != null;
         VirtualFile[] vFileArray = virtualFile.getChildren();
-        for(VirtualFile vFile : vFileArray) {
-            vFileCollection.add(vFile);
-        }
+        ArrayList<VirtualFile> vFileCollection = new ArrayList<>(Arrays.asList(vFileArray));
+        vFileCollection.add(virtualFile);
         FileContentUtil.reparseFiles(project, vFileCollection, true);
     }
 }
