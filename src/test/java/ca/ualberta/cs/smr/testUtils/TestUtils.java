@@ -7,7 +7,6 @@ import com.intellij.psi.PsiMethod;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class TestUtils {
     public static List<String> getMethodNames(PsiMethod[] methods) {
