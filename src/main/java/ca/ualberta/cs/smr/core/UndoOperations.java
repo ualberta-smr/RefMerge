@@ -8,16 +8,15 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.JavaPsiFacadeImpl;
-import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.refactoring.rename.RenameProcessor;
 
+import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 
-import java.util.Objects;
 
 
 public class UndoOperations {
@@ -40,51 +39,18 @@ public class UndoOperations {
         String qualifiedClass = original.getClassName();
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(project);
         // get the PSI class using the qualified class name
-        PsiClass jClass = jPF.findClass(qualifiedClass, GlobalSearchScope.allScope(project));
+        PsiClass psiClass = jPF.findClass(qualifiedClass, GlobalSearchScope.allScope(project));
         RenameProcessor processor;
         // If the qualified class name couldn't be found, try using the class name as file name and find that file
-        if (jClass == null) {
-            // Get the name of the java file
-            String fileName = original.getLocationInfo().getFilePath();
-            fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
-            // Search for the java file in the project
-            PsiFile[] pFiles = FilenameIndex.getFilesByName(project, fileName, GlobalSearchScope.allScope(project));
-            // If it couldn't be found, print an error message here for debugging purposes
-            // If it isn't found, it does not necessarily mean there's a bug. It could be that a refactoring was
-            // performed that wasn't handled yet
-            if(pFiles.length == 0) {
-                System.out.println("FAILED HERE");
-                System.out.println(fileName);
-                System.out.println(srcName);
-                return;
-            }
-            // Get the first java file that was found
-            PsiJavaFile pFile = (PsiJavaFile) pFiles[0];
-            // Get the classes in that java file
-            PsiClass[] jClasses = pFile.getClasses();
-            for (PsiClass it : jClasses) {
-                // Find the class that the refactoring happens in
-                if (Objects.equals(it.getQualifiedName(), qualifiedClass)) {
-                    jClass = it;
-                    break;
-                }
-                PsiClass[] innerClasses = it.getInnerClasses();
-                for(PsiClass innerIt : innerClasses) {
-                    if (Objects.equals(innerIt.getQualifiedName(), qualifiedClass)) {
-                        jClass = innerIt;
-                        break;
-                    }
-                }
-                if(jClass != null) {
-                    break;
-                }
-            }
-
+        if(psiClass == null) {
+            Utils utils = new Utils(project);
+            String filePath = original.getLocationInfo().getFilePath();
+            psiClass = utils.getPsiClassByFilePath(filePath, qualifiedClass);
         }
         // Get the methods in the class
-        assert jClass != null;
-        VirtualFile vFile = jClass.getContainingFile().getVirtualFile();
-        PsiMethod[] methods = jClass.getMethods();
+        assert psiClass != null;
+        VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
+        PsiMethod[] methods = psiClass.getMethods();
         // Find the method being refactored
         for (PsiMethod method : methods) {
             // Check that the signatures are the same
@@ -107,30 +73,20 @@ public class UndoOperations {
      * Undo the class refactoring that was originally performed.
      */
     public void undoRenameClass(Refactoring ref) {
-        // Get the original class name
-        String srcClass = ((RenameClassRefactoring) ref).getOriginalClassName();
-        // Get the new class name
-        String renamedClass = ((RenameClassRefactoring) ref).getRenamedClassName();
-        // Trim the names to only get the class instead of the path
-        String srcClassName = srcClass.substring(srcClass.lastIndexOf(".") + 1).trim();
-        String renamedClassName = renamedClass.substring(renamedClass.lastIndexOf(".") + 1).trim();
+
+        UMLClass original = ((RenameClassRefactoring) ref).getOriginalClass();
+        UMLClass renamed = ((RenameClassRefactoring) ref).getRenamedClass();
+        String srcClassName = original.getName();
+        String destPackageName = renamed.getPackageName();
+        String destClassName = renamed.getName();
+        String qualifiedClass = destPackageName + "." + destClassName;
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(project);
-        PsiClass psiClass = jPF.findClass(renamedClass, GlobalSearchScope.allScope((project)));
+        PsiClass psiClass = jPF.findClass(qualifiedClass, GlobalSearchScope.allScope((project)));
         // If the class isn't found, there might not have been a gradle file and we need to find the class another way
         if(psiClass == null) {
-            // Get the name of the file
-            String qClass = renamedClassName + ".java";
-            // Look for the file in the project
-            PsiFile[] pFiles = FilenameIndex.getFilesByName(project, qClass, GlobalSearchScope.allScope(project));
-            PsiJavaFile pFile = (PsiJavaFile) pFiles[0];
-            PsiClass[] jClasses = pFile.getClasses();
-            // Find the class that's being refactored in that file
-            for (PsiClass jClass : jClasses) {
-                if (Objects.equals(jClass.getQualifiedName(), renamedClass)) {
-                    psiClass = jClass;
-                    break;
-                }
-            }
+            Utils utils = new Utils(project);
+            String filePath = original.getLocationInfo().getFilePath();
+            psiClass = utils.getPsiClassByFilePath(filePath, qualifiedClass);
         }
         // Create a rename processor using the original name of the class and the psi class
         assert psiClass != null;
