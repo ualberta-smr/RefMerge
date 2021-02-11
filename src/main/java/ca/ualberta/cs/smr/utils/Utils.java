@@ -5,9 +5,9 @@ import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiParameter;
-import com.intellij.psi.PsiType;
+import com.intellij.psi.*;
+import com.intellij.psi.search.FilenameIndex;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.FileContentUtil;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.UMLParameter;
@@ -17,8 +17,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class Utils {
+    Project project;
+
+    public Utils(Project project) {
+        this.project = project;
+    }
 
     /*
      * Runs a command such as "cp -r ..." or "git merge-files ..."
@@ -112,6 +118,36 @@ public class Utils {
 
         }
         return true;
+    }
+
+    public PsiClass getPsiClassByFilePath(String filePath, String qualifiedClass) {
+        // Get the name of the java file without the path
+        String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+        PsiFile[] psiFiles = FilenameIndex.getFilesByName(project, fileName, GlobalSearchScope.allScope(project));
+        // If no files are found, give an error message for debugging
+        if(psiFiles.length == 0) {
+            System.out.println("FAILED HERE");
+            System.out.println(filePath);
+            return null;
+        }
+        // Assuming that it is the first file that is returned
+        PsiJavaFile pFile = (PsiJavaFile) psiFiles[0];
+        // Get the classes in the file
+        PsiClass[] jClasses = pFile.getClasses();
+        for (PsiClass it : jClasses) {
+            // Find the class that the refactoring happens in
+            if (Objects.equals(it.getQualifiedName(), qualifiedClass)) {
+                return it;
+            }
+            PsiClass[] innerClasses = it.getInnerClasses();
+            for(PsiClass innerIt : innerClasses) {
+                if (Objects.equals(innerIt.getQualifiedName(), qualifiedClass)) {
+                    return innerIt;
+                }
+            }
+
+        }
+        return null;
     }
 }
 
