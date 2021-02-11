@@ -76,9 +76,9 @@ public class UndoOperations {
 
         UMLClass original = ((RenameClassRefactoring) ref).getOriginalClass();
         UMLClass renamed = ((RenameClassRefactoring) ref).getRenamedClass();
-        String srcQualifiedName = original.getName();
+        String srcQualifiedClass = original.getName();
         String destQualifiedClass = renamed.getName();
-        String srcClassName = srcQualifiedName.substring(srcQualifiedName.lastIndexOf(".") + 1);
+        String srcClassName = srcQualifiedClass.substring(srcQualifiedClass.lastIndexOf(".") + 1);
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(project);
         PsiClass psiClass = jPF.findClass(destQualifiedClass, GlobalSearchScope.allScope((project)));
         // If the class isn't found, there might not have been a gradle file and we need to find the class another way
