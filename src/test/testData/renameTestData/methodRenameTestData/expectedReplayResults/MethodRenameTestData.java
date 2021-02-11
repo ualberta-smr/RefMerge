@@ -1,4 +1,4 @@
-package renameTestData.methodRenameTestData;
+package result.renameTestData.methodRenameTestData;
 
 // Renamed foo(int x) to bar(int x)
 public class MethodRenameTestData {
