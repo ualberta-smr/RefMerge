@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr;
+package ca.ualberta.cs.smr.testUtils;
 
 
 import gr.uom.java.xmi.UMLClass;

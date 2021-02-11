@@ -1,6 +1,6 @@
 package ca.ualberta.cs.smr.utils;
 
-import ca.ualberta.cs.smr.GetDataForTests;
+import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
