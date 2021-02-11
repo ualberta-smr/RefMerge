@@ -46,6 +46,7 @@ public class UndoOperations {
         if (jClass == null) {
             // Get the name of the java file
             String fileName = original.getLocationInfo().getFilePath();
+            fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
             // Search for the java file in the project
             PsiFile[] pFiles = FilenameIndex.getFilesByName(project, fileName, GlobalSearchScope.allScope(project));
             // If it couldn't be found, print an error message here for debugging purposes
@@ -67,7 +68,18 @@ public class UndoOperations {
                     jClass = it;
                     break;
                 }
+                PsiClass[] innerClasses = it.getInnerClasses();
+                for(PsiClass innerIt : innerClasses) {
+                    if (Objects.equals(innerIt.getQualifiedName(), qualifiedClass)) {
+                        jClass = innerIt;
+                        break;
+                    }
+                }
+                if(jClass != null) {
+                    break;
+                }
             }
+
         }
         // Get the methods in the class
         assert jClass != null;
