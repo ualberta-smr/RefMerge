@@ -77,7 +77,6 @@ public class ReplayOperations {
             String filePath = original.getLocationInfo().getFilePath();
             psiClass = utils.getPsiClassByFilePath(filePath, srcQualifiedClass);
         }
-        // Create a rename processor using the original name of the class and the psi class
         assert psiClass != null;
         RenameProcessor processor = new RenameProcessor(project, psiClass, destClassName, false, false);
         Application app = ApplicationManager.getApplication();
