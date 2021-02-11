@@ -1,6 +1,5 @@
-package renameTestData.methodRenameTestData;
+package result.renameTestData.methodRenameTestData;
 
-// Renamed foo(int x) to bar(int x)
 public class MethodRenameTestData {
 
     public void foo() {
@@ -9,7 +8,7 @@ public class MethodRenameTestData {
         graph(val, y);
     }
 
-    public void bar(int x) {
+    public void foo(int x) {
         int y = x + x;
         System.out.println(x + " " + y);
         doStuff();
