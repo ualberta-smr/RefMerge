@@ -22,7 +22,7 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         Project project = myFixture.getProject();
         String testDataRenamed = "renameTestData/methodRenameTestData/renamed/";
         String testDataOriginal = "renameTestData/methodRenameTestData/original/";
-        String testResult = "renameTestData/methodRenameTestData/expectedResults/";
+        String testResult = "renameTestData/methodRenameTestData/expectedUndoResults/";
         String testFile ="MethodRenameTestData.java";
         PsiFile[] psiFiles = myFixture.configureByFiles(testDataRenamed + testFile, testResult + testFile);
         String basePath = System.getProperty("user.dir");
@@ -51,5 +51,6 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
 
         LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
     }
+
 
 }
