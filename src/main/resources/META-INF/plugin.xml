@@ -1,5 +1,5 @@
 <idea-plugin>
-    <id>org.example.RefactoringTest1</id>
+    <id>org.example.RefMerge</id>
     <name>RefTest</name>
     <vendor email="mjellis@ualberta.ca" url="http://www.ualberta.ca"/>
 
