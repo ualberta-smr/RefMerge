@@ -28,26 +28,32 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         String refactoredPath = basePath + "/" + getTestDataPath() + "/" + testDataRenamed;
         String originalPath = basePath + "/" + getTestDataPath() + "/" + testDataOriginal;
 
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
-        assert refactorings != null;
-        Refactoring ref = refactorings.get(0);
-
-
-        UndoOperations undo = new UndoOperations(project);
-
-        undo.undoRenameMethod(ref);
-        // Check that it matches the expected result
         PsiJavaFile psiJavaFile = (PsiJavaFile) psiFiles[0];
         PsiClass oldClass = psiJavaFile.getClasses()[0];
-       // PsiClass oldClass = myFixture.findClass("renameTestData.methodRenameTestData.MethodRenameTestData");
         PsiMethod[] oldMethods = oldClass.getMethods();
 
-        // Search for the java file in the project
         PsiJavaFile pFile = (PsiJavaFile) psiFiles[1];
         PsiClass newClass = pFile.getClasses()[0];
         PsiMethod[] newMethods = newClass.getMethods();
+
         List<String> list1 = new ArrayList<>();
         List<String> list2 = new ArrayList<>();
+        for(int i = 0; i < newMethods.length; i++) {
+            list1.add(oldMethods[i].getName());
+            list2.add(newMethods[i].getName());
+        }
+        LightJavaCodeInsightFixtureTestCase.assertNotSame(list1, list2);
+
+
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
+        assert refactorings != null;
+        Refactoring ref = refactorings.get(0);
+        UndoOperations undo = new UndoOperations(project);
+
+        undo.undoRenameMethod(ref);
+
+        list1 = new ArrayList<>();
+        list2 = new ArrayList<>();
         for(int i = 0; i < newMethods.length; i++) {
             list1.add(oldMethods[i].getName());
             list2.add(newMethods[i].getName());
