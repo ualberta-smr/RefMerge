@@ -20,9 +20,10 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
 
     public void testUndoRenameMethod() {
         Project project = myFixture.getProject();
-        String testDataRenamed = "renameTestData/methodRenameTestData/renamed/";
-        String testDataOriginal = "renameTestData/methodRenameTestData/original/";
-        String testResult = "renameTestData/methodRenameTestData/expectedUndoResults/";
+        String testDir = "renameTestData/methodRenameTestData/";
+        String testDataRenamed = testDir + "renamed/";
+        String testDataOriginal = testDir + "original/";
+        String testResult = testDir + "expectedUndoResults/";
         String testFile ="MethodRenameTestData.java";
         PsiFile[] psiFiles = myFixture.configureByFiles(testDataRenamed + testFile, testResult + testFile);
         String basePath = System.getProperty("user.dir");
@@ -43,7 +44,6 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
         UndoOperations undo = new UndoOperations(project);
-
         undo.undoRenameMethod(ref);
 
         list1 = TestUtils.getMethodNames(oldMethods);
@@ -52,5 +52,38 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
     }
 
+    public void testUndoRenameClass() {
+        Project project = myFixture.getProject();
+        String testDir = "renameTestData/classRenameTestData/";
+        String testDataRenamed = testDir + "renamed/";
+        String testDataOriginal = testDir + "original/";
+        String testResult = testDir + "expectedUndoResults/";
+        String testFile = "ClassRenameTestData.java";
+        PsiFile[] psiFiles = myFixture.configureByFiles(testDataRenamed + testFile, testResult + testFile);
+        String basePath = System.getProperty("user.dir");
+        String refactoredPath = basePath + "/" + getTestDataPath() + "/" + testDataRenamed;
+        String originalPath = basePath + "/" + getTestDataPath() + "/" + testDataOriginal;
+
+
+        PsiClass[] oldClasses = TestUtils.getPsiClassesFromFile(psiFiles[0]);
+        PsiClass[] newClasses = TestUtils.getPsiClassesFromFile(psiFiles[1]);
+
+        List<String> list1 = TestUtils.getClassNames(oldClasses);
+        List<String> list2 = TestUtils.getClassNames(newClasses);
+
+        LightJavaCodeInsightFixtureTestCase.assertNotSame(list1, list2);
+
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
+        assert refactorings != null;
+        Refactoring ref = refactorings.get(0);
+        UndoOperations undo = new UndoOperations(project);
+        undo.undoRenameClass(ref);
+
+        list1 = TestUtils.getClassNames(oldClasses);
+        list2 = TestUtils.getClassNames(newClasses);
+
+        LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
+
+    }
 
 }
