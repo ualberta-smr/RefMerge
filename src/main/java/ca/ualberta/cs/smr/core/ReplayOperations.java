@@ -42,7 +42,8 @@ public class ReplayOperations {
         if(jClass == null) {
             // Get the name of the java file
             String fileName = className + ".java";
-            // Get a list of java files with the name qClass in the project
+            fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
+            // Search for the java file in the project
             PsiFile[] pFiles = FilenameIndex.getFilesByName(project, fileName, GlobalSearchScope.allScope(project));
             // If no files are found, give an error message for debugging
             // If it is not found, it does not mean there is a bug necessarily. It could be that another refactoring
@@ -60,6 +61,16 @@ public class ReplayOperations {
                 // Find the class that the refactoring happens in
                 if (Objects.equals(it.getQualifiedName(), qualifiedClass)) {
                     jClass = it;
+                    break;
+                }
+                PsiClass[] innerClasses = it.getInnerClasses();
+                for(PsiClass innerIt : innerClasses) {
+                    if (Objects.equals(innerIt.getQualifiedName(), qualifiedClass)) {
+                        jClass = innerIt;
+                        break;
+                    }
+                }
+                if(jClass != null) {
                     break;
                 }
             }
