@@ -1,6 +1,6 @@
 package ca.ualberta.cs.smr.core.matrix.elements;
 
-import ca.ualberta.cs.smr.GetDataForTests;
+import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameMethodVisitor;
 import org.junit.Assert;
 import org.junit.Test;

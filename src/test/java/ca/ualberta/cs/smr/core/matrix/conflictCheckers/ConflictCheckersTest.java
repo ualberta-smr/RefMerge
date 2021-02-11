@@ -1,6 +1,6 @@
 package ca.ualberta.cs.smr.core.matrix.conflictCheckers;
 
-import ca.ualberta.cs.smr.GetDataForTests;
+import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import org.junit.Assert;
 import org.junit.Test;
 import org.refactoringminer.api.Refactoring;

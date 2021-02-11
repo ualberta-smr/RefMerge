@@ -1,6 +1,7 @@
 package ca.ualberta.cs.smr.core;
 
-import ca.ualberta.cs.smr.GetDataForTests;
+import ca.ualberta.cs.smr.testUtils.GetDataForTests;
+import ca.ualberta.cs.smr.testUtils.TestUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.testFramework.fixtures.*;
@@ -28,20 +29,13 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         String refactoredPath = basePath + "/" + getTestDataPath() + "/" + testDataRenamed;
         String originalPath = basePath + "/" + getTestDataPath() + "/" + testDataOriginal;
 
-        PsiJavaFile psiJavaFile = (PsiJavaFile) psiFiles[0];
-        PsiClass oldClass = psiJavaFile.getClasses()[0];
-        PsiMethod[] oldMethods = oldClass.getMethods();
 
-        PsiJavaFile pFile = (PsiJavaFile) psiFiles[1];
-        PsiClass newClass = pFile.getClasses()[0];
-        PsiMethod[] newMethods = newClass.getMethods();
+        PsiMethod[] oldMethods = TestUtils.getPsiMethodsFromFile(psiFiles[0]);
+        PsiMethod[] newMethods = TestUtils.getPsiMethodsFromFile(psiFiles[1]);
 
-        List<String> list1 = new ArrayList<>();
-        List<String> list2 = new ArrayList<>();
-        for(int i = 0; i < newMethods.length; i++) {
-            list1.add(oldMethods[i].getName());
-            list2.add(newMethods[i].getName());
-        }
+        List<String> list1 = TestUtils.getMethodNames(oldMethods);
+        List<String> list2 = TestUtils.getMethodNames(newMethods);
+
         LightJavaCodeInsightFixtureTestCase.assertNotSame(list1, list2);
 
 
@@ -52,12 +46,9 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
 
         undo.undoRenameMethod(ref);
 
-        list1 = new ArrayList<>();
-        list2 = new ArrayList<>();
-        for(int i = 0; i < newMethods.length; i++) {
-            list1.add(oldMethods[i].getName());
-            list2.add(newMethods[i].getName());
-        }
+        list1 = TestUtils.getMethodNames(oldMethods);
+        list2 = TestUtils.getMethodNames(newMethods);
+
         LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
     }
 
