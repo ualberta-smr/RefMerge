@@ -36,7 +36,7 @@ public class UndoOperations {
         // Get the original method name
         String srcName = original.getName();
         // Get the refactored method name
-        String qualifiedClass = original.getClassName();
+        String qualifiedClass = renamed.getClassName();
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(project);
         // get the PSI class using the qualified class name
         PsiClass psiClass = jPF.findClass(qualifiedClass, GlobalSearchScope.allScope(project));
