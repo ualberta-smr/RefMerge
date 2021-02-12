@@ -159,6 +159,7 @@ public class RefMerge extends AnAction {
             for(Refactoring ref : refs) {
                 switch (ref.getRefactoringType()) {
                     case RENAME_CLASS:
+                        replay.replayRenameClass(ref);
                         break;
                     case RENAME_METHOD:
                         // Perform the rename method refactoring
