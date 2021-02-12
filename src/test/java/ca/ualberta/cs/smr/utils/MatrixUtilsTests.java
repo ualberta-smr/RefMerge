@@ -11,7 +11,7 @@ import org.refactoringminer.api.Refactoring;
 
 import java.util.List;
 
-public class MatrixUtilsTest {
+public class MatrixUtilsTests {
 
     @Test
     public void testIsSameName() {

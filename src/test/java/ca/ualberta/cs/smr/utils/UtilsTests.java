@@ -13,7 +13,7 @@ import org.refactoringminer.api.Refactoring;
 import java.util.List;
 import java.util.Objects;
 
-public class UtilsTest extends LightJavaCodeInsightFixtureTestCase {
+public class UtilsTests extends LightJavaCodeInsightFixtureTestCase {
 
     @Override
     protected String getTestDataPath() {

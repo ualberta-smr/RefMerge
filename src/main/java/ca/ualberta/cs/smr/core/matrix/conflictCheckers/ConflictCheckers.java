@@ -37,6 +37,7 @@ public class ConflictCheckers {
         UMLClass elementClass = MatrixUtils.getUMLClass(elementClassName, path);
         UMLClass visitorClass = MatrixUtils.getUMLClass(visitorClassName, path);
 
+        assert elementClass != null && visitorClass != null;
         if(!ifClassExtends(elementClass, visitorClass)) {
             return false;
         }

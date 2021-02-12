@@ -60,9 +60,9 @@ public class MatrixUtils {
         try {
             model = new UMLModelASTReader(new File(path)).getUmlModel();
             List<UMLClass> umlClasses = model.getClassList();
-            for(UMLClass uml : umlClasses) {
-                if(uml.getName().equals(name)) {
-                    return uml;
+            for(UMLClass umlClass : umlClasses) {
+                if(umlClass.getName().equals(name)) {
+                    return umlClass;
                 }
             }
         } catch (IOException e) {

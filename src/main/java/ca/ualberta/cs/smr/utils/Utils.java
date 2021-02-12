@@ -73,7 +73,7 @@ public class Utils {
     }
 
     public static void reparsePSIClasses(Project project) {
-        File file = new File(project.getBasePath());
+        File file = new File(Objects.requireNonNull(project.getBasePath()));
         VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file);
         assert virtualFile != null;
         VirtualFile[] vFileArray = virtualFile.getChildren();
@@ -131,9 +131,9 @@ public class Utils {
             return null;
         }
         // Assuming that it is the first file that is returned
-        PsiJavaFile pFile = (PsiJavaFile) psiFiles[0];
+        PsiJavaFile psiFile = (PsiJavaFile) psiFiles[0];
         // Get the classes in the file
-        PsiClass[] jClasses = pFile.getClasses();
+        PsiClass[] jClasses = psiFile.getClasses();
         for (PsiClass it : jClasses) {
             // Find the class that the refactoring happens in
             if (Objects.equals(it.getQualifiedName(), qualifiedClass)) {
