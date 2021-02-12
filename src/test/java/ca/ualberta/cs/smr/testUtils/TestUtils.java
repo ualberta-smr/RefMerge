@@ -6,6 +6,7 @@ import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiMethod;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class TestUtils {
@@ -21,23 +22,38 @@ public class TestUtils {
         ArrayList<String> names = new ArrayList<>();
         for (PsiClass psiClass : classes) {
             names.add(psiClass.getName());
-            PsiClass[] innerClasses = psiClass.getInnerClasses();
-            for(PsiClass innerClass : innerClasses) {
-                names.add(innerClass.getName());
-            }
         }
         return names;
 
     }
 
     public static PsiMethod[] getPsiMethodsFromFile(PsiFile psiFile) {
-        PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
-        PsiClass psiClass = psiJavaFile.getClasses()[0];
-        return psiClass.getMethods();
+        ArrayList<PsiMethod> psiMethods = new ArrayList<>();
+        PsiClass[] psiClasses = getPsiClassesFromFile(psiFile);
+        for(PsiClass psiClass : psiClasses) {
+            PsiMethod[] methods = psiClass.getMethods();
+            psiMethods.addAll(Arrays.asList(methods));
+        }
+        PsiMethod[] methodArray = new PsiMethod[psiMethods.size()];
+        for(int i = 0; i < psiMethods.size(); i++) {
+            methodArray[i] = psiMethods.get(i);
+        }
+        return methodArray;
     }
 
     public static PsiClass[] getPsiClassesFromFile(PsiFile psiFile) {
+        ArrayList<PsiClass> psiClasses = new ArrayList<>();
         PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
-        return psiJavaFile.getClasses();
+        PsiClass[] classes = psiJavaFile.getClasses();
+        for (PsiClass psiClass : classes) {
+            psiClasses.add(psiClass);
+            PsiClass[] innerClasses = psiClass.getInnerClasses();
+            psiClasses.addAll(Arrays.asList(innerClasses));
+        }
+        PsiClass[] classArray = new PsiClass[psiClasses.size()];
+        for(int i = 0; i < psiClasses.size(); i++) {
+            classArray[i] = psiClasses.get(i);
+        }
+        return classArray;
     }
 }

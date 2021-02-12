@@ -129,7 +129,7 @@ public class RefMerge extends AnAction {
     /*
      * undoRefactorings takes a list of refactorings and performs the inverse for each one.
      */
-    private void undoRefactorings(List<Refactoring> refs) {
+    public void undoRefactorings(List<Refactoring> refs) {
         UndoOperations undo = new UndoOperations(project);
 
         // Iterate through the list of refactorings and undo each one
@@ -153,7 +153,7 @@ public class RefMerge extends AnAction {
     /*
      * replayRefactorings takes a list of refactorings and performs each of the refactorings.
      */
-    private void replayRefactorings(List<Refactoring> refs) {
+    public void replayRefactorings(List<Refactoring> refs) {
         try {
             ReplayOperations replay = new ReplayOperations(project);
             for(Refactoring ref : refs) {
