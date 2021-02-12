@@ -65,4 +65,51 @@ public class RefMergeTests extends LightJavaCodeInsightFixtureTestCase {
         list2 = TestUtils.getClassNames(newClasses);
         LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
     }
+
+    public void testReplayRefactorings() {
+        Project project = myFixture.getProject();
+        String testDir = "refMergeTestData/refactorings/";
+        String testDataRenamed = testDir + "refactored/";
+        String testDataOriginal = testDir + "original/";
+        String testResult = testDir + "expectedReplayResults/";
+        String testFile = "RefactoringTestData.java";
+        PsiFile[] psiFiles = myFixture.configureByFiles(testDataOriginal + testFile, testResult + testFile);
+        String basePath = System.getProperty("user.dir");
+        String refactoredPath = basePath + "/" + getTestDataPath() + "/" + testDataRenamed;
+        String originalPath = basePath + "/" + getTestDataPath() + "/" + testDataOriginal;
+
+        PsiMethod[] oldMethods = TestUtils.getPsiMethodsFromFile(psiFiles[0]);
+        PsiMethod[] newMethods = TestUtils.getPsiMethodsFromFile(psiFiles[1]);
+        List<String> list1 = TestUtils.getMethodNames(oldMethods);
+        List<String> list2 = TestUtils.getMethodNames(newMethods);
+        LightJavaCodeInsightFixtureTestCase.assertNotSame(list1, list2);
+
+        PsiClass[] oldClasses = TestUtils.getPsiClassesFromFile(psiFiles[0]);
+        PsiClass[] newClasses = TestUtils.getPsiClassesFromFile(psiFiles[1]);
+        list1 = TestUtils.getClassNames(oldClasses);
+        list2 = TestUtils.getClassNames(newClasses);
+        LightJavaCodeInsightFixtureTestCase.assertNotSame(list1, list2);
+
+        List<Refactoring> classRefactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
+        List<Refactoring> methodRefactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
+        assert classRefactorings != null && methodRefactorings != null;
+        List<Refactoring> refactorings = new ArrayList<>();
+        refactorings.addAll(methodRefactorings);
+        refactorings.addAll(classRefactorings);
+        RefMerge refMerge = new RefMerge();
+        refMerge.project = project;
+        refMerge.replayRefactorings(refactorings);
+
+        oldMethods = TestUtils.getPsiMethodsFromFile(psiFiles[0]);
+        newMethods = TestUtils.getPsiMethodsFromFile(psiFiles[1]);
+        list1 = TestUtils.getMethodNames(oldMethods);
+        list2 = TestUtils.getMethodNames(newMethods);
+        LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
+
+        oldClasses = TestUtils.getPsiClassesFromFile(psiFiles[0]);
+        newClasses = TestUtils.getPsiClassesFromFile(psiFiles[1]);
+        list1 = TestUtils.getClassNames(oldClasses);
+        list2 = TestUtils.getClassNames(newClasses);
+        LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
+    }
 }

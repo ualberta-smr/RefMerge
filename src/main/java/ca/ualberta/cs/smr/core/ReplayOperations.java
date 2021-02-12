@@ -32,7 +32,7 @@ public class ReplayOperations {
         UMLOperation original = ((RenameOperationRefactoring) ref).getOriginalOperation();
         UMLOperation renamed = ((RenameOperationRefactoring) ref).getRenamedOperation();
         String destName = renamed.getName();
-        String qualifiedClass = renamed.getClassName();
+        String qualifiedClass = original.getClassName();
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(project);
         // Get the PSI class using the qualified class name
         PsiClass psiClass = jPF.findClass(qualifiedClass, GlobalSearchScope.allScope(project));
