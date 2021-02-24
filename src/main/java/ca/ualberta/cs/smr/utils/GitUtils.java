@@ -3,7 +3,6 @@ package ca.ualberta.cs.smr.utils;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
 import git4idea.GitCommit;
 import git4idea.GitRevisionNumber;
 import git4idea.commands.Git;
@@ -36,9 +35,9 @@ public class GitUtils {
             e.printStackTrace();
         }
         // Refresh the virtual file system after the commit
-        VirtualFileManager vFM = VirtualFileManager.getInstance();
-        vFM.refreshWithoutFileWatcher(false);
+        Utils.refreshVFS();
     }
+
 
     /*
      * Get the base commit of the merge.
