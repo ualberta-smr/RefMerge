@@ -84,7 +84,7 @@ public class UndoOperations {
         // If the class isn't found, there might not have been a gradle file and we need to find the class another way
         if(psiClass == null) {
             Utils utils = new Utils(project);
-            String filePath = original.getLocationInfo().getFilePath();
+            String filePath = renamed.getLocationInfo().getFilePath();
             psiClass = utils.getPsiClassByFilePath(filePath, destQualifiedClass);
         }
         // Create a rename processor using the original name of the class and the psi class
