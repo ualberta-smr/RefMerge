@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
 import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
@@ -48,10 +49,14 @@ public class RefMerge extends AnAction {
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         List<GitRepository> repos = repoManager.getRepositories();
         GitRepository repo = repos.get(0);
-        String mergeCommit = "27121f2";//"98787ef5";
-        String rightCommit = "e5e397da6"; //"3d9b713ba";
-        String leftCommit = "5e59da77"; //"5e7fcebe4";
-        String baseCommit = "c382b804"; //"773d48939a2ccba";
+//        String mergeCommit = "27121f2";//"98787ef5";
+//        String rightCommit = "e5e397da6"; //"3d9b713ba";
+//        String leftCommit = "5e59da77"; //"5e7fcebe4";
+//        String baseCommit = "c382b804"; //"773d48939a2ccba";
+        String mergeCommit = "";
+        String rightCommit = "f42429d";
+        String leftCommit = "1687e13";
+        String baseCommit = "46eeb31";
 
         refMerge(mergeCommit, rightCommit, leftCommit, baseCommit, project, repo);
 
@@ -101,7 +106,7 @@ public class RefMerge extends AnAction {
 
         gitUtils.checkout(rightCommit);
         // Update the PSI classes after the commit
-        Utils.reparsePSIClasses(project);
+        Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
         undoRefactorings(rightRefs);
         Utils.saveContent(project, "right");
@@ -109,7 +114,7 @@ public class RefMerge extends AnAction {
         // Breaks here?
         gitUtils.checkout(leftCommit);
         // Update the PSI classes after the commit
-        Utils.reparsePSIClasses(project);
+        Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
         undoRefactorings(leftRefs);
         Utils.saveContent(project, "left");
@@ -117,6 +122,8 @@ public class RefMerge extends AnAction {
         // Merge the left and right commit now that there are no refactorings
         Merge merge = new Merge(project);
         merge.merge();
+        VirtualFileManager vFM = VirtualFileManager.getInstance();
+        vFM.refreshWithoutFileWatcher(false);
 
         // Combine the lists so we can perform all the refactorings on the merged project
         leftRefs.addAll(rightRefs);
