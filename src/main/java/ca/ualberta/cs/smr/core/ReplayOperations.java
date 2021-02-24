@@ -1,15 +1,14 @@
 package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.utils.Utils;
-import com.intellij.openapi.application.Application;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.JavaPsiFacadeImpl;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.refactoring.rename.RenameProcessor;
+import com.intellij.refactoring.JavaRefactoringFactory;
+import com.intellij.refactoring.RefactoringFactory;
+import com.intellij.refactoring.RenameRefactoring;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
@@ -36,7 +35,6 @@ public class ReplayOperations {
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(project);
         // Get the PSI class using the qualified class name
         PsiClass psiClass = jPF.findClass(qualifiedClass, GlobalSearchScope.allScope(project));
-        RenameProcessor processor;
         // If the PSI class is null, then this part of the project wasn't built and we need to find the PSI class
         // another way
         if(psiClass == null) {
@@ -49,10 +47,9 @@ public class ReplayOperations {
         for (PsiMethod method : methods) {
             // If we find the method that needs to be refactored
             if(Utils.ifSameMethods(method, original)) {
-                // Create a rename processor using the method and the name that we're refactoring it to
-                processor = new RenameProcessor(project, method, destName, false, false);
-                // Run the refactoring processor
-                ApplicationManager.getApplication().invokeAndWait(processor::doRun, ModalityState.current());
+                RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
+                RenameRefactoring renameRefactoring = factory.createRename(method, destName, true, true);
+                renameRefactoring.doRefactoring(renameRefactoring.findUsages());
                 // Update the virtual file containing the refactoring
                 VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
                 vFile.refresh(false, true);
@@ -78,10 +75,9 @@ public class ReplayOperations {
             psiClass = utils.getPsiClassByFilePath(filePath, srcQualifiedClass);
         }
         assert psiClass != null;
-        RenameProcessor processor = new RenameProcessor(project, psiClass, destClassName, false, false);
-        Application app = ApplicationManager.getApplication();
-        // Run the rename class processor in the current modality state
-        app.invokeAndWait(processor, ModalityState.current());
+        RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
+        RenameRefactoring renameRefactoring = factory.createRename(psiClass, destClassName, true, true);
+        renameRefactoring.doRefactoring(renameRefactoring.findUsages());
         // Update the virtual file of the class
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);

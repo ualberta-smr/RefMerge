@@ -1,15 +1,14 @@
 package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.utils.Utils;
-import com.intellij.openapi.application.Application;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.JavaPsiFacadeImpl;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.refactoring.rename.RenameProcessor;
+import com.intellij.refactoring.JavaRefactoringFactory;
+import com.intellij.refactoring.RefactoringFactory;
+import com.intellij.refactoring.RenameRefactoring;
 
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLOperation;
@@ -40,11 +39,10 @@ public class UndoOperations {
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(project);
         // get the PSI class using the qualified class name
         PsiClass psiClass = jPF.findClass(qualifiedClass, GlobalSearchScope.allScope(project));
-        RenameProcessor processor;
         // If the qualified class name couldn't be found, try using the class name as file name and find that file
         if(psiClass == null) {
             Utils utils = new Utils(project);
-            String filePath = original.getLocationInfo().getFilePath();
+            String filePath = renamed.getLocationInfo().getFilePath();
             psiClass = utils.getPsiClassByFilePath(filePath, qualifiedClass);
         }
         // Get the methods in the class
@@ -57,10 +55,9 @@ public class UndoOperations {
             if(Utils.ifSameMethods(method, renamed)) {
                 // Create a new rename processor using the original method name and the refactored method that we
                 // found
-                processor = new RenameProcessor(project, method, srcName, false, false);
-                Application app = ApplicationManager.getApplication();
-                // Run the rename class processor in the current modality state
-                app.invokeAndWait(processor, ModalityState.current());
+                RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
+                RenameRefactoring renameRefactoring = factory.createRename(method, srcName, true, true);
+                renameRefactoring.doRefactoring(renameRefactoring.findUsages());
                 // Update the virtual file that contains the refactoring
                 vFile.refresh(false, true);
                 break;
@@ -89,10 +86,10 @@ public class UndoOperations {
         }
         // Create a rename processor using the original name of the class and the psi class
         assert psiClass != null;
-        RenameProcessor processor = new RenameProcessor(project, psiClass, srcClassName, false, false);
-        Application app = ApplicationManager.getApplication();
-        // Run the rename class processor in the current modality state
-        app.invokeAndWait(processor, ModalityState.current());
+        RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
+        RenameRefactoring renameRefactoring = factory.createRename(psiClass, srcClassName, true, true);
+        renameRefactoring.doRefactoring(renameRefactoring.findUsages());
+
         // Update the virtual file of the class
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);

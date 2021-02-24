@@ -48,15 +48,19 @@ public class RefMerge extends AnAction {
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         List<GitRepository> repos = repoManager.getRepositories();
         GitRepository repo = repos.get(0);
-//        String mergeCommit = "27121f2";//"98787ef5";
-//        String rightCommit = "e5e397da6"; //"3d9b713ba";
-//        String leftCommit = "5e59da77"; //"5e7fcebe4";
-//        String baseCommit = "c382b804"; //"773d48939a2ccba";
+//        String mergeCommit = "27121f2";
+//        String rightCommit = "e5e397da6";
+//        String leftCommit = "5e59da77";
+//        String baseCommit = "c382b804";
         String mergeCommit = "";
         String rightCommit = "f42429d";
         String leftCommit = "1687e13";
         String baseCommit = "46eeb31";
-
+          // Rajawali
+//        String mergeCommit = "98787ef5";
+//        String rightCommit = "3d9b713ba";
+//        String leftCommit = "5e7fcebe4";
+//        String baseCommit = "773d48939a2ccba";
         refMerge(mergeCommit, rightCommit, leftCommit, baseCommit, project, repo);
 
     }
@@ -122,7 +126,8 @@ public class RefMerge extends AnAction {
         Merge merge = new Merge(project);
         merge.merge();
         Utils.refreshVFS();
-
+        Utils.reparsePsiFiles(project);
+        Utils.dumbServiceHandler(project);
         // Combine the lists so we can perform all the refactorings on the merged project
         leftRefs.addAll(rightRefs);
         // Replay all of the refactorings
