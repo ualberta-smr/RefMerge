@@ -6,7 +6,6 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.vfs.VirtualFileManager;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
@@ -122,8 +121,7 @@ public class RefMerge extends AnAction {
         // Merge the left and right commit now that there are no refactorings
         Merge merge = new Merge(project);
         merge.merge();
-        VirtualFileManager vFM = VirtualFileManager.getInstance();
-        vFM.refreshWithoutFileWatcher(false);
+        Utils.refreshVFS();
 
         // Combine the lists so we can perform all the refactorings on the merged project
         leftRefs.addAll(rightRefs);

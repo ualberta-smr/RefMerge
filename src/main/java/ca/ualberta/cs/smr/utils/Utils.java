@@ -3,19 +3,15 @@ package ca.ualberta.cs.smr.utils;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.*;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.util.FileContentUtil;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.UMLParameter;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -70,6 +66,11 @@ public class Utils {
             // Waits for the task to finish
             dumbService.completeJustSubmittedTasks();
         }
+    }
+
+    public static void refreshVFS() {
+        VirtualFileManager vFM = VirtualFileManager.getInstance();
+        vFM.refreshWithoutFileWatcher(false);
     }
 
     public static void reparsePsiFiles(Project project) {
