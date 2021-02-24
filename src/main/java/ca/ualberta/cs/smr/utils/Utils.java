@@ -72,14 +72,8 @@ public class Utils {
         }
     }
 
-    public static void reparsePSIClasses(Project project) {
-        File file = new File(Objects.requireNonNull(project.getBasePath()));
-        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file);
-        assert virtualFile != null;
-        VirtualFile[] vFileArray = virtualFile.getChildren();
-        ArrayList<VirtualFile> vFileCollection = new ArrayList<>(Arrays.asList(vFileArray));
-        vFileCollection.add(virtualFile);
-        FileContentUtil.reparseFiles(project, vFileCollection, true);
+    public static void reparsePsiFiles(Project project) {
+        PsiDocumentManager.getInstance(project).commitAllDocuments();
     }
 
     public static boolean ifSameMethods(PsiMethod method, UMLOperation operation) {
