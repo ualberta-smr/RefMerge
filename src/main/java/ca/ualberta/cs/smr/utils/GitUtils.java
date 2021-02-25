@@ -45,30 +45,49 @@ public class GitUtils {
      * Perform git add -A and git commit
      */
     public String addAndCommit() {
+        add();
+        return commit();
+    }
+
+    public void add() {
         GitAdd thread = new GitAdd(project, repo);
         thread.start();
         try {
             thread.join();
-            //String val = addAndCommit.getValue();
-            GitLineHandler lineHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.COMMIT);
-            // Add message to commit to clearly show it's RefMerge step
-            lineHandler.addParameters("-m", "RefMerge");
-            GitCommandResult result = Git.getInstance().runCommand(lineHandler);
-            String res = result.getOutputAsJoinedString();
-            // get the commit hash from the output message
-            String commit = res.substring(res.indexOf("[[") + 2, res.indexOf("]"));
-            commit = commit.substring(commit.lastIndexOf(" ") + 1);
-            return commit;
-        } catch(InterruptedException e) {
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String commit() {
+        DoGitCommit gitCommit = new DoGitCommit(repo, project);
+
+        Thread thread = new Thread(gitCommit);
+        thread.start();
+        try {
+            thread.join();
+            return gitCommit.getCommit();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
         return null;
     }
 
     public void merge(String leftCommit, String rightCommit) {
-        GitLineHandler lineHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.MERGE);
-        lineHandler.addParameters(leftCommit, rightCommit, "--no-commit");
-        Git.getInstance().runCommand(lineHandler);
+        Thread thread = new Thread(() -> {
+            GitLineHandler lineHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.MERGE);
+            lineHandler.addParameters(leftCommit, rightCommit, "--no-commit");
+            Git.getInstance().runCommand(lineHandler);
+        });
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+//        GitLineHandler lineHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.MERGE);
+//        lineHandler.addParameters(leftCommit, rightCommit, "--no-commit");
+//        Git.getInstance().runCommand(lineHandler);
     }
 
     /*
@@ -100,6 +119,33 @@ public class GitUtils {
         return mergeCommits;
     }
 
+}
+
+class DoGitCommit implements Runnable {
+    private final Project project;
+    private final GitRepository repo;
+    private String commit;
+
+    public DoGitCommit(GitRepository repo, Project project) {
+        this.project = project;
+        this.repo = repo;
+    }
+
+    @Override
+    public void run() {
+        GitLineHandler lineHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.COMMIT);
+        // Add message to commit to clearly show it's RefMerge step
+        lineHandler.addParameters("-m", "RefMerge");
+        GitCommandResult result = Git.getInstance().runCommand(lineHandler);
+        String res = result.getOutputAsJoinedString();
+        // get the commit hash from the output message
+        String commit = res.substring(res.indexOf("[[") + 2, res.indexOf("]"));
+        this.commit = commit.substring(commit.lastIndexOf(" ") + 1);
+    }
+
+    public String getCommit() {
+        return commit;
+    }
 }
 
 class GitAdd extends Thread {
