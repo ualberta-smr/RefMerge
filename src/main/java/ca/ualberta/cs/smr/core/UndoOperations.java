@@ -10,6 +10,7 @@ import com.intellij.refactoring.JavaRefactoringFactory;
 import com.intellij.refactoring.RefactoringFactory;
 import com.intellij.refactoring.RenameRefactoring;
 
+import com.intellij.usageView.UsageInfo;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
@@ -57,7 +58,8 @@ public class UndoOperations {
                 // found
                 RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
                 RenameRefactoring renameRefactoring = factory.createRename(method, srcName, true, true);
-                renameRefactoring.doRefactoring(renameRefactoring.findUsages());
+                UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
+                renameRefactoring.doRefactoring(refactoringUsages);
                 // Update the virtual file that contains the refactoring
                 vFile.refresh(false, true);
                 break;
@@ -88,7 +90,8 @@ public class UndoOperations {
         assert psiClass != null;
         RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
         RenameRefactoring renameRefactoring = factory.createRename(psiClass, srcClassName, true, true);
-        renameRefactoring.doRefactoring(renameRefactoring.findUsages());
+        UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
+        renameRefactoring.doRefactoring(refactoringUsages);
 
         // Update the virtual file of the class
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();

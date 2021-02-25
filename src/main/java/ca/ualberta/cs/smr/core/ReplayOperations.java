@@ -9,6 +9,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.refactoring.JavaRefactoringFactory;
 import com.intellij.refactoring.RefactoringFactory;
 import com.intellij.refactoring.RenameRefactoring;
+import com.intellij.usageView.UsageInfo;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
@@ -49,7 +50,8 @@ public class ReplayOperations {
             if(Utils.ifSameMethods(method, original)) {
                 RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
                 RenameRefactoring renameRefactoring = factory.createRename(method, destName, true, true);
-                renameRefactoring.doRefactoring(renameRefactoring.findUsages());
+                UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
+                renameRefactoring.doRefactoring(refactoringUsages);
                 // Update the virtual file containing the refactoring
                 VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
                 vFile.refresh(false, true);
@@ -77,7 +79,8 @@ public class ReplayOperations {
         assert psiClass != null;
         RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
         RenameRefactoring renameRefactoring = factory.createRename(psiClass, destClassName, true, true);
-        renameRefactoring.doRefactoring(renameRefactoring.findUsages());
+        UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
+        renameRefactoring.doRefactoring(refactoringUsages);
         // Update the virtual file of the class
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);
