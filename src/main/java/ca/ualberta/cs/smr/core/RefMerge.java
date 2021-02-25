@@ -113,6 +113,7 @@ public class RefMerge extends AnAction {
         Utils.dumbServiceHandler(project);
         undoRefactorings(rightRefs);
         Utils.saveContent(project, "right");
+        String rightUndoCommit = gitUtils.addAndCommit();
 
         // Breaks here?
         gitUtils.checkout(leftCommit);
@@ -121,8 +122,8 @@ public class RefMerge extends AnAction {
         Utils.dumbServiceHandler(project);
         undoRefactorings(leftRefs);
         Utils.saveContent(project, "left");
-
-        // Merge the left and right commit now that there are no refactorings
+        String leftUndoCommit = gitUtils.addAndCommit();
+        gitUtils.merge(leftUndoCommit, rightUndoCommit);
         Merge merge = new Merge(project);
         merge.merge();
         Utils.refreshVFS();

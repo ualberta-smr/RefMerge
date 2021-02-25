@@ -6,6 +6,9 @@ import com.intellij.openapi.vfs.VirtualFile;
 import git4idea.GitCommit;
 import git4idea.GitRevisionNumber;
 import git4idea.commands.Git;
+import git4idea.commands.GitCommand;
+import git4idea.commands.GitCommandResult;
+import git4idea.commands.GitLineHandler;
 import git4idea.history.GitHistoryUtils;
 import git4idea.repo.GitRepository;
 import git4idea.reset.GitResetMode;
@@ -38,6 +41,35 @@ public class GitUtils {
         Utils.refreshVFS();
     }
 
+    /*
+     * Perform git add -A and git commit
+     */
+    public String addAndCommit() {
+        GitAdd thread = new GitAdd(project, repo);
+        thread.start();
+        try {
+            thread.join();
+            //String val = addAndCommit.getValue();
+            GitLineHandler lineHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.COMMIT);
+            // Add message to commit to clearly show it's RefMerge step
+            lineHandler.addParameters("-m", "RefMerge");
+            GitCommandResult result = Git.getInstance().runCommand(lineHandler);
+            String res = result.getOutputAsJoinedString();
+            // get the commit hash from the output message
+            String commit = res.substring(res.indexOf("[[") + 2, res.indexOf("]"));
+            commit = commit.substring(commit.lastIndexOf(" ") + 1);
+            return commit;
+        } catch(InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void merge(String leftCommit, String rightCommit) {
+        GitLineHandler lineHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.MERGE);
+        lineHandler.addParameters(leftCommit, rightCommit, "--no-commit");
+        Git.getInstance().runCommand(lineHandler);
+    }
 
     /*
      * Get the base commit of the merge.
@@ -70,6 +102,23 @@ public class GitUtils {
 
 }
 
+class GitAdd extends Thread {
+    final GitRepository repo;
+    final Project project;
+
+    public GitAdd(Project project, GitRepository repo) {
+        this.project = project;
+        this.repo = repo;
+    }
+
+    @Override
+    public void run() {
+        GitLineHandler lineHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.ADD);
+        lineHandler.addParameters("-A");
+        Git.getInstance().runCommand(lineHandler);
+    }
+
+}
 
 class GitThread extends Thread {
     final GitRepository repo;
