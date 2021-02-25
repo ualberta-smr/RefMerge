@@ -124,8 +124,6 @@ public class RefMerge extends AnAction {
         Utils.saveContent(project, "left");
         String leftUndoCommit = gitUtils.addAndCommit();
         gitUtils.merge(leftUndoCommit, rightUndoCommit);
-        Merge merge = new Merge(project);
-        merge.merge();
         Utils.refreshVFS();
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
