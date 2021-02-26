@@ -7,6 +7,7 @@ import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
 import ca.ualberta.cs.smr.core.matrix.visitors.RefactoringVisitor;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameClassVisitor;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameMethodVisitor;
+import com.intellij.openapi.project.Project;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
@@ -18,7 +19,7 @@ import java.util.List;
  */
 
 public class Matrix {
-    final String path;
+    final Project project;
     static final HashMap<RefactoringType, RefactoringElement> elementMap =
                                                     new HashMap<RefactoringType, RefactoringElement>() {{
        put(RefactoringType.RENAME_METHOD, new RenameMethodElement());
@@ -31,8 +32,8 @@ public class Matrix {
         put(RefactoringType.RENAME_CLASS, new RenameClassVisitor());
     }};
 
-    public Matrix(String projectPath) {
-        path = projectPath;
+    public Matrix(Project project) {
+        this.project = project;
     }
 
     /*
@@ -75,7 +76,7 @@ public class Matrix {
     public RefactoringElement makeElement(Refactoring ref) {
         RefactoringType type = ref.getRefactoringType();
         RefactoringElement element = elementMap.get(type);
-        element.set(ref, path);
+        element.set(ref, project);
         return element;
     }
 

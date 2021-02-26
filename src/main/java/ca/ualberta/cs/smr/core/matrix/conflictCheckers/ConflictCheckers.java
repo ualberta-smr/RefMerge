@@ -1,7 +1,8 @@
 package ca.ualberta.cs.smr.core.matrix.conflictCheckers;
 
-import ca.ualberta.cs.smr.utils.MatrixUtils;
-import gr.uom.java.xmi.UMLClass;
+import ca.ualberta.cs.smr.utils.Utils;
+import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiClass;
 import gr.uom.java.xmi.UMLOperation;
 import org.refactoringminer.api.Refactoring;
 
@@ -11,11 +12,11 @@ import static ca.ualberta.cs.smr.utils.MatrixUtils.*;
 
 
 public class ConflictCheckers {
-    String path;
+    Project project;
 
 
-    public ConflictCheckers(String projectPath) {
-        path = projectPath;
+    public ConflictCheckers(Project project) {
+        this.project = project;
     }
 
     public boolean checkOverrideConflict(Refactoring elementRef, Refactoring visitorRef) {
@@ -33,12 +34,12 @@ public class ConflictCheckers {
         if(isSameName(elementClassName, visitorClassName)) {
             return false;
         }
-        // Get the class of each method
-        UMLClass elementClass = MatrixUtils.getUMLClass(elementClassName, path);
-        UMLClass visitorClass = MatrixUtils.getUMLClass(visitorClassName, path);
-
-        assert elementClass != null && visitorClass != null;
-        if(!ifClassExtends(elementClass, visitorClass)) {
+        Utils utils = new Utils(project);
+        String elementFile = elementRefactoredOperation.getLocationInfo().getFilePath();
+        String visitorFile = visitorRefactoredOperation.getLocationInfo().getFilePath();
+        PsiClass psiElement = utils.getPsiClassByFilePath(elementFile, elementClassName);
+        PsiClass psiVisitor = utils.getPsiClassByFilePath(visitorFile, visitorClassName);
+        if(!ifClassExtends(psiElement, psiVisitor)) {
             return false;
         }
         // Get original method names

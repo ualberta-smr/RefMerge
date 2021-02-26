@@ -3,17 +3,17 @@ package ca.ualberta.cs.smr.core.matrix.visitors;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
+import com.intellij.openapi.project.Project;
+import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
-import org.junit.Test;
 import org.refactoringminer.api.Refactoring;
 
 import java.util.List;
 
 import static org.mockito.Mockito.*;
 
-public class RenameMethodVisitorTest {
+public class RenameMethodVisitorTest extends LightJavaCodeInsightFixtureTestCase {
 
-    @Test
     public void testSet() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/original";
@@ -26,7 +26,6 @@ public class RenameMethodVisitorTest {
         Assert.assertNotNull("The refactoring element should not be null", visitor.visitorRef);
     }
 
-    @Test
     public void testRenameMethodElementVisit() {
         RenameMethodElement element = new RenameMethodElement();
         RenameMethodVisitor visitor = mock(RenameMethodVisitor.class);
@@ -34,7 +33,6 @@ public class RenameMethodVisitorTest {
         verify(visitor, times(1)).visit(element);
     }
 
-    @Test
     public void testRenameClassElementVisit() {
         RenameClassElement element = new RenameClassElement();
         RenameMethodVisitor visitor = mock(RenameMethodVisitor.class);
@@ -42,8 +40,8 @@ public class RenameMethodVisitorTest {
         verify(visitor, times(1)).visit(element);
     }
 
-    @Test
     public void testCheckRenameMethodConflictCall() {
+        Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/original";
         String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
@@ -52,7 +50,7 @@ public class RenameMethodVisitorTest {
         Refactoring ref = refactorings.get(0);
         RenameMethodElement element = mock(RenameMethodElement.class);
         RenameMethodVisitor visitor = new RenameMethodVisitor();
-        element.set(ref, ref.getName());
+        element.set(ref, project);
         visitor.set(ref);
         visitor.visit(element);
         verify(element, times(1)).checkRenameMethodConflict(ref);

@@ -7,6 +7,7 @@ import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
 import ca.ualberta.cs.smr.core.matrix.visitors.RefactoringVisitor;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameClassVisitor;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameMethodVisitor;
+import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -23,14 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MatrixTest {
-
-
-    @Test
-    public void testMatrixConstructor() {
-        Matrix matrix = new Matrix("Path");
-        Assert.assertEquals("Path", matrix.path);
-    }
+public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
 
     @Test
     public void testElementMap() {
@@ -69,7 +63,7 @@ public class MatrixTest {
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
         RenameMethodElement mockElement = new RenameMethodElement();
-        Matrix matrix = new Matrix(basePath);
+        Matrix matrix = new Matrix(null);
         RefactoringElement element = matrix.makeElement(ref);
         boolean equals = element.getClass().equals(mockElement.getClass());
         Assert.assertTrue(equals);
@@ -86,7 +80,7 @@ public class MatrixTest {
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
         RenameMethodVisitor mockVisitor = new RenameMethodVisitor();
-        Matrix matrix = new Matrix(basePath);
+        Matrix matrix = new Matrix(null);
         RefactoringVisitor visitor = matrix.makeVisitor(ref);
         boolean equals = visitor.getClass().equals(mockVisitor.getClass());
         Assert.assertTrue(equals);
@@ -113,7 +107,7 @@ public class MatrixTest {
         assert refactorings != null;
         Refactoring elementRef = refactorings.get(1);
         Refactoring visitorRef = refactorings.get(2);
-        Matrix matrix = new Matrix(basePath);
+        Matrix matrix = new Matrix(null);
         matrix.dispatch(elementRef, visitorRef);
         String message = "Overload conflict\n" + "Rename Method/Rename Method conflict: true\n";
         Assert.assertEquals(message, outContent.toString());

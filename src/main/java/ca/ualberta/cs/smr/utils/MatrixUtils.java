@@ -1,6 +1,7 @@
 package ca.ualberta.cs.smr.utils;
 
 
+import com.intellij.psi.PsiClass;
 import gr.uom.java.xmi.*;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
@@ -71,24 +72,11 @@ public class MatrixUtils {
         return null;
     }
 
-
-    static public boolean ifClassExtends(UMLClass elementClass, UMLClass visitorClass) {
-        UMLType elementSuperClassType = elementClass.getSuperclass();
-        UMLType visitorSuperClassType = visitorClass.getSuperclass();
-        if(elementSuperClassType == null && visitorSuperClassType == null) {
-            return false;
+    static public boolean ifClassExtends(PsiClass element, PsiClass visitor) {
+        if(element.isInheritor(visitor, true)) {
+            return true;
         }
-        if(elementSuperClassType != null) {
-            String elementSuperClassName = elementSuperClassType.getClassType();
-            String visitorClassName = visitorClass.getName();
-            return visitorClassName.equals(elementSuperClassName);
-        }
-        else {
-            String visitorSuperClassName = visitorSuperClassType.getClassType();
-            String elementClassName = elementClass.getName();
-            return elementClassName.equals(visitorSuperClassName);
-        }
+        else return visitor.isInheritor(element, true);
     }
-
 
 }

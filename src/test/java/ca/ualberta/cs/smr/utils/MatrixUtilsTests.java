@@ -1,19 +1,25 @@
 package ca.ualberta.cs.smr.utils;
 
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
+import ca.ualberta.cs.smr.testUtils.TestUtils;
+import com.intellij.psi.*;
+import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
-import org.junit.Test;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
 
 import java.util.List;
 
-public class MatrixUtilsTests {
+public class MatrixUtilsTests extends LightJavaCodeInsightFixtureTestCase {
 
-    @Test
+    @Override
+    protected String getTestDataPath() {
+        return "src/test/resources";
+    }
+
     public void testIsSameName() {
         String foo = "foo";
         String foo2 = "foo";
@@ -24,7 +30,6 @@ public class MatrixUtilsTests {
         Assert.assertTrue("isSameName returned false when it should have returned true", expectedTrue);
     }
 
-    @Test
     public void testGetOriginalRenameOperation() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/matrixUtilsTests/original";
@@ -39,7 +44,6 @@ public class MatrixUtilsTests {
         Assert.assertEquals("The original name of the rename refactoring should be \"doStuff\"", "doStuff", name);
     }
 
-    @Test
     public void testGetRefactoredRenameOperation() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/matrixUtilsTests/original";
@@ -55,7 +59,6 @@ public class MatrixUtilsTests {
                                         "checkIfClassroomWorks", name);
     }
 
-    @Test
     public void testGetOriginalMethodName() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/matrixUtilsTests/original";
@@ -70,7 +73,6 @@ public class MatrixUtilsTests {
         Assert.assertEquals("The original name of the rename refactoring should be \"doStuff\"", expectedName, name);
     }
 
-    @Test
     public void testGetRefactoredMethodName() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/matrixUtilsTests/original";
@@ -86,7 +88,6 @@ public class MatrixUtilsTests {
                 expectedName, name);
     }
 
-    @Test
     public void testGetOriginalRenameOperationClassName() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/matrixUtilsTests/original";
@@ -102,7 +103,6 @@ public class MatrixUtilsTests {
                 expectedName, name);
     }
 
-    @Test
     public void testGetOriginalClassOperation() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/matrixUtilsTests/original";
@@ -117,7 +117,6 @@ public class MatrixUtilsTests {
         Assert.assertEquals("The name should be \"Child\"","Child", name);
     }
 
-    @Test
     public void testGetRefactoredClassOperation() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/matrixUtilsTests/original";
@@ -132,7 +131,6 @@ public class MatrixUtilsTests {
         Assert.assertEquals("The name should be \"ChildClass\"","ChildClass", name);
     }
 
-    @Test
     public void testGetOriginalClassPackage() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/matrixUtilsTests/original";
@@ -146,7 +144,6 @@ public class MatrixUtilsTests {
         Assert.assertEquals(name, expectedName);
     }
 
-    @Test
     public void testGetOriginalClassOperationName() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/matrixUtilsTests/original";
@@ -161,7 +158,6 @@ public class MatrixUtilsTests {
 
     }
 
-    @Test
     public void testGetRefactoredClassOperationName() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/matrixUtilsTests/original";
@@ -175,7 +171,6 @@ public class MatrixUtilsTests {
         Assert.assertEquals("The original name of the class should be \"ClassFile\"", name, expectedName);
     }
 
-    @Test
     public void testGetUMLClass() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/matrixUtilsTests/original";
@@ -187,26 +182,60 @@ public class MatrixUtilsTests {
         Assert.assertNull("getUMLClass should return null", umlClass);
     }
 
-    @Test
     public void testIfClassExtends() {
+
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/matrixUtilsTests/original";
+        String filePath = "matrixUtilsTests/original";
+        PsiFile[] psiFiles = myFixture.configureByFiles(filePath + "/Main.java", filePath + "/HelperFile.java");
+
         UMLClass elementParent = GetDataForTests.getClass(originalPath, "Main");
         UMLClass elementChild = GetDataForTests.getClass(originalPath, "Child");
         UMLClass elementOther = GetDataForTests.getClass(originalPath, "HelperFile");
         assert elementParent != null;
         assert elementChild != null;
         assert elementOther != null;
-        boolean expectTrue = MatrixUtils.ifClassExtends(elementParent, elementChild);
+
+        PsiClass[] psiClasses = TestUtils.getPsiClassesFromFile(psiFiles[0]);
+        PsiClass psiParent = TestUtils.findPsiClassFromUML(elementParent, psiClasses);
+        PsiClass psiChild = TestUtils.findPsiClassFromUML(elementChild, psiClasses);
+        psiClasses = TestUtils.getPsiClassesFromFile(psiFiles[1]);
+        PsiClass psiOther = TestUtils.findPsiClassFromUML(elementOther, psiClasses);
+
+        assert psiParent != null;
+        assert psiChild != null;
+        assert psiOther != null;
+        boolean expectTrue = MatrixUtils.ifClassExtends(psiParent, psiChild);
         Assert.assertTrue("Child extends Parent", expectTrue);
-        expectTrue = MatrixUtils.ifClassExtends(elementChild, elementParent);
+        expectTrue = MatrixUtils.ifClassExtends(psiChild, psiParent);
         Assert.assertTrue("Child extends Parent, called in reverse order", expectTrue);
-        boolean expectedFalse = MatrixUtils.ifClassExtends(elementParent, elementParent);
+        boolean expectedFalse = MatrixUtils.ifClassExtends(psiParent, psiParent);
         Assert.assertFalse("Null check for super classes", expectedFalse);
-        expectedFalse = MatrixUtils.ifClassExtends(elementChild, elementOther);
+        expectedFalse = MatrixUtils.ifClassExtends(psiChild, psiOther);
         Assert.assertFalse("Check for child extends another class", expectedFalse);
-        expectedFalse = MatrixUtils.ifClassExtends(elementOther, elementChild);
+        expectedFalse = MatrixUtils.ifClassExtends(psiOther, psiChild);
         Assert.assertFalse("Check for child extends another class, called in reverse order", expectedFalse);
+    }
+
+    public void testIfClassExtendsHierarchy() {
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/resources/matrixUtilsTests/original";
+        String filePath = "matrixUtilsTests/original";
+        PsiFile[] psiFiles = myFixture.configureByFiles(filePath + "/Main.java");
+
+        UMLClass elementParent = GetDataForTests.getClass(originalPath, "Main");
+        UMLClass elementChild = GetDataForTests.getClass(originalPath, "ChildsChild");
+        assert elementParent != null;
+        assert elementChild != null;
+
+        PsiClass[] psiClasses = TestUtils.getPsiClassesFromFile(psiFiles[0]);
+        PsiClass parent = TestUtils.findPsiClassFromUML(elementParent, psiClasses);
+        PsiClass child = TestUtils.findPsiClassFromUML(elementChild, psiClasses);
+
+        assert parent != null;
+        assert child != null;
+        boolean expectTrue = MatrixUtils.ifClassExtends(parent, child);
+        Assert.assertTrue("Child extends Parent through additional inheritance level", expectTrue);
     }
 
 }

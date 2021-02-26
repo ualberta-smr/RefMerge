@@ -26,3 +26,9 @@ class Child extends Main {
         System.out.println("Do stuff");
     }
 }
+
+class ChildsChild extends Child {
+    public void childSays() {
+        System.out.println("I am the child's child. I inherit Main");
+    }
+}
