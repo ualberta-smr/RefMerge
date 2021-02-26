@@ -1,15 +1,16 @@
 package ca.ualberta.cs.smr.core.matrix.elements;
 
 
+import com.intellij.openapi.project.Project;
 import org.refactoringminer.api.Refactoring;
 
 public abstract class RefactoringElement implements Element {
     Refactoring elementRef;
-    String path;
+    Project project;
 
 
-    public void set(Refactoring ref, String projectPath) {
+    public void set(Refactoring ref, Project project) {
         elementRef = ref;
-        path = projectPath;
+        this.project = project;
     }
 }

@@ -2,6 +2,7 @@ package ca.ualberta.cs.smr.core.matrix.elements;
 
 import ca.ualberta.cs.smr.core.matrix.conflictCheckers.ConflictCheckers;
 import ca.ualberta.cs.smr.core.matrix.visitors.Visitor;
+import com.intellij.openapi.project.Project;
 import org.refactoringminer.api.Refactoring;
 
 
@@ -10,23 +11,23 @@ import org.refactoringminer.api.Refactoring;
  */
 public class RenameMethodElement extends RefactoringElement {
     Refactoring elementRef;
-    String path;
+    Project project;
 
     @Override
     public void accept(Visitor v) {
         v.visit(this);
     }
 
-    public void set(Refactoring ref, String projectPath) {
+    public void set(Refactoring ref, Project project) {
         elementRef = ref;
-        path = projectPath;
+        this.project = project;
     }
 
     /*
      *  Check if a rename method refactoring conflicts with a second rename method refactoring.
      */
     public boolean checkRenameMethodConflict(Refactoring visitorRef) {
-        ConflictCheckers conflictCheckers = new ConflictCheckers(path);
+        ConflictCheckers conflictCheckers = new ConflictCheckers(project);
         // Check for a method override conflict
         if(conflictCheckers.checkOverrideConflict(elementRef, visitorRef)) {
             System.out.println("Override conflict");

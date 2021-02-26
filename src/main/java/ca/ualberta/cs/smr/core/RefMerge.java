@@ -99,7 +99,7 @@ public class RefMerge extends AnAction {
         // Detect the left refactorings and store them in a list
         List<Refactoring> leftRefs = detectCommits(leftCommit, baseCommit);
         // Check if any of the refactorings are conflicting or have ordering dependencies
-        Matrix matrix = new Matrix(project.getBasePath());
+        Matrix matrix = new Matrix(project);
         matrix.runMatrix(leftRefs, rightRefs);
 
         // Checkout base commit and store it in temp/base

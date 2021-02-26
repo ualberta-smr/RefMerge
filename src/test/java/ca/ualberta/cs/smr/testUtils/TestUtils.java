@@ -4,10 +4,12 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiMethod;
+import gr.uom.java.xmi.UMLClass;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class TestUtils {
     public static List<String> getMethodNames(PsiMethod[] methods) {
@@ -55,5 +57,14 @@ public class TestUtils {
             classArray[i] = psiClasses.get(i);
         }
         return classArray;
+    }
+
+    public static PsiClass findPsiClassFromUML(UMLClass umlClass, PsiClass[] psiClasses) {
+        for(PsiClass psiClass : psiClasses) {
+            if(Objects.equals(psiClass.getName(), umlClass.getName())) {
+                return psiClass;
+            }
+        }
+        return null;
     }
 }
