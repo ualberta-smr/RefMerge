@@ -1,6 +1,7 @@
 package ca.ualberta.cs.smr.testUtils;
 
 
+import ca.ualberta.cs.smr.utils.Pair;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLModel;
 import gr.uom.java.xmi.UMLModelASTReader;
@@ -29,6 +30,32 @@ public class GetDataForTests {
             for(Refactoring ref : refactorings) {
                 if(ref.getRefactoringType().toString().equals(type)) {
                     refs.add(ref);
+                }
+            }
+            return refs;
+        } catch(IOException | RefactoringMinerTimedOutException e) {
+            System.out.println("Error: Problem getting refactoring operations");
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static List<Pair> getPairs(String type, String originalPath, String refactoredPath) {
+
+        List<Pair> refs = new ArrayList<>();
+        try {
+
+            UMLModel model1 = new UMLModelASTReader(new File(originalPath)).getUmlModel();
+            UMLModel model2 = new UMLModelASTReader(new File(refactoredPath)).getUmlModel();
+            UMLModelDiff modelDiff = model1.diff(model2);
+            List<Refactoring> refactorings = modelDiff.getRefactorings();
+            if(refactorings == null) {
+                return null;
+            }
+            for(Refactoring ref : refactorings) {
+                if(ref.getRefactoringType().toString().equals(type)) {
+                    Pair pair = new Pair(0, ref);
+                    refs.add(pair);
                 }
             }
             return refs;
