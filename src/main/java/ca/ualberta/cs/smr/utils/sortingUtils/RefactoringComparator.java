@@ -22,4 +22,5 @@ public class RefactoringComparator implements Comparator<Pair> {
         int value2 = refactoringTypeMap.get(type2);
         return - (value1 - value2);
     }
+
 }
