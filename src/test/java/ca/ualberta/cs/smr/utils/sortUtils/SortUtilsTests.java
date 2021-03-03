@@ -50,7 +50,7 @@ public class SortUtilsTests {
     private boolean isRefactoringListSorted(List<Pair> list) {
         for(int i = 0; i < list.size() - 1; i++) {
             RefactoringType type1 = list.get(i).getValue().getRefactoringType();
-            RefactoringType type2 = list.get(i).getValue().getRefactoringType();
+            RefactoringType type2 = list.get(i + 1).getValue().getRefactoringType();
             if(refactoringTypeMap.get(type1) < refactoringTypeMap.get(type2)) {
                 return false;
             }
