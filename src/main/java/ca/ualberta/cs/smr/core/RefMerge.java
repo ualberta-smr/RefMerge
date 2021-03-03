@@ -3,6 +3,7 @@ package ca.ualberta.cs.smr.core;
 import ca.ualberta.cs.smr.core.matrix.Matrix;
 import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import ca.ualberta.cs.smr.utils.Utils;
+import ca.ualberta.cs.smr.utils.sortingUtils.SortPairs;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
@@ -95,10 +96,10 @@ public class RefMerge extends AnAction {
                          GitRepository repo) {
 
         GitUtils gitUtils = new GitUtils(repo, project);
-        // Detect the right refactorings and store them in a list
         List<Pair> rightRefs = detectCommits(rightCommit, baseCommit);
-        // Detect the left refactorings and store them in a list
+        SortPairs.sortList(rightRefs);
         List<Pair> leftRefs = detectCommits(leftCommit, baseCommit);
+        SortPairs.sortList(leftRefs);
         // Check if any of the refactorings are conflicting or have ordering dependencies
         Matrix matrix = new Matrix(project);
         matrix.runMatrix(leftRefs, rightRefs);
