@@ -20,7 +20,7 @@ public class RefactoringComparator implements Comparator<Pair> {
         RefactoringType type2 = pair2.getValue().getRefactoringType();
         int value1 = refactoringTypeMap.get(type1);
         int value2 = refactoringTypeMap.get(type2);
-        return - (value1 - value2);
+        return value1 - value2;
     }
 
 }
