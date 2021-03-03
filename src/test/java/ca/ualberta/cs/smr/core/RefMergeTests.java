@@ -2,6 +2,7 @@ package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
+import ca.ualberta.cs.smr.utils.Pair;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
@@ -43,10 +44,10 @@ public class RefMergeTests extends LightJavaCodeInsightFixtureTestCase {
         list2 = TestUtils.getClassNames(newClasses);
         LightJavaCodeInsightFixtureTestCase.assertNotSame(list1, list2);
 
-        List<Refactoring> classRefactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
-        List<Refactoring> methodRefactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
+        List<Pair> classRefactorings = GetDataForTests.getPairs("RENAME_CLASS", originalPath, refactoredPath);
+        List<Pair> methodRefactorings = GetDataForTests.getPairs("RENAME_METHOD", originalPath, refactoredPath);
         assert classRefactorings != null && methodRefactorings != null;
-        List<Refactoring> refactorings = new ArrayList<>();
+        List<Pair> refactorings = new ArrayList<>();
         refactorings.addAll(methodRefactorings);
         refactorings.addAll(classRefactorings);
         RefMerge refMerge = new RefMerge();
@@ -90,10 +91,10 @@ public class RefMergeTests extends LightJavaCodeInsightFixtureTestCase {
         list2 = TestUtils.getClassNames(newClasses);
         LightJavaCodeInsightFixtureTestCase.assertNotSame(list1, list2);
 
-        List<Refactoring> classRefactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
-        List<Refactoring> methodRefactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
+        List<Pair> classRefactorings = GetDataForTests.getPairs("RENAME_CLASS", originalPath, refactoredPath);
+        List<Pair> methodRefactorings = GetDataForTests.getPairs("RENAME_METHOD", originalPath, refactoredPath);
         assert classRefactorings != null && methodRefactorings != null;
-        List<Refactoring> refactorings = new ArrayList<>();
+        List<Pair> refactorings = new ArrayList<>();
         refactorings.addAll(methodRefactorings);
         refactorings.addAll(classRefactorings);
         RefMerge refMerge = new RefMerge();

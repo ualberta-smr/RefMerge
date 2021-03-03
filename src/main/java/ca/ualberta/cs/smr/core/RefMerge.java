@@ -1,6 +1,7 @@
 package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.core.matrix.Matrix;
+import ca.ualberta.cs.smr.utils.Pair;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -95,9 +96,9 @@ public class RefMerge extends AnAction {
 
         GitUtils gitUtils = new GitUtils(repo, project);
         // Detect the right refactorings and store them in a list
-        List<Refactoring> rightRefs = detectCommits(rightCommit, baseCommit);
+        List<Pair> rightRefs = detectCommits(rightCommit, baseCommit);
         // Detect the left refactorings and store them in a list
-        List<Refactoring> leftRefs = detectCommits(leftCommit, baseCommit);
+        List<Pair> leftRefs = detectCommits(leftCommit, baseCommit);
         // Check if any of the refactorings are conflicting or have ordering dependencies
         Matrix matrix = new Matrix(project);
         matrix.runMatrix(leftRefs, rightRefs);
@@ -138,11 +139,11 @@ public class RefMerge extends AnAction {
     /*
      * undoRefactorings takes a list of refactorings and performs the inverse for each one.
      */
-    public void undoRefactorings(List<Refactoring> refs) {
+    public void undoRefactorings(List<Pair> pairs) {
         UndoOperations undo = new UndoOperations(project);
-
         // Iterate through the list of refactorings and undo each one
-        for(Refactoring ref : refs) {
+        for(Pair pair : pairs) {
+            Refactoring ref = pair.getValue();
             switch (ref.getRefactoringType()) {
                 case RENAME_CLASS:
                     // Undo the rename class refactoring. This is commented out because of the prompt issue
@@ -162,10 +163,11 @@ public class RefMerge extends AnAction {
     /*
      * replayRefactorings takes a list of refactorings and performs each of the refactorings.
      */
-    public void replayRefactorings(List<Refactoring> refs) {
+    public void replayRefactorings(List<Pair> pairs) {
         try {
             ReplayOperations replay = new ReplayOperations(project);
-            for(Refactoring ref : refs) {
+            for(Pair pair : pairs) {
+                Refactoring ref = pair.getValue();
                 switch (ref.getRefactoringType()) {
                     case RENAME_CLASS:
                         replay.replayRenameClass(ref);
@@ -186,19 +188,26 @@ public class RefMerge extends AnAction {
     }
 
     /*
-     * detectCommits uses RefactoringMiner to get the commits between the base and commit.
+     * detectCommits uses RefactoringMiner to get the refactorings from commits between the base and commit.
      */
-    public List<Refactoring> detectCommits(String commit, String base) {
+    public List<Pair> detectCommits(String commit, String base) {
         // Store the resulting refactorings into refResult
-        List<Refactoring> refResult = new ArrayList<>();
+        List<Pair> refResult = new ArrayList<>();
         GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
         try {
             miner.detectBetweenCommits(git.getRepository(), base, commit,
                     new RefactoringHandler() {
+                        private int count = 0;
                         @Override
                         public void handle(String commitId, List<Refactoring> refactorings) {
                             // Add each refactoring to refResult
-                            refResult.addAll(refactorings);
+                            for(Refactoring refactoring : refactorings) {
+                                Pair pair = new Pair(count, refactoring);
+                                refResult.add(pair);
+                            }
+                            count++;
+                            // For undo, we want to start at the highest count and go to 0
+                            // For replay, start at 0 and continue to the highest.
                         }
                     });
         } catch (Exception e) {

@@ -7,6 +7,7 @@ import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
 import ca.ualberta.cs.smr.core.matrix.visitors.RefactoringVisitor;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameClassVisitor;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameMethodVisitor;
+import ca.ualberta.cs.smr.utils.Pair;
 import com.intellij.openapi.project.Project;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
@@ -39,20 +40,22 @@ public class Matrix {
     /*
      * Iterate through each of the left refactorings to compare against the right refactorings.
      */
-    public void runMatrix(List<Refactoring> leftRefactorings, List<Refactoring> rightRefactorings) {
+    public void runMatrix(List<Pair> leftPairs, List<Pair> rightPairs) {
         // Iterates over the refactorings in the left commit
-        for (Refactoring leftRefactoring : leftRefactorings) {
+        for (Pair leftPair : leftPairs) {
+            Refactoring leftRefactoring = leftPair.getValue();
             // Compares the refactorings in the right commit against the left refactoring
-            compareRefactorings(leftRefactoring, rightRefactorings);
+            compareRefactorings(leftRefactoring, rightPairs);
         }
     }
 
     /*
      * This calls dispatch for each pair of refactorings to check for conflicts.
      */
-    void compareRefactorings(Refactoring leftRefactoring, List<Refactoring> rightRefactorings) {
+    void compareRefactorings(Refactoring leftRefactoring, List<Pair> rightPairs) {
         // Iterate over the right refactorings
-        for(Refactoring rightRefactoring : rightRefactorings) {
+        for(Pair rightPair : rightPairs) {
+            Refactoring rightRefactoring = rightPair.getValue();
             // Dispatch the refactoring elements to the correct conflict checker
             dispatch(leftRefactoring, rightRefactoring);
         }
