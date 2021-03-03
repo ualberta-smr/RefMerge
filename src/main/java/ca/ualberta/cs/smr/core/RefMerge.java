@@ -1,7 +1,7 @@
 package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.core.matrix.Matrix;
-import ca.ualberta.cs.smr.utils.Pair;
+import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;

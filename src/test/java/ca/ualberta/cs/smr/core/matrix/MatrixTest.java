@@ -7,7 +7,7 @@ import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
 import ca.ualberta.cs.smr.core.matrix.visitors.RefactoringVisitor;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameClassVisitor;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameMethodVisitor;
-import ca.ualberta.cs.smr.utils.Pair;
+import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.After;
 import org.junit.Assert;

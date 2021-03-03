@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.utils;
+package ca.ualberta.cs.smr.utils.sortingUtils;
 
 import org.refactoringminer.api.Refactoring;
 
