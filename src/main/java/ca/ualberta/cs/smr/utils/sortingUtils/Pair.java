@@ -3,11 +3,11 @@ package ca.ualberta.cs.smr.utils.sortingUtils;
 import org.refactoringminer.api.Refactoring;
 
 public class Pair {
-    int commit;
-    Refactoring refactoring;
+    private int commit;
+    private Refactoring refactoring;
 
     public Pair(int commit, Refactoring refactoring) {
-        commit = commit;
+        this.commit = commit;
         this.refactoring = refactoring;
     }
 
