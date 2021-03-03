@@ -1,10 +1,12 @@
 package ca.ualberta.cs.smr.utils.sortUtils;
 
+import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.utils.sortingUtils.CommitComparator;
 import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import ca.ualberta.cs.smr.utils.sortingUtils.RefactoringComparator;
 import org.junit.Assert;
 import org.junit.Test;
+import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
 import java.util.ArrayList;
@@ -32,18 +34,24 @@ public class SortUtilsTests {
 
     @Test
     public void testRefactoringTypeComparator() {
-        List<RefactoringType> typesToSort = new ArrayList<>();
+        List<Pair> typesToSort = new ArrayList<>();
         for(int i = 0; i < 5; i++) {
-            typesToSort.add(RefactoringType.RENAME_CLASS);
-            typesToSort.add(RefactoringType.RENAME_METHOD);
+            Refactoring ref = GetDataForTests.getEmptyRefactoring(RefactoringType.RENAME_CLASS);
+            Pair pair = new Pair(0, ref);
+            typesToSort.add(pair);
+            ref = GetDataForTests.getEmptyRefactoring(RefactoringType.RENAME_METHOD);
+            pair = new Pair(0, ref);
+            typesToSort.add(pair);
         }
         typesToSort.sort(new RefactoringComparator());
         Assert.assertTrue(isRefactoringListSorted(typesToSort));
     }
 
-    private boolean isRefactoringListSorted(List<RefactoringType> list) {
+    private boolean isRefactoringListSorted(List<Pair> list) {
         for(int i = 0; i < list.size() - 1; i++) {
-            if(refactoringTypeMap.get(list.get(i)) < refactoringTypeMap.get(list.get(i + 1))) {
+            RefactoringType type1 = list.get(i).getValue().getRefactoringType();
+            RefactoringType type2 = list.get(i).getValue().getRefactoringType();
+            if(refactoringTypeMap.get(type1) < refactoringTypeMap.get(type2)) {
                 return false;
             }
         }

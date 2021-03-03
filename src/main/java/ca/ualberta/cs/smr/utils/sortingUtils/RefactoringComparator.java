@@ -5,7 +5,7 @@ import org.refactoringminer.api.RefactoringType;
 import java.util.Comparator;
 import java.util.HashMap;
 
-public class RefactoringComparator implements Comparator<RefactoringType> {
+public class RefactoringComparator implements Comparator<Pair> {
 
     private static final HashMap<RefactoringType, Integer> refactoringTypeMap =
             new HashMap<RefactoringType, Integer>() {{
@@ -15,7 +15,9 @@ public class RefactoringComparator implements Comparator<RefactoringType> {
 
 
     @Override
-    public int compare(RefactoringType type1, RefactoringType type2) {
+    public int compare(Pair pair1, Pair pair2) {
+        RefactoringType type1 = pair1.getValue().getRefactoringType();
+        RefactoringType type2 = pair2.getValue().getRefactoringType();
         int value1 = refactoringTypeMap.get(type1);
         int value2 = refactoringTypeMap.get(type2);
         return - (value1 - value2);

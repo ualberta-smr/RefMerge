@@ -5,14 +5,18 @@ import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLModel;
 import gr.uom.java.xmi.UMLModelASTReader;
+import gr.uom.java.xmi.diff.CodeRange;
 import gr.uom.java.xmi.diff.UMLModelDiff;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringMinerTimedOutException;
+import org.refactoringminer.api.RefactoringType;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class GetDataForTests {
     public static List<Refactoring> getRefactorings(String type, String originalPath, String refactoredPath) {
@@ -82,4 +86,46 @@ public class GetDataForTests {
         return null;
     }
 
+    public static Refactoring getEmptyRefactoring(RefactoringType type) {
+        return new EmptyRefactoring(type);
+    }
+
+}
+
+class EmptyRefactoring implements Refactoring {
+    RefactoringType type;
+
+    public EmptyRefactoring(RefactoringType type) {
+        this.type = type;
+    }
+
+    @Override
+    public RefactoringType getRefactoringType() {
+        return type;
+    }
+
+    @Override
+    public String getName() {
+        return null;
+    }
+
+    @Override
+    public Set<ImmutablePair<String, String>> getInvolvedClassesBeforeRefactoring() {
+        return null;
+    }
+
+    @Override
+    public Set<ImmutablePair<String, String>> getInvolvedClassesAfterRefactoring() {
+        return null;
+    }
+
+    @Override
+    public List<CodeRange> leftSide() {
+        return null;
+    }
+
+    @Override
+    public List<CodeRange> rightSide() {
+        return null;
+    }
 }
