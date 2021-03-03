@@ -2,13 +2,12 @@ package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
-import ca.ualberta.cs.smr.utils.Pair;
+import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
-import org.refactoringminer.api.Refactoring;
 
 import java.util.ArrayList;
 import java.util.List;

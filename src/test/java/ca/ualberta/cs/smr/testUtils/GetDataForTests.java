@@ -1,7 +1,7 @@
 package ca.ualberta.cs.smr.testUtils;
 
 
-import ca.ualberta.cs.smr.utils.Pair;
+import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLModel;
 import gr.uom.java.xmi.UMLModelASTReader;
