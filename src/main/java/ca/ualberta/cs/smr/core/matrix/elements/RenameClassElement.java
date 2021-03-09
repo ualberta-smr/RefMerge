@@ -2,6 +2,7 @@ package ca.ualberta.cs.smr.core.matrix.elements;
 
 
 import ca.ualberta.cs.smr.core.matrix.conflictCheckers.ConflictCheckers;
+import ca.ualberta.cs.smr.core.matrix.dependenceCheckers.DependenceCheckers;
 import ca.ualberta.cs.smr.core.matrix.visitors.Visitor;
 import com.intellij.openapi.project.Project;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
@@ -38,10 +39,11 @@ public class RenameClassElement extends RefactoringElement {
         return false;
     }
 
+    /*
+     * Check if a rename class refactoring depends on a rename method refactoring to be performed first.
+     */
     public boolean checkRenameMethodDependence(Refactoring visitorRef) {
-        String elementClass = ((RenameClassRefactoring) elementRef).getOriginalClass().getName();
-        String visitorClass = ((RenameOperationRefactoring) visitorRef).getOriginalOperation().getClassName();
-        return elementClass.equals(visitorClass);
+        return DependenceCheckers.checkRenameMethodRenameClassDependence(elementRef, visitorRef);
     }
 
 }
