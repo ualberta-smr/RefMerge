@@ -103,4 +103,20 @@ public class RenameMethodElementTest extends LightJavaCodeInsightFixtureTestCase
         Assert.assertFalse("A method renamed to the same name in both versions should not conflict", isConflicting);
     }
 
+    public void testCheckRenameMethodDependence() {
+        Project project = myFixture.getProject();
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/testData/renameMethodRenameClassFiles/dependence/original";
+        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameClassFiles/dependence/refactored";
+        List<Refactoring> methodRefs = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
+        List<Refactoring> classRefs = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
+        assert methodRefs != null;
+        Refactoring visitorRef = methodRefs.get(0);
+        assert classRefs != null;
+        Refactoring elementRef = classRefs.get(0);
+        RenameClassElement element = new RenameClassElement();
+        element.set(elementRef, project);
+        boolean isDependent = element.checkRenameMethodDependence(visitorRef);
+        Assert.assertTrue(isDependent);
+    }
 }
