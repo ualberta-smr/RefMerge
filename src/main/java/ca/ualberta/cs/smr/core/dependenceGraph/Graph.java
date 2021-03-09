@@ -20,13 +20,15 @@ public class Graph {
             addNode(node);
             return;
         }
-
-        for(Pair pair : pairs) {
+        for(int i = pairs.size() - 1; i > -1; i--) {
+        //for(Pair pair : pairs) {
+            Pair pair = pairs.get(i);
             Refactoring refactoring = pair.getValue();
             Node node = new Node(refactoring);
             traverseGraph(node);
             addNode(node);
         }
+
     }
 
     public void addNode(Node node) {
@@ -42,6 +44,9 @@ public class Graph {
             if(!node.hasNeighbors()) {
                 addEdge(node, newNode);
             }
+            // Check for dependence
+            // If dependence, change edge or add strong edge
+            // Then when checking for conflict in Matrix, check if chain?
         }
 
     }
@@ -49,7 +54,7 @@ public class Graph {
     void printGraph() {
         for(Node node : nodes) {
             for(Node neighbor : node.getNeighbors()) {
-                System.out.println(node.getNode().getName() + " --> " + neighbor.getNode().getName());
+                System.out.println(node.getNode().toString() + " <-- " + neighbor.getNode().toString());
             }
         }
     }
