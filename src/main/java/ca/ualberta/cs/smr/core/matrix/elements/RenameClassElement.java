@@ -5,8 +5,6 @@ import ca.ualberta.cs.smr.core.matrix.conflictCheckers.ConflictCheckers;
 import ca.ualberta.cs.smr.core.matrix.dependenceCheckers.DependenceCheckers;
 import ca.ualberta.cs.smr.core.matrix.visitors.Visitor;
 import com.intellij.openapi.project.Project;
-import gr.uom.java.xmi.diff.RenameClassRefactoring;
-import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 
 
