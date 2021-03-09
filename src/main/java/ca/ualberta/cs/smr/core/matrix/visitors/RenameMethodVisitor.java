@@ -25,6 +25,7 @@ public class RenameMethodVisitor extends RefactoringVisitor {
      */
     @Override
     public void visit(RenameClassElement renameClass) {
+        boolean foundDependence = renameClass.checkRenameMethodDependence(visitorRef);
         System.out.println("Rename Method/Rename Class does not conflict");
     }
 }
