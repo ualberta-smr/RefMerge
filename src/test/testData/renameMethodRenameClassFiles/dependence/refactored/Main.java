@@ -6,11 +6,11 @@ public class Main {
     }
 }
 
-class newA {
+class NewA {
     int x;
     int y;
 
-    public newA(int x, int y) {
+    public NewA(int x, int y) {
         this.x = x;
         this.y = y;
     }
@@ -19,7 +19,7 @@ class newA {
         System.out.println(x + " " + y);
     }
 
-    public int add() {
+    public int addition() {
         return x + y;
     }
 
@@ -29,5 +29,24 @@ class newA {
 
     public int reverseSub() {
         return y - x;
+    }
+}
+
+class NewB {
+    double x;
+    double y;
+
+    public void doStuff() {
+        double z = x / y;
+    }
+
+    private void method() {
+        System.out.println("Method");
+    }
+
+    private void addToArray(x, y) {
+        double[] array = new array[2];
+        array[0] = x;
+        array[1] = y;
     }
 }
