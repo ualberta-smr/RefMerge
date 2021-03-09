@@ -3,6 +3,8 @@ package ca.ualberta.cs.smr.core.matrix.elements;
 import ca.ualberta.cs.smr.core.matrix.conflictCheckers.ConflictCheckers;
 import ca.ualberta.cs.smr.core.matrix.visitors.Visitor;
 import com.intellij.openapi.project.Project;
+import gr.uom.java.xmi.diff.RenameClassRefactoring;
+import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 
 
@@ -47,5 +49,10 @@ public class RenameMethodElement extends RefactoringElement {
         return false;
     }
 
+    public boolean checkRenameClassDependence(Refactoring visitorRef) {
+        String elementClass = ((RenameClassRefactoring) elementRef).getOriginalClass().getName();
+        String visitorClass = ((RenameOperationRefactoring) visitorRef).getOriginalOperation().getClassName();
+        return elementClass.equals(visitorClass);
+    }
 
 }
