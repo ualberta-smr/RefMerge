@@ -31,3 +31,23 @@ class A {
         return y - x;
     }
 }
+
+class B {
+    double x;
+    double y;
+
+    public void doBStuff() {
+        double z = x / y;
+    }
+
+    private void method() {
+        System.out.println("Method");
+    }
+
+
+    private void addToArray(x, y) {
+        double[] array = new array[2];
+        array[0] = x;
+        array[1] = y;
+    }
+}
