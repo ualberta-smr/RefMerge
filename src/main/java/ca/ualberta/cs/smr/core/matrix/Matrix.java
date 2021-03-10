@@ -1,6 +1,7 @@
 package ca.ualberta.cs.smr.core.matrix;
 
 
+import ca.ualberta.cs.smr.core.dependenceGraph.Graph;
 import ca.ualberta.cs.smr.core.matrix.elements.RefactoringElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
@@ -41,6 +42,9 @@ public class Matrix {
      * Iterate through each of the left refactorings to compare against the right refactorings.
      */
     public void runMatrix(List<Pair> leftPairs, List<Pair> rightPairs) {
+        Graph graph = new Graph(project);
+        graph.createPartialGraph(leftPairs);
+        graph.createPartialGraph(rightPairs);
         // Iterates over the refactorings in the left commit
         for (Pair leftPair : leftPairs) {
             Refactoring leftRefactoring = leftPair.getValue();
