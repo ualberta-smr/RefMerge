@@ -9,13 +9,13 @@ public class Node {
     private Refactoring refactoring;
     private List<Edge> adjacentNodes;
     private List<Node> dependsList;
-
+    private boolean visited;
 
     Node(Refactoring refactoring) {
         this.refactoring = refactoring;
         this.adjacentNodes = new ArrayList<>();
         this.dependsList = new ArrayList<>();
-
+        this.visited = false;
     }
 
     public Refactoring getRefactoring() {
@@ -42,4 +42,11 @@ public class Node {
         return dependsList;
     }
 
+    public void visiting() {
+        visited = true;
+    }
+
+    public boolean wasVisited() {
+        return visited;
+    }
 }

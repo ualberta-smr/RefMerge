@@ -44,8 +44,8 @@ public class Graph {
         this.nodes.add(node);
     }
 
-    public void addEdge(Node from, int weight, Node to) {
-        Edge edge = new Edge(from, weight, to);
+    public void addEdge(Node from, Node to) {
+        Edge edge = new Edge(from, to);
         from.addEdge(edge);
     }
 
@@ -55,7 +55,7 @@ public class Graph {
             if(hasDependence(node, newNode)) {
                 newNode.addToDependsList(node);
                 if(!node.hasNeighbors()) {
-                    addEdge(node, 1, newNode);
+                    addEdge(node, newNode);
                     return;
                 }
                 else {
@@ -67,10 +67,8 @@ public class Graph {
                     continue;
                 }
                 if(temp != null) {
-                    addEdge(temp, 1, newNode);
-                }
-                else {
-                    addEdge(node, 0, newNode);
+                    addEdge(temp, newNode);
+                    temp = null;
                 }
             }
         }
@@ -95,20 +93,17 @@ public class Graph {
     public void printGraph() {
 
         for(Node node : allNodes) {
+            if(node.wasVisited()) {
+                continue;
+            }
+            node.visiting();
             if(node.dependsOn().isEmpty() && node.getEdges().isEmpty()) {
                 System.out.println("Island: " + node.getRefactoring().toString());
             }
             for(Edge edge : node.getEdges()) {
-                if(edge.getWeight() == 1) {
+                edge.getDestination().wasVisited();
                     System.out.println(edge.getSource().getRefactoring().toString() +
                             " <== " + edge.getDestination().getRefactoring().toString());
-                }
-            }
-            for(Edge edge : node.getEdges()) {
-                if(edge.getWeight() == 0) {
-                    System.out.println(edge.getSource().getRefactoring().toString() +
-                            " <-- " + edge.getDestination().getRefactoring().toString());
-                }
             }
         }
 
