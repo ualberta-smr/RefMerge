@@ -1,19 +1,24 @@
 package ca.ualberta.cs.smr.core.dependenceGraph;
 
+import ca.ualberta.cs.smr.core.matrix.Matrix;
+import ca.ualberta.cs.smr.core.matrix.elements.RefactoringElement;
+import ca.ualberta.cs.smr.core.matrix.visitors.RefactoringVisitor;
 import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
-import gr.uom.java.xmi.diff.RenameClassRefactoring;
-import gr.uom.java.xmi.diff.RenameOperationRefactoring;
+import com.intellij.openapi.project.Project;
 import org.refactoringminer.api.Refactoring;
-import org.refactoringminer.api.RefactoringType;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Graph {
-
+    Project project;
     private List<Node> nodes;
 
-    public Graph(List<Pair> pairs) {
+    public Graph(Project project) {
+        this.project = project;
+    }
+
+    public void createGraph(List<Pair> pairs) {
         this.nodes = new ArrayList<>();
         if(pairs.size() == 0) {
             return;
@@ -27,7 +32,7 @@ public class Graph {
             Pair pair = pairs.get(i);
             Refactoring refactoring = pair.getValue();
             Node node = new Node(refactoring);
-            traverseGraph(node);
+            insertNode(node);
             addNode(node);
         }
 
@@ -42,17 +47,28 @@ public class Graph {
         from.addEdge(edge);
     }
 
-    void traverseGraph(Node newNode) {
+    void insertNode(Node newNode) {
+        Node temp = null;
         for(Node node : nodes) {
             if(hasDependence(node, newNode)) {
-                addEdge(node, 1, newNode);
-                return;
+                if(!node.hasNeighbors()) {
+                    addEdge(node, 1, newNode);
+                    return;
+                }
+                else {
+                    temp = node;
+                }
             }
             else {
                 if(node.hasNeighbors() || newNode.hasNeighbors()) {
                     continue;
                 }
-                addEdge(node, 0, newNode);
+                if(temp != null) {
+                    addEdge(temp, 1, newNode);
+                }
+                else {
+                    addEdge(node, 0, newNode);
+                }
             }
         }
 
@@ -61,17 +77,16 @@ public class Graph {
     public boolean hasDependence(Node node1, Node node2) {
         Refactoring refactoring1 = node1.getRefactoring();
         Refactoring refactoring2 = node2.getRefactoring();
-        if(refactoring1.getRefactoringType() == RefactoringType.RENAME_CLASS && refactoring2.getRefactoringType() == RefactoringType.RENAME_METHOD) {
-            String refactoring1Class = ((RenameClassRefactoring) refactoring1).getOriginalClassName();
-            String refactoring2Class = ((RenameOperationRefactoring) refactoring2).getOriginalOperation().getClassName();
-            return refactoring1Class.equals(refactoring2Class);
+        if(refactoring1.getRefactoringType() == refactoring2.getRefactoringType()) {
+            return false;
         }
-        else if(refactoring1.getRefactoringType() == RefactoringType.RENAME_METHOD && refactoring2.getRefactoringType() == RefactoringType.RENAME_CLASS) {
-            String refactoring1Class = ((RenameOperationRefactoring) refactoring1).getOriginalOperation().getClassName();
-            String refactoring2Class = ((RenameClassRefactoring) refactoring2).getOriginalClassName();
-            return refactoring1Class.equals(refactoring2Class);
-        }
-        return false;
+        Matrix matrix = new Matrix(project);
+        RefactoringElement element = matrix.makeElement(refactoring1);
+        RefactoringVisitor visitor = matrix.makeVisitor(refactoring2);
+        element.accept(visitor);
+
+        return visitor.getDependenceResult();
+
     }
 
     public void printGraph() {

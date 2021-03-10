@@ -3,16 +3,17 @@ package ca.ualberta.cs.smr.core.dependenceGraph;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import ca.ualberta.cs.smr.utils.sortingUtils.SortPairs;
-import org.junit.Test;
+import com.intellij.openapi.project.Project;
+import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.refactoringminer.api.Refactoring;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DependenceGraphTests {
+public class DependenceGraphTests extends LightJavaCodeInsightFixtureTestCase {
 
-    @Test
-    public void dependenceGraphTest() {
+    public void testDependenceGraph() {
+        Project project = myFixture.getProject();
         List<Pair> pairsToSort = new ArrayList<>();
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/testData/renameMethodRenameClassFiles/dependence/original";
@@ -35,7 +36,8 @@ public class DependenceGraphTests {
         for(Pair pair : pairsToSort) {
             System.out.println(pair.getValue().toString());
         }
-        Graph graph = new Graph(pairsToSort);
+        Graph graph = new Graph(project);
+        graph.createGraph(pairsToSort);
         System.out.println("GRAPH");
         graph.printGraph();
     }
