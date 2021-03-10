@@ -37,34 +37,83 @@ public class Graph {
         this.nodes.add(node);
     }
 
-    void addEdge(Node from, int weight, Node to) {
+    public void addEdge(Node from, int weight, Node to) {
         Edge edge = new Edge(from, weight, to);
         from.addEdge(edge);
     }
 
-    void traverseGraph(Node newNode) {
-        for(Node node : nodes) {
+    private void traverseGraph(Node newNode) {
+        if(nodes.size() == 0) {
+            return;
+        }
+        Node firstNode = nodes.get(0);
+        if(firstNode.hasNeighbors()) {
+            List<Edge> edges = firstNode.getEdges();
+            traverseGraphHelper(edges, newNode);
+        }
+        else {
+            if(hasDependence(firstNode, newNode)) {
+                addEdge(firstNode, 1, newNode);
+            }
+            else {
+                addEdge(firstNode, 0, newNode);
+            }
+        }
+    }
+
+    private void traverseGraphHelper(List<Edge> edges, Node newNode) {
+        if(newNode.hasNeighbors()) {
+            return;
+        }
+        for(Edge edge : edges) {
+            Node node = edge.getSource();
+            Node nextNode = edge.getDestination();
             if(hasDependence(node, newNode)) {
-                if(node.hasNeighbors()) {
-                    for(Edge edge : node.getEdges()) {
                         if(edge.getWeight() == 1) {
+                            traverseGraphHelper(nextNode.getEdges(), newNode);
                             break;
                         }
                         updateEdge(edge, newNode);
-                    }
-                        continue;
-                }
-                addEdge(node, 1, newNode);
+                        traverseGraphHelper(nextNode.getEdges(), newNode);
             }
             else {
-                if(node.hasNeighbors() || newNode.hasNeighbors()) {
-                    continue;
+                if(nextNode.hasNeighbors()) {
+                    traverseGraphHelper(nextNode.getEdges(), newNode);
                 }
-                addEdge(node, 0, newNode);
+                else {
+                    if(hasDependence(nextNode, newNode)) {
+                        addEdge(nextNode, 1, newNode);
+                    }
+                    else {
+                        addEdge(nextNode, 0, newNode);
+                    }
+                }
             }
         }
-
     }
+//    void traverseGraphHelper(Node newNode) {
+//        for(Node node : nodes) {
+//            if(hasDependence(node, newNode)) {
+//                if(node.hasNeighbors()) {
+//                    for(Edge edge : node.getEdges()) {
+//                        if(edge.getWeight() == 1) {
+//                            break;
+//                        }
+//                        updateEdge(edge, newNode);
+//                    }
+//                        continue;
+//                }
+//                addEdge(node, 1, newNode);
+//            }
+//            else {
+//                if(node.hasNeighbors() || newNode.hasNeighbors()) {
+//                    continue;
+//                }
+//                addEdge(node, 0, newNode);
+//            }
+//        }
+//
+//    }
 
     public void updateEdge(Edge edge, Node node) {
         Node destination = edge.getDestination();
@@ -118,7 +167,7 @@ public class Graph {
             if(!edge.getDestination().wasVisited()) {
                 printGraphHelper(edge.getDestination());
             }
-            if(edge.getDestination().wasVisited()) {
+            else {
                 System.out.println("Circular Dependence");
                 return;
             }
