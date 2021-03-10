@@ -6,20 +6,26 @@ import org.refactoringminer.api.Refactoring;
 
 public class RenameClassVisitor extends RefactoringVisitor {
     Refactoring visitorRef;
+    boolean foundDependence;
+
 
     public void set(Refactoring ref) {
         visitorRef = ref;
     }
 
+    public boolean getDependenceResult() {
+        return foundDependence;
+    }
+
     @Override
     public void visit(RenameMethodElement renameMethod) {
-        boolean isDependent = renameMethod.checkRenameClassDependence(visitorRef);
+        foundDependence = renameMethod.checkRenameClassDependence(visitorRef);
         System.out.println("Rename Method/Rename Class does not conflict");
     }
 
     @Override
     public void visit(RenameClassElement renameClass) {
-        boolean isConflicting = renameClass.checkRenameClassConflict(visitorRef);
-        System.out.println("Rename Class/Rename Class conflict: " + isConflicting);
+        boolean foundConflict = renameClass.checkRenameClassConflict(visitorRef);
+        System.out.println("Rename Class/Rename Class conflict: " + foundConflict);
     }
 }
