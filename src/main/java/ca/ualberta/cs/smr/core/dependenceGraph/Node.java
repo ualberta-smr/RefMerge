@@ -7,26 +7,36 @@ import java.util.List;
 
 public class Node {
     private Refactoring refactoring;
-    private List<Node> adjacentNodes;
+    private List<Edge> adjacentNodes;
+    private boolean visited;
 
     Node(Refactoring refactoring) {
         this.refactoring = refactoring;
         this.adjacentNodes = new ArrayList<>();
+        visited = false;
     }
 
-    public Refactoring getNode() {
+    public Refactoring getRefactoring() {
         return refactoring;
     }
 
-    public void addNeighbor(Node adjacent) {
-        this.adjacentNodes.add(adjacent);
+    public void addEdge(Edge edge) {
+        this.adjacentNodes.add(edge);
     }
 
     public boolean hasNeighbors() {
         return !adjacentNodes.isEmpty();
     }
 
-    public List<Node> getNeighbors() {
+    public List<Edge> getEdges() {
         return adjacentNodes;
+    }
+
+    public void visit() {
+        visited = true;
+    }
+
+    public boolean wasVisited() {
+        return visited;
     }
 }
