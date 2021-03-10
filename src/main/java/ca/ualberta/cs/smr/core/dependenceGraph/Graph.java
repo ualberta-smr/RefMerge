@@ -53,6 +53,7 @@ public class Graph {
         Node temp = null;
         for(Node node : nodes) {
             if(hasDependence(node, newNode)) {
+                newNode.addToDependsList(node);
                 if(!node.hasNeighbors()) {
                     addEdge(node, 1, newNode);
                     return;
@@ -94,6 +95,9 @@ public class Graph {
     public void printGraph() {
 
         for(Node node : allNodes) {
+            if(node.dependsOn().isEmpty() && node.getEdges().isEmpty()) {
+                System.out.println("Island: " + node.getRefactoring().toString());
+            }
             for(Edge edge : node.getEdges()) {
                 if(edge.getWeight() == 1) {
                     System.out.println(edge.getSource().getRefactoring().toString() +
