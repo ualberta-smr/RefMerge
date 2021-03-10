@@ -13,12 +13,14 @@ import java.util.List;
 public class Graph {
     Project project;
     private List<Node> nodes;
+    private List<Node> allNodes;
 
     public Graph(Project project) {
         this.project = project;
+        this.allNodes = new ArrayList<>();
     }
 
-    public void createGraph(List<Pair> pairs) {
+    public void createPartialGraph(List<Pair> pairs) {
         this.nodes = new ArrayList<>();
         if(pairs.size() == 0) {
             return;
@@ -35,7 +37,7 @@ public class Graph {
             insertNode(node);
             addNode(node);
         }
-
+        this.allNodes.addAll(nodes);
     }
 
     public void addNode(Node node) {
@@ -91,7 +93,7 @@ public class Graph {
 
     public void printGraph() {
 
-        for(Node node : nodes) {
+        for(Node node : allNodes) {
             for(Edge edge : node.getEdges()) {
                 if(edge.getWeight() == 1) {
                     System.out.println(edge.getSource().getRefactoring().toString() +
