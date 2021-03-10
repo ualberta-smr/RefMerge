@@ -42,92 +42,28 @@ public class Graph {
         from.addEdge(edge);
     }
 
-    private void traverseGraph(Node newNode) {
-        if(nodes.size() == 0) {
-            return;
-        }
-        Node firstNode = nodes.get(0);
-        if(firstNode.hasNeighbors()) {
-            List<Edge> edges = firstNode.getEdges();
-            traverseGraphHelper(edges, newNode);
-        }
-        else {
-            if(hasDependence(firstNode, newNode)) {
-                addEdge(firstNode, 1, newNode);
-            }
-            else {
-                addEdge(firstNode, 0, newNode);
-            }
-        }
-    }
-
-    private void traverseGraphHelper(List<Edge> edges, Node newNode) {
-        if(newNode.hasNeighbors()) {
-            return;
-        }
-        for(Edge edge : edges) {
-            Node node = edge.getSource();
-            Node nextNode = edge.getDestination();
+    void traverseGraph(Node newNode) {
+        for(Node node : nodes) {
             if(hasDependence(node, newNode)) {
-                        if(edge.getWeight() == 1) {
-                            traverseGraphHelper(nextNode.getEdges(), newNode);
-                            break;
-                        }
-                        updateEdge(edge, newNode);
-                        traverseGraphHelper(nextNode.getEdges(), newNode);
+                addEdge(node, 1, newNode);
+                return;
             }
             else {
-                if(nextNode.hasNeighbors()) {
-                    traverseGraphHelper(nextNode.getEdges(), newNode);
+                if(node.hasNeighbors() || newNode.hasNeighbors()) {
+                    continue;
                 }
-                else {
-                    if(hasDependence(nextNode, newNode)) {
-                        addEdge(nextNode, 1, newNode);
-                    }
-                    else {
-                        addEdge(nextNode, 0, newNode);
-                    }
-                }
+                addEdge(node, 0, newNode);
             }
         }
-    }
-//    void traverseGraphHelper(Node newNode) {
-//        for(Node node : nodes) {
-//            if(hasDependence(node, newNode)) {
-//                if(node.hasNeighbors()) {
-//                    for(Edge edge : node.getEdges()) {
-//                        if(edge.getWeight() == 1) {
-//                            break;
-//                        }
-//                        updateEdge(edge, newNode);
-//                    }
-//                        continue;
-//                }
-//                addEdge(node, 1, newNode);
-//            }
-//            else {
-//                if(node.hasNeighbors() || newNode.hasNeighbors()) {
-//                    continue;
-//                }
-//                addEdge(node, 0, newNode);
-//            }
-//        }
-//
-//    }
 
-    public void updateEdge(Edge edge, Node node) {
-        Node destination = edge.getDestination();
-        edge.updateWeight(1);
-        edge.updateDestination(node);
-        addEdge(node, 0, destination);
     }
 
     public boolean hasDependence(Node node1, Node node2) {
         Refactoring refactoring1 = node1.getRefactoring();
         Refactoring refactoring2 = node2.getRefactoring();
         if(refactoring1.getRefactoringType() == RefactoringType.RENAME_CLASS && refactoring2.getRefactoringType() == RefactoringType.RENAME_METHOD) {
-            String refactoring1Class = ((RenameClassRefactoring) refactoring1).getRenamedClassName();
-            String refactoring2Class = ((RenameOperationRefactoring) refactoring2).getRenamedOperation().getClassName();
+            String refactoring1Class = ((RenameClassRefactoring) refactoring1).getOriginalClassName();
+            String refactoring2Class = ((RenameOperationRefactoring) refactoring2).getOriginalOperation().getClassName();
             return refactoring1Class.equals(refactoring2Class);
         }
         else if(refactoring1.getRefactoringType() == RefactoringType.RENAME_METHOD && refactoring2.getRefactoringType() == RefactoringType.RENAME_CLASS) {
@@ -135,43 +71,26 @@ public class Graph {
             String refactoring2Class = ((RenameClassRefactoring) refactoring2).getOriginalClassName();
             return refactoring1Class.equals(refactoring2Class);
         }
-        else if(refactoring1.getRefactoringType() == RefactoringType.RENAME_METHOD && refactoring2.getRefactoringType() == RefactoringType.RENAME_METHOD) {
-            String refactoring1Class = ((RenameOperationRefactoring) refactoring1).getOriginalOperation().getClassName();
-            String refactoring2Class = ((RenameOperationRefactoring) refactoring2).getOriginalOperation().getClassName();
-            return refactoring1Class.equals(refactoring2Class);
-        }
         return false;
     }
 
-    void printGraph() {
-        printGraphHelper(nodes.get(0));
+    public void printGraph() {
+
         for(Node node : nodes) {
-            if(!node.wasVisited()) {
-                printGraphHelper(node);
+            for(Edge edge : node.getEdges()) {
+                if(edge.getWeight() == 1) {
+                    System.out.println(edge.getSource().getRefactoring().toString() +
+                            " <== " + edge.getDestination().getRefactoring().toString());
+                }
+            }
+            for(Edge edge : node.getEdges()) {
+                if(edge.getWeight() == 0) {
+                    System.out.println(edge.getSource().getRefactoring().toString() +
+                            " <-- " + edge.getDestination().getRefactoring().toString());
+                }
             }
         }
-    }
 
-    private void printGraphHelper(Node node) {
-
-        node.visit();
-        for(Edge edge : node.getEdges()) {
-            if(edge.getWeight() == 0) {
-                System.out.println(edge.getSource().getRefactoring().toString() +
-                        " <-- " + edge.getDestination().getRefactoring().toString());
-            }
-            else {
-                System.out.println(edge.getSource().getRefactoring().toString() +
-                        " <== " + edge.getDestination().getRefactoring().toString());
-            }
-            if(!edge.getDestination().wasVisited()) {
-                printGraphHelper(edge.getDestination());
-            }
-            else {
-                System.out.println("Circular Dependence");
-                return;
-            }
-        }
     }
 
 

@@ -22,12 +22,4 @@ public class Edge {
     public int getWeight() {
         return weight;
     }
-
-    public void updateWeight(int weight) {
-        this.weight = weight;
-    }
-
-    public void updateDestination(Node newNode2) {
-        this.node2 = newNode2;
-    }
 }
