@@ -22,7 +22,7 @@ public class RenameMethodVisitor extends RefactoringVisitor {
      */
     @Override
     public void visit(RenameMethodElement renameMethod) {
-        boolean foundConflict = renameMethod.checkRenameMethodConflict(visitorRef);
+        boolean foundConflict = renameMethod.checkRenameMethodConflict(visitorNode);
         System.out.println("Rename Method/Rename Method conflict: " + foundConflict);
     }
 
@@ -31,7 +31,7 @@ public class RenameMethodVisitor extends RefactoringVisitor {
      */
     @Override
     public void visit(RenameClassElement renameClass) {
-        Node elementNode = renameClass.checkRenameMethodDependence(visitorRef);
+        Node elementNode = renameClass.checkRenameMethodDependence(visitorNode);
         if(elementNode != null) {
             graph.updateGraph(visitorNode, elementNode);
         }

@@ -48,11 +48,13 @@ public class RenameClassElementTest extends LightJavaCodeInsightFixtureTestCase 
         Refactoring foo2 = refactorings.get(1);
         Refactoring bar = refactorings.get(2);
         RenameClassElement renameClassElement = new RenameClassElement();
-        Node node = new Node(foo);
-        renameClassElement.set(node, project);
-        boolean isConflicting = renameClassElement.checkRenameClassConflict(foo2);
+        Node elementNode = new Node(foo);
+        Node visitorNode = new Node(foo2);
+        renameClassElement.set(elementNode, project);
+        boolean isConflicting = renameClassElement.checkRenameClassConflict(visitorNode);
         Assert.assertTrue(isConflicting);
-        isConflicting = renameClassElement.checkRenameClassConflict(bar);
+        visitorNode = new Node(bar);
+        isConflicting = renameClassElement.checkRenameClassConflict(visitorNode);
         Assert.assertFalse(isConflicting);
     }
 
@@ -67,12 +69,13 @@ public class RenameClassElementTest extends LightJavaCodeInsightFixtureTestCase 
         Refactoring visitorRef = methodRefs.get(0);
         assert classRefs != null;
         Refactoring elementRef = classRefs.get(0);
-        Node node = new Node(elementRef);
+        Node elementNode = new Node(elementRef);
+        Node visitorNode = new Node(visitorRef);
         RenameClassElement element = new RenameClassElement();
-        element.set(node, project);
+        element.set(elementNode, project);
 //        boolean isDependent = element.checkRenameMethodDependence(visitorRef);
 //        Assert.assertTrue(isDependent);
-        Node result = element.checkRenameMethodDependence(visitorRef);
+        Node result = element.checkRenameMethodDependence(visitorNode);
         Assert.assertNotNull(result);
     }
 }

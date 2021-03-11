@@ -30,7 +30,8 @@ public class RenameClassElement extends RefactoringElement {
     /*
      * Check if rename class conflicts with rename class
      */
-    public boolean checkRenameClassConflict(Refactoring visitorRef) {
+    public boolean checkRenameClassConflict(Node visitorNode) {
+        Refactoring visitorRef = visitorNode.getRefactoring();
         ConflictCheckers conflictCheckers = new ConflictCheckers(project);
         // Check class naming conflict
         if(conflictCheckers.checkClassNamingConflict(elementRef, visitorRef)) {
@@ -43,7 +44,8 @@ public class RenameClassElement extends RefactoringElement {
     /*
      * Check if a rename class refactoring depends on a rename method refactoring to be performed first.
      */
-    public Node checkRenameMethodDependence(Refactoring visitorRef) {
+    public Node checkRenameMethodDependence(Node visitorNode) {
+        Refactoring visitorRef = visitorNode.getRefactoring();
         if(DependenceCheckers.checkRenameMethodRenameClassDependence(elementRef, visitorRef)) {
             return elementNode;
         }

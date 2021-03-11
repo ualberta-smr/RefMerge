@@ -30,7 +30,8 @@ public class RenameMethodElement extends RefactoringElement {
     /*
      *  Check if a rename method refactoring conflicts with a second rename method refactoring.
      */
-    public boolean checkRenameMethodConflict(Refactoring visitorRef) {
+    public boolean checkRenameMethodConflict(Node visitorNode) {
+        Refactoring visitorRef = visitorNode.getRefactoring();
         ConflictCheckers conflictCheckers = new ConflictCheckers(project);
         // Check for a method override conflict
         if(conflictCheckers.checkOverrideConflict(elementRef, visitorRef)) {
@@ -54,7 +55,8 @@ public class RenameMethodElement extends RefactoringElement {
     /*
      * Check if a rename class refactoring depends on a rename method refactoring to be performed first.
      */
-    public Node checkRenameClassDependence(Refactoring visitorRef) {
+    public Node checkRenameClassDependence(Node visitorNode) {
+        Refactoring visitorRef = visitorNode.getRefactoring();
         if(DependenceCheckers.checkRenameMethodRenameClassDependence(visitorRef, elementRef)) {
             return elementNode;
         }
