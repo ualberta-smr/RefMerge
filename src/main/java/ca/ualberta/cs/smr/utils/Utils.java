@@ -125,22 +125,22 @@ public class Utils {
             System.out.println(filePath);
             return null;
         }
-        // Assuming that it is the first file that is returned
-        PsiJavaFile psiFile = (PsiJavaFile) psiFiles[0];
-        // Get the classes in the file
-        PsiClass[] jClasses = psiFile.getClasses();
-        for (PsiClass it : jClasses) {
-            // Find the class that the refactoring happens in
-            if (Objects.equals(it.getQualifiedName(), qualifiedClass)) {
-                return it;
-            }
-            PsiClass[] innerClasses = it.getInnerClasses();
-            for(PsiClass innerIt : innerClasses) {
-                if (Objects.equals(innerIt.getQualifiedName(), qualifiedClass)) {
-                    return innerIt;
+        for (PsiFile file : psiFiles) {
+            PsiJavaFile psiFile = (PsiJavaFile) file;
+            // Get the classes in the file
+            PsiClass[] jClasses = psiFile.getClasses();
+            for (PsiClass it : jClasses) {
+                // Find the class that the refactoring happens in
+                if (Objects.equals(it.getQualifiedName(), qualifiedClass)) {
+                    return it;
+                }
+                PsiClass[] innerClasses = it.getInnerClasses();
+                for (PsiClass innerIt : innerClasses) {
+                    if (Objects.equals(innerIt.getQualifiedName(), qualifiedClass)) {
+                        return innerIt;
+                    }
                 }
             }
-
         }
         return null;
     }
