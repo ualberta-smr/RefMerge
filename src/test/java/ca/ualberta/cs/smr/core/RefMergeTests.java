@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core;
 
+import ca.ualberta.cs.smr.core.dependenceGraph.Graph;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
 import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
@@ -98,7 +99,9 @@ public class RefMergeTests extends LightJavaCodeInsightFixtureTestCase {
         refactorings.addAll(classRefactorings);
         RefMerge refMerge = new RefMerge();
         refMerge.project = project;
-        refMerge.replayRefactorings(refactorings);
+        Graph graph = new Graph(project);
+        graph.createPartialGraph(refactorings);
+        refMerge.replayRefactorings(graph);
 
         oldMethods = TestUtils.getPsiMethodsFromFile(psiFiles[0]);
         newMethods = TestUtils.getPsiMethodsFromFile(psiFiles[1]);
