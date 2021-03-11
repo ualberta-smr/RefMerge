@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core.matrix;
 
+import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.elements.RefactoringElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
@@ -63,9 +64,10 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         List<Pair> refactorings = GetDataForTests.getPairs("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0).getValue();
+        Node node = new Node(ref);
         RenameMethodElement mockElement = new RenameMethodElement();
         Matrix matrix = new Matrix(null);
-        RefactoringElement element = matrix.makeElement(ref);
+        RefactoringElement element = matrix.makeElement(node);
         boolean equals = element.getClass().equals(mockElement.getClass());
         Assert.assertTrue(equals);
 
@@ -80,9 +82,10 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
+        Node node = new Node(ref);
         RenameMethodVisitor mockVisitor = new RenameMethodVisitor();
         Matrix matrix = new Matrix(null);
-        RefactoringVisitor visitor = matrix.makeVisitor(ref);
+        RefactoringVisitor visitor = matrix.makeVisitor(node);
         boolean equals = visitor.getClass().equals(mockVisitor.getClass());
         Assert.assertTrue(equals);
     }
@@ -108,8 +111,10 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         assert refactorings != null;
         Refactoring elementRef = refactorings.get(1).getValue();
         Refactoring visitorRef = refactorings.get(2).getValue();
+        Node elementNode = new Node(elementRef);
+        Node visitorNode = new Node(visitorRef);
         Matrix matrix = new Matrix(null);
-        matrix.dispatch(elementRef, visitorRef);
+        matrix.dispatch(elementNode, visitorNode);
         String message = "Overload conflict\n" + "Rename Method/Rename Method conflict: true\n";
         Assert.assertEquals(message, outContent.toString());
 
@@ -124,12 +129,12 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
     @Test
     public void testCompareRefactorings() {
         Matrix matrix = Mockito.mock(Matrix.class);
-        Refactoring ref = Mockito.mock(Refactoring.class);
-        List<Pair> refList = new ArrayList<>();
-        refList.add(new Pair(0,ref));
-        Mockito.doCallRealMethod().when(matrix).compareRefactorings(ref, refList);
-        matrix.compareRefactorings(ref, refList);
-        Mockito.verify(matrix, Mockito.times(1)).dispatch(ref, ref);
+        Node node = Mockito.mock(Node.class);
+        List<Node> nodeList = new ArrayList<>();
+        nodeList.add(node);
+        Mockito.doCallRealMethod().when(matrix).compareRefactorings(node, nodeList);
+        matrix.compareRefactorings(node, nodeList);
+        Mockito.verify(matrix, Mockito.times(1)).dispatch(node, node);
 
     }
 

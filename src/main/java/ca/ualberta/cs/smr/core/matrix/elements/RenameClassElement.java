@@ -1,6 +1,7 @@
 package ca.ualberta.cs.smr.core.matrix.elements;
 
 
+import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.conflictCheckers.ConflictCheckers;
 import ca.ualberta.cs.smr.core.matrix.dependenceCheckers.DependenceCheckers;
 import ca.ualberta.cs.smr.core.matrix.visitors.Visitor;
@@ -13,14 +14,16 @@ import org.refactoringminer.api.Refactoring;
 public class RenameClassElement extends RefactoringElement {
     Refactoring elementRef;
     Project project;
+    Node elementNode;
 
     @Override
     public void accept(Visitor v) {
         v.visit(this);
     }
 
-    public void set(Refactoring ref, Project project) {
-        elementRef = ref;
+    public void set(Node elementNode, Project project) {
+        this.elementNode = elementNode;
+        this.elementRef = elementNode.getRefactoring();
         this.project = project;
     }
 

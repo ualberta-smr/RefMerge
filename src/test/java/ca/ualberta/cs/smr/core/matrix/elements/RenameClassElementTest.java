@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core.matrix.elements;
 
+import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameMethodVisitor;
 import com.intellij.openapi.project.Project;
@@ -30,8 +31,9 @@ public class RenameClassElementTest extends LightJavaCodeInsightFixtureTestCase 
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
+        Node node = new Node(ref);
         RenameClassElement element = new RenameClassElement();
-        element.set(ref, project);
+        element.set(node, project);
         Assert.assertNotNull("The refactoring element should not be null", element.elementRef);
     }
 
@@ -46,7 +48,8 @@ public class RenameClassElementTest extends LightJavaCodeInsightFixtureTestCase 
         Refactoring foo2 = refactorings.get(1);
         Refactoring bar = refactorings.get(2);
         RenameClassElement renameClassElement = new RenameClassElement();
-        renameClassElement.set(foo, project);
+        Node node = new Node(foo);
+        renameClassElement.set(node, project);
         boolean isConflicting = renameClassElement.checkRenameClassConflict(foo2);
         Assert.assertTrue(isConflicting);
         isConflicting = renameClassElement.checkRenameClassConflict(bar);
@@ -64,8 +67,9 @@ public class RenameClassElementTest extends LightJavaCodeInsightFixtureTestCase 
         Refactoring visitorRef = methodRefs.get(0);
         assert classRefs != null;
         Refactoring elementRef = classRefs.get(0);
+        Node node = new Node(elementRef);
         RenameClassElement element = new RenameClassElement();
-        element.set(elementRef, project);
+        element.set(node, project);
 //        boolean isDependent = element.checkRenameMethodDependence(visitorRef);
 //        Assert.assertTrue(isDependent);
         Refactoring r = element.checkRenameMethodDependence(visitorRef);

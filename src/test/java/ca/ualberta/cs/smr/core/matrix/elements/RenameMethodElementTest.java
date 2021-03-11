@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core.matrix.elements;
 
+import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameMethodVisitor;
 import com.intellij.openapi.project.Project;
@@ -34,8 +35,9 @@ public class RenameMethodElementTest extends LightJavaCodeInsightFixtureTestCase
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
+        Node node = new Node(ref);
         RenameMethodElement element = new RenameMethodElement();
-        element.set(ref, project);
+        element.set(node, project);
         Assert.assertNotNull("The refactoring element should not be null", element.elementRef);
 
     }
@@ -51,9 +53,10 @@ public class RenameMethodElementTest extends LightJavaCodeInsightFixtureTestCase
         assert refactorings != null;
         assert refactorings.size() == 5;
         Refactoring renameParentFooMethod = refactorings.get(0);
+        Node node = new Node(renameParentFooMethod);
         Refactoring renameChildBarMethod = refactorings.get(2);
         RenameMethodElement element = new RenameMethodElement();
-        element.set(renameParentFooMethod, project);
+        element.set(node, project);
         boolean isConflicting = element.checkRenameMethodConflict(renameChildBarMethod);
         Assert.assertTrue("Originally overriding methods that are renamed to different names conflict", isConflicting);
     }
@@ -67,9 +70,10 @@ public class RenameMethodElementTest extends LightJavaCodeInsightFixtureTestCase
         assert refactorings != null;
         assert refactorings.size() == 4;
         Refactoring changeFirstOverloaded = refactorings.get(0);
+        Node node = new Node(changeFirstOverloaded);
         Refactoring changeSecondOverloaded = refactorings.get(1);
         RenameMethodElement element = new RenameMethodElement();
-        element.set(changeFirstOverloaded, project);
+        element.set(node, project);
         boolean isConflicting = element.checkRenameMethodConflict(changeSecondOverloaded);
         Assert.assertTrue("Methods that start overloaded and get changed to different names should conflict", isConflicting);
     }
@@ -82,9 +86,10 @@ public class RenameMethodElementTest extends LightJavaCodeInsightFixtureTestCase
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring elementRef = refactorings.get(0);
+        Node node = new Node(elementRef);
         Refactoring visitorRef = refactorings.get(1);
         RenameMethodElement element = new RenameMethodElement();
-        element.set(elementRef, project);
+        element.set(node, project);
         boolean isConflicting = element.checkRenameMethodConflict(visitorRef);
         Assert.assertTrue("Methods renamed to the same name in the same class should return true", isConflicting);
     }
@@ -97,8 +102,9 @@ public class RenameMethodElementTest extends LightJavaCodeInsightFixtureTestCase
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring elementRef = refactorings.get(1);
+        Node node = new Node(elementRef);
         RenameMethodElement element = new RenameMethodElement();
-        element.set(elementRef, project);
+        element.set(node, project);
         boolean isConflicting = element.checkRenameMethodConflict(elementRef);
         Assert.assertFalse("A method renamed to the same name in both versions should not conflict", isConflicting);
     }
@@ -114,8 +120,9 @@ public class RenameMethodElementTest extends LightJavaCodeInsightFixtureTestCase
         Refactoring visitorRef = classRefs.get(0);
         assert methodRefs != null;
         Refactoring elementRef = methodRefs.get(0);
+        Node node = new Node(elementRef);
         RenameMethodElement element = new RenameMethodElement();
-        element.set(elementRef, project);
+        element.set(node, project);
 //        boolean isDependent = element.checkRenameClassDependence(visitorRef);
 //        Assert.assertTrue(isDependent);
         Refactoring r = element.checkRenameClassDependence(visitorRef);
