@@ -1,19 +1,17 @@
 package ca.ualberta.cs.smr.core.matrix.visitors;
 
+import ca.ualberta.cs.smr.core.dependenceGraph.Graph;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
 import org.refactoringminer.api.Refactoring;
 
 public class RenameMethodVisitor extends RefactoringVisitor {
     Refactoring visitorRef;
-    boolean foundDependence;
+    Graph graph;
 
-    public void set(Refactoring ref) {
-        visitorRef = ref;
-    }
-
-    public boolean getDependenceResult() {
-        return foundDependence;
+    public void set(Refactoring visitorRef, Graph graph) {
+        this.visitorRef = visitorRef;
+        this.graph = graph;
     }
 
     /*
@@ -30,6 +28,9 @@ public class RenameMethodVisitor extends RefactoringVisitor {
      */
     @Override
     public void visit(RenameClassElement renameClass) {
-        foundDependence = renameClass.checkRenameMethodDependence(visitorRef);
+        Refactoring elementRef = renameClass.checkRenameMethodDependence(visitorRef);
+        if(elementRef != null) {
+            graph.updateGraph(visitorRef, elementRef);
+        }
     }
 }

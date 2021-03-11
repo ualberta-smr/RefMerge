@@ -22,6 +22,8 @@ import java.util.List;
 
 public class Matrix {
     final Project project;
+    Graph graph;
+
     static final HashMap<RefactoringType, RefactoringElement> elementMap =
                                                     new HashMap<RefactoringType, RefactoringElement>() {{
        put(RefactoringType.RENAME_METHOD, new RenameMethodElement());
@@ -36,21 +38,26 @@ public class Matrix {
 
     public Matrix(Project project) {
         this.project = project;
+        this.graph = new Graph(project);
     }
 
     /*
      * Iterate through each of the left refactorings to compare against the right refactorings.
      */
-    public void runMatrix(List<Pair> leftPairs, List<Pair> rightPairs) {
-        Graph graph = new Graph(project);
-        graph.createPartialGraph(leftPairs);
-        graph.createPartialGraph(rightPairs);
+    public Graph runMatrix(List<Pair> leftPairs, List<Pair> rightPairs) {
+        if(leftPairs != null) {
+            graph.createPartialGraph(leftPairs);
+        }
+        if(rightPairs != null) {
+            graph.createPartialGraph(rightPairs);
+        }
         // Iterates over the refactorings in the left commit
         for (Pair leftPair : leftPairs) {
             Refactoring leftRefactoring = leftPair.getValue();
             // Compares the refactorings in the right commit against the left refactoring
             compareRefactorings(leftRefactoring, rightPairs);
         }
+        return graph;
     }
 
     /*
@@ -90,7 +97,7 @@ public class Matrix {
     public RefactoringVisitor makeVisitor(Refactoring ref) {
         RefactoringType type = ref.getRefactoringType();
         RefactoringVisitor visitor = visitorMap.get(type);
-        visitor.set(ref);
+        visitor.set(ref, graph);
         return visitor;
     }
 

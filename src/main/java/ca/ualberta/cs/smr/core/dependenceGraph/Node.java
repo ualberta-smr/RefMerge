@@ -26,7 +26,7 @@ public class Node {
         this.adjacentNodes.add(edge);
     }
 
-    public boolean hasNeighbors() {
+    public boolean hasEdges() {
         return !adjacentNodes.isEmpty();
     }
 
@@ -40,6 +40,10 @@ public class Node {
 
     public List<Node> dependsOn() {
         return dependsList;
+    }
+
+    public boolean isDependent() {
+        return !dependsList.isEmpty();
     }
 
     public void visiting() {
