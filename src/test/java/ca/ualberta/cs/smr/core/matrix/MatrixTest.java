@@ -133,15 +133,4 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
 
     }
 
-    @Test
-    public void testRunMatrix() {
-        Matrix matrix = Mockito.mock(Matrix.class);
-        Refactoring ref = Mockito.mock(Refactoring.class);
-        List<Pair> refList = new ArrayList<>();
-        refList.add(new Pair(0,ref));
-        Mockito.doCallRealMethod().when(matrix).runMatrix(refList, refList);
-        matrix.runMatrix(refList, refList);
-        Mockito.verify(matrix, Mockito.times(1)).compareRefactorings(ref, refList);
-
-    }
 }

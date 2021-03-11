@@ -1,18 +1,15 @@
 package ca.ualberta.cs.smr.core.matrix.visitors;
 
+import ca.ualberta.cs.smr.core.dependenceGraph.Graph;
 import org.refactoringminer.api.Refactoring;
 
 public abstract class RefactoringVisitor implements Visitor {
     Refactoring visitorRef;
-    boolean foundDependence;
+    Graph graph;
 
-
-    public void set(Refactoring ref) {
-        visitorRef = ref;
-    }
-
-    public boolean getDependenceResult() {
-        return foundDependence;
+    public void set(Refactoring visitorRef, Graph graph) {
+        this.visitorRef = visitorRef;
+        this.graph = graph;
     }
 
 }

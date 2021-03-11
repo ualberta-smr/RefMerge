@@ -22,7 +22,7 @@ public class RenameMethodVisitorTest extends LightJavaCodeInsightFixtureTestCase
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
         RenameMethodVisitor visitor = new RenameMethodVisitor();
-        visitor.set(ref);
+        visitor.set(ref, null);
         Assert.assertNotNull("The refactoring element should not be null", visitor.visitorRef);
     }
 
@@ -51,7 +51,7 @@ public class RenameMethodVisitorTest extends LightJavaCodeInsightFixtureTestCase
         RenameMethodElement element = mock(RenameMethodElement.class);
         RenameMethodVisitor visitor = new RenameMethodVisitor();
         element.set(ref, project);
-        visitor.set(ref);
+        visitor.set(ref, null);
         visitor.visit(element);
         verify(element, times(1)).checkRenameMethodConflict(ref);
     }
