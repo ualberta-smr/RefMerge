@@ -2,6 +2,7 @@ package ca.ualberta.cs.smr.core.matrix;
 
 
 import ca.ualberta.cs.smr.core.dependenceGraph.Graph;
+import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.elements.RefactoringElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
@@ -10,7 +11,6 @@ import ca.ualberta.cs.smr.core.matrix.visitors.RenameClassVisitor;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameMethodVisitor;
 import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import com.intellij.openapi.project.Project;
-import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
 import java.util.HashMap;
@@ -45,17 +45,20 @@ public class Matrix {
      * Iterate through each of the left refactorings to compare against the right refactorings.
      */
     public Graph runMatrix(List<Pair> leftPairs, List<Pair> rightPairs) {
-        if(leftPairs != null) {
+        if(leftPairs != null && rightPairs == null) {
             graph.createPartialGraph(leftPairs);
+            return graph;
         }
-        if(rightPairs != null) {
+        if(rightPairs != null && leftPairs == null) {
             graph.createPartialGraph(rightPairs);
+            return graph;
         }
-        // Iterates over the refactorings in the left commit
-        for (Pair leftPair : leftPairs) {
-            Refactoring leftRefactoring = leftPair.getValue();
-            // Compares the refactorings in the right commit against the left refactoring
-            compareRefactorings(leftRefactoring, rightPairs);
+        graph.createLeftPartialGraph(leftPairs);
+        graph.createRightPartialGraph(rightPairs);
+        List<Node> leftNodes = graph.getLeftNodes();
+        List<Node> rightNodes = graph.getRightNodes();
+        for(Node leftNode : leftNodes) {
+            compareRefactorings(leftNode, rightNodes);
         }
         return graph;
     }
@@ -63,23 +66,19 @@ public class Matrix {
     /*
      * This calls dispatch for each pair of refactorings to check for conflicts.
      */
-    void compareRefactorings(Refactoring leftRefactoring, List<Pair> rightPairs) {
-        // Iterate over the right refactorings
-        for(Pair rightPair : rightPairs) {
-            Refactoring rightRefactoring = rightPair.getValue();
-            // Dispatch the refactoring elements to the correct conflict checker
-            dispatch(leftRefactoring, rightRefactoring);
+    void compareRefactorings(Node leftNode, List<Node> rightNodes) {
+        for(Node rightNode : rightNodes) {
+            dispatch(leftNode, rightNode);
         }
-
     }
 
     /*
      * Perform double dispatch to check if the two refactoring elements conflict.
      */
-    void dispatch(Refactoring leftRefactoring, Refactoring rightRefactoring) {
+    void dispatch(Node leftNode, Node rightNode) {
         // Get the refactoring types so we can create the corresponding element and visitor
-        RefactoringElement element = makeElement(leftRefactoring);
-        RefactoringVisitor visitor = makeVisitor(rightRefactoring);
+        RefactoringElement element = makeElement(leftNode);
+        RefactoringVisitor visitor = makeVisitor(rightNode);
         element.accept(visitor);
     }
 
@@ -87,17 +86,17 @@ public class Matrix {
      * Use the refactoring type to get the refactoring element class from the elementMap.
      * Set the refactoring field in the element.
      */
-    public RefactoringElement makeElement(Refactoring ref) {
-        RefactoringType type = ref.getRefactoringType();
+    public RefactoringElement makeElement(Node node) {
+        RefactoringType type = node.getRefactoring().getRefactoringType();
         RefactoringElement element = elementMap.get(type);
-        element.set(ref, project);
+        element.set(node, project);
         return element;
     }
 
-    public RefactoringVisitor makeVisitor(Refactoring ref) {
-        RefactoringType type = ref.getRefactoringType();
+    public RefactoringVisitor makeVisitor(Node node) {
+        RefactoringType type = node.getRefactoring().getRefactoringType();
         RefactoringVisitor visitor = visitorMap.get(type);
-        visitor.set(ref, graph);
+        visitor.set(node, graph);
         return visitor;
     }
 

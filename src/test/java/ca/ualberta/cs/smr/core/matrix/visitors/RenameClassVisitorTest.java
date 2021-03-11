@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core.matrix.visitors;
 
+import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
@@ -21,8 +22,9 @@ public class RenameClassVisitorTest extends LightJavaCodeInsightFixtureTestCase 
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
+        Node node = new Node(ref);
         RenameClassVisitor visitor = new RenameClassVisitor();
-        visitor.set(ref, null);
+        visitor.set(node, null);
         Assert.assertNotNull("The refactoring element should not be null", visitor.visitorRef);
     }
 
@@ -53,10 +55,11 @@ public class RenameClassVisitorTest extends LightJavaCodeInsightFixtureTestCase 
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null && refactorings.size() == 3;
         Refactoring ref = refactorings.get(0);
+        Node node = new Node(ref);
         RenameClassElement element = mock(RenameClassElement.class);
         RenameClassVisitor visitor = new RenameClassVisitor();
-        element.set(ref, project);
-        visitor.set(ref, null);
+        element.set(node, project);
+        visitor.set(node, null);
         visitor.visit(element);
         verify(element, times(1)).checkRenameClassConflict(ref);
     }

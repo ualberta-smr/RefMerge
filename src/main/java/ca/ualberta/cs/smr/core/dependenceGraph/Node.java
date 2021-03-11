@@ -11,7 +11,7 @@ public class Node {
     private List<Node> dependsList;
     private boolean visited;
 
-    Node(Refactoring refactoring) {
+    public Node(Refactoring refactoring) {
         this.refactoring = refactoring;
         this.adjacentNodes = new ArrayList<>();
         this.dependsList = new ArrayList<>();
