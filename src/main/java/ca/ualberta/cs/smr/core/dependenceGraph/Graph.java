@@ -54,23 +54,11 @@ public class Graph {
         for(Node node : nodes) {
             if(hasDependence(node, newNode)) {
                 newNode.addToDependsList(node);
-                if(!node.hasNeighbors()) {
-                    addEdge(node, newNode);
-                    return;
-                }
-                else {
-                    temp = node;
-                }
+                temp = node;
             }
-            else {
-                if(node.hasNeighbors() || newNode.hasNeighbors()) {
-                    continue;
-                }
-                if(temp != null) {
-                    addEdge(temp, newNode);
-                    temp = null;
-                }
-            }
+        }
+        if(temp != null) {
+            addEdge(temp, newNode);
         }
 
     }
