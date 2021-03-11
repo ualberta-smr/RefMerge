@@ -1,5 +1,7 @@
 package ca.ualberta.cs.smr.core;
 
+import ca.ualberta.cs.smr.core.dependenceGraph.Graph;
+import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.Matrix;
 import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import ca.ualberta.cs.smr.utils.Utils;
@@ -102,7 +104,7 @@ public class RefMerge extends AnAction {
         SortPairs.sortList(leftRefs);
         // Check if any of the refactorings are conflicting or have ordering dependencies
         Matrix matrix = new Matrix(project);
-        matrix.runMatrix(leftRefs, rightRefs);
+        Graph graph = matrix.runMatrix(leftRefs, rightRefs);
 
         // Checkout base commit and store it in temp/base
         gitUtils.checkout(baseCommit);
@@ -116,9 +118,8 @@ public class RefMerge extends AnAction {
         undoRefactorings(rightRefs);
         Utils.saveContent(project, "right");
         String rightUndoCommit = gitUtils.addAndCommit();
-
-        // Breaks here?
         gitUtils.checkout(leftCommit);
+
         // Update the PSI classes after the commit
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
@@ -130,9 +131,8 @@ public class RefMerge extends AnAction {
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
         // Combine the lists so we can perform all the refactorings on the merged project
-        leftRefs.addAll(rightRefs);
         // Replay all of the refactorings
-        replayRefactorings(leftRefs);
+        replayRefactorings(graph);
 
 
     }
@@ -164,11 +164,12 @@ public class RefMerge extends AnAction {
     /*
      * replayRefactorings takes a list of refactorings and performs each of the refactorings.
      */
-    public void replayRefactorings(List<Pair> pairs) {
+    public void replayRefactorings(Graph graph) {
         try {
             ReplayOperations replay = new ReplayOperations(project);
-            for(Pair pair : pairs) {
-                Refactoring ref = pair.getValue();
+            List<Node> nodes = graph.getSortedNodes();
+            for(Node node : nodes) {
+                Refactoring ref = node.getRefactoring();
                 switch (ref.getRefactoringType()) {
                     case RENAME_CLASS:
                         replay.replayRenameClass(ref);

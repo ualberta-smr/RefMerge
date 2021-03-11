@@ -114,6 +114,39 @@ public class Graph {
 
     }
 
+    public List<Node> getSortedNodes() {
+        List<Node> nodes = new ArrayList<>();
+        for(Node node : allNodes) {
+            if(node.wasVisited()) {
+                continue;
+            }
+            if(!node.isDependent()) {
+                if(node.hasEdges()) {
+                    nodes.addAll(getDependentNodes(node.getEdges(), new ArrayList<>()));
+                }
+            }
+            node.visiting();
+            nodes.add(node);
+        }
+        return nodes;
+    }
+
+    private List<Node> getDependentNodes(List<Edge> edges, List<Node> nodes) {
+        for(Edge edge : edges) {
+            Node node = edge.getDestination();
+            if(node.wasVisited()) {
+                continue;
+            }
+            if(node.hasEdges()) {
+                getDependentNodes(node.getEdges(), nodes);
+            }
+            node.visiting();
+            nodes.add(node);
+            return nodes;
+        }
+        return nodes;
+    }
+
     public void printGraph() {
 
         for(Node node : allNodes) {
