@@ -110,6 +110,7 @@ public class Graph {
         if(dependentNode.isDependent()) {
             dependentNode = dependentNode.dependsOn().get(0);
         }
+        dependentNode.addToDependsList(node);
         addEdge(node, dependentNode);
 
     }
@@ -124,9 +125,9 @@ public class Graph {
                 if(node.hasEdges()) {
                     nodes.addAll(getDependentNodes(node.getEdges(), new ArrayList<>()));
                 }
+                node.visiting();
+                nodes.add(node);
             }
-            node.visiting();
-            nodes.add(node);
         }
         return nodes;
     }
