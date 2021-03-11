@@ -56,6 +56,6 @@ public class RenameMethodVisitorTest extends LightJavaCodeInsightFixtureTestCase
         element.set(node, project);
         visitor.set(node, null);
         visitor.visit(element);
-        verify(element, times(1)).checkRenameMethodConflict(ref);
+        verify(element, times(1)).checkRenameMethodConflict(node);
     }
 }
