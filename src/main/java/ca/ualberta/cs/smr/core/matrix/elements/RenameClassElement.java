@@ -43,9 +43,9 @@ public class RenameClassElement extends RefactoringElement {
     /*
      * Check if a rename class refactoring depends on a rename method refactoring to be performed first.
      */
-    public Refactoring checkRenameMethodDependence(Refactoring visitorRef) {
+    public Node checkRenameMethodDependence(Refactoring visitorRef) {
         if(DependenceCheckers.checkRenameMethodRenameClassDependence(elementRef, visitorRef)) {
-            return elementRef;
+            return elementNode;
         }
         return null;
     }

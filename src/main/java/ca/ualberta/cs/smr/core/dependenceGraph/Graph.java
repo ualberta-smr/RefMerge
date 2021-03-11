@@ -7,7 +7,6 @@ import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
-import java.awt.peer.ListPeer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -102,28 +101,17 @@ public class Graph {
 
     }
 
-    public void updateGraph(Refactoring refactoring, Refactoring dependentRefactoring) {
-        Node node1 = getNode(refactoring);
-        Node node2 = getNode(dependentRefactoring);
-        if(node1.hasEdges()) {
-            for(Edge edge : node1.getEdges()) {
-                node1 = edge.getDestination();
+    public void updateGraph(Node node, Node dependentNode) {
+        if(node.hasEdges()) {
+            for(Edge edge : node.getEdges()) {
+                node = edge.getDestination();
             }
         }
-        if(node2.isDependent()) {
-            node2 = node2.dependsOn().get(0);
+        if(dependentNode.isDependent()) {
+            dependentNode = dependentNode.dependsOn().get(0);
         }
-        addEdge(node1, node2);
+        addEdge(node, dependentNode);
 
-    }
-
-    public Node getNode(Refactoring refactoring) {
-        for(Node node : allNodes) {
-            if(refactoring == node.getRefactoring()) {
-                return node;
-            }
-        }
-        return null;
     }
 
     public void printGraph() {
