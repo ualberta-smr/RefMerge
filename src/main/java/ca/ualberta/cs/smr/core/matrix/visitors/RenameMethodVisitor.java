@@ -31,9 +31,9 @@ public class RenameMethodVisitor extends RefactoringVisitor {
      */
     @Override
     public void visit(RenameClassElement renameClass) {
-        Refactoring elementRef = renameClass.checkRenameMethodDependence(visitorRef);
-        if(elementRef != null) {
-            graph.updateGraph(visitorRef, elementRef);
+        Node elementNode = renameClass.checkRenameMethodDependence(visitorRef);
+        if(elementNode != null) {
+            graph.updateGraph(visitorNode, elementNode);
         }
     }
 }

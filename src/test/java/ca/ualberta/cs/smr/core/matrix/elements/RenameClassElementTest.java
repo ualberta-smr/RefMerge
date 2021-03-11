@@ -72,7 +72,7 @@ public class RenameClassElementTest extends LightJavaCodeInsightFixtureTestCase 
         element.set(node, project);
 //        boolean isDependent = element.checkRenameMethodDependence(visitorRef);
 //        Assert.assertTrue(isDependent);
-        Refactoring r = element.checkRenameMethodDependence(visitorRef);
-        Assert.assertNotNull(r);
+        Node result = element.checkRenameMethodDependence(visitorRef);
+        Assert.assertNotNull(result);
     }
 }
