@@ -8,6 +8,7 @@ import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Graph {
@@ -55,11 +56,12 @@ public class Graph {
         Node temp = null;
         for(Node node : nodes) {
             if(hasDependence(node, newNode)) {
-                newNode.addToDependsList(node);
+                //newNode.addToDependsList(node);
                 temp = node;
             }
         }
         if(temp != null) {
+            newNode.addToDependsList(temp);
             addEdge(temp, newNode);
         }
 
@@ -102,16 +104,18 @@ public class Graph {
     }
 
     public void updateGraph(Node node, Node dependentNode) {
-        if(node.hasEdges()) {
-            for(Edge edge : node.getEdges()) {
-                node = edge.getDestination();
-            }
-        }
-        if(dependentNode.isDependent()) {
-            dependentNode = dependentNode.dependsOn().get(0);
-        }
         dependentNode.addToDependsList(node);
         addEdge(node, dependentNode);
+//        if(node.hasEdges()) {
+//            for(Edge edge : node.getEdges()) {
+//                node = edge.getDestination();
+//            }
+//        }
+//        if(dependentNode.isDependent()) {
+//            dependentNode = dependentNode.dependsOn().get(0);
+//        }
+//        dependentNode.addToDependsList(node);
+//        addEdge(node, dependentNode);
 
     }
 
@@ -122,11 +126,11 @@ public class Graph {
                 continue;
             }
             if(!node.isDependent()) {
+                nodes.add(node);
+                node.visiting();
                 if(node.hasEdges()) {
                     nodes.addAll(getDependentNodes(node.getEdges(), new ArrayList<>()));
                 }
-                node.visiting();
-                nodes.add(node);
             }
         }
         return nodes;
@@ -138,14 +142,26 @@ public class Graph {
             if(node.wasVisited()) {
                 continue;
             }
+            if(nodeStillDepends(node)) {
+                return nodes;
+            }
+            nodes.add(node);
+            node.visiting();
             if(node.hasEdges()) {
                 getDependentNodes(node.getEdges(), nodes);
             }
-            node.visiting();
-            nodes.add(node);
             return nodes;
         }
         return nodes;
+    }
+
+    private boolean nodeStillDepends(Node dependent) {
+        for(Node node : dependent.dependsOn()) {
+            if(!node.wasVisited()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void printGraph() {
