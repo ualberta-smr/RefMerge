@@ -53,10 +53,11 @@ public class Matrix {
             graph.createPartialGraph(rightPairs);
             return graph;
         }
-        graph.createLeftPartialGraph(leftPairs);
-        graph.createRightPartialGraph(rightPairs);
-        List<Node> leftNodes = graph.getLeftNodes();
-        List<Node> rightNodes = graph.getRightNodes();
+        if(leftPairs == null) {
+            return null;
+        }
+        List<Node> leftNodes = graph.createPartialGraph(leftPairs);
+        List<Node> rightNodes = graph.createPartialGraph(rightPairs);
         for(Node leftNode : leftNodes) {
             compareRefactorings(leftNode, rightNodes);
         }

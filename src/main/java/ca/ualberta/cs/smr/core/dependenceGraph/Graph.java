@@ -14,44 +14,23 @@ import java.util.List;
 public class Graph {
     Project project;
     private List<Node> nodes;
-    private List<Node> leftNodes;
-    private List<Node> rightNodes;
     private List<Node> allNodes;
 
     public Graph(Project project) {
         this.project = project;
         this.allNodes = new ArrayList<>();
-        this.leftNodes = new ArrayList<>();
-        this.rightNodes = new ArrayList<>();
     }
 
-    public void createLeftPartialGraph(List<Pair> pairs) {
-        createPartialGraph(pairs);
-        this.leftNodes = nodes;
-    }
-
-    public void createRightPartialGraph(List<Pair> pairs) {
-        createPartialGraph(pairs);
-        this.rightNodes = nodes;
-    }
-
-    public List<Node> getLeftNodes() {
-        return leftNodes;
-    }
-
-    public List<Node> getRightNodes() {
-        return rightNodes;
-    }
-
-    public void createPartialGraph(List<Pair> pairs) {
+    public List<Node> createPartialGraph(List<Pair> pairs) {
         this.nodes = new ArrayList<>();
         if(pairs.size() == 0) {
-            return;
+            return null;
         }
         if(pairs.size() == 1) {
             Node node = new Node(pairs.get(0).getValue());
             addNode(node);
-            return;
+            this.allNodes.add(node);
+            return nodes;
         }
         for(int i = pairs.size() - 1; i > -1; i--) {
             Pair pair = pairs.get(i);
@@ -61,6 +40,7 @@ public class Graph {
             addNode(node);
         }
         this.allNodes.addAll(nodes);
+        return nodes;
     }
 
     public void addNode(Node node) {
