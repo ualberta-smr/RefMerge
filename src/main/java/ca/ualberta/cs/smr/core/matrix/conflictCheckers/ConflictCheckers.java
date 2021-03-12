@@ -20,7 +20,9 @@ public class ConflictCheckers {
         this.project = project;
     }
 
-    public boolean checkOverrideConflict(Refactoring elementRef, Refactoring visitorRef) {
+    public boolean checkOverrideConflict(Node elementNode, Node visitorNode) {
+        Refactoring elementRef = elementNode.getRefactoring();
+        Refactoring visitorRef = visitorNode.getRefactoring();
         // Get the original operations
         UMLOperation elementOriginalOperation = getOriginalRenameOperation(elementRef);
         UMLOperation visitorOriginalOperation = getOriginalRenameOperation(visitorRef);
@@ -56,7 +58,9 @@ public class ConflictCheckers {
                 elementRefactoredOperation.equalSignature(visitorRefactoredOperation);
     }
 
-    public boolean checkOverloadConflict(Refactoring elementRef, Refactoring visitorRef) {
+    public boolean checkOverloadConflict(Node elementNode, Node visitorNode) {
+        Refactoring elementRef = elementNode.getRefactoring();
+        Refactoring visitorRef = visitorNode.getRefactoring();
         // Get the original operations
         UMLOperation elementOriginalOperation = getOriginalRenameOperation(elementRef);
         UMLOperation visitorOriginalOperation = getOriginalRenameOperation(visitorRef);
@@ -117,7 +121,9 @@ public class ConflictCheckers {
         return checkNamingConflict(elementOriginalName, visitorOriginalName, elementNewName, visitorNewName);
     }
 
-    public boolean checkClassNamingConflict(Refactoring elementRef, Refactoring visitorRef) {
+    public boolean checkClassNamingConflict(Node elementNode, Node visitorNode) {
+        Refactoring elementRef = elementNode.getRefactoring();
+        Refactoring visitorRef = visitorNode.getRefactoring();
         // Get the package for each class
         String elementPackage = getOriginalClassPackage(elementRef);
         String visitorPackage = getOriginalClassPackage(visitorRef);

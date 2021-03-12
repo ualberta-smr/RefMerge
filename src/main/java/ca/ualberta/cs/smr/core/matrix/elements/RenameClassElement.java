@@ -12,7 +12,6 @@ import org.refactoringminer.api.Refactoring;
 
 
 public class RenameClassElement extends RefactoringElement {
-    Refactoring elementRef;
     Project project;
     Node elementNode;
 
@@ -23,7 +22,6 @@ public class RenameClassElement extends RefactoringElement {
 
     public void set(Node elementNode, Project project) {
         this.elementNode = elementNode;
-        this.elementRef = elementNode.getRefactoring();
         this.project = project;
     }
 
@@ -31,10 +29,9 @@ public class RenameClassElement extends RefactoringElement {
      * Check if rename class conflicts with rename class
      */
     public boolean checkRenameClassConflict(Node visitorNode) {
-        Refactoring visitorRef = visitorNode.getRefactoring();
         ConflictCheckers conflictCheckers = new ConflictCheckers(project);
         // Check class naming conflict
-        if(conflictCheckers.checkClassNamingConflict(elementRef, visitorRef)) {
+        if(conflictCheckers.checkClassNamingConflict(elementNode, visitorNode)) {
             System.out.println("Naming conflict");
             return true;
         }
@@ -45,8 +42,7 @@ public class RenameClassElement extends RefactoringElement {
      * Check if a rename class refactoring depends on a rename method refactoring to be performed first.
      */
     public Node checkRenameMethodDependence(Node visitorNode) {
-        Refactoring visitorRef = visitorNode.getRefactoring();
-        if(DependenceCheckers.checkRenameMethodRenameClassDependence(elementRef, visitorRef)) {
+        if(DependenceCheckers.checkRenameMethodRenameClassDependence(elementNode, visitorNode)) {
             return elementNode;
         }
         return null;
