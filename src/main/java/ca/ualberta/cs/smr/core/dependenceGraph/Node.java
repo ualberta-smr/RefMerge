@@ -9,6 +9,7 @@ public class Node {
     private Refactoring refactoring;
     private List<Edge> adjacentNodes;
     private List<Node> dependsList;
+    private Head head;
     private boolean visited;
 
     public Node(Refactoring refactoring) {
@@ -16,6 +17,7 @@ public class Node {
         this.adjacentNodes = new ArrayList<>();
         this.dependsList = new ArrayList<>();
         this.visited = false;
+        this.head = new Head();
     }
 
     public Refactoring getRefactoring() {
@@ -54,16 +56,14 @@ public class Node {
         return visited;
     }
 
-    private Node getHeadOfDependenceChain() {
-        if(dependsList.isEmpty()) {
-            return this;
-        }
-        Node node = dependsList.get(0);
-        return node.getHeadOfDependenceChain();
+    public void updateHead(Node node) {
+        head.update(node);
     }
 
     public String getDependenceChainClassHead() {
-        Node node = getHeadOfDependenceChain();
-        return node.getRefactoring().getInvolvedClassesBeforeRefactoring().iterator().next().getRight();
+        if(head.getClassName() == null) {
+            return refactoring.getInvolvedClassesBeforeRefactoring().iterator().next().getRight();
+        }
+        return head.getClassName();
     }
 }
