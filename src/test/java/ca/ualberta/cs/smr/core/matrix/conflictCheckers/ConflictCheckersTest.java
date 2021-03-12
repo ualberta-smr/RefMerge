@@ -72,6 +72,8 @@ public class ConflictCheckersTest extends LightJavaCodeInsightFixtureTestCase {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/original";
         String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
+        String configurePath = "renameMethodRenameMethodFiles/methodOverloadConflict/original/OverloadClasses.java";
+        myFixture.configureByFiles(configurePath);
         ConflictCheckers conflictCheckers = new ConflictCheckers(project);
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
