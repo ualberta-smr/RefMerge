@@ -25,7 +25,7 @@ public class RenameMethodVisitorTest extends LightJavaCodeInsightFixtureTestCase
         Node node = new Node(ref);
         RenameMethodVisitor visitor = new RenameMethodVisitor();
         visitor.set(node, null);
-        Assert.assertNotNull("The refactoring element should not be null", visitor.visitorRef);
+        Assert.assertNotNull("The refactoring element should not be null", visitor.visitorNode);
     }
 
     public void testRenameMethodElementVisit() {
