@@ -53,4 +53,12 @@ public class Node {
     public boolean wasVisited() {
         return visited;
     }
+
+    public Node getHeadOfDependenceChain() {
+        if(dependsList.isEmpty()) {
+            return this;
+        }
+        Node node = dependsList.get(0);
+        return node.getHeadOfDependenceChain();
+    }
 }
