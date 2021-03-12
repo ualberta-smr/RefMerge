@@ -113,11 +113,32 @@ public class ConflictCheckersTest extends LightJavaCodeInsightFixtureTestCase {
         Assert.assertFalse("A method renamed to the same name in both versions should not conflict", expectedFalse);
     }
 
+    public void testNestedMethodNamingConflict() {
+        Project project = myFixture.getProject();
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
+        ConflictCheckers conflictCheckers = new ConflictCheckers(project);
+        List<Refactoring> methodRefactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
+        List<Refactoring> classRefactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
+        assert methodRefactorings != null;
+        assert classRefactorings != null;
+        Refactoring elementRef = methodRefactorings.get(0);
+        Refactoring visitorRef = methodRefactorings.get(3);
+        Refactoring classRef = classRefactorings.get(0);
+        Node elementNode = new Node(elementRef);
+        Node visitorNode = new Node(visitorRef);
+        Node classNode = new Node(classRef);
+        visitorNode.addToDependsList(classNode);
+        boolean isConflicting = conflictCheckers.checkMethodNamingConflict(elementNode, visitorNode);
+        Assert.assertTrue(isConflicting);
+    }
+
     public void testCheckClassNamingConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/renameClassRenameClassFiles/renameClassNamingConflict/original";
-        String refactoredPath = basePath + "/src/test/resources/renameClassRenameClassFiles/renameClassNamingConflict/refactored";
+        String originalPath = basePath + "/src/test/testData/renameClassRenameClassFiles/renameClassNamingConflict/original";
+        String refactoredPath = basePath + "/src/test/testData/renameClassRenameClassFiles/renameClassNamingConflict/refactored";
         ConflictCheckers conflictCheckers = new ConflictCheckers(project);
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null && refactorings.size() == 3;
