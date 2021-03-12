@@ -72,7 +72,14 @@ public class ConflictCheckers {
         String visitorClassName = visitorNode.getDependenceChainClassHead();
         // If the methods are in different classes, no overloading happens
         if (!isSameName(elementClassName, visitorClassName)) {
-            return false;
+            Utils utils = new Utils(project);
+            String elementFile = elementRefactoredOperation.getLocationInfo().getFilePath();
+            String visitorFile = visitorRefactoredOperation.getLocationInfo().getFilePath();
+            PsiClass psiElement = utils.getPsiClassByFilePath(elementFile, elementClassName);
+            PsiClass psiVisitor = utils.getPsiClassByFilePath(visitorFile, visitorClassName);
+            if(!ifClassExtends(psiElement, psiVisitor)) {
+                return false;
+            }
         }
         // Get original method names
         String elementOriginalMethodName = elementOriginalOperation.getName();
