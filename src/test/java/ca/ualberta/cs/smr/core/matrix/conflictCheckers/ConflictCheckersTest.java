@@ -57,13 +57,13 @@ public class ConflictCheckersTest extends LightJavaCodeInsightFixtureTestCase {
         Refactoring renameChildBarMethod = refactorings.get(2);
         Refactoring renameOtherBarMethod = refactorings.get(3);
         Refactoring renameFooBarMethod = refactorings.get(4);
-        boolean isConflicting = conflictCheckers.checkOverrideConflict(renameParentFooMethod, renameOtherFooMethod);
+        boolean isConflicting = conflictCheckers.checkOverrideConflict(new Node(renameParentFooMethod), new Node(renameOtherFooMethod));
         Assert.assertFalse("Renamings in the same class should not result in override conflict", isConflicting);
-        isConflicting = conflictCheckers.checkOverrideConflict(renameParentFooMethod, renameOtherBarMethod);
+        isConflicting = conflictCheckers.checkOverrideConflict(new Node(renameParentFooMethod), new Node(renameOtherBarMethod));
         Assert.assertFalse("Methods that have no override relation, before or after, should not conflict", isConflicting);
-        isConflicting = conflictCheckers.checkOverrideConflict(renameParentFooMethod, renameFooBarMethod);
+        isConflicting = conflictCheckers.checkOverrideConflict(new Node(renameParentFooMethod), new Node(renameFooBarMethod));
         Assert.assertFalse("Classes that have no inheritance should not result in override conflicts", isConflicting);
-        isConflicting = conflictCheckers.checkOverrideConflict(renameParentFooMethod, renameChildBarMethod);
+        isConflicting = conflictCheckers.checkOverrideConflict(new Node(renameParentFooMethod), new Node(renameChildBarMethod));
         Assert.assertTrue("Originally overriding methods that are renamed to different names conflict", isConflicting);
     }
 
@@ -80,12 +80,12 @@ public class ConflictCheckersTest extends LightJavaCodeInsightFixtureTestCase {
         Refactoring changeSecondOverloaded = refactorings.get(1);
         Refactoring changeOtherMethodToSecondOverloaded = refactorings.get(2);
         Refactoring changeOtherBarMethod = refactorings.get(3);
-        boolean isConflicting = conflictCheckers.checkOverloadConflict(changeFirstOverloaded, changeOtherBarMethod);
+        boolean isConflicting = conflictCheckers.checkOverloadConflict(new Node(changeFirstOverloaded), new Node(changeOtherBarMethod));
         Assert.assertFalse("Methods in different classes should not cause overload conflict", isConflicting);
-        isConflicting = conflictCheckers.checkOverloadConflict(changeFirstOverloaded, changeOtherMethodToSecondOverloaded);
+        isConflicting = conflictCheckers.checkOverloadConflict(new Node(changeFirstOverloaded), new Node(changeOtherMethodToSecondOverloaded));
         Assert.assertFalse("Methods in the same class that do not have related names " +
                 "before or after being refactored should not conflict", isConflicting);
-        isConflicting = conflictCheckers.checkOverloadConflict(changeSecondOverloaded, changeOtherMethodToSecondOverloaded);
+        isConflicting = conflictCheckers.checkOverloadConflict(new Node(changeSecondOverloaded), new Node(changeOtherMethodToSecondOverloaded));
         Assert.assertTrue("Methods that overload after refactoring should conflict", isConflicting);
     }
 
@@ -124,9 +124,9 @@ public class ConflictCheckersTest extends LightJavaCodeInsightFixtureTestCase {
         Refactoring foo = refactorings.get(0);
         Refactoring foo2 = refactorings.get(1);
         Refactoring bar = refactorings.get(2);
-        boolean isConflicting = conflictCheckers.checkClassNamingConflict(foo, bar);
+        boolean isConflicting = conflictCheckers.checkClassNamingConflict(new Node(foo), new Node(bar));
         Assert.assertFalse("Classes without related refactorings should not conflict", isConflicting);
-        isConflicting = conflictCheckers.checkClassNamingConflict(foo, foo2);
+        isConflicting = conflictCheckers.checkClassNamingConflict(new Node(foo), new Node(foo2));
         Assert.assertTrue("Classes renamed to the same name in the same package conflict", isConflicting);
 
     }

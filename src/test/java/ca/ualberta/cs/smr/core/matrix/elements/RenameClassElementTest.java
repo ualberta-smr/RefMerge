@@ -34,7 +34,7 @@ public class RenameClassElementTest extends LightJavaCodeInsightFixtureTestCase 
         Node node = new Node(ref);
         RenameClassElement element = new RenameClassElement();
         element.set(node, project);
-        Assert.assertNotNull("The refactoring element should not be null", element.elementRef);
+        Assert.assertNotNull("The refactoring element should not be null", element.elementNode);
     }
 
     public void testCheckRenameClassConflict() {

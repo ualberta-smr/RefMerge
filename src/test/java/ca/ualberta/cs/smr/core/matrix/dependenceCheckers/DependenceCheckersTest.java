@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core.matrix.dependenceCheckers;
 
+import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,7 +21,9 @@ public class DependenceCheckersTest {
         Refactoring methodRef = methodRefs.get(0);
         assert classRefs != null;
         Refactoring classRef = classRefs.get(0);
-        boolean isDependent = DependenceCheckers.checkRenameMethodRenameClassDependence(classRef, methodRef);
+        Node classNode = new Node(classRef);
+        Node methodNode = new Node(methodRef);
+        boolean isDependent = DependenceCheckers.checkRenameMethodRenameClassDependence(classNode, methodNode);
         Assert.assertTrue(isDependent);
     }
 }
