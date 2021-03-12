@@ -13,7 +13,7 @@ public class ConflictCheckersTest extends LightJavaCodeInsightFixtureTestCase {
 
     @Override
     protected String getTestDataPath() {
-        return "src/test/resources";
+        return "src/test/testData";
     }
 
     public void testCheckNamingConflict() {
@@ -44,8 +44,8 @@ public class ConflictCheckersTest extends LightJavaCodeInsightFixtureTestCase {
     public void testCheckOverrideConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverrideConflict/original";
-        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverrideConflict/refactored";
+        String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverrideConflict/original";
+        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverrideConflict/refactored";
         String configurePath = "renameMethodRenameMethodFiles/methodOverrideConflict/original/Override.java";
         myFixture.configureByFiles(configurePath);
         ConflictCheckers conflictCheckers = new ConflictCheckers(project);
@@ -70,8 +70,8 @@ public class ConflictCheckersTest extends LightJavaCodeInsightFixtureTestCase {
     public void testCheckOverloadConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/original";
-        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
+        String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/original";
+        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
         String configurePath = "renameMethodRenameMethodFiles/methodOverloadConflict/original/OverloadClasses.java";
         myFixture.configureByFiles(configurePath);
         ConflictCheckers conflictCheckers = new ConflictCheckers(project);
@@ -94,8 +94,8 @@ public class ConflictCheckersTest extends LightJavaCodeInsightFixtureTestCase {
     public void testCheckMethodNamingConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/original";
-        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
+        String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/original";
+        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
         ConflictCheckers conflictCheckers = new ConflictCheckers(project);
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
@@ -118,8 +118,8 @@ public class ConflictCheckersTest extends LightJavaCodeInsightFixtureTestCase {
     public void testNestedMethodNamingConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/original";
-        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
+        String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/original";
+        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
         ConflictCheckers conflictCheckers = new ConflictCheckers(project);
         List<Refactoring> methodRefactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         List<Refactoring> classRefactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
