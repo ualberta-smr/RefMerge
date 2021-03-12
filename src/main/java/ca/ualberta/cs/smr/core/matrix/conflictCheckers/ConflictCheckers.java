@@ -30,8 +30,8 @@ public class ConflictCheckers {
         UMLOperation elementRefactoredOperation = getRefactoredRenameOperation(elementRef);
         UMLOperation visitorRefactoredOperation = getRefactoredRenameOperation(visitorRef);
         // Get the class names
-        String elementClassName = elementRefactoredOperation.getClassName();
-        String visitorClassName = visitorRefactoredOperation.getClassName();
+        String elementClassName = elementNode.getDependenceChainClassHead();
+        String visitorClassName = visitorNode.getDependenceChainClassHead();
 
         // If the rename methods happen in the same class then there is no override conflict
         if(isSameName(elementClassName, visitorClassName)) {
@@ -68,8 +68,8 @@ public class ConflictCheckers {
         UMLOperation elementRefactoredOperation = getRefactoredRenameOperation(elementRef);
         UMLOperation visitorRefactoredOperation = getRefactoredRenameOperation(visitorRef);
         // Get class names
-        String elementClassName = elementOriginalOperation.getClassName();
-        String visitorClassName = visitorOriginalOperation.getClassName();
+        String elementClassName = elementNode.getDependenceChainClassHead();
+        String visitorClassName = visitorNode.getDependenceChainClassHead();
         // If the methods are in different classes, no overloading happens
         if (!isSameName(elementClassName, visitorClassName)) {
             return false;
@@ -91,21 +91,8 @@ public class ConflictCheckers {
     public boolean checkMethodNamingConflict(Node elementNode, Node visitorNode) {
         Refactoring elementRef = elementNode.getRefactoring();
         Refactoring visitorRef = visitorNode.getRefactoring();
-        String elementClassName = elementRef.getInvolvedClassesBeforeRefactoring().iterator().next().getRight();
-        String visitorClassName = visitorRef.getInvolvedClassesBeforeRefactoring().iterator().next().getRight();
-        if(visitorNode.isDependent()) {
-            Node visitorHead = visitorNode.getHeadOfDependenceChain();
-            visitorClassName = visitorHead.getRefactoring().getInvolvedClassesBeforeRefactoring().iterator().next().getRight();
-
-        }
-
-        if(elementNode.isDependent()) {
-            Node elementHead = elementNode.getHeadOfDependenceChain();
-            elementClassName = elementHead.getRefactoring().getInvolvedClassesBeforeRefactoring().iterator().next().getRight();
-        }
-        // Get class names
-//        String elementClassName = getOriginalRenameOperationClassName(elementRef);
-//        String visitorClassName = getOriginalRenameOperationClassName(visitorRef);
+        String elementClassName = elementNode.getDependenceChainClassHead();
+        String visitorClassName = visitorNode.getDependenceChainClassHead();
 
         // If the methods are in different classes
         if (!isSameName(elementClassName, visitorClassName)) {

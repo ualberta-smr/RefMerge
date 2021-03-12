@@ -68,10 +68,6 @@ public class DependenceGraphTests extends LightJavaCodeInsightFixtureTestCase {
         System.out.println("\n\nNEW GRAPH:");
         List<Node> nodes = newGraph.getSortedNodes();
         for(Node node : nodes) {
-            if(node.isDependent()) {
-                Node x = node.getHeadOfDependenceChain();
-                System.out.println(x.getRefactoring());
-            }
             if(node.wasVisited()) {
                 System.out.println("VISITED: " + node.getRefactoring().toString());
             }
