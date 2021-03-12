@@ -6,6 +6,7 @@ import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import ca.ualberta.cs.smr.utils.sortingUtils.SortPairs;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
+import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
 
 import java.util.ArrayList;
@@ -18,17 +19,41 @@ public class DependenceGraphTests extends LightJavaCodeInsightFixtureTestCase {
         return "src/test/testData";
     }
 
+    public void testHasDependence() {
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/testData/renameMethodRenameClassFiles/dependenceGraph/original";
+        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameClassFiles/dependenceGraph/refactored";
+
+        Project project = myFixture.getProject();
+        List<Refactoring> methodRefs = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
+        List<Refactoring> classRefs = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
+
+        assert classRefs != null;
+        assert methodRefs != null;
+        Graph graph = new Graph(project);
+        Node methodNode = new Node(methodRefs.get(0));
+        Node classNode = new Node(classRefs.get(0));
+        boolean hasDependence = graph.hasDependence(methodNode, classNode);
+        Assert.assertTrue(hasDependence);
+        Node methodNode2 = new Node(methodRefs.get(1));
+        hasDependence = graph.hasDependence(methodNode2, classNode);
+        Assert.assertTrue(hasDependence);
+        hasDependence = graph.hasDependence(methodNode, methodNode2);
+        Assert.assertFalse(hasDependence);
+
+
+    }
+
+
     public void testDependenceGraph() {
         String testDir = "renameMethodRenameClassFiles/dependenceGraph/";
         String testDataRenamed = testDir + "refactored/";
         String testDataOriginal = testDir + "original/";
-        //String testResult = testDir + "expectedReplayResults/";
-        String testFile ="Main.java";
-        String f2 = "A.java";
-        String f3 = "Original.java";
-        myFixture.configureByFiles(testDataOriginal + f2, testDataRenamed + f2,
-                testDataOriginal + testFile, testDataRenamed + testFile, testDataOriginal + f3, testDataRenamed + f3);
-        //myFixture.configureByFiles(testDataOriginal + testFile, testDataRenamed + testFile);
+        String testFile = "A.java";
+        String testFile2 = "Main.java";
+        String testFile3 = "Original.java";
+        myFixture.configureByFiles(testDataOriginal + testFile2, testDataRenamed + testFile2,
+                testDataOriginal + testFile, testDataRenamed + testFile, testDataOriginal + testFile3, testDataRenamed + testFile3);
 
 
         Project project = myFixture.getProject();
