@@ -38,7 +38,7 @@ public class RenameMethodElementTest extends LightJavaCodeInsightFixtureTestCase
         Node node = new Node(ref);
         RenameMethodElement element = new RenameMethodElement();
         element.set(node, project);
-        Assert.assertNotNull("The refactoring element should not be null", element.elementRef);
+        Assert.assertNotNull("The refactoring element should not be null", element.elementNode);
 
     }
 

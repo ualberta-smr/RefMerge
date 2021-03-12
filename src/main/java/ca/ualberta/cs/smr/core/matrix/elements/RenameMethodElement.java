@@ -5,14 +5,12 @@ import ca.ualberta.cs.smr.core.matrix.conflictCheckers.ConflictCheckers;
 import ca.ualberta.cs.smr.core.matrix.dependenceCheckers.DependenceCheckers;
 import ca.ualberta.cs.smr.core.matrix.visitors.Visitor;
 import com.intellij.openapi.project.Project;
-import org.refactoringminer.api.Refactoring;
 
 
 /*
  * Checks if visitor refactorings confict with a rename method refactoring.
  */
 public class RenameMethodElement extends RefactoringElement {
-    Refactoring elementRef;
     Project project;
     Node elementNode;
 
@@ -23,7 +21,6 @@ public class RenameMethodElement extends RefactoringElement {
 
     public void set(Node elementNode, Project project) {
         this.elementNode = elementNode;
-        this.elementRef = elementNode.getRefactoring();
         this.project = project;
     }
 

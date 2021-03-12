@@ -4,16 +4,13 @@ import ca.ualberta.cs.smr.core.dependenceGraph.Graph;
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
-import org.refactoringminer.api.Refactoring;
 
 public class RenameClassVisitor extends RefactoringVisitor {
     Node visitorNode;
-    Refactoring visitorRef;
     Graph graph;
 
     public void set(Node visitorNode, Graph graph) {
         this.visitorNode = visitorNode;
-        this.visitorRef = visitorNode.getRefactoring();
         this.graph = graph;
     }
 
