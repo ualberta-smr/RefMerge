@@ -54,11 +54,16 @@ public class Node {
         return visited;
     }
 
-    public Node getHeadOfDependenceChain() {
+    private Node getHeadOfDependenceChain() {
         if(dependsList.isEmpty()) {
             return this;
         }
         Node node = dependsList.get(0);
         return node.getHeadOfDependenceChain();
+    }
+
+    public String getDependenceChainClassHead() {
+        Node node = getHeadOfDependenceChain();
+        return node.getRefactoring().getInvolvedClassesBeforeRefactoring().iterator().next().getRight();
     }
 }
