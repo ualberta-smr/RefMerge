@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core.matrix.conflictCheckers;
 
+import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
@@ -83,10 +84,24 @@ public class ConflictCheckers {
                 !elementRefactoredOperation.equalParameters(visitorOriginalOperation);
     }
 
-    public boolean checkMethodNamingConflict(Refactoring elementRef, Refactoring visitorRef) {
+    public boolean checkMethodNamingConflict(Node elementNode, Node visitorNode) {
+        Refactoring elementRef = elementNode.getRefactoring();
+        Refactoring visitorRef = visitorNode.getRefactoring();
+        String elementClassName = elementRef.getInvolvedClassesBeforeRefactoring().iterator().next().getRight();
+        String visitorClassName = visitorRef.getInvolvedClassesBeforeRefactoring().iterator().next().getRight();
+        if(visitorNode.isDependent()) {
+            Node visitorHead = visitorNode.getHeadOfDependenceChain();
+            visitorClassName = visitorHead.getRefactoring().getInvolvedClassesBeforeRefactoring().iterator().next().getRight();
+
+        }
+
+        if(elementNode.isDependent()) {
+            Node elementHead = elementNode.getHeadOfDependenceChain();
+            elementClassName = elementHead.getRefactoring().getInvolvedClassesBeforeRefactoring().iterator().next().getRight();
+        }
         // Get class names
-        String elementClassName = getOriginalRenameOperationClassName(elementRef);
-        String visitorClassName = getOriginalRenameOperationClassName(visitorRef);
+//        String elementClassName = getOriginalRenameOperationClassName(elementRef);
+//        String visitorClassName = getOriginalRenameOperationClassName(visitorRef);
 
         // If the methods are in different classes
         if (!isSameName(elementClassName, visitorClassName)) {

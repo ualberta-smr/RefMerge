@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core.matrix.conflictCheckers;
 
+import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
@@ -98,14 +99,17 @@ public class ConflictCheckersTest extends LightJavaCodeInsightFixtureTestCase {
         assert refactorings != null;
         Refactoring elementRef = refactorings.get(1);
         Refactoring visitorRef = refactorings.get(2);
-        boolean expectedFalse = conflictCheckers.checkMethodNamingConflict(elementRef, visitorRef);
+        Node elementNode = new Node(elementRef);
+        Node visitorNode = new Node(visitorRef);
+        boolean expectedFalse = conflictCheckers.checkMethodNamingConflict(elementNode, visitorNode);
         Assert.assertFalse("Methods in different classes should not have naming conflicts", expectedFalse);
         visitorRef = refactorings.get(0);
-        boolean expectedTrue = conflictCheckers.checkMethodNamingConflict(elementRef, visitorRef);
+        visitorNode = new Node(visitorRef);
+        boolean expectedTrue = conflictCheckers.checkMethodNamingConflict(elementNode, visitorNode);
         Assert.assertTrue("Methods renamed to the same name in the same class should return true", expectedTrue);
-        expectedTrue = conflictCheckers.checkMethodNamingConflict(visitorRef, elementRef);
+        expectedTrue = conflictCheckers.checkMethodNamingConflict(visitorNode, elementNode);
         Assert.assertTrue("The same refactorings in a different order should return true", expectedTrue);
-        expectedFalse = conflictCheckers.checkMethodNamingConflict(visitorRef, visitorRef);
+        expectedFalse = conflictCheckers.checkMethodNamingConflict(visitorNode, visitorNode);
         Assert.assertFalse("A method renamed to the same name in both versions should not conflict", expectedFalse);
     }
 

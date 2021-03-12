@@ -45,7 +45,7 @@ public class RenameMethodElement extends RefactoringElement {
         }
         // Check for naming conflict
 
-        else if(conflictCheckers.checkMethodNamingConflict(elementRef, visitorRef)) {
+        else if(conflictCheckers.checkMethodNamingConflict(elementNode, visitorNode)) {
             System.out.println("Naming conflict");
             return true;
         }
