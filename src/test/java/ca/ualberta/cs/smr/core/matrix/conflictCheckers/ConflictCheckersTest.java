@@ -129,6 +129,7 @@ public class ConflictCheckersTest extends LightJavaCodeInsightFixtureTestCase {
         Node elementNode = new Node(elementRef);
         Node visitorNode = new Node(visitorRef);
         Node classNode = new Node(classRef);
+        visitorNode.updateHead(classNode);
         visitorNode.addToDependsList(classNode);
         boolean isConflicting = conflictCheckers.checkMethodNamingConflict(elementNode, visitorNode);
         Assert.assertTrue(isConflicting);

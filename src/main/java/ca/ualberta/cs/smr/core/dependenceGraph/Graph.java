@@ -8,7 +8,6 @@ import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class Graph {
@@ -56,7 +55,7 @@ public class Graph {
         Node temp = null;
         for(Node node : nodes) {
             if(hasDependence(node, newNode)) {
-                //newNode.addToDependsList(node);
+                newNode.updateHead(node);
                 temp = node;
             }
         }
@@ -106,16 +105,6 @@ public class Graph {
     public void updateGraph(Node node, Node dependentNode) {
         dependentNode.addToDependsList(node);
         addEdge(node, dependentNode);
-//        if(node.hasEdges()) {
-//            for(Edge edge : node.getEdges()) {
-//                node = edge.getDestination();
-//            }
-//        }
-//        if(dependentNode.isDependent()) {
-//            dependentNode = dependentNode.dependsOn().get(0);
-//        }
-//        dependentNode.addToDependsList(node);
-//        addEdge(node, dependentNode);
 
     }
 
@@ -142,7 +131,7 @@ public class Graph {
             if(node.wasVisited()) {
                 continue;
             }
-            if(nodeStillDepends(node)) {
+            if(ifNodeStillDepends(node)) {
                 return nodes;
             }
             nodes.add(node);
@@ -155,7 +144,7 @@ public class Graph {
         return nodes;
     }
 
-    private boolean nodeStillDepends(Node dependent) {
+    private boolean ifNodeStillDepends(Node dependent) {
         for(Node node : dependent.dependsOn()) {
             if(!node.wasVisited()) {
                 return true;
