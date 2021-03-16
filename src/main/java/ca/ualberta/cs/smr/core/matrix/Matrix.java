@@ -44,6 +44,11 @@ public class Matrix {
         this.graph = new DependenceGraph(project);
     }
 
+    public Matrix(Project project, DependenceGraph graph) {
+        this.project = project;
+        this.graph = graph;
+    }
+
     /*
      * Iterate through each of the left refactorings to compare against the right refactorings.
      */

@@ -7,11 +7,19 @@ import org.refactoringminer.api.Refactoring;
 
 public class DependenceCheckers {
 
-    public static boolean checkRenameMethodRenameClassDependence(Node elementNode, Node visitorNode) {
-        Refactoring classRefactoring = elementNode.getRefactoring();
-        Refactoring methodRefactoring = visitorNode.getRefactoring();
+    public static boolean checkRenameMethodRenameClassDependence(Node classNode, Node methodNode) {
+        Refactoring classRefactoring = classNode.getRefactoring();
+        Refactoring methodRefactoring = methodNode.getRefactoring();
         String classClass = ((RenameClassRefactoring) classRefactoring).getOriginalClass().getName();
         String methodClass = ((RenameOperationRefactoring) methodRefactoring).getOriginalOperation().getClassName();
         return classClass.equals(methodClass);
+    }
+
+    public static boolean checkRenameClassRenameClassDependence(Node firstNode, Node secondNode) {
+        Refactoring firstRefactoring = firstNode.getRefactoring();
+        Refactoring secondRefactoring = secondNode.getRefactoring();
+        String firstClass = ((RenameClassRefactoring) firstRefactoring).getRenamedClassName();
+        String secondClass = ((RenameClassRefactoring) secondRefactoring).getOriginalClassName();
+        return firstClass.equals(secondClass);
     }
 }
