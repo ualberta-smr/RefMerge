@@ -15,12 +15,10 @@ import java.util.List;
 
 public class DependenceGraph {
     Project project;
-    private List<Node> allNodes;
     private DefaultDirectedGraph<Node, DefaultEdge> graph;
 
     public DependenceGraph(Project project) {
         this.project = project;
-        this.allNodes = new ArrayList<>();
         this.graph = new DefaultDirectedGraph<>(DefaultEdge.class);
     }
 
@@ -68,11 +66,6 @@ public class DependenceGraph {
         return nodes;
     }
 
-    public void addEdge(Node from, Node to) {
-        Edge edge = new Edge(from, to);
-        from.addEdge(edge);
-    }
-
     public boolean hasDependence(Node node1, Node node2) {
 
 //        Matrix matrix = new Matrix(project);
@@ -116,7 +109,7 @@ public class DependenceGraph {
 
     public void updateGraph(Node node, Node dependentNode) {
         dependentNode.addToDependsList(node);
-        addEdge(node, dependentNode);
+        graph.addEdge(node, dependentNode);
 
     }
 
