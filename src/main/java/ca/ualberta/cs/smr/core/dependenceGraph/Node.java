@@ -9,15 +9,28 @@ public class Node {
     private Refactoring refactoring;
     private List<Node> dependsList;
     private Head head;
+    private int commit;
 
     public Node(Refactoring refactoring) {
         this.refactoring = refactoring;
         this.dependsList = new ArrayList<>();
         this.head = new Head();
+        this.commit = 0;
+    }
+
+    public Node(Refactoring refactoring, int commit) {
+        this.refactoring = refactoring;
+        this.dependsList = new ArrayList<>();
+        this.head = new Head();
+        this.commit = commit;
     }
 
     public Refactoring getRefactoring() {
         return refactoring;
+    }
+
+    public int getCommit() {
+        return commit;
     }
 
     public void addToDependsList(Node node) {
