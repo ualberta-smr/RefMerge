@@ -4,6 +4,7 @@ import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import com.intellij.openapi.project.Project;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
+import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
@@ -16,21 +17,24 @@ import java.util.List;
 public class DependenceGraph {
     Project project;
     private DefaultDirectedGraph<Node, DefaultEdge> graph;
+    private DefaultDirectedGraph<Node, DefaultEdge> tempGraph;
 
     public DependenceGraph(Project project) {
         this.project = project;
         this.graph = new DefaultDirectedGraph<>(DefaultEdge.class);
+        this.tempGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
     }
 
     public DefaultDirectedGraph<Node, DefaultEdge> createPartialGraph(List<Pair> pairs) {
         if(pairs.size() == 0) {
             return null;
         }
-        DefaultDirectedGraph<Node, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
+        this.tempGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
         if(pairs.size() == 1) {
             Node node = new Node(pairs.get(0).getValue());
-            graph.addVertex(node);
-            return graph;
+            tempGraph.addVertex(node);
+            Graphs.addGraph(graph, tempGraph);
+            return tempGraph;
         }
         for(int i = pairs.size() - 1; i > -1; i--) {
             Pair pair = pairs.get(i);
@@ -38,11 +42,12 @@ public class DependenceGraph {
             Node node = new Node(refactoring);
             insertVertex(node);
         }
-        return this.graph;
+        Graphs.addGraph(graph, tempGraph);
+        return tempGraph;
     }
 
     public void insertVertex(Node node) {
-        this.graph.addVertex(node);
+        this.tempGraph.addVertex(node);
         Node temp = null;
         DepthFirstIterator<Node, DefaultEdge> dFI = new DepthFirstIterator<>(graph);
         while(dFI.hasNext()) {
@@ -52,14 +57,14 @@ public class DependenceGraph {
                 temp = node;
             }
             if(temp != null) {
-                this.graph.addEdge(temp, node);
+                this.tempGraph.addEdge(temp, node);
             }
         }
     }
 
     public List<Node> getSortedNodes() {
         List<Node> nodes = new ArrayList<>();
-        DepthFirstIterator<Node, DefaultEdge> iterator = new DepthFirstIterator<>(graph);
+        DepthFirstIterator<Node, DefaultEdge> iterator = new DepthFirstIterator<>(this.graph);
         while(iterator.hasNext()) {
             nodes.add(iterator.next());
         }
