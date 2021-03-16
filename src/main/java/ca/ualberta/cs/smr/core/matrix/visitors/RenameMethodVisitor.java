@@ -19,6 +19,9 @@ public class RenameMethodVisitor extends RefactoringVisitor {
      */
     @Override
     public void visit(RenameMethodElement renameMethod) {
+        if(!graph.containsVertex(visitorNode)) {
+            return;
+        }
         boolean foundConflict = renameMethod.checkRenameMethodConflict(visitorNode);
         System.out.println("Rename Method/Rename Method conflict: " + foundConflict);
     }
