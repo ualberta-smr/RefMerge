@@ -19,7 +19,7 @@ public class RenameMethodVisitor extends RefactoringVisitor {
      */
     @Override
     public void visit(RenameMethodElement renameMethod) {
-        if(!graph.containsVertex(visitorNode)) {
+        if(graph.isSameBranch()) {
             return;
         }
         boolean foundConflict = renameMethod.checkRenameMethodConflict(visitorNode);
@@ -32,8 +32,21 @@ public class RenameMethodVisitor extends RefactoringVisitor {
     @Override
     public void visit(RenameClassElement renameClass) {
         Node elementNode = renameClass.checkRenameMethodDependence(visitorNode);
-        if(elementNode != null) {
-            graph.updateGraph(visitorNode, elementNode);
+        if (elementNode != null) {
+            // If there is dependence between branches, the rename method needs to happen before the rename class
+            if (!graph.isSameBranch()) {
+                graph.updateGraph(visitorNode, elementNode);
+            } else {
+                // If there is dependence on the same branch and the class and method are renamed in the same commit
+                // or the method rename happens after, the rename method depends on the rename class
+                if (elementNode.getCommit() <= visitorNode.getCommit()) {
+                    graph.updateGraph(visitorNode, elementNode);
+                }
+                // Otherwise the rename class depends on the rename method in the same branch
+                else {
+                    graph.updateGraph(elementNode, visitorNode);
+                }
+            }
         }
     }
 }
