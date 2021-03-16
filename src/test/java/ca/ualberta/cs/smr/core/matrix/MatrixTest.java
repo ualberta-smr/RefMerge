@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core.matrix;
 
+import ca.ualberta.cs.smr.core.dependenceGraph.DependenceGraph;
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.elements.RefactoringElement;
@@ -9,6 +10,7 @@ import ca.ualberta.cs.smr.core.matrix.visitors.RefactoringVisitor;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameClassVisitor;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameMethodVisitor;
 import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
+import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.After;
 import org.junit.Assert;
@@ -100,8 +102,8 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         System.setErr(new PrintStream(errContent));
     }
 
-    @Test
     public void testDispatch() {
+        Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/original";
         String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
@@ -111,7 +113,10 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         Refactoring visitorRef = refactorings.get(2).getValue();
         Node elementNode = new Node(elementRef);
         Node visitorNode = new Node(visitorRef);
-        Matrix matrix = new Matrix(null);
+        DependenceGraph graph = new DependenceGraph(project);
+        graph.addVertex(elementNode);
+        graph.addVertex(visitorNode);
+        Matrix matrix = new Matrix(project, graph);
         matrix.dispatch(elementNode, visitorNode);
         String message = "Overload conflict\n" + "Rename Method/Rename Method conflict: true\n";
         Assert.assertEquals(message, outContent.toString());
