@@ -1,6 +1,6 @@
 package ca.ualberta.cs.smr.core;
 
-import ca.ualberta.cs.smr.core.dependenceGraph.Graph;
+import ca.ualberta.cs.smr.core.dependenceGraph.DependenceGraph;
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.Matrix;
 import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
@@ -104,7 +104,7 @@ public class RefMerge extends AnAction {
         SortPairs.sortList(leftRefs);
         // Check if any of the refactorings are conflicting or have ordering dependencies
         Matrix matrix = new Matrix(project);
-        Graph graph = matrix.runMatrix(leftRefs, rightRefs);
+        DependenceGraph graph = matrix.runMatrix(leftRefs, rightRefs);
 
         // Checkout base commit and store it in temp/base
         gitUtils.checkout(baseCommit);
@@ -164,7 +164,7 @@ public class RefMerge extends AnAction {
     /*
      * replayRefactorings takes a list of refactorings and performs each of the refactorings.
      */
-    public void replayRefactorings(Graph graph) {
+    public void replayRefactorings(DependenceGraph graph) {
         try {
             ReplayOperations replay = new ReplayOperations(project);
             List<Node> nodes = graph.getSortedNodes();

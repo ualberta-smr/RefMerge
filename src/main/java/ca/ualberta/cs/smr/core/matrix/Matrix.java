@@ -1,7 +1,7 @@
 package ca.ualberta.cs.smr.core.matrix;
 
 
-import ca.ualberta.cs.smr.core.dependenceGraph.Graph;
+import ca.ualberta.cs.smr.core.dependenceGraph.DependenceGraph;
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.elements.RefactoringElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
@@ -11,6 +11,9 @@ import ca.ualberta.cs.smr.core.matrix.visitors.RenameClassVisitor;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameMethodVisitor;
 import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import com.intellij.openapi.project.Project;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.traverse.DepthFirstIterator;
 import org.refactoringminer.api.RefactoringType;
 
 import java.util.HashMap;
@@ -22,7 +25,7 @@ import java.util.List;
 
 public class Matrix {
     final Project project;
-    Graph graph;
+    DependenceGraph graph;
 
     static final HashMap<RefactoringType, RefactoringElement> elementMap =
                                                     new HashMap<RefactoringType, RefactoringElement>() {{
@@ -38,13 +41,13 @@ public class Matrix {
 
     public Matrix(Project project) {
         this.project = project;
-        this.graph = new Graph(project);
+        this.graph = new DependenceGraph(project);
     }
 
     /*
      * Iterate through each of the left refactorings to compare against the right refactorings.
      */
-    public Graph runMatrix(List<Pair> leftPairs, List<Pair> rightPairs) {
+    public DependenceGraph runMatrix(List<Pair> leftPairs, List<Pair> rightPairs) {
         if(leftPairs != null && rightPairs == null) {
             graph.createPartialGraph(leftPairs);
             return graph;
@@ -56,10 +59,13 @@ public class Matrix {
         if(leftPairs == null) {
             return null;
         }
-        List<Node> leftNodes = graph.createPartialGraph(leftPairs);
-        List<Node> rightNodes = graph.createPartialGraph(rightPairs);
-        for(Node leftNode : leftNodes) {
-            compareRefactorings(leftNode, rightNodes);
+        DefaultDirectedGraph<Node, DefaultEdge> leftGraph = graph.createPartialGraph(leftPairs);
+        DefaultDirectedGraph<Node, DefaultEdge> rightGraph = graph.createPartialGraph(rightPairs);
+        DepthFirstIterator<Node, DefaultEdge> leftIterator = new DepthFirstIterator<Node, DefaultEdge>(leftGraph);
+        DepthFirstIterator<Node, DefaultEdge> rightIterator = new DepthFirstIterator<Node, DefaultEdge>(rightGraph);
+        while(leftIterator.hasNext()) {
+            Node leftNode = leftIterator.next();
+            compareRefactorings(leftNode, rightIterator);
         }
         return graph;
     }
@@ -67,8 +73,9 @@ public class Matrix {
     /*
      * This calls dispatch for each pair of refactorings to check for conflicts.
      */
-    void compareRefactorings(Node leftNode, List<Node> rightNodes) {
-        for(Node rightNode : rightNodes) {
+    void compareRefactorings(Node leftNode, DepthFirstIterator<Node, DefaultEdge> rightIterator) {
+        while(rightIterator.hasNext()) {
+            Node rightNode = rightIterator.next();
             dispatch(leftNode, rightNode);
         }
     }
