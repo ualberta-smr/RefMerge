@@ -1,15 +1,15 @@
 package ca.ualberta.cs.smr.core.matrix.visitors;
 
-import ca.ualberta.cs.smr.core.dependenceGraph.Graph;
+import ca.ualberta.cs.smr.core.dependenceGraph.DependenceGraph;
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
 
 public class RenameClassVisitor extends RefactoringVisitor {
     Node visitorNode;
-    Graph graph;
+    DependenceGraph graph;
 
-    public void set(Node visitorNode, Graph graph) {
+    public void set(Node visitorNode, DependenceGraph graph) {
         this.visitorNode = visitorNode;
         this.graph = graph;
     }

@@ -4,46 +4,68 @@ import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import com.intellij.openapi.project.Project;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.traverse.DepthFirstIterator;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Graph {
+public class DependenceGraph {
     Project project;
-    private List<Node> nodes;
     private List<Node> allNodes;
+    private DefaultDirectedGraph<Node, DefaultEdge> graph;
 
-    public Graph(Project project) {
+    public DependenceGraph(Project project) {
         this.project = project;
         this.allNodes = new ArrayList<>();
+        this.graph = new DefaultDirectedGraph<>(DefaultEdge.class);
     }
 
-    public List<Node> createPartialGraph(List<Pair> pairs) {
-        this.nodes = new ArrayList<>();
+    public DefaultDirectedGraph<Node, DefaultEdge> createPartialGraph(List<Pair> pairs) {
         if(pairs.size() == 0) {
             return null;
         }
+        DefaultDirectedGraph<Node, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
         if(pairs.size() == 1) {
             Node node = new Node(pairs.get(0).getValue());
-            addNode(node);
-            this.allNodes.add(node);
-            return nodes;
+            graph.addVertex(node);
+            return graph;
         }
         for(int i = pairs.size() - 1; i > -1; i--) {
             Pair pair = pairs.get(i);
             Refactoring refactoring = pair.getValue();
             Node node = new Node(refactoring);
-            insertNode(node);
-            addNode(node);
+            insertVertex(node);
         }
-        this.allNodes.addAll(nodes);
-        return nodes;
+        return this.graph;
     }
 
-    public void addNode(Node node) {
-        this.nodes.add(node);
+    public void insertVertex(Node node) {
+        this.graph.addVertex(node);
+        Node temp = null;
+        DepthFirstIterator<Node, DefaultEdge> dFI = new DepthFirstIterator<>(graph);
+        while(dFI.hasNext()) {
+            Node nodeInGraph = dFI.next();
+            if(hasDependence(node, nodeInGraph)) {
+                node.updateHead(node);
+                temp = node;
+            }
+            if(temp != null) {
+                this.graph.addEdge(temp, node);
+            }
+        }
+    }
+
+    public List<Node> getSortedNodes() {
+        List<Node> nodes = new ArrayList<>();
+        DepthFirstIterator<Node, DefaultEdge> iterator = new DepthFirstIterator<>(graph);
+        while(iterator.hasNext()) {
+            nodes.add(iterator.next());
+        }
+        return nodes;
     }
 
     public void addEdge(Node from, Node to) {
@@ -51,22 +73,12 @@ public class Graph {
         from.addEdge(edge);
     }
 
-    void insertNode(Node newNode) {
-        Node temp = null;
-        for(Node node : nodes) {
-            if(hasDependence(node, newNode)) {
-                newNode.updateHead(node);
-                temp = node;
-            }
-        }
-        if(temp != null) {
-            newNode.addToDependsList(temp);
-            addEdge(temp, newNode);
-        }
-
-    }
-
     public boolean hasDependence(Node node1, Node node2) {
+
+//        Matrix matrix = new Matrix(project);
+//        RefactoringElement element = matrix.makeElement(node1);
+//        RefactoringVisitor visitor = matrix.makeVisitor(node2);
+//        element.accept(visitor);
         Refactoring refactoring1 = node1.getRefactoring();
         Refactoring refactoring2 = node2.getRefactoring();
         RefactoringType type1 = refactoring1.getRefactoringType();
@@ -105,70 +117,6 @@ public class Graph {
     public void updateGraph(Node node, Node dependentNode) {
         dependentNode.addToDependsList(node);
         addEdge(node, dependentNode);
-
-    }
-
-    public List<Node> getSortedNodes() {
-        List<Node> nodes = new ArrayList<>();
-        for(Node node : allNodes) {
-            if(node.wasVisited()) {
-                continue;
-            }
-            if(!node.isDependent()) {
-                nodes.add(node);
-                node.visiting();
-                if(node.hasEdges()) {
-                    nodes.addAll(getDependentNodes(node.getEdges(), new ArrayList<>()));
-                }
-            }
-        }
-        return nodes;
-    }
-
-    private List<Node> getDependentNodes(List<Edge> edges, List<Node> nodes) {
-        for(Edge edge : edges) {
-            Node node = edge.getDestination();
-            if(node.wasVisited()) {
-                continue;
-            }
-            if(ifNodeStillDepends(node)) {
-                return nodes;
-            }
-            nodes.add(node);
-            node.visiting();
-            if(node.hasEdges()) {
-                getDependentNodes(node.getEdges(), nodes);
-            }
-            return nodes;
-        }
-        return nodes;
-    }
-
-    private boolean ifNodeStillDepends(Node dependent) {
-        for(Node node : dependent.dependsOn()) {
-            if(!node.wasVisited()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public void printGraph() {
-
-        for(Node node : allNodes) {
-            if(node.wasVisited()) {
-                continue;
-            }
-            node.visiting();
-            if(node.dependsOn().isEmpty() && node.getEdges().isEmpty()) {
-                System.out.println("Island: " + node.getRefactoring().toString());
-            }
-            for(Edge edge : node.getEdges()) {
-                edge.getDestination().wasVisited();
-                    System.out.println(edge.getSource().getRefactoring().toString() +
-                            " <== " + edge.getDestination().getRefactoring().toString());
-            }
-        }
 
     }
 

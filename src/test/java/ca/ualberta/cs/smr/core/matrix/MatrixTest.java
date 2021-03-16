@@ -15,14 +15,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -126,16 +124,5 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         System.setErr(originalErr);
     }
 
-    @Test
-    public void testCompareRefactorings() {
-        Matrix matrix = Mockito.mock(Matrix.class);
-        Node node = Mockito.mock(Node.class);
-        List<Node> nodeList = new ArrayList<>();
-        nodeList.add(node);
-        Mockito.doCallRealMethod().when(matrix).compareRefactorings(node, nodeList);
-        matrix.compareRefactorings(node, nodeList);
-        Mockito.verify(matrix, Mockito.times(1)).dispatch(node, node);
-
-    }
 
 }
