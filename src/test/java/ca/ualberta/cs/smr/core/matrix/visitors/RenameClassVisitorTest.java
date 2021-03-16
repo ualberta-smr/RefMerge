@@ -47,20 +47,4 @@ public class RenameClassVisitorTest extends LightJavaCodeInsightFixtureTestCase 
         verify(visitor, never()).visit(wrongElement);
     }
 
-    public void testCheckRenameClassConflictCall() {
-        Project project = myFixture.getProject();
-        String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameClassRenameClassFiles/renameClassNamingConflict/original";
-        String refactoredPath = basePath + "/src/test/testData/renameClassRenameClassFiles/renameClassNamingConflict/refactored";
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
-        assert refactorings != null && refactorings.size() == 3;
-        Refactoring ref = refactorings.get(0);
-        Node node = new Node(ref);
-        RenameClassElement element = mock(RenameClassElement.class);
-        RenameClassVisitor visitor = new RenameClassVisitor();
-        element.set(node, project);
-        visitor.set(node, null);
-        visitor.visit(element);
-        verify(element, times(1)).checkRenameClassConflict(node);
-    }
 }

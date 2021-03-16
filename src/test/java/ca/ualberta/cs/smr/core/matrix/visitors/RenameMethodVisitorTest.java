@@ -4,7 +4,6 @@ import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
-import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
@@ -42,20 +41,4 @@ public class RenameMethodVisitorTest extends LightJavaCodeInsightFixtureTestCase
         verify(visitor, times(1)).visit(element);
     }
 
-    public void testCheckRenameMethodConflictCall() {
-        Project project = myFixture.getProject();
-        String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/original";
-        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
-        assert refactorings != null;
-        Refactoring ref = refactorings.get(0);
-        RenameMethodElement element = mock(RenameMethodElement.class);
-        RenameMethodVisitor visitor = new RenameMethodVisitor();
-        Node node = new Node(ref);
-        element.set(node, project);
-        visitor.set(node, null);
-        visitor.visit(element);
-        verify(element, times(1)).checkRenameMethodConflict(node);
-    }
 }
