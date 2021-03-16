@@ -13,17 +13,26 @@ import org.refactoringminer.api.Refactoring;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class DependenceGraph {
     Project project;
     private DefaultDirectedGraph<Node, DefaultEdge> graph;
     private DefaultDirectedGraph<Node, DefaultEdge> tempGraph;
+    private boolean SAME_BRANCH;
 
     public DependenceGraph(Project project) {
         this.project = project;
         this.graph = new DefaultDirectedGraph<>(DefaultEdge.class);
         this.tempGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
+        this.SAME_BRANCH = true;
+    }
+
+    public void setTwoBranches() {
+        this.SAME_BRANCH = false;
+    }
+
+    public boolean isSameBranch() {
+        return this.SAME_BRANCH;
     }
 
     public DefaultDirectedGraph<Node, DefaultEdge> createPartialGraph(List<Pair> pairs) {
@@ -32,7 +41,9 @@ public class DependenceGraph {
         }
         this.tempGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
         if(pairs.size() == 1) {
-            Node node = new Node(pairs.get(0).getValue());
+            Refactoring refactoring = pairs.get(0).getValue();
+            int commit = pairs.get(0).getCommit();
+            Node node = new Node(refactoring, commit);
             tempGraph.addVertex(node);
             Graphs.addGraph(graph, tempGraph);
             return tempGraph;
@@ -40,7 +51,8 @@ public class DependenceGraph {
         for(int i = pairs.size() - 1; i > -1; i--) {
             Pair pair = pairs.get(i);
             Refactoring refactoring = pair.getValue();
-            Node node = new Node(refactoring);
+            int commit = pair.getCommit();
+            Node node = new Node(refactoring, commit);
             insertVertex(node);
         }
         Graphs.addGraph(graph, tempGraph);
@@ -61,11 +73,8 @@ public class DependenceGraph {
         List<Node> nodes = new ArrayList<>();
         DepthFirstIterator<Node, DefaultEdge> iterator = new DepthFirstIterator<>(this.graph);
         while(iterator.hasNext()) {
-            nodes.add(iterator.next());
-        }
-        Set<DefaultEdge> edges = this.graph.edgeSet();
-        for(DefaultEdge edge : edges) {
-            System.out.println(edge.toString());
+            Node node = iterator.next();
+            nodes.add(node);
         }
         return nodes;
     }
@@ -78,16 +87,13 @@ public class DependenceGraph {
 
     }
 
-    public boolean containsVertex(Node node) {
-        return this.graph.containsVertex(node);
-    }
-
     public void updateGraph(Node node, Node dependentNode) {
         if(this.graph.containsVertex(dependentNode)) {
             dependentNode.addToDependsList(node);
             graph.addEdge(node, dependentNode);
         }
         else {
+            dependentNode.addToDependsList(node);
             this.tempGraph.addEdge(node, dependentNode);
         }
 
