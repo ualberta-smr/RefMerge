@@ -9,9 +9,11 @@ import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
+import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.refactoringminer.api.Refactoring;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class DependenceGraph {
@@ -71,11 +73,12 @@ public class DependenceGraph {
 
     public List<Node> getSortedNodes() {
         List<Node> nodes = new ArrayList<>();
-        DepthFirstIterator<Node, DefaultEdge> iterator = new DepthFirstIterator<>(this.graph);
+        TopologicalOrderIterator<Node, DefaultEdge> iterator = new TopologicalOrderIterator<>(graph);
         while(iterator.hasNext()) {
             Node node = iterator.next();
             nodes.add(node);
         }
+        Collections.reverse(nodes);
         return nodes;
     }
 
