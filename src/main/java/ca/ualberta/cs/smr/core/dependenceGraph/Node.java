@@ -10,12 +10,14 @@ public class Node {
     private List<Node> dependsList;
     private Head head;
     private int commit;
+    private int edgeCount;
 
     public Node(Refactoring refactoring) {
         this.refactoring = refactoring;
         this.dependsList = new ArrayList<>();
         this.head = new Head();
         this.commit = 0;
+        this.edgeCount = 0;
     }
 
     public Node(Refactoring refactoring, int commit) {
@@ -23,6 +25,7 @@ public class Node {
         this.dependsList = new ArrayList<>();
         this.head = new Head();
         this.commit = commit;
+        this.edgeCount = 0;
     }
 
     public Refactoring getRefactoring() {
@@ -34,6 +37,7 @@ public class Node {
     }
 
     public void addToDependsList(Node node) {
+        edgeCount++;
         dependsList.add(node);
     }
 
@@ -46,5 +50,16 @@ public class Node {
             return refactoring.getInvolvedClassesBeforeRefactoring().iterator().next().getRight();
         }
         return head.getClassName();
+    }
+
+    public boolean hasManyEdges() {
+        if(edgeCount <= 1) {
+            return false;
+        }
+        return true;
+    }
+
+    public void decreaseEdgeCount() {
+        this.edgeCount--;
     }
 }
