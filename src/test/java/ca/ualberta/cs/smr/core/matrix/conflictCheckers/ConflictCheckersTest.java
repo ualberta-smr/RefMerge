@@ -7,6 +7,7 @@ import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ConflictCheckersTest extends LightJavaCodeInsightFixtureTestCase {
@@ -115,27 +116,28 @@ public class ConflictCheckersTest extends LightJavaCodeInsightFixtureTestCase {
         Assert.assertFalse("A method renamed to the same name in both versions should not conflict", expectedFalse);
     }
 
-//    public void testNestedMethodNamingConflict() {
-//        Project project = myFixture.getProject();
-//        String basePath = System.getProperty("user.dir");
-//        String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/original";
-//        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
-//        ConflictCheckers conflictCheckers = new ConflictCheckers(project);
-//        List<Refactoring> methodRefactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
-//        List<Refactoring> classRefactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
-//        assert methodRefactorings != null;
-//        assert classRefactorings != null;
-//        Refactoring elementRef = methodRefactorings.get(0);
-//        Refactoring visitorRef = methodRefactorings.get(3);
-//        Refactoring classRef = classRefactorings.get(0);
-//        Node elementNode = new Node(elementRef);
-//        Node visitorNode = new Node(visitorRef);
-//        Node classNode = new Node(classRef);
-//        visitorNode.updateHead(classNode);
-//        visitorNode.addToDependsList(classNode);
-//        boolean isConflicting = conflictCheckers.checkMethodNamingConflict(elementNode, visitorNode);
-//        Assert.assertTrue(isConflicting);
-//    }
+    public void testNestedMethodNamingConflict() {
+        Project project = myFixture.getProject();
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/original";
+        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
+        ConflictCheckers conflictCheckers = new ConflictCheckers(project);
+        List<Refactoring> methodRefactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
+        List<Refactoring> classRefactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
+        assert methodRefactorings != null;
+        assert classRefactorings != null;
+        Refactoring elementRef = methodRefactorings.get(0);
+        Refactoring visitorRef = methodRefactorings.get(3);
+        Refactoring classRef = classRefactorings.get(0);
+        Node elementNode = new Node(elementRef);
+        Node visitorNode = new Node(visitorRef);
+        Node classNode = new Node(classRef);
+        ArrayList<Node> nodes = new ArrayList<>();
+        nodes.add(classNode);
+        visitorNode.addDependsList(nodes);
+        boolean isConflicting = conflictCheckers.checkMethodNamingConflict(elementNode, visitorNode);
+        Assert.assertTrue(isConflicting);
+    }
 
     public void testCheckClassNamingConflict() {
         Project project = myFixture.getProject();

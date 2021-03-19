@@ -38,12 +38,16 @@ public class DependenceGraph {
         Refactoring refactoring = pair.getValue();
         Node previousNode = new Node(refactoring);
         this.tempGraph.addVertex(previousNode);
+
+        ArrayList<Node> nodes = new ArrayList<>();
         for(int i = pairs.size() - 2; i > -1; i--) {
+            nodes.add(previousNode);
             pair = pairs.get(i);
             refactoring = pair.getValue();
             Node node = new Node(refactoring);
             this.tempGraph.addVertex(node);
             this.tempGraph.addEdge(previousNode, node);
+            node.addDependsList(nodes);
             previousNode = node;
         }
         Graphs.addGraph(graph, tempGraph);
@@ -61,7 +65,6 @@ public class DependenceGraph {
     }
 
     public void updateGraph(Node node, Node dependentNode) {
-        dependentNode.addToDependsList(node);
         graph.addEdge(node, dependentNode);
 
 
