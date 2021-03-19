@@ -5,6 +5,7 @@ import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import gr.uom.java.xmi.UMLOperation;
+import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 
 
@@ -98,8 +99,10 @@ public class ConflictCheckers {
     public boolean checkMethodNamingConflict(Node elementNode, Node visitorNode) {
         Refactoring elementRef = elementNode.getRefactoring();
         Refactoring visitorRef = visitorNode.getRefactoring();
-        String elementClassName = elementNode.getDependenceChainClassHead();
-        String visitorClassName = visitorNode.getDependenceChainClassHead();
+//        String elementClassName = elementNode.getDependenceChainClassHead();
+//        String visitorClassName = visitorNode.getDependenceChainClassHead();
+        String elementClassName = ((RenameOperationRefactoring) elementRef).getOriginalOperation().getClassName();
+        String visitorClassName = ((RenameOperationRefactoring) visitorRef).getOriginalOperation().getClassName();
 
         // If the methods are in different classes
         if (!isSameName(elementClassName, visitorClassName)) {

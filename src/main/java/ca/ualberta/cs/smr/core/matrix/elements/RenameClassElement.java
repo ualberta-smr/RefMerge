@@ -37,12 +37,6 @@ public class RenameClassElement extends RefactoringElement {
         return false;
     }
 
-    public Node checkRenameClassDependence(Node visitorNode) {
-        if(DependenceCheckers.checkRenameClassRenameClassDependence(elementNode, visitorNode)) {
-            return elementNode;
-        }
-        return null;
-    }
     /*
      * Check if a rename class refactoring depends on a rename method refactoring to be performed first.
      */
