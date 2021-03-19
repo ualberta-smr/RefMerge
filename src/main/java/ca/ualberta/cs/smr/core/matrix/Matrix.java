@@ -66,9 +66,8 @@ public class Matrix {
         }
         DefaultDirectedGraph<Node, DefaultEdge> leftGraph = graph.createPartialGraph(leftPairs);
         DefaultDirectedGraph<Node, DefaultEdge> rightGraph = graph.createPartialGraph(rightPairs);
-        graph.setTwoBranches();
-        DepthFirstIterator<Node, DefaultEdge> leftIterator = new DepthFirstIterator<Node, DefaultEdge>(leftGraph);
-        DepthFirstIterator<Node, DefaultEdge> rightIterator = new DepthFirstIterator<Node, DefaultEdge>(rightGraph);
+        DepthFirstIterator<Node, DefaultEdge> leftIterator = new DepthFirstIterator<>(leftGraph);
+        DepthFirstIterator<Node, DefaultEdge> rightIterator = new DepthFirstIterator<>(rightGraph);
         while(leftIterator.hasNext()) {
             Node leftNode = leftIterator.next();
             compareRefactorings(leftNode, rightIterator);
