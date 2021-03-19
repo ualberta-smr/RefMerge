@@ -29,8 +29,7 @@ public class DependenceGraph {
         this.tempGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
         if(pairs.size() == 1) {
             Refactoring refactoring = pairs.get(0).getValue();
-            int commit = pairs.get(0).getCommit();
-            Node node = new Node(refactoring, commit);
+            Node node = new Node(refactoring);
             tempGraph.addVertex(node);
             Graphs.addGraph(graph, tempGraph);
             return tempGraph;
@@ -42,8 +41,7 @@ public class DependenceGraph {
         for(int i = pairs.size() - 2; i > -1; i--) {
             pair = pairs.get(i);
             refactoring = pair.getValue();
-            int commit = pair.getCommit();
-            Node node = new Node(refactoring, commit);
+            Node node = new Node(refactoring);
             this.tempGraph.addVertex(node);
             this.tempGraph.addEdge(previousNode, node);
             previousNode = node;
