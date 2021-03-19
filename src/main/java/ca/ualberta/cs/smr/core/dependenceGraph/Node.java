@@ -3,11 +3,10 @@ package ca.ualberta.cs.smr.core.dependenceGraph;
 import org.refactoringminer.api.Refactoring;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class Node {
     private Refactoring refactoring;
-    private List<Node> dependsList;
+    private ArrayList<Node> dependsList;
     private Head head;
 
     public Node(Refactoring refactoring) {
@@ -20,8 +19,12 @@ public class Node {
         return refactoring;
     }
 
-    public void addToDependsList(Node node) {
-        dependsList.add(node);
+    public void addDependsList(ArrayList<Node> nodes) {
+        dependsList.addAll(nodes);
+    }
+
+    public ArrayList<Node> getDependsList() {
+        return dependsList;
     }
 
     public String getDependenceChainClassHead() {

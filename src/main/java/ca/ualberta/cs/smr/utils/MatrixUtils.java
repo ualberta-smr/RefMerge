@@ -1,14 +1,17 @@
 package ca.ualberta.cs.smr.utils;
 
 
+import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import com.intellij.psi.PsiClass;
 import gr.uom.java.xmi.*;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
+import org.refactoringminer.api.RefactoringType;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MatrixUtils {
@@ -77,6 +80,33 @@ public class MatrixUtils {
             return true;
         }
         else return visitor.isInheritor(element, true);
+    }
+
+    static public boolean isSameOriginalClass(Node node1, Node node2) {
+        String node1ClassName = getOriginalClassName(node1);
+        String node2ClassName = getOriginalClassName(node2);
+        return node1ClassName.equals(node2ClassName);
+    }
+
+    static public String getOriginalClassName(Node node) {
+        ArrayList<Node> nodes = node.getDependsList();
+        UMLOperation umlOperation = getOriginalRenameOperation(node.getRefactoring());
+        String className = umlOperation.getClassName();
+        if(nodes.isEmpty()) {
+            return className;
+        }
+        for(int i = nodes.size() - 1; i > -1; i--) {
+            Node previousNode = nodes.get(i);
+            Refactoring refactoring = previousNode.getRefactoring();
+            RefactoringType type = refactoring.getRefactoringType();
+            if(type == RefactoringType.RENAME_CLASS) {
+                String renamedClass = getRefactoredClassOperationName(refactoring);
+                if(renamedClass.equals(className)) {
+                    className = getOriginalClassOperationName(refactoring);
+                }
+            }
+        }
+        return className;
     }
 
 }

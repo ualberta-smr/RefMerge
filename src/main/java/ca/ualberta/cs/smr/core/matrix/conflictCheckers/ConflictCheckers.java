@@ -36,7 +36,9 @@ public class ConflictCheckers {
 
         // If the rename methods happen in the same class then there is no override conflict
         if(isSameName(elementClassName, visitorClassName)) {
-            return false;
+            if(isSameOriginalClass(elementNode, visitorNode)) {
+                return false;
+            }
         }
         Utils utils = new Utils(project);
         String elementFile = elementRefactoredOperation.getLocationInfo().getFilePath();
@@ -106,6 +108,7 @@ public class ConflictCheckers {
 
         // If the methods are in different classes
         if (!isSameName(elementClassName, visitorClassName)) {
+            if(!isSameOriginalClass(elementNode, visitorNode))
             return false;
         }
         // Get original method names
