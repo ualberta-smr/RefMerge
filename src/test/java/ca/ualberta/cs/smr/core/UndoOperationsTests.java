@@ -86,4 +86,31 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
 
     }
 
+    public void testUndoExtractMethod() {
+        Project project = myFixture.getProject();
+        String basePath = System.getProperty("user.dir");
+        String testDir = "/extractTestData/extractMethod/";
+        String resultsTestData = testDir + "expectedUndoResults/";
+        String refactoredTestData = testDir + "refactored/";
+        String testFile = "Main.java";
+        String resultFile = "Results.java";
+        PsiFile[] files = myFixture.configureByFiles(refactoredTestData + testFile, resultsTestData + resultFile);
+        testDir = basePath + "/" + getTestDataPath() + testDir;
+        String originalTestData = testDir + "original/";
+        refactoredTestData = testDir + "refactored/";
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("EXTRACT_OPERATION",
+                originalTestData, refactoredTestData);
+        assert refactorings != null;
+        Refactoring ref = refactorings.get(0);
+        UndoOperations undoOperations = new UndoOperations(project);
+        undoOperations.undoExtractMethod(ref);
+
+        PsiFile file1 = files[0];
+        PsiFile file2 = files[1];
+        String content1 = file1.getText();
+        String content2 = file2.getText();
+        LightJavaCodeInsightFixtureTestCase.assertEquals(content1, content2);
+
+    }
+
 }
