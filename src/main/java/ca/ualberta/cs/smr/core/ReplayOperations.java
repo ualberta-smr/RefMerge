@@ -44,20 +44,15 @@ public class ReplayOperations {
             psiClass = utils.getPsiClassByFilePath(filePath, qualifiedClass);
         }
         assert psiClass != null;
-        PsiMethod[] methods = psiClass.getMethods();
-        for (PsiMethod method : methods) {
-            // If we find the method that needs to be refactored
-            if(Utils.ifSameMethods(method, original)) {
-                RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
-                RenameRefactoring renameRefactoring = factory.createRename(method, destName, true, true);
-                UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
-                renameRefactoring.doRefactoring(refactoringUsages);
-                // Update the virtual file containing the refactoring
-                VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
-                vFile.refresh(false, true);
-                break;
-            }
-        }
+        PsiMethod method = Utils.getPsiMethod(psiClass, original);
+        assert method != null;
+        RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
+        RenameRefactoring renameRefactoring = factory.createRename(method, destName, true, true);
+        UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
+        renameRefactoring.doRefactoring(refactoringUsages);
+        // Update the virtual file containing the refactoring
+        VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
+        vFile.refresh(false, true);
     }
 
 
@@ -86,4 +81,5 @@ public class ReplayOperations {
         vFile.refresh(false, true);
 
     }
+
 }
