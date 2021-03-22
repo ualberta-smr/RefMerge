@@ -1,6 +1,8 @@
 package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.utils.Utils;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
@@ -10,9 +12,11 @@ import com.intellij.refactoring.JavaRefactoringFactory;
 import com.intellij.refactoring.RefactoringFactory;
 import com.intellij.refactoring.RenameRefactoring;
 
+import com.intellij.refactoring.inline.InlineMethodProcessor;
 import com.intellij.usageView.UsageInfo;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLOperation;
+import gr.uom.java.xmi.diff.ExtractOperationRefactoring;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
@@ -97,6 +101,78 @@ public class UndoOperations {
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);
 
+    }
+
+    /*
+     * Undo the extract method refactoring that was originally performed by performing an inline method refactoring.
+     */
+    public void undoExtractMethod(Refactoring ref) {
+        ExtractOperationRefactoring extractOperationRefactoring = (ExtractOperationRefactoring) ref;
+        UMLOperation sourceOperation = extractOperationRefactoring.getSourceOperationBeforeExtraction();
+        UMLOperation extractedOperation = extractOperationRefactoring.getExtractedOperation();
+
+        // Get PSI Method using extractedOperation data
+        String extractedOperationClassName = extractedOperation.getClassName();
+        JavaPsiFacade jPF = new JavaPsiFacadeImpl(project);
+        PsiClass psiClass = jPF.findClass(extractedOperationClassName, GlobalSearchScope.allScope((project)));
+        // If the class isn't found, there might not have been a gradle file and we need to find the class another way
+        if(psiClass == null) {
+            Utils utils = new Utils(project);
+            String filePath = extractedOperation.getLocationInfo().getFilePath();
+            psiClass = utils.getPsiClassByFilePath(filePath, extractedOperationClassName);
+        }
+        assert psiClass != null;
+        PsiMethod psiMethod = null;
+        PsiMethod[] methods = psiClass.getMethods();
+        for(PsiMethod method : methods) {
+            if(Utils.ifSameMethods(method, extractedOperation)) {
+                psiMethod = method;
+                break;
+            }
+        }
+        PsiMethod extractedMethod = psiMethod;
+        // Get PSI Reference using sourceOperation data
+        String sourceOperationClassName = sourceOperation.getClassName();
+        psiClass = jPF.findClass(extractedOperationClassName, GlobalSearchScope.allScope((project)));
+        // If the class isn't found, there might not have been a gradle file and we need to find the class another way
+        if(psiClass == null) {
+            Utils utils = new Utils(project);
+            String filePath = sourceOperation.getLocationInfo().getFilePath();
+            psiClass = utils.getPsiClassByFilePath(filePath, sourceOperationClassName);
+        }
+        methods = psiClass.getMethods();
+        for(PsiMethod method : methods) {
+            if(Utils.ifSameMethods(method, sourceOperation)) {
+                psiMethod = method;
+                break;
+            }
+        }
+
+        PsiJavaCodeReferenceElement referenceElement = null;
+        String extractedOperationMethodName = extractedOperation.getName();
+        PsiCodeBlock psiCodeBlock = psiMethod.getBody();
+        assert psiCodeBlock != null;
+        PsiStatement[] psiStatements = psiCodeBlock.getStatements();
+        for(PsiStatement psiStatement : psiStatements) {
+            String str = psiStatement.getText();
+            if(str.contains(extractedOperationMethodName)) {
+                PsiElement[] elements = psiStatement.getChildren();
+                for(PsiElement psiElement : elements) {
+                    str = psiElement.getText();
+                    if(str.contains(extractedOperationMethodName)) {
+                        PsiReference psiReference = psiElement.findReferenceAt(0);
+                        if(psiReference instanceof PsiJavaCodeReferenceElement) {
+                            referenceElement = (PsiJavaCodeReferenceElement) psiReference;
+                        }
+                    }
+                }
+            }
+        }
+        // Set editor to null because we do not use the editor
+        InlineMethodProcessor inlineMethodProcessor = new InlineMethodProcessor(project, extractedMethod, referenceElement,
+                null, false);
+        Application app = ApplicationManager.getApplication();
+        app.invokeAndWait(inlineMethodProcessor);
     }
 
 }
