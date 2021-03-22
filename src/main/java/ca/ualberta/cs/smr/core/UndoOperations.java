@@ -148,26 +148,7 @@ public class UndoOperations {
             }
         }
 
-        PsiJavaCodeReferenceElement referenceElement = null;
-        String extractedOperationMethodName = extractedOperation.getName();
-        PsiCodeBlock psiCodeBlock = psiMethod.getBody();
-        assert psiCodeBlock != null;
-        PsiStatement[] psiStatements = psiCodeBlock.getStatements();
-        for(PsiStatement psiStatement : psiStatements) {
-            String str = psiStatement.getText();
-            if(str.contains(extractedOperationMethodName)) {
-                PsiElement[] elements = psiStatement.getChildren();
-                for(PsiElement psiElement : elements) {
-                    str = psiElement.getText();
-                    if(str.contains(extractedOperationMethodName)) {
-                        PsiReference psiReference = psiElement.findReferenceAt(0);
-                        if(psiReference instanceof PsiJavaCodeReferenceElement) {
-                            referenceElement = (PsiJavaCodeReferenceElement) psiReference;
-                        }
-                    }
-                }
-            }
-        }
+        PsiJavaCodeReferenceElement referenceElement = Utils.getPsiReferenceForExtractMethod(extractedOperation, psiMethod);
         // Set editor to null because we do not use the editor
         InlineMethodProcessor inlineMethodProcessor = new InlineMethodProcessor(project, extractedMethod, referenceElement,
                 null, false);

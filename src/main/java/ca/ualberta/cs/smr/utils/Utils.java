@@ -144,5 +144,29 @@ public class Utils {
         }
         return null;
     }
+
+    public static PsiJavaCodeReferenceElement getPsiReferenceForExtractMethod(UMLOperation extractedOperation,
+                                                                              PsiMethod psiMethod) {
+        String extractedOperationMethodName = extractedOperation.getName();
+        PsiCodeBlock psiCodeBlock = psiMethod.getBody();
+        assert psiCodeBlock != null;
+        PsiStatement[] psiStatements = psiCodeBlock.getStatements();
+        for(PsiStatement psiStatement : psiStatements) {
+            String text = psiStatement.getText();
+            if(text.contains(extractedOperationMethodName)) {
+                PsiElement[] elements = psiStatement.getChildren();
+                for(PsiElement psiElement : elements) {
+                    text = psiElement.getText();
+                    if(text.contains(extractedOperationMethodName)) {
+                        PsiReference psiReference = psiElement.findReferenceAt(0);
+                        if(psiReference instanceof PsiJavaCodeReferenceElement) {
+                            return (PsiJavaCodeReferenceElement) psiReference;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
 }
 
