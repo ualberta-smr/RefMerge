@@ -145,6 +145,16 @@ public class Utils {
         return null;
     }
 
+    public static PsiMethod getPsiMethod(PsiClass psiClass, UMLOperation operation) {
+        PsiMethod[] methods = psiClass.getMethods();
+        for(PsiMethod method : methods) {
+            if(Utils.ifSameMethods(method, operation)) {
+                return method;
+            }
+        }
+        return null;
+    }
+
     public static PsiJavaCodeReferenceElement getPsiReferenceForExtractMethod(UMLOperation extractedOperation,
                                                                               PsiMethod psiMethod) {
         String extractedOperationMethodName = extractedOperation.getName();

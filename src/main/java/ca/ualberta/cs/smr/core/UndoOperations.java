@@ -37,9 +37,7 @@ public class UndoOperations {
     public void undoRenameMethod(Refactoring ref) {
         UMLOperation original = ((RenameOperationRefactoring) ref).getOriginalOperation();
         UMLOperation renamed = ((RenameOperationRefactoring) ref).getRenamedOperation();
-        // Get the original method name
         String srcName = original.getName();
-        // Get the refactored method name
         String qualifiedClass = renamed.getClassName();
         JavaPsiFacade jPF = new JavaPsiFacadeImpl(project);
         // get the PSI class using the qualified class name
@@ -50,25 +48,16 @@ public class UndoOperations {
             String filePath = renamed.getLocationInfo().getFilePath();
             psiClass = utils.getPsiClassByFilePath(filePath, qualifiedClass);
         }
-        // Get the methods in the class
         assert psiClass != null;
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
-        PsiMethod[] methods = psiClass.getMethods();
-        // Find the method being refactored
-        for (PsiMethod method : methods) {
-            // Check that the signatures are the same
-            if(Utils.ifSameMethods(method, renamed)) {
-                // Create a new rename processor using the original method name and the refactored method that we
-                // found
-                RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
-                RenameRefactoring renameRefactoring = factory.createRename(method, srcName, true, true);
-                UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
-                renameRefactoring.doRefactoring(refactoringUsages);
-                // Update the virtual file that contains the refactoring
-                vFile.refresh(false, true);
-                break;
-            }
-        }
+        PsiMethod method = Utils.getPsiMethod(psiClass, renamed);
+        assert method != null;
+        RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
+        RenameRefactoring renameRefactoring = factory.createRename(method, srcName, true, true);
+        UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
+        renameRefactoring.doRefactoring(refactoringUsages);
+        // Update the virtual file that contains the refactoring
+        vFile.refresh(false, true);
 
     }
 
@@ -122,16 +111,9 @@ public class UndoOperations {
             psiClass = utils.getPsiClassByFilePath(filePath, extractedOperationClassName);
         }
         assert psiClass != null;
-        PsiMethod psiMethod = null;
-        PsiMethod[] methods = psiClass.getMethods();
-        for(PsiMethod method : methods) {
-            if(Utils.ifSameMethods(method, extractedOperation)) {
-                psiMethod = method;
-                break;
-            }
-        }
-        PsiMethod extractedMethod = psiMethod;
-        // Get PSI Reference using sourceOperation data
+        PsiMethod extractedMethod = Utils.getPsiMethod(psiClass, extractedOperation);
+        assert extractedMethod != null;
+
         String sourceOperationClassName = sourceOperation.getClassName();
         psiClass = jPF.findClass(extractedOperationClassName, GlobalSearchScope.allScope((project)));
         // If the class isn't found, there might not have been a gradle file and we need to find the class another way
@@ -140,13 +122,8 @@ public class UndoOperations {
             String filePath = sourceOperation.getLocationInfo().getFilePath();
             psiClass = utils.getPsiClassByFilePath(filePath, sourceOperationClassName);
         }
-        methods = psiClass.getMethods();
-        for(PsiMethod method : methods) {
-            if(Utils.ifSameMethods(method, sourceOperation)) {
-                psiMethod = method;
-                break;
-            }
-        }
+        PsiMethod psiMethod = Utils.getPsiMethod(psiClass, sourceOperation);
+        assert psiMethod != null;
 
         PsiJavaCodeReferenceElement referenceElement = Utils.getPsiReferenceForExtractMethod(extractedOperation, psiMethod);
         // Set editor to null because we do not use the editor
@@ -154,6 +131,10 @@ public class UndoOperations {
                 null, false);
         Application app = ApplicationManager.getApplication();
         app.invokeAndWait(inlineMethodProcessor);
+
+        VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
+        vFile.refresh(false, true);
     }
+
 
 }
