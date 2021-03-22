@@ -5,6 +5,7 @@ import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.*;
+import com.intellij.psi.impl.JavaPsiFacadeImpl;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import gr.uom.java.xmi.UMLOperation;
@@ -143,6 +144,16 @@ public class Utils {
             }
         }
         return null;
+    }
+
+    public PsiClass getPsiClassFromClassAndFileNames(String className, String filePath) {
+        JavaPsiFacade jPF = new JavaPsiFacadeImpl(project);
+        PsiClass psiClass = jPF.findClass(className, GlobalSearchScope.allScope((project)));
+        // If the class isn't found, there might not have been a gradle file and we need to find the class another way
+        if(psiClass == null) {
+            psiClass = getPsiClassByFilePath(filePath, className);
+        }
+        return psiClass;
     }
 
     public static PsiMethod getPsiMethod(PsiClass psiClass, UMLOperation operation) {

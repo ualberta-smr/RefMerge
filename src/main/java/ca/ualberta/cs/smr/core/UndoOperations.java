@@ -6,8 +6,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
-import com.intellij.psi.impl.JavaPsiFacadeImpl;
-import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.refactoring.JavaRefactoringFactory;
 import com.intellij.refactoring.RefactoringFactory;
 import com.intellij.refactoring.RenameRefactoring;
@@ -39,15 +37,10 @@ public class UndoOperations {
         UMLOperation renamed = ((RenameOperationRefactoring) ref).getRenamedOperation();
         String srcName = original.getName();
         String qualifiedClass = renamed.getClassName();
-        JavaPsiFacade jPF = new JavaPsiFacadeImpl(project);
         // get the PSI class using the qualified class name
-        PsiClass psiClass = jPF.findClass(qualifiedClass, GlobalSearchScope.allScope(project));
-        // If the qualified class name couldn't be found, try using the class name as file name and find that file
-        if(psiClass == null) {
-            Utils utils = new Utils(project);
-            String filePath = renamed.getLocationInfo().getFilePath();
-            psiClass = utils.getPsiClassByFilePath(filePath, qualifiedClass);
-        }
+        String filePath = renamed.getLocationInfo().getFilePath();
+        Utils utils = new Utils(project);
+        PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(qualifiedClass, filePath);
         assert psiClass != null;
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         PsiMethod method = Utils.getPsiMethod(psiClass, renamed);
@@ -65,21 +58,14 @@ public class UndoOperations {
      * Undo the class refactoring that was originally performed.
      */
     public void undoRenameClass(Refactoring ref) {
-
         UMLClass original = ((RenameClassRefactoring) ref).getOriginalClass();
         UMLClass renamed = ((RenameClassRefactoring) ref).getRenamedClass();
         String srcQualifiedClass = original.getName();
         String destQualifiedClass = renamed.getName();
         String srcClassName = srcQualifiedClass.substring(srcQualifiedClass.lastIndexOf(".") + 1);
-        JavaPsiFacade jPF = new JavaPsiFacadeImpl(project);
-        PsiClass psiClass = jPF.findClass(destQualifiedClass, GlobalSearchScope.allScope((project)));
-        // If the class isn't found, there might not have been a gradle file and we need to find the class another way
-        if(psiClass == null) {
-            Utils utils = new Utils(project);
-            String filePath = renamed.getLocationInfo().getFilePath();
-            psiClass = utils.getPsiClassByFilePath(filePath, destQualifiedClass);
-        }
-        // Create a rename processor using the original name of the class and the psi class
+        String filePath = renamed.getLocationInfo().getFilePath();
+        Utils utils = new Utils(project);
+        PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(destQualifiedClass, filePath);
         assert psiClass != null;
         RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
         RenameRefactoring renameRefactoring = factory.createRename(psiClass, srcClassName, true, true);
@@ -102,26 +88,16 @@ public class UndoOperations {
 
         // Get PSI Method using extractedOperation data
         String extractedOperationClassName = extractedOperation.getClassName();
-        JavaPsiFacade jPF = new JavaPsiFacadeImpl(project);
-        PsiClass psiClass = jPF.findClass(extractedOperationClassName, GlobalSearchScope.allScope((project)));
-        // If the class isn't found, there might not have been a gradle file and we need to find the class another way
-        if(psiClass == null) {
-            Utils utils = new Utils(project);
-            String filePath = extractedOperation.getLocationInfo().getFilePath();
-            psiClass = utils.getPsiClassByFilePath(filePath, extractedOperationClassName);
-        }
+        String filePath = extractedOperation.getLocationInfo().getFilePath();
+        Utils utils = new Utils(project);
+        PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(extractedOperationClassName, filePath);
         assert psiClass != null;
         PsiMethod extractedMethod = Utils.getPsiMethod(psiClass, extractedOperation);
         assert extractedMethod != null;
 
         String sourceOperationClassName = sourceOperation.getClassName();
-        psiClass = jPF.findClass(extractedOperationClassName, GlobalSearchScope.allScope((project)));
-        // If the class isn't found, there might not have been a gradle file and we need to find the class another way
-        if(psiClass == null) {
-            Utils utils = new Utils(project);
-            String filePath = sourceOperation.getLocationInfo().getFilePath();
-            psiClass = utils.getPsiClassByFilePath(filePath, sourceOperationClassName);
-        }
+        filePath = sourceOperation.getLocationInfo().getFilePath();
+        psiClass = utils.getPsiClassFromClassAndFileNames(sourceOperationClassName, filePath);
         PsiMethod psiMethod = Utils.getPsiMethod(psiClass, sourceOperation);
         assert psiMethod != null;
 
@@ -135,6 +111,5 @@ public class UndoOperations {
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);
     }
-
 
 }

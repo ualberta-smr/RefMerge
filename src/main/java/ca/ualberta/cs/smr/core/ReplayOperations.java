@@ -4,8 +4,6 @@ import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
-import com.intellij.psi.impl.JavaPsiFacadeImpl;
-import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.refactoring.JavaRefactoringFactory;
 import com.intellij.refactoring.RefactoringFactory;
 import com.intellij.refactoring.RenameRefactoring;
@@ -33,16 +31,9 @@ public class ReplayOperations {
         UMLOperation renamed = ((RenameOperationRefactoring) ref).getRenamedOperation();
         String destName = renamed.getName();
         String qualifiedClass = renamed.getClassName();
-        JavaPsiFacade jPF = new JavaPsiFacadeImpl(project);
-        // Get the PSI class using the qualified class name
-        PsiClass psiClass = jPF.findClass(qualifiedClass, GlobalSearchScope.allScope(project));
-        // If the PSI class is null, then this part of the project wasn't built and we need to find the PSI class
-        // another way
-        if(psiClass == null) {
-            Utils utils = new Utils(project);
-            String filePath = renamed.getLocationInfo().getFilePath();
-            psiClass = utils.getPsiClassByFilePath(filePath, qualifiedClass);
-        }
+        String filePath = renamed.getLocationInfo().getFilePath();
+        Utils utils = new Utils(project);
+        PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(qualifiedClass, filePath);
         assert psiClass != null;
         PsiMethod method = Utils.getPsiMethod(psiClass, original);
         assert method != null;
@@ -63,14 +54,9 @@ public class ReplayOperations {
         String srcQualifiedClass = original.getName();
         String destQualifiedClass = renamed.getName();
         String destClassName = destQualifiedClass.substring(destQualifiedClass.lastIndexOf(".") + 1);
-        JavaPsiFacade jPF = new JavaPsiFacadeImpl(project);
-        PsiClass psiClass = jPF.findClass(srcQualifiedClass, GlobalSearchScope.allScope((project)));
-        // If the class isn't found, there might not have been a gradle file and we need to find the class another way
-        if(psiClass == null) {
-            Utils utils = new Utils(project);
-            String filePath = original.getLocationInfo().getFilePath();
-            psiClass = utils.getPsiClassByFilePath(filePath, srcQualifiedClass);
-        }
+        Utils utils = new Utils(project);
+        String filePath = original.getLocationInfo().getFilePath();
+        PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(srcQualifiedClass, filePath);
         assert psiClass != null;
         RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
         RenameRefactoring renameRefactoring = factory.createRename(psiClass, destClassName, true, true);
