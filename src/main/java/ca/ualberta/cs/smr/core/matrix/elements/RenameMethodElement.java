@@ -1,8 +1,8 @@
 package ca.ualberta.cs.smr.core.matrix.elements;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
-import ca.ualberta.cs.smr.core.matrix.conflictCheckers.ConflictCheckers;
-import ca.ualberta.cs.smr.core.matrix.dependenceCheckers.DependenceCheckers;
+import ca.ualberta.cs.smr.core.matrix.logicCells.RenameMethodRenameMethodCell;
+import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassRenameMethodCell;
 import ca.ualberta.cs.smr.core.matrix.visitors.Visitor;
 import com.intellij.openapi.project.Project;
 
@@ -28,20 +28,20 @@ public class RenameMethodElement extends RefactoringElement {
      *  Check if a rename method refactoring conflicts with a second rename method refactoring.
      */
     public boolean checkRenameMethodConflict(Node visitorNode) {
-        ConflictCheckers conflictCheckers = new ConflictCheckers(project);
+        RenameMethodRenameMethodCell renameMethodRenameMethodCell = new RenameMethodRenameMethodCell(project);
         // Check for a method override conflict
-        if(conflictCheckers.checkOverrideConflict(elementNode, visitorNode)) {
+        if(renameMethodRenameMethodCell.checkOverrideConflict(elementNode, visitorNode)) {
             System.out.println("Override conflict");
             return true;
         }
         // Check for method overload conflict
-        else if(conflictCheckers.checkOverloadConflict(elementNode, visitorNode)) {
+        else if(renameMethodRenameMethodCell.checkOverloadConflict(elementNode, visitorNode)) {
             System.out.println("Overload conflict");
             return true;
         }
         // Check for naming conflict
 
-        else if(conflictCheckers.checkMethodNamingConflict(elementNode, visitorNode)) {
+        else if(renameMethodRenameMethodCell.checkMethodNamingConflict(elementNode, visitorNode)) {
             System.out.println("Naming conflict");
             return true;
         }
@@ -52,7 +52,7 @@ public class RenameMethodElement extends RefactoringElement {
      * Check if a rename class refactoring depends on a rename method refactoring to be performed first.
      */
     public Node checkRenameClassDependence(Node visitorNode) {
-        if(DependenceCheckers.checkRenameMethodRenameClassDependence(visitorNode, elementNode)) {
+        if(RenameClassRenameMethodCell.checkRenameMethodRenameClassDependence(visitorNode, elementNode)) {
             return elementNode;
         }
         return null;
