@@ -2,6 +2,7 @@ package ca.ualberta.cs.smr.utils.sortingUtils;
 
 import org.refactoringminer.api.RefactoringType;
 
+import java.sql.Ref;
 import java.util.Comparator;
 import java.util.HashMap;
 
@@ -11,6 +12,7 @@ public class RefactoringComparator implements Comparator<Pair> {
             new HashMap<RefactoringType, Integer>() {{
                 put(RefactoringType.RENAME_METHOD, 0);
                 put(RefactoringType.RENAME_CLASS, 1);
+                put(RefactoringType.EXTRACT_OPERATION, 2);
             }};
 
 
