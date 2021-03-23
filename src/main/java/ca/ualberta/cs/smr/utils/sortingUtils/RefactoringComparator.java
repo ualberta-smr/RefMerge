@@ -11,8 +11,8 @@ public class RefactoringComparator implements Comparator<Pair> {
     private static final HashMap<RefactoringType, Integer> refactoringTypeMap =
             new HashMap<RefactoringType, Integer>() {{
                 put(RefactoringType.RENAME_METHOD, 0);
-                put(RefactoringType.RENAME_CLASS, 1);
-                put(RefactoringType.EXTRACT_OPERATION, 2);
+                put(RefactoringType.EXTRACT_OPERATION, 1);
+                put(RefactoringType.RENAME_CLASS, 2);
             }};
 
 
