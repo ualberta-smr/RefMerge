@@ -2,6 +2,7 @@ package ca.ualberta.cs.smr.core.matrix.visitors;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.DependenceGraph;
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
+import ca.ualberta.cs.smr.core.matrix.elements.ExtractMethodElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
 
@@ -28,5 +29,10 @@ public class RenameClassVisitor extends RefactoringVisitor {
         // Check for rename class/rename class conflict if checking between branches
         boolean foundConflict = renameClass.checkRenameClassConflict(visitorNode);
         System.out.println("Rename Class/Rename Class conflict: " + foundConflict);
+    }
+
+    @Override
+    public void visit(ExtractMethodElement extractMethod) {
+
     }
 }

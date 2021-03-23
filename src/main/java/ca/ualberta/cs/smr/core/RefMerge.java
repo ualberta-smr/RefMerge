@@ -18,6 +18,7 @@ import com.intellij.openapi.project.ProjectManager;
 import org.refactoringminer.api.GitHistoryRefactoringMiner;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringHandler;
+import org.refactoringminer.api.RefactoringType;
 import org.refactoringminer.rm1.GitHistoryRefactoringMinerImpl;
 import org.eclipse.jgit.api.Git;
 import ca.ualberta.cs.smr.utils.GitUtils;
@@ -56,15 +57,21 @@ public class RefMerge extends AnAction {
 //        String rightCommit = "e5e397da6";
 //        String leftCommit = "5e59da77";
 //        String baseCommit = "c382b804";
-        String mergeCommit = "";
-        String rightCommit = "f42429d";
-        String leftCommit = "1687e13";
-        String baseCommit = "46eeb31";
+//        String mergeCommit = "";
+//        String rightCommit = "f42429d";
+//        String leftCommit = "1687e13";
+//        String baseCommit = "46eeb31";
           // Rajawali
 //        String mergeCommit = "98787ef5";
 //        String rightCommit = "3d9b713ba";
 //        String leftCommit = "5e7fcebe4";
 //        String baseCommit = "773d48939a2ccba";
+        // Extract Method
+        String mergeCommit = "2c959cae5";
+        String rightCommit = "2b4f6d9b";
+        String leftCommit = "e4270319fd07";
+        String baseCommit = "b127f6e2634";
+
         refMerge(mergeCommit, rightCommit, leftCommit, baseCommit, project, repo);
 
     }
@@ -105,6 +112,7 @@ public class RefMerge extends AnAction {
         // Check if any of the refactorings are conflicting or have ordering dependencies
         Matrix matrix = new Matrix(project);
         DependenceGraph graph = matrix.runMatrix(leftRefs, rightRefs);
+
 
         // Checkout base commit and store it in temp/base
         gitUtils.checkout(baseCommit);
@@ -154,6 +162,8 @@ public class RefMerge extends AnAction {
                     // Undo the rename method refactoring
                     undo.undoRenameMethod(ref);
                     break;
+                case EXTRACT_OPERATION:
+                    undo.undoExtractMethod(ref);
             }
 
         }
@@ -204,8 +214,12 @@ public class RefMerge extends AnAction {
                         public void handle(String commitId, List<Refactoring> refactorings) {
                             // Add each refactoring to refResult
                             for(Refactoring refactoring : refactorings) {
-                                Pair pair = new Pair(count, refactoring);
-                                refResult.add(pair);
+                                RefactoringType type = refactoring.getRefactoringType();
+                                if(type == RefactoringType.RENAME_CLASS || type == RefactoringType.RENAME_METHOD
+                                        || type == RefactoringType.EXTRACT_OPERATION) {
+                                    Pair pair = new Pair(count, refactoring);
+                                    refResult.add(pair);
+                                }
                             }
                             count++;
                             // For undo, we want to start at the highest count and go to 0

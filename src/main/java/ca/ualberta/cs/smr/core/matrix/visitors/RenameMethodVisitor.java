@@ -2,6 +2,7 @@ package ca.ualberta.cs.smr.core.matrix.visitors;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.DependenceGraph;
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
+import ca.ualberta.cs.smr.core.matrix.elements.ExtractMethodElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
 
@@ -33,5 +34,10 @@ public class RenameMethodVisitor extends RefactoringVisitor {
             // If there is dependence between branches, the rename method needs to happen before the rename class
                 graph.updateGraph(visitorNode, elementNode);
         }
+    }
+
+    @Override
+    public void visit(ExtractMethodElement extractMethod) {
+
     }
 }

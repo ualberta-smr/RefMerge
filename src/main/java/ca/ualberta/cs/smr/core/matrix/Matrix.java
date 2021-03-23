@@ -3,9 +3,11 @@ package ca.ualberta.cs.smr.core.matrix;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.DependenceGraph;
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
+import ca.ualberta.cs.smr.core.matrix.elements.ExtractMethodElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RefactoringElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
+import ca.ualberta.cs.smr.core.matrix.visitors.ExtractMethodVisitor;
 import ca.ualberta.cs.smr.core.matrix.visitors.RefactoringVisitor;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameClassVisitor;
 import ca.ualberta.cs.smr.core.matrix.visitors.RenameMethodVisitor;
@@ -31,12 +33,14 @@ public class Matrix {
                                                     new HashMap<RefactoringType, RefactoringElement>() {{
        put(RefactoringType.RENAME_METHOD, new RenameMethodElement());
        put(RefactoringType.RENAME_CLASS, new RenameClassElement());
+       put(RefactoringType.EXTRACT_OPERATION, new ExtractMethodElement());
     }};
 
     static final HashMap<RefactoringType, RefactoringVisitor> visitorMap =
                                                     new HashMap<RefactoringType, RefactoringVisitor>() {{
         put(RefactoringType.RENAME_METHOD, new RenameMethodVisitor());
         put(RefactoringType.RENAME_CLASS, new RenameClassVisitor());
+        put(RefactoringType.EXTRACT_OPERATION, new ExtractMethodVisitor());
     }};
 
     public Matrix(Project project) {
@@ -53,15 +57,15 @@ public class Matrix {
      * Iterate through each of the left refactorings to compare against the right refactorings.
      */
     public DependenceGraph runMatrix(List<Pair> leftPairs, List<Pair> rightPairs) {
-        if(leftPairs != null && rightPairs == null) {
+        if(!leftPairs.isEmpty() && rightPairs.isEmpty()) {
             graph.createPartialGraph(leftPairs);
             return graph;
         }
-        if(rightPairs != null && leftPairs == null) {
+        if(!rightPairs.isEmpty() && leftPairs.isEmpty()) {
             graph.createPartialGraph(rightPairs);
             return graph;
         }
-        if(leftPairs == null) {
+        if(leftPairs.isEmpty()) {
             return null;
         }
         DefaultDirectedGraph<Node, DefaultEdge> leftGraph = graph.createPartialGraph(leftPairs);
