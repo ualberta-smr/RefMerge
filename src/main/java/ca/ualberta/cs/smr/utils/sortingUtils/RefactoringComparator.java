@@ -2,7 +2,6 @@ package ca.ualberta.cs.smr.utils.sortingUtils;
 
 import org.refactoringminer.api.RefactoringType;
 
-import java.sql.Ref;
 import java.util.Comparator;
 import java.util.HashMap;
 

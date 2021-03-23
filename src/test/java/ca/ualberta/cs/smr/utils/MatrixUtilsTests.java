@@ -238,4 +238,27 @@ public class MatrixUtilsTests extends LightJavaCodeInsightFixtureTestCase {
         Assert.assertTrue("Child extends Parent through additional inheritance level", expectTrue);
     }
 
+    public void testCheckNamingConflict() {
+        String originalElement = "foo";
+        String originalVisitor = "bar";
+        String refactoredElement = "newFoo";
+        String refactoredVisitor = "newBar";
+        boolean expectedFalse = MatrixUtils.checkNamingConflict(originalElement, originalVisitor,
+                refactoredElement, refactoredVisitor);
+        Assert.assertFalse("Expected false because the renamings do not conflict", expectedFalse);
+
+        originalVisitor = "foo";
+        boolean expectedTrue = MatrixUtils.checkNamingConflict(originalElement, originalVisitor,
+                refactoredElement, refactoredVisitor);
+        Assert.assertTrue("Expected true because an element is renamed to two names", expectedTrue);
+        refactoredVisitor = "newFoo";
+        expectedFalse = MatrixUtils.checkNamingConflict(originalElement, originalVisitor,
+                refactoredElement, refactoredVisitor);
+        Assert.assertFalse("Expected false because the renamings are the same", expectedFalse);
+        originalVisitor = "bar";
+        expectedTrue = MatrixUtils.checkNamingConflict(originalElement, originalVisitor,
+                refactoredElement, refactoredVisitor);
+        Assert.assertTrue("Expected true because two elements are renamed to the same name", expectedTrue);
+    }
+
 }

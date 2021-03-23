@@ -109,4 +109,14 @@ public class MatrixUtils {
         return className;
     }
 
+    public static boolean checkNamingConflict(String elementOriginal, String visitorOriginal, String elementNew,
+                                       String visitorNew) {
+        // If the original method names are equal but the destination names are not equal, check for conflict
+        if(isSameName(elementOriginal, visitorOriginal) && !isSameName(elementNew, visitorNew)) {
+            return true;
+        }
+        // If the original method names are not equal but the destination names are equal
+        else return !isSameName(elementOriginal, visitorOriginal) && isSameName(elementNew, visitorNew);
+    }
+
 }
