@@ -2,7 +2,7 @@
 
 public class Main {
 
-    public static boolean foo() {
+    public boolean foo() {
         method();
         boolean bool = false;
         for(int i = 0; i < 10; i++) {
@@ -13,7 +13,7 @@ public class Main {
         return bool;
     }
 
-    public static void method() {
+    public void method() {
         int x = 5;
         int y = 10;
         System.out.println("Adding " + x + " and " + y);
