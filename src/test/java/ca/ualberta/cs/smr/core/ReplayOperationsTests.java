@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
+import com.intellij.refactoring.extractMethod.PrepareFailedException;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.refactoringminer.api.Refactoring;
 
@@ -84,5 +85,37 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
 
         LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
 
+    }
+
+    public void testReplayExtractMethod() {
+        Project project = myFixture.getProject();
+        String basePath = System.getProperty("user.dir");
+        String testDir = "/extractTestData/extractMethod/";
+        String sourceTestData = testDir + "original/";
+        String resultTestData = testDir + "expectedReplayResults/";
+        String testFile = "Main.java";
+        String resultFile = "replayResults.java";
+        PsiFile[] files = myFixture.configureByFiles(sourceTestData + testFile, resultTestData + resultFile);
+
+        testDir = basePath + "/" + getTestDataPath() + testDir;
+        String originalTestData = testDir + "original/";
+        String refactoredTestData = testDir + "refactored/";
+
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("EXTRACT_OPERATION",
+                originalTestData, refactoredTestData);
+        assert refactorings != null;
+        Refactoring ref = refactorings.get(0);
+        ReplayOperations replayOperations = new ReplayOperations(project);
+        try {
+            replayOperations.replayExtractMethod(ref);
+        } catch (PrepareFailedException e) {
+            e.printStackTrace();
+        }
+
+        PsiFile psiFile1 = files[0];
+        PsiFile psiFile2 = files[1];
+        String content1 = psiFile1.getText();
+        String content2 = psiFile2.getText();
+        LightJavaCodeInsightFixtureTestCase.assertEquals(content1, content2);
     }
 }
