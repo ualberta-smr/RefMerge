@@ -98,6 +98,7 @@ public class ReplayOperations {
         PsiElement[] psiElements = getPsiElements(extractOperationRefactoring, psiMethod);
         PsiType forcedReturnType = getPsiReturnType(extractOperationRefactoring, psiMethod);
 
+        // Set editor to null because we are not using the character offset in the editor
         ExtractMethodProcessor extractMethodProcessor = new ExtractMethodProcessor(project, null, psiElements,
                 forcedReturnType, refactoringName, initialMethodName, helpId);
         extractMethodProcessor.setMethodName(refactoringName);
@@ -111,38 +112,45 @@ public class ReplayOperations {
         Set<AbstractCodeFragment> codeFragments = extractOperationRefactoring.getExtractedCodeFragmentsFromSourceOperation();
         PsiCodeBlock psiCodeBlock = psiMethod.getBody();
         assert psiCodeBlock != null;
+        PsiStatement[] psiStatements = psiCodeBlock.getStatements();
         for(AbstractCodeFragment codeFragment : codeFragments) {
-            int startOffset = codeFragment.getLocationInfo().getStartOffset();
-            int endOffset = codeFragment.getLocationInfo().getEndOffset();
-            ASTNode node = SourceTreeToPsiMap.psiElementToTree(psiMethod);
-            assert node != null;
-            ArrayList<ASTNode> nodes = getMethodNodes(node, startOffset, endOffset);
-            for(ASTNode astNode : nodes) {
-                psiElements.add(astNode.getPsi());
+            for(PsiStatement psiStatement : psiStatements) {
+                String codeFragmentText = formatText(codeFragment.getString());
+                String psiStatementText = formatText(psiStatement.getText());
+                if(codeFragmentText.equals(psiStatementText)) {
+                    ASTNode node = SourceTreeToPsiMap.psiElementToTree(psiStatement);
+                    assert node != null;
+                    ArrayList<ASTNode> nodes = getMethodNodes(node);
+                    for(ASTNode astNode : nodes) {
+                        psiElements.add(astNode.getPsi());
+                    }
+                    break;
+                }
             }
         }
         return psiElements.toArray(new PsiElement[0]);
     }
 
-    private ArrayList<ASTNode> getMethodNodes(ASTNode node, int start, int end) {
+    private String formatText(String text) {
+        text = text.replaceAll(" ", "");
+        text = text.replaceAll("\n", "");
+        return text;
+    }
+
+    private ArrayList<ASTNode> getMethodNodes(ASTNode node) {
         ArrayList<ASTNode> astNodes = new ArrayList<>();
+
+        PsiElement psiElement = node.getPsi();
+        if((psiElement instanceof  PsiExpressionStatement) || (psiElement instanceof PsiDeclarationStatement)) {
+            astNodes.add(node);
+        }
         ASTNode[] children = node.getChildren(null);
         if(children.length < 1) {
             return astNodes;
         }
-        int nodeStart = node.getStartOffset();
-        int nodeEnd = node.getTextRange().getEndOffset();
-        if (nodeStart >= start && nodeEnd <= end) {
-            PsiElement psiElement = node.getPsi();
-            if(!(psiElement instanceof  PsiJavaToken) && !(psiElement instanceof  PsiReferenceParameterList)
-                    && !(psiElement instanceof PsiReferenceExpression) && !(psiElement instanceof PsiBinaryExpression)
-                    && !(psiElement instanceof  PsiExpressionList) && !(psiElement instanceof PsiMethodCallExpression)) {
-                astNodes.add(node);
-            }
-        }
 
         for(ASTNode child : children) {
-            astNodes.addAll(getMethodNodes(child, start, end));
+            astNodes.addAll(getMethodNodes(child));
         }
 
         return astNodes;
@@ -152,11 +160,6 @@ public class ReplayOperations {
         UMLParameter returnParameter = extractOperationRefactoring.getExtractedOperation().getReturnParameter();
         String parameterType = returnParameter.getType().toString();
         PsiElementFactory factory = PsiElementFactory.getInstance(project);
-        if(parameterType.equals("void")) {
-            return factory.createTypeFromText(parameterType, psiMethod);
-        }
-        String parameterName = returnParameter.getName();
-        String parameter = parameterType + " " + parameterName;
-        return factory.createTypeFromText(parameter, psiMethod);
+        return factory.createTypeFromText(parameterType, psiMethod);
     }
 }
