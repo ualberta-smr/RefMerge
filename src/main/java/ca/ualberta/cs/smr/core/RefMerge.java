@@ -109,10 +109,6 @@ public class RefMerge extends AnAction {
         SortPairs.sortList(rightRefs);
         List<Pair> leftRefs = detectCommits(leftCommit, baseCommit);
         SortPairs.sortList(leftRefs);
-        // Check if any of the refactorings are conflicting or have ordering dependencies
-        Matrix matrix = new Matrix(project);
-        DependenceGraph graph = matrix.runMatrix(leftRefs, rightRefs);
-
 
         // Checkout base commit and store it in temp/base
         gitUtils.checkout(baseCommit);
@@ -138,6 +134,11 @@ public class RefMerge extends AnAction {
         Utils.refreshVFS();
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
+
+        // Check if any of the refactorings are conflicting or have ordering dependencies
+        Matrix matrix = new Matrix(project);
+        DependenceGraph graph = matrix.runMatrix(leftRefs, rightRefs);
+
         // Combine the lists so we can perform all the refactorings on the merged project
         // Replay all of the refactorings
         replayRefactorings(graph);
