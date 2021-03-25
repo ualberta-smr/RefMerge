@@ -14,9 +14,13 @@ public class Main {
     }
 
     public void method() {
-        int x = 5;
+        int x = getX();
         int y = 10;
         extractedMethod(x, y);
+    }
+
+    private int getX() {
+        return 5;
     }
 
     private void extractedMethod(int x, int y) {
