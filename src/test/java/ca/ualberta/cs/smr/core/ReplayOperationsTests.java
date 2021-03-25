@@ -87,7 +87,7 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
 
     }
 
-    public void testReplayExtractMethod() {
+    public void testReplayMultipleExtractMethod() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
         String testDir = "/extractTestData/extractMethod/";
@@ -104,9 +104,11 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("EXTRACT_OPERATION",
                 originalTestData, refactoredTestData);
         assert refactorings != null;
-        Refactoring ref = refactorings.get(0);
+        Refactoring ref = refactorings.get(1);
         ReplayOperations replayOperations = new ReplayOperations(project);
         try {
+            replayOperations.replayExtractMethod(ref);
+            ref = refactorings.get(0);
             replayOperations.replayExtractMethod(ref);
         } catch (PrepareFailedException e) {
             e.printStackTrace();
@@ -116,6 +118,6 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         PsiFile psiFile2 = files[1];
         String content1 = psiFile1.getText();
         String content2 = psiFile2.getText();
-        LightJavaCodeInsightFixtureTestCase.assertEquals(content1, content2);
+        LightJavaCodeInsightFixtureTestCase.assertEquals(content2, content1);
     }
 }

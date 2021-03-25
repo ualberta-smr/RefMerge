@@ -86,7 +86,7 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
 
     }
 
-    public void testUndoExtractMethod() {
+    public void testUndoMultipleExtractMethod() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
         String testDir = "/extractTestData/extractMethod/";
@@ -103,6 +103,8 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
         UndoOperations undoOperations = new UndoOperations(project);
+        undoOperations.undoExtractMethod(ref);
+        ref = refactorings.get(1);
         undoOperations.undoExtractMethod(ref);
 
         PsiFile file1 = files[0];
