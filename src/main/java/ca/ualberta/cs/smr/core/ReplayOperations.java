@@ -79,7 +79,7 @@ public class ReplayOperations {
 
     }
 
-    public void replayExtractMethod(Refactoring ref) throws PrepareFailedException {
+    public void replayExtractMethod(Refactoring ref) {
 
         ExtractOperationRefactoring extractOperationRefactoring = (ExtractOperationRefactoring) ref;
         UMLOperation sourceOperation = extractOperationRefactoring.getSourceOperationBeforeExtraction();
@@ -102,9 +102,17 @@ public class ReplayOperations {
         ExtractMethodProcessor extractMethodProcessor = new ExtractMethodProcessor(project, null, psiElements,
                 forcedReturnType, refactoringName, initialMethodName, helpId);
         extractMethodProcessor.setMethodName(refactoringName);
-        extractMethodProcessor.prepare();
+        try {
+            extractMethodProcessor.prepare();
+        } catch (PrepareFailedException e) {
+            e.printStackTrace();
+        }
         extractMethodProcessor.setDataFromInputVariables();
         ExtractMethodHandler.extractMethod(project, extractMethodProcessor);
+
+        VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
+        vFile.refresh(false, true);
+
     }
 
     private PsiElement[] getPsiElements(ExtractOperationRefactoring extractOperationRefactoring, PsiMethod psiMethod) {
