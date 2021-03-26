@@ -139,7 +139,7 @@ class DoGitCommit implements Runnable {
         GitCommandResult result = Git.getInstance().runCommand(lineHandler);
         String res = result.getOutputAsJoinedString();
         // get the commit hash from the output message
-        String commit = res.substring(res.indexOf("[[") + 2, res.indexOf("]"));
+        String commit = res.substring(res.indexOf("[") + 1, res.indexOf("]") - 1);
         this.commit = commit.substring(commit.lastIndexOf(" ") + 1);
     }
 
