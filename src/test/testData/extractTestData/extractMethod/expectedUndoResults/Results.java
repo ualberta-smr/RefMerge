@@ -16,8 +16,8 @@ public class Main {
     public void method() {
         int x = 5;
         int y = 10;
-        System.out.println("Added Line");
         System.out.println("Adding " + x + " and " + y);
+        System.out.println("Added Line");
         int z = x + y;
         String str = "Printing: ";
         System.out.println(str + z);
