@@ -189,6 +189,8 @@ public class RefMerge extends AnAction {
                         // Perform the rename method refactoring
                         replay.replayRenameMethod(ref);
                         break;
+                    case EXTRACT_OPERATION:
+                        replay.replayExtractMethod(ref);
                 }
 
             }
