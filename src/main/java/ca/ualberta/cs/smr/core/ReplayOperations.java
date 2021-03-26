@@ -2,6 +2,8 @@ package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.lang.ASTNode;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
@@ -23,7 +25,6 @@ import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 
@@ -98,9 +99,9 @@ public class ReplayOperations {
         assert psiMethod != null;
         PsiElement[] psiElements = getPsiElements(extractOperationRefactoring, psiMethod);
         PsiType forcedReturnType = getPsiReturnType(extractOperationRefactoring, psiMethod);
-
+        Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
         // Set editor to null because we are not using the character offset in the editor
-        ExtractMethodProcessor extractMethodProcessor = new ExtractMethodProcessor(project, null, psiElements,
+        ExtractMethodProcessor extractMethodProcessor = new ExtractMethodProcessor(project, editor, psiElements,
                 forcedReturnType, refactoringName, initialMethodName, helpId);
         extractMethodProcessor.setMethodName(refactoringName);
         try {
@@ -120,15 +121,12 @@ public class ReplayOperations {
         Set<AbstractCodeFragment> codeFragments = extractOperationRefactoring.getExtractedCodeFragmentsFromSourceOperation();
         AbstractCodeFragment[] codeFragmentsArray = new AbstractCodeFragment[codeFragments.size()];
         codeFragments.toArray(codeFragmentsArray);
-        AbstractStatement[] statements = getSurroundingStatements(codeFragmentsArray[0],
-                                                            codeFragmentsArray[codeFragmentsArray.length - 1]);
         PsiCodeBlock psiCodeBlock = psiMethod.getBody();
         assert psiCodeBlock != null;
         PsiStatement[] psiStatements = psiCodeBlock.getStatements();
         AbstractCodeFragment firstCodeFragment = codeFragmentsArray[0];
         AbstractCodeFragment lastCodeFragment = codeFragmentsArray[codeFragmentsArray.length - 1];
-        ArrayList<PsiElement> psiElements = getPsiElementsFromStatements(psiStatements, firstCodeFragment, lastCodeFragment,
-                                                            statements);
+        ArrayList<PsiElement> psiElements = getPsiElementsFromStatements(psiStatements, firstCodeFragment, lastCodeFragment);
         return psiElements.toArray(new PsiElement[0]);
     }
 
@@ -139,106 +137,34 @@ public class ReplayOperations {
     }
 
     /*
-     * Gets the statement before and after the statements that are being extracted to the new method. If the first code
-     * fragment is the first statement, set the first statement to null and if the last code fragment is the last statement,
-     * set the last statement to null.
-     */
-    private AbstractStatement[] getSurroundingStatements(AbstractCodeFragment firstCodeFragment,
-                                                         AbstractCodeFragment lastCodeFragment) {
-        CompositeStatementObject compositeStatementObject = firstCodeFragment.getParent();
-        List<AbstractStatement> abstractStatements = compositeStatementObject.getStatements();
-        AbstractStatement[] surroundingStatements = new AbstractStatement[2];
-        if(firstCodeFragment.equalFragment(lastCodeFragment)) {
-            surroundingStatements[0] = null;
-            surroundingStatements[1] = null;
-            return surroundingStatements;
-        }
-        for(int i = 0; i < abstractStatements.size(); i++) {
-            AbstractStatement abstractStatement = abstractStatements.get(i);
-            if(abstractStatement.equalFragment(firstCodeFragment)) {
-                if(i != 0) {
-                    surroundingStatements[0] = abstractStatements.get(i - 1);
-                }
-            }
-            if(abstractStatement.equalFragment(lastCodeFragment)) {
-                if(i < abstractStatements.size() - 1) {
-                    surroundingStatements[1] = abstractStatements.get(i - 1);
-                }
-            }
-        }
-        return surroundingStatements;
-    }
-
-    /*
      * Gets the PSI elements for the extract method processor. If the surrounding statements are not null, use them to
      * get the PSI elements. If they are null, use the code fragments instead.
      */
     private ArrayList<PsiElement> getPsiElementsFromStatements(PsiStatement[] psiStatements,
                                                                AbstractCodeFragment firstCodeFragment,
-                                                               AbstractCodeFragment lastCodeFragment,
-                                                               AbstractStatement[] surroundingStatements) {
-        AbstractStatement firstStatement = surroundingStatements[0];
-        AbstractStatement lastStatement = surroundingStatements[1];
+                                                               AbstractCodeFragment lastCodeFragment) {
 
         ArrayList<PsiElement> psiElements = new ArrayList<>();
         boolean statementInRange = false;
-        boolean startAfterFirstStatement = false;
-        boolean stopBeforeLastStatement = false;
         String startingText = formatText(firstCodeFragment.getString());
         String endingText = formatText(lastCodeFragment.getString());
-        if(firstStatement != null) {
-            startingText = formatText(firstStatement.getString());
-            startAfterFirstStatement = true;
-        }
-        if(lastStatement != null) {
-            endingText = formatText(lastStatement.getString());
-            stopBeforeLastStatement = true;
-        }
 
         for(PsiStatement psiStatement : psiStatements) {
             String psiStatementText = formatText(psiStatement.getText());
             if(startingText.equals(psiStatementText)) {
                 statementInRange = true;
-                if(startAfterFirstStatement) {
-                    continue;
-                }
             }
             if(statementInRange) {
                 ASTNode node = SourceTreeToPsiMap.psiElementToTree(psiStatement);
                 assert node != null;
-                ArrayList<ASTNode> nodes = getMethodNodes(node);
-                for(ASTNode astNode : nodes) {
-                    psiElements.add(astNode.getPsi());
-                }
+                psiElements.add(node.getPsi());
             }
             if(endingText.equals(psiStatementText)) {
-                if(stopBeforeLastStatement) {
-                    psiElements.remove(psiStatement);
-                }
                 break;
             }
         }
         return psiElements;
 
-    }
-
-    private ArrayList<ASTNode> getMethodNodes(ASTNode node) {
-        ArrayList<ASTNode> astNodes = new ArrayList<>();
-
-        PsiElement psiElement = node.getPsi();
-        if((psiElement instanceof  PsiExpressionStatement) || (psiElement instanceof PsiDeclarationStatement)) {
-            astNodes.add(node);
-        }
-        ASTNode[] children = node.getChildren(null);
-        if(children.length < 1) {
-            return astNodes;
-        }
-
-        for(ASTNode child : children) {
-            astNodes.addAll(getMethodNodes(child));
-        }
-
-        return astNodes;
     }
 
     private PsiType getPsiReturnType(ExtractOperationRefactoring extractOperationRefactoring, PsiMethod psiMethod) {
