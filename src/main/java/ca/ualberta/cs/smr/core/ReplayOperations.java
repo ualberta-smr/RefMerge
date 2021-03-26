@@ -16,13 +16,14 @@ import com.intellij.usageView.UsageInfo;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.UMLParameter;
-import gr.uom.java.xmi.decomposition.AbstractCodeFragment;
+import gr.uom.java.xmi.decomposition.*;
 import gr.uom.java.xmi.diff.ExtractOperationRefactoring;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 
@@ -116,26 +117,18 @@ public class ReplayOperations {
     }
 
     private PsiElement[] getPsiElements(ExtractOperationRefactoring extractOperationRefactoring, PsiMethod psiMethod) {
-        ArrayList<PsiElement> psiElements = new ArrayList<>();
         Set<AbstractCodeFragment> codeFragments = extractOperationRefactoring.getExtractedCodeFragmentsFromSourceOperation();
+        AbstractCodeFragment[] codeFragmentsArray = new AbstractCodeFragment[codeFragments.size()];
+        codeFragments.toArray(codeFragmentsArray);
+        AbstractStatement[] statements = getSurroundingStatements(codeFragmentsArray[0],
+                                                            codeFragmentsArray[codeFragmentsArray.length - 1]);
         PsiCodeBlock psiCodeBlock = psiMethod.getBody();
         assert psiCodeBlock != null;
         PsiStatement[] psiStatements = psiCodeBlock.getStatements();
-        for(AbstractCodeFragment codeFragment : codeFragments) {
-            for(PsiStatement psiStatement : psiStatements) {
-                String codeFragmentText = formatText(codeFragment.getString());
-                String psiStatementText = formatText(psiStatement.getText());
-                if(codeFragmentText.equals(psiStatementText)) {
-                    ASTNode node = SourceTreeToPsiMap.psiElementToTree(psiStatement);
-                    assert node != null;
-                    ArrayList<ASTNode> nodes = getMethodNodes(node);
-                    for(ASTNode astNode : nodes) {
-                        psiElements.add(astNode.getPsi());
-                    }
-                    break;
-                }
-            }
-        }
+        AbstractCodeFragment firstCodeFragment = codeFragmentsArray[0];
+        AbstractCodeFragment lastCodeFragment = codeFragmentsArray[codeFragmentsArray.length - 1];
+        ArrayList<PsiElement> psiElements = getPsiElementsFromStatements(psiStatements, firstCodeFragment, lastCodeFragment,
+                                                            statements);
         return psiElements.toArray(new PsiElement[0]);
     }
 
@@ -143,6 +136,90 @@ public class ReplayOperations {
         text = text.replaceAll(" ", "");
         text = text.replaceAll("\n", "");
         return text;
+    }
+
+    /*
+     * Gets the statement before and after the statements that are being extracted to the new method. If the first code
+     * fragment is the first statement, set the first statement to null and if the last code fragment is the last statement,
+     * set the last statement to null.
+     */
+    private AbstractStatement[] getSurroundingStatements(AbstractCodeFragment firstCodeFragment,
+                                                         AbstractCodeFragment lastCodeFragment) {
+        CompositeStatementObject compositeStatementObject = firstCodeFragment.getParent();
+        List<AbstractStatement> abstractStatements = compositeStatementObject.getStatements();
+        AbstractStatement[] surroundingStatements = new AbstractStatement[2];
+        if(firstCodeFragment.equalFragment(lastCodeFragment)) {
+            surroundingStatements[0] = null;
+            surroundingStatements[1] = null;
+            return surroundingStatements;
+        }
+        for(int i = 0; i < abstractStatements.size(); i++) {
+            AbstractStatement abstractStatement = abstractStatements.get(i);
+            if(abstractStatement.equalFragment(firstCodeFragment)) {
+                if(i != 0) {
+                    surroundingStatements[0] = abstractStatements.get(i - 1);
+                }
+            }
+            if(abstractStatement.equalFragment(lastCodeFragment)) {
+                if(i < abstractStatements.size() - 1) {
+                    surroundingStatements[1] = abstractStatements.get(i - 1);
+                }
+            }
+        }
+        return surroundingStatements;
+    }
+
+    /*
+     * Gets the PSI elements for the extract method processor. If the surrounding statements are not null, use them to
+     * get the PSI elements. If they are null, use the code fragments instead.
+     */
+    private ArrayList<PsiElement> getPsiElementsFromStatements(PsiStatement[] psiStatements,
+                                                               AbstractCodeFragment firstCodeFragment,
+                                                               AbstractCodeFragment lastCodeFragment,
+                                                               AbstractStatement[] surroundingStatements) {
+        AbstractStatement firstStatement = surroundingStatements[0];
+        AbstractStatement lastStatement = surroundingStatements[1];
+
+        ArrayList<PsiElement> psiElements = new ArrayList<>();
+        boolean statementInRange = false;
+        boolean startAfterFirstStatement = false;
+        boolean stopBeforeLastStatement = false;
+        String startingText = formatText(firstCodeFragment.getString());
+        String endingText = formatText(lastCodeFragment.getString());
+        if(firstStatement != null) {
+            startingText = formatText(firstStatement.getString());
+            startAfterFirstStatement = true;
+        }
+        if(lastStatement != null) {
+            endingText = formatText(lastStatement.getString());
+            stopBeforeLastStatement = true;
+        }
+
+        for(PsiStatement psiStatement : psiStatements) {
+            String psiStatementText = formatText(psiStatement.getText());
+            if(startingText.equals(psiStatementText)) {
+                statementInRange = true;
+                if(startAfterFirstStatement) {
+                    continue;
+                }
+            }
+            if(statementInRange) {
+                ASTNode node = SourceTreeToPsiMap.psiElementToTree(psiStatement);
+                assert node != null;
+                ArrayList<ASTNode> nodes = getMethodNodes(node);
+                for(ASTNode astNode : nodes) {
+                    psiElements.add(astNode.getPsi());
+                }
+            }
+            if(endingText.equals(psiStatementText)) {
+                if(stopBeforeLastStatement) {
+                    psiElements.remove(psiStatement);
+                }
+                break;
+            }
+        }
+        return psiElements;
+
     }
 
     private ArrayList<ASTNode> getMethodNodes(ASTNode node) {
