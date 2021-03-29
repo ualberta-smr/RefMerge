@@ -18,8 +18,10 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 import org.refactoringminer.api.RefactoringType;
 
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Vector;
 
 /*
  * The logic and dispatching for the conflict matrix happens in Matrix.
@@ -94,8 +96,20 @@ public class Matrix {
      */
     void dispatch(Node leftNode, Node rightNode) {
         // Get the refactoring types so we can create the corresponding element and visitor
-        RefactoringElement element = makeElement(leftNode);
-        RefactoringVisitor visitor = makeVisitor(rightNode);
+
+        int leftValue = getRefactoringValue(leftNode.getRefactoring().getRefactoringType());
+        int rightValue = getRefactoringValue(rightNode.getRefactoring().getRefactoringType());
+
+        RefactoringElement element;
+        RefactoringVisitor visitor;
+        if(leftValue < rightValue) {
+            element = makeElement(rightNode);
+            visitor = makeVisitor(leftNode);
+        }
+        else {
+            element = makeElement(leftNode);
+            visitor = makeVisitor(rightNode);
+        }
         element.accept(visitor);
     }
 
@@ -115,6 +129,23 @@ public class Matrix {
         RefactoringVisitor visitor = visitorMap.get(type);
         visitor.set(node, graph);
         return visitor;
+    }
+
+    protected int getRefactoringValue(RefactoringType refactoringType) {
+        Vector<RefactoringType> vector = new Vector<>();
+        vector.add(RefactoringType.RENAME_METHOD);
+        vector.add(RefactoringType.RENAME_CLASS);
+        vector.add(RefactoringType.EXTRACT_OPERATION);
+
+        Enumeration<RefactoringType> enumeration = vector.elements();
+        int value = 0;
+        while(enumeration.hasMoreElements()) {
+            value++;
+            if(refactoringType.equals(enumeration.nextElement())) {
+                return value;
+            }
+        }
+        return -1;
     }
 
 }
