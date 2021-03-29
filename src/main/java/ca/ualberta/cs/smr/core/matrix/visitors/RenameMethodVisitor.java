@@ -1,19 +1,11 @@
 package ca.ualberta.cs.smr.core.matrix.visitors;
 
-import ca.ualberta.cs.smr.core.dependenceGraph.DependenceGraph;
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.elements.ExtractMethodElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
 
 public class RenameMethodVisitor extends RefactoringVisitor {
-    Node visitorNode;
-    DependenceGraph graph;
-
-    public void set(Node visitorNode, DependenceGraph graph) {
-        this.visitorNode = visitorNode;
-        this.graph = graph;
-    }
 
     /*
      * Check if rename method conflicts with rename method

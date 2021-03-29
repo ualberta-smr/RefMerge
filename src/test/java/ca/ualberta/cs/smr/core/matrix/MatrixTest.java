@@ -12,23 +12,14 @@ import ca.ualberta.cs.smr.core.matrix.visitors.RenameMethodVisitor;
 import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.List;
 
-@RunWith(MockitoJUnitRunner.class)
 public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
 
-    @Test
     public void testElementMap() {
         RefactoringType type = RefactoringType.RENAME_CLASS;
         RenameClassElement renameClassElement = new RenameClassElement();
@@ -42,7 +33,6 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         Assert.assertTrue(equals);
     }
 
-    @Test
     public void testVisitorMap() {
         RefactoringType type = RefactoringType.RENAME_CLASS;
         RenameClassVisitor renameClassVisitor = new RenameClassVisitor();
@@ -56,7 +46,6 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         Assert.assertTrue(equals);
     }
 
-    @Test
     public void testMakeElement() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/original";
@@ -74,7 +63,6 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
 
     }
 
-    @Test
     public void testMakeVisitor() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/original";
@@ -90,43 +78,29 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         Assert.assertTrue(equals);
     }
 
-
-    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-    private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
-    private final PrintStream originalOut = System.out;
-    private final PrintStream originalErr = System.err;
-
-    @Before
-    public void setUpStreams() {
-        System.setOut(new PrintStream(outContent));
-        System.setErr(new PrintStream(errContent));
-    }
-
-    public void testDispatch() {
+    public void testGetRefactoringValue() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/original";
-        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
-        List<Pair> refactorings = GetDataForTests.getPairs("RENAME_METHOD", originalPath, refactoredPath);
+        String renamedPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
+        List<Pair> refactorings = GetDataForTests.getPairs("RENAME_METHOD", originalPath, renamedPath);
         assert refactorings != null;
-        Refactoring elementRef = refactorings.get(1).getValue();
-        Refactoring visitorRef = refactorings.get(2).getValue();
-        Node elementNode = new Node(elementRef);
-        Node visitorNode = new Node(visitorRef);
+        Refactoring renameMethod = refactorings.get(1).getValue();
+        originalPath = basePath + "/src/test/testData/extractTestData/extractMethod/original/";
+        String extractedPath = basePath + "/src/test/testData/extractTestData/extractMethod/refactored/";
+        refactorings = GetDataForTests.getPairs("EXTRACT_OPERATION", originalPath, extractedPath);
+        assert refactorings != null;
+        Refactoring extractMethod = refactorings.get(0).getValue();
+        Node renameNode = new Node(renameMethod);
+        Node extractNode = new Node(extractMethod);
         DependenceGraph graph = new DependenceGraph(project);
-        graph.addVertex(elementNode);
-        graph.addVertex(visitorNode);
+        graph.addVertex(renameNode);
+        graph.addVertex(extractNode);
         Matrix matrix = new Matrix(project, graph);
-        matrix.dispatch(elementNode, visitorNode);
-        String message = "Overload conflict\n" + "Rename Method/Rename Method conflict: true\n";
-        Assert.assertEquals(message, outContent.toString());
+        int renameValue = matrix.getRefactoringValue(renameMethod.getRefactoringType());
+        int extractValue = matrix.getRefactoringValue(extractMethod.getRefactoringType());
+        Assert.assertTrue(renameValue < extractValue);
 
-    }
-
-    @After
-    public void restoreStreams() {
-        System.setOut(originalOut);
-        System.setErr(originalErr);
     }
 
 
