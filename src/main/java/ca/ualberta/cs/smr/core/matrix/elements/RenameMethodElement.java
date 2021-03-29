@@ -2,8 +2,7 @@ package ca.ualberta.cs.smr.core.matrix.elements;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.logicCells.RenameMethodRenameMethodCell;
-import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassRenameMethodCell;
-import ca.ualberta.cs.smr.core.matrix.visitors.Visitor;
+import ca.ualberta.cs.smr.core.matrix.visitors.RefactoringVisitor;
 import com.intellij.openapi.project.Project;
 
 
@@ -15,7 +14,7 @@ public class RenameMethodElement extends RefactoringElement {
     Node elementNode;
 
     @Override
-    public void accept(Visitor v) {
+    public void accept(RefactoringVisitor v) {
         v.visit(this);
     }
 
@@ -46,16 +45,6 @@ public class RenameMethodElement extends RefactoringElement {
             return true;
         }
         return false;
-    }
-
-    /*
-     * Check if a rename class refactoring depends on a rename method refactoring to be performed first.
-     */
-    public Node checkRenameClassDependence(Node visitorNode) {
-        if(RenameClassRenameMethodCell.checkRenameMethodRenameClassDependence(visitorNode, elementNode)) {
-            return elementNode;
-        }
-        return null;
     }
 
 }

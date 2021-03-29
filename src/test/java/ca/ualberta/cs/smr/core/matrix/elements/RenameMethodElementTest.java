@@ -120,16 +120,14 @@ public class RenameMethodElementTest extends LightJavaCodeInsightFixtureTestCase
         List<Refactoring> methodRefs = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         List<Refactoring> classRefs = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert classRefs != null;
-        Refactoring visitorRef = classRefs.get(0);
+        Refactoring elementRef = classRefs.get(0);
         assert methodRefs != null;
-        Refactoring elementRef = methodRefs.get(0);
+        Refactoring visitorRef = methodRefs.get(0);
         Node elementNode = new Node(elementRef);
         Node visitorNode = new Node(visitorRef);
-        RenameMethodElement element = new RenameMethodElement();
+        RenameClassElement element = new RenameClassElement();
         element.set(elementNode, project);
-//        boolean isDependent = element.checkRenameClassDependence(visitorRef);
-//        Assert.assertTrue(isDependent);
-        Node result = element.checkRenameClassDependence(visitorNode);
+        Node result = element.checkRenameMethodDependence(visitorNode);
         Assert.assertNotNull(result);
     }
 }
