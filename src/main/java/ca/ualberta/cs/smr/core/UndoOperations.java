@@ -1,7 +1,7 @@
 package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.core.refactoringWrappers.ExtractOperationRefactoringWrapper;
-import ca.ualberta.cs.smr.core.refactoringWrappers.RefactoringWrapperUtils;
+import ca.ualberta.cs.smr.utils.RefactoringWrapperUtils;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
