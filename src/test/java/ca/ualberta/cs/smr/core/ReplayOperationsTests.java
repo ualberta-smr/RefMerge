@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core;
 
+import ca.ualberta.cs.smr.core.refactoringWrappers.RefactoringWrapperUtils;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
 import com.intellij.openapi.project.Project;
@@ -7,6 +8,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
+import gr.uom.java.xmi.diff.ExtractOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 
 import java.util.List;
@@ -104,9 +106,11 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
                 originalTestData, refactoredTestData);
         assert refactorings != null;
         Refactoring ref = refactorings.get(1);
+        ref = RefactoringWrapperUtils.wrapExtractOperation((ExtractOperationRefactoring) ref, null);
         ReplayOperations replayOperations = new ReplayOperations(project);
         replayOperations.replayExtractMethod(ref);
         ref = refactorings.get(0);
+        ref = RefactoringWrapperUtils.wrapExtractOperation((ExtractOperationRefactoring) ref, null);
         replayOperations.replayExtractMethod(ref);
 
         PsiFile psiFile1 = files[0];
@@ -116,33 +120,36 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         LightJavaCodeInsightFixtureTestCase.assertEquals(content2, content1);
     }
 
-    public void testReplayExtractMethodWithAddedLine() {
+    public void testReplayExtractMethodNewStartingLine() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
         String testDir = "/extractTestData/extractMethod/";
-        String sourceTestData = testDir + "original/";
-        String resultTestData = testDir + "expectedReplayResults/";
-        String testFile = "MainAfterUndo.java";
+        String resultsTestData = testDir + "expectedReplayResults/";
+        String refactoredTestData = testDir + "refactored/";
+        String testFile = "Main.java";
         String resultFile = "ReplayResultsWithAddedLine.java";
-        PsiFile[] files = myFixture.configureByFiles(sourceTestData + testFile, resultTestData + resultFile);
-
+        PsiFile[] files = myFixture.configureByFiles(refactoredTestData + testFile, resultsTestData + resultFile);
         testDir = basePath + "/" + getTestDataPath() + testDir;
         String originalTestData = testDir + "original/";
-        String refactoredTestData = testDir + "refactored/";
-
+        refactoredTestData = testDir + "refactored/";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("EXTRACT_OPERATION",
                 originalTestData, refactoredTestData);
         assert refactorings != null;
-        Refactoring ref = refactorings.get(1);
-        ReplayOperations replayOperations = new ReplayOperations(project);
-        replayOperations.replayExtractMethod(ref);
-        ref = refactorings.get(0);
-        replayOperations.replayExtractMethod(ref);
+        Refactoring firstRef = refactorings.get(0);
+        UndoOperations undoOperations = new UndoOperations(project);
+        firstRef = undoOperations.undoExtractMethod(firstRef);
+        Refactoring secondRef = refactorings.get(1);
+        secondRef = undoOperations.undoExtractMethod(secondRef);
 
-        PsiFile psiFile1 = files[0];
-        PsiFile psiFile2 = files[1];
-        String content1 = psiFile1.getText();
-        String content2 = psiFile2.getText();
+        ReplayOperations replayOperations = new ReplayOperations(project);
+        replayOperations.replayExtractMethod(secondRef);
+        replayOperations.replayExtractMethod(firstRef);
+
+        PsiFile file1 = files[0];
+        PsiFile file2 = files[1];
+        String content1 = file1.getText();
+        String content2 = file2.getText();
         LightJavaCodeInsightFixtureTestCase.assertEquals(content2, content1);
+
     }
 }
