@@ -1,5 +1,7 @@
 package ca.ualberta.cs.smr.core;
 
+import ca.ualberta.cs.smr.core.refactoringWrappers.ExtractOperationRefactoringWrapper;
+import ca.ualberta.cs.smr.core.refactoringWrappers.RefactoringWrapperUtils;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
@@ -18,7 +20,6 @@ import gr.uom.java.xmi.diff.ExtractOperationRefactoring;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
-
 
 
 public class UndoOperations {
@@ -81,7 +82,7 @@ public class UndoOperations {
     /*
      * Undo the extract method refactoring that was originally performed by performing an inline method refactoring.
      */
-    public void undoExtractMethod(Refactoring ref) {
+    public ExtractOperationRefactoringWrapper undoExtractMethod(Refactoring ref) {
         ExtractOperationRefactoring extractOperationRefactoring = (ExtractOperationRefactoring) ref;
         UMLOperation sourceOperation = extractOperationRefactoring.getSourceOperationBeforeExtraction();
         UMLOperation extractedOperation = extractOperationRefactoring.getExtractedOperation();
@@ -96,6 +97,8 @@ public class UndoOperations {
         assert extractedMethod != null;
 
         PsiStatement[] surroundingStatements = getSurroundingStatements(extractedMethod);
+        ExtractOperationRefactoringWrapper refactoringWrapper =
+                    RefactoringWrapperUtils.wrapExtractOperation(extractOperationRefactoring, surroundingStatements);
 
         String sourceOperationClassName = sourceOperation.getClassName();
         filePath = sourceOperation.getLocationInfo().getFilePath();
@@ -112,6 +115,8 @@ public class UndoOperations {
 
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);
+
+        return refactoringWrapper;
     }
 
 
