@@ -1,6 +1,6 @@
 package ca.ualberta.cs.smr.core;
 
-import ca.ualberta.cs.smr.core.refactoringWrappers.RefactoringWrapperUtils;
+import ca.ualberta.cs.smr.utils.RefactoringWrapperUtils;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
 import com.intellij.openapi.project.Project;

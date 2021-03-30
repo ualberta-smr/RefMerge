@@ -1,5 +1,6 @@
-package ca.ualberta.cs.smr.core.refactoringWrappers;
+package ca.ualberta.cs.smr.utils;
 
+import ca.ualberta.cs.smr.core.refactoringWrappers.ExtractOperationRefactoringWrapper;
 import com.intellij.psi.PsiStatement;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.decomposition.OperationInvocation;
