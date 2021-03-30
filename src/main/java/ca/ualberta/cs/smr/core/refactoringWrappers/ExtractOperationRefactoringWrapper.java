@@ -9,13 +9,17 @@ import gr.uom.java.xmi.diff.ExtractOperationRefactoring;
 import java.util.List;
 
 public class ExtractOperationRefactoringWrapper extends ExtractOperationRefactoring {
-    private final PsiStatement[] surroundingStatemets;
+    private final PsiStatement[] surroundingStatements;
 
     public ExtractOperationRefactoringWrapper(UMLOperationBodyMapper bodyMapper,
                                               UMLOperation sourceOperationAfterExtraction,
                                               List<OperationInvocation> operationInvocations,
-                                              PsiStatement[] surroundingStatemets) {
+                                              PsiStatement[] surroundingStatements) {
         super(bodyMapper, sourceOperationAfterExtraction, operationInvocations);
-        this.surroundingStatemets = surroundingStatemets;
+        this.surroundingStatements = surroundingStatements;
+    }
+
+    public PsiStatement[] getSurroundingStatements() {
+        return surroundingStatements;
     }
 }
