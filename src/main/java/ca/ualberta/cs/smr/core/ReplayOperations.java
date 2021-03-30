@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core;
 
+import ca.ualberta.cs.smr.core.refactoringWrappers.ExtractOperationRefactoringWrapper;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.editor.Editor;
@@ -82,7 +83,7 @@ public class ReplayOperations {
     }
 
     public void replayExtractMethod(Refactoring ref) {
-
+        ExtractOperationRefactoringWrapper refactoringWrapper = (ExtractOperationRefactoringWrapper) ref;
         ExtractOperationRefactoring extractOperationRefactoring = (ExtractOperationRefactoring) ref;
         UMLOperation sourceOperation = extractOperationRefactoring.getSourceOperationBeforeExtraction();
         UMLOperation extractedOperation = extractOperationRefactoring.getExtractedOperation();
@@ -97,7 +98,16 @@ public class ReplayOperations {
         assert psiClass != null;
         PsiMethod psiMethod = Utils.getPsiMethod(psiClass, sourceOperation);
         assert psiMethod != null;
-        PsiElement[] psiElements = getPsiElements(extractOperationRefactoring, psiMethod);
+
+        PsiElement[] psiElements;
+        PsiStatement[] surroundingStatements = refactoringWrapper.getSurroundingStatements();
+
+        if(surroundingStatements == null) {
+            psiElements = getPsiElements(extractOperationRefactoring, psiMethod);
+        }
+        else {
+            psiElements = getPsiElementsBetweenStatements(surroundingStatements, psiMethod);
+        }
         PsiType forcedReturnType = getPsiReturnType(extractOperationRefactoring, psiMethod);
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
         // Set editor to null because we are not using the character offset in the editor
@@ -117,6 +127,21 @@ public class ReplayOperations {
 
     }
 
+    private PsiElement[] getPsiElementsBetweenStatements(PsiStatement[] surroundingStatements, PsiMethod psiMethod) {
+        PsiStatement firstStatement = surroundingStatements[0];
+        PsiStatement lastStatement = surroundingStatements[1];
+        String startingText = formatText(firstStatement.getText());
+        String endingText = formatText(lastStatement.getText());
+
+        PsiCodeBlock psiCodeBlock = psiMethod.getBody();
+        assert psiCodeBlock != null;
+        PsiStatement[] psiStatements = psiCodeBlock.getStatements();
+
+        ArrayList<PsiElement> psiElements = getPsiElementsFromStatements(psiStatements, startingText, endingText);
+        return psiElements.toArray(new PsiElement[0]);
+
+    }
+
     private PsiElement[] getPsiElements(ExtractOperationRefactoring extractOperationRefactoring, PsiMethod psiMethod) {
         Set<AbstractCodeFragment> codeFragments = extractOperationRefactoring.getExtractedCodeFragmentsFromSourceOperation();
         AbstractCodeFragment[] codeFragmentsArray = new AbstractCodeFragment[codeFragments.size()];
@@ -126,7 +151,9 @@ public class ReplayOperations {
         PsiStatement[] psiStatements = psiCodeBlock.getStatements();
         AbstractCodeFragment firstCodeFragment = codeFragmentsArray[0];
         AbstractCodeFragment lastCodeFragment = codeFragmentsArray[codeFragmentsArray.length - 1];
-        ArrayList<PsiElement> psiElements = getPsiElementsFromStatements(psiStatements, firstCodeFragment, lastCodeFragment);
+        String startingText = formatText(firstCodeFragment.getString());
+        String endingText = formatText(lastCodeFragment.getString());
+        ArrayList<PsiElement> psiElements = getPsiElementsFromStatements(psiStatements, startingText, endingText);
         return psiElements.toArray(new PsiElement[0]);
     }
 
@@ -141,13 +168,11 @@ public class ReplayOperations {
      * get the PSI elements. If they are null, use the code fragments instead.
      */
     private ArrayList<PsiElement> getPsiElementsFromStatements(PsiStatement[] psiStatements,
-                                                               AbstractCodeFragment firstCodeFragment,
-                                                               AbstractCodeFragment lastCodeFragment) {
+                                                               String startingText,
+                                                               String endingText) {
 
         ArrayList<PsiElement> psiElements = new ArrayList<>();
         boolean statementInRange = false;
-        String startingText = formatText(firstCodeFragment.getString());
-        String endingText = formatText(lastCodeFragment.getString());
 
         for(PsiStatement psiStatement : psiStatements) {
             String psiStatementText = formatText(psiStatement.getText());

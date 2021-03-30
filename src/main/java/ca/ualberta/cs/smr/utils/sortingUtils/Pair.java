@@ -4,7 +4,7 @@ import org.refactoringminer.api.Refactoring;
 
 public class Pair {
     private final int commit;
-    private final Refactoring refactoring;
+    private Refactoring refactoring;
 
     public Pair(int commit, Refactoring refactoring) {
         this.commit = commit;
@@ -17,5 +17,9 @@ public class Pair {
 
     public Refactoring getValue() {
         return refactoring;
+    }
+
+    public void setValue(Refactoring refactoring) {
+        this.refactoring = refactoring;
     }
 }

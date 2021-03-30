@@ -66,11 +66,16 @@ public class RefMerge extends AnAction {
 //        String rightCommit = "3d9b713ba";
 //        String leftCommit = "5e7fcebe4";
 //        String baseCommit = "773d48939a2ccba";
-        // Extract Method
-        String mergeCommit = "2c959cae5";
-        String rightCommit = "2b4f6d9b";
-        String leftCommit = "e4270319fd07";
-        String baseCommit = "b127f6e2634";
+        // Extract Method Scenario
+//        String mergeCommit = "2c959cae5";
+//        String rightCommit = "2b4f6d9b";
+//        String leftCommit = "e4270319fd07";
+//        String baseCommit = "b127f6e2634";
+        // Extract Method commit
+          String mergeCommit = "";
+          String rightCommit = "d290ecad7";
+          String leftCommit = "b127f6e2634";
+          String baseCommit = "b127f6e2634";
 
         refMerge(mergeCommit, rightCommit, leftCommit, baseCommit, project, repo);
 
@@ -119,7 +124,7 @@ public class RefMerge extends AnAction {
         // Update the PSI classes after the commit
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
-        undoRefactorings(rightRefs);
+        rightRefs = undoRefactorings(rightRefs);
         Utils.saveContent(project, "right");
         String rightUndoCommit = gitUtils.addAndCommit();
         gitUtils.checkout(leftCommit);
@@ -127,7 +132,7 @@ public class RefMerge extends AnAction {
         // Update the PSI classes after the commit
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
-        undoRefactorings(leftRefs);
+        leftRefs = undoRefactorings(leftRefs);
         Utils.saveContent(project, "left");
         String leftUndoCommit = gitUtils.addAndCommit();
         gitUtils.merge(leftUndoCommit, rightUndoCommit);
@@ -149,7 +154,7 @@ public class RefMerge extends AnAction {
     /*
      * undoRefactorings takes a list of refactorings and performs the inverse for each one.
      */
-    public void undoRefactorings(List<Pair> pairs) {
+    public List<Pair> undoRefactorings(List<Pair> pairs) {
         UndoOperations undo = new UndoOperations(project);
         // Iterate through the list of refactorings and undo each one
         for(Pair pair : pairs) {
@@ -164,12 +169,17 @@ public class RefMerge extends AnAction {
                     undo.undoRenameMethod(ref);
                     break;
                 case EXTRACT_OPERATION:
-                    undo.undoExtractMethod(ref);
+                    ref = undo.undoExtractMethod(ref);
+                    int index = pairs.indexOf(pair);
+                    pair.setValue(ref);
+                    pairs.set(index, pair);
+
             }
 
         }
         // Save all of the refactoring changes from memory onto disk
         FileDocumentManager.getInstance().saveAllDocuments();
+        return pairs;
     }
 
     /*
