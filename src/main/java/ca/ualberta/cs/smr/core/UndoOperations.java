@@ -95,6 +95,8 @@ public class UndoOperations {
         PsiMethod extractedMethod = Utils.getPsiMethod(psiClass, extractedOperation);
         assert extractedMethod != null;
 
+        PsiStatement[] surroundingStatements = getSurroundingStatements(extractedMethod);
+
         String sourceOperationClassName = sourceOperation.getClassName();
         filePath = sourceOperation.getLocationInfo().getFilePath();
         psiClass = utils.getPsiClassFromClassAndFileNames(sourceOperationClassName, filePath);
@@ -110,6 +112,28 @@ public class UndoOperations {
 
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);
+    }
+
+
+    private PsiStatement[] getSurroundingStatements(PsiMethod psiMethod) {
+        PsiStatement[] surroundingStatements = new PsiStatement[2];
+        PsiCodeBlock psiCodeBlock = psiMethod.getBody();
+        assert psiCodeBlock != null;
+        PsiStatement[] psiStatements = psiCodeBlock.getStatements();
+        int lastIndex = psiStatements.length - 1;
+        if(lastIndex == 0) {
+            return null;
+        }
+        surroundingStatements[0] = psiStatements[0];
+
+        PsiStatement lastStatement = psiStatements[lastIndex];
+        if(lastStatement instanceof PsiReturnStatement) {
+            surroundingStatements[1] = psiStatements[lastIndex - 1];
+        }
+        else {
+            surroundingStatements[1] = psiStatements[lastIndex];
+        }
+        return surroundingStatements;
     }
 
 }
