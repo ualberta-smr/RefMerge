@@ -24,7 +24,8 @@ import java.util.List;
 import java.util.Vector;
 
 /*
- * The logic and dispatching for the conflict matrix happens in Matrix.
+ * Creates the dependence graph for the refactoring lists and dispatches to the corresponding logic cell for each pair
+ * of refactorings.
  */
 
 public class Matrix {
@@ -124,6 +125,10 @@ public class Matrix {
         return element;
     }
 
+    /*
+     * Use the refactoring type to get the refactoring visitor class from the visitorMap.
+     * Set the refactoring field in the visitor and get an instance of the graph so we can update it.
+     */
     public RefactoringVisitor makeVisitor(Node node) {
         RefactoringType type = node.getRefactoring().getRefactoringType();
         RefactoringVisitor visitor = visitorMap.get(type);
@@ -131,6 +136,10 @@ public class Matrix {
         return visitor;
     }
 
+    /*
+     * Get the ordered refactoring value of the refactoring type. We need to update this method each time we add a new
+     * refactoring type.
+     */
     protected int getRefactoringValue(RefactoringType refactoringType) {
         Vector<RefactoringType> vector = new Vector<>();
         vector.add(RefactoringType.RENAME_METHOD);
