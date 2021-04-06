@@ -1,18 +1,18 @@
-package ca.ualberta.cs.smr.core.matrix.visitors;
+package ca.ualberta.cs.smr.core.matrix.receivers;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.elements.ExtractMethodElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
 
-public class RenameMethodVisitor extends RefactoringVisitor {
+public class RenameMethodReceiver extends Receiver {
 
     /*
      * Check if rename method conflicts with rename method
      */
     @Override
-    public void visit(RenameMethodElement renameMethod) {
-        boolean foundConflict = renameMethod.checkRenameMethodConflict(visitorNode);
+    public void receive(RenameMethodElement renameMethod) {
+        boolean foundConflict = renameMethod.checkRenameMethodConflict(receiverNode);
         System.out.println("Rename Method/Rename Method conflict: " + foundConflict);
     }
 
@@ -20,16 +20,16 @@ public class RenameMethodVisitor extends RefactoringVisitor {
      * Check if rename class conflicts with rename method
      */
     @Override
-    public void visit(RenameClassElement renameClass) {
-        Node elementNode = renameClass.checkRenameMethodDependence(visitorNode);
+    public void receive(RenameClassElement renameClass) {
+        Node elementNode = renameClass.checkRenameMethodDependence(receiverNode);
         if (elementNode != null) {
             // If there is dependence between branches, the rename method needs to happen before the rename class
-                graph.updateGraph(visitorNode, elementNode);
+                graph.updateGraph(receiverNode, elementNode);
         }
     }
 
     @Override
-    public void visit(ExtractMethodElement extractMethod) {
+    public void receive(ExtractMethodElement extractMethod) {
 
     }
 }

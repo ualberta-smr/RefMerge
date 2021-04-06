@@ -2,7 +2,7 @@ package ca.ualberta.cs.smr.core.matrix.elements;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
-import ca.ualberta.cs.smr.core.matrix.visitors.RenameMethodVisitor;
+import ca.ualberta.cs.smr.core.matrix.receivers.RenameMethodReceiver;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
@@ -18,7 +18,7 @@ public class RenameClassElementTest extends LightJavaCodeInsightFixtureTestCase 
 
     public void testAccept() {
         RenameClassElement element = Mockito.mock(RenameClassElement.class);
-        RenameMethodVisitor visitor = new RenameMethodVisitor();
+        RenameMethodReceiver visitor = new RenameMethodReceiver();
         element.accept(visitor);
         Mockito.verify(element, times(1)).accept(visitor);
     }

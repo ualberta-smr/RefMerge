@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.core.matrix.visitors;
+package ca.ualberta.cs.smr.core.matrix.receivers;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
@@ -12,7 +12,7 @@ import java.util.List;
 
 import static org.mockito.Mockito.*;
 
-public class RenameMethodVisitorTest extends LightJavaCodeInsightFixtureTestCase {
+public class RenameMethodReceiverTest extends LightJavaCodeInsightFixtureTestCase {
 
     public void testSet() {
         String basePath = System.getProperty("user.dir");
@@ -22,23 +22,23 @@ public class RenameMethodVisitorTest extends LightJavaCodeInsightFixtureTestCase
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
         Node node = new Node(ref);
-        RenameMethodVisitor visitor = new RenameMethodVisitor();
-        visitor.set(node, null);
-        Assert.assertNotNull("The refactoring element should not be null", visitor.visitorNode);
+        RenameMethodReceiver receiver = new RenameMethodReceiver();
+        receiver.set(node, null);
+        Assert.assertNotNull("The refactoring element should not be null", receiver.receiverNode);
     }
 
     public void testRenameMethodElementVisit() {
         RenameMethodElement element = new RenameMethodElement();
-        RenameMethodVisitor visitor = mock(RenameMethodVisitor.class);
-        element.accept(visitor);
-        verify(visitor, times(1)).visit(element);
+        RenameMethodReceiver receiver = mock(RenameMethodReceiver.class);
+        element.accept(receiver);
+        verify(receiver, times(1)).receive(element);
     }
 
     public void testRenameClassElementVisit() {
         RenameClassElement element = new RenameClassElement();
-        RenameMethodVisitor visitor = mock(RenameMethodVisitor.class);
-        element.accept(visitor);
-        verify(visitor, times(1)).visit(element);
+        RenameMethodReceiver receiver = mock(RenameMethodReceiver.class);
+        element.accept(receiver);
+        verify(receiver, times(1)).receive(element);
     }
 
 }
