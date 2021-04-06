@@ -1,6 +1,7 @@
 package ca.ualberta.cs.smr.core.matrix.elements;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
+import ca.ualberta.cs.smr.core.matrix.logicCells.RenameMethodRenameMethodCell;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.receivers.RenameMethodReceiver;
 import com.intellij.openapi.project.Project;
@@ -58,7 +59,9 @@ public class RenameMethodElementTest extends LightJavaCodeInsightFixtureTestCase
         Node visitorNode = new Node(renameChildBarMethod);
         RenameMethodElement element = new RenameMethodElement();
         element.set(elementNode, project);
-        boolean isConflicting = element.checkRenameMethodConflict(visitorNode);
+
+        RenameMethodRenameMethodCell cell = new RenameMethodRenameMethodCell(project);
+        boolean isConflicting = cell.renameMethodRenameMethodConflictCell(elementNode, visitorNode);
         Assert.assertTrue("Originally overriding methods that are renamed to different names conflict", isConflicting);
     }
 
@@ -76,7 +79,8 @@ public class RenameMethodElementTest extends LightJavaCodeInsightFixtureTestCase
         Node visitorNode = new Node(changeSecondOverloaded);
         RenameMethodElement element = new RenameMethodElement();
         element.set(elementNode, project);
-        boolean isConflicting = element.checkRenameMethodConflict(visitorNode);
+        RenameMethodRenameMethodCell cell = new RenameMethodRenameMethodCell(project);
+        boolean isConflicting = cell.renameMethodRenameMethodConflictCell(elementNode, visitorNode);
         Assert.assertTrue("Methods that start overloaded and get changed to different names should conflict", isConflicting);
     }
 
@@ -93,7 +97,8 @@ public class RenameMethodElementTest extends LightJavaCodeInsightFixtureTestCase
         Node visitorNode = new Node(visitorRef);
         RenameMethodElement element = new RenameMethodElement();
         element.set(elementNode, project);
-        boolean isConflicting = element.checkRenameMethodConflict(visitorNode);
+        RenameMethodRenameMethodCell cell = new RenameMethodRenameMethodCell(project);
+        boolean isConflicting = cell.renameMethodRenameMethodConflictCell(elementNode, visitorNode);
         Assert.assertTrue("Methods renamed to the same name in the same class should return true", isConflicting);
     }
 
@@ -108,26 +113,9 @@ public class RenameMethodElementTest extends LightJavaCodeInsightFixtureTestCase
         Node elementNode = new Node(elementRef);
         RenameMethodElement element = new RenameMethodElement();
         element.set(elementNode, project);
-        boolean isConflicting = element.checkRenameMethodConflict(elementNode);
+        RenameMethodRenameMethodCell cell = new RenameMethodRenameMethodCell(project);
+        boolean isConflicting = cell.renameMethodRenameMethodConflictCell(elementNode, elementNode);
         Assert.assertFalse("A method renamed to the same name in both versions should not conflict", isConflicting);
     }
 
-    public void testCheckRenameMethodDependence() {
-        Project project = myFixture.getProject();
-        String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameMethodRenameClassFiles/dependence/original";
-        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameClassFiles/dependence/refactored";
-        List<Refactoring> methodRefs = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
-        List<Refactoring> classRefs = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
-        assert classRefs != null;
-        Refactoring elementRef = classRefs.get(0);
-        assert methodRefs != null;
-        Refactoring visitorRef = methodRefs.get(0);
-        Node elementNode = new Node(elementRef);
-        Node visitorNode = new Node(visitorRef);
-        RenameClassElement element = new RenameClassElement();
-        element.set(elementNode, project);
-        Node result = element.checkRenameMethodDependence(visitorNode);
-        Assert.assertNotNull(result);
-    }
 }

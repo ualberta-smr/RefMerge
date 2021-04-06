@@ -5,6 +5,7 @@ import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.elements.ExtractMethodElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
+import com.intellij.openapi.project.Project;
 
 /*
  * The Receiver superclass contains each receive method that the receiver classes will need to use. Each time we
@@ -14,21 +15,23 @@ import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
 public class Receiver {
     Node receiverNode;
     DependenceGraph graph;
+    Project project;
 
-    public void set(Node visitorNode, DependenceGraph graph) {
-        this.receiverNode = visitorNode;
+    public void set(Node receiverNode, DependenceGraph graph, Project project) {
+        this.receiverNode = receiverNode;
         this.graph = graph;
+        this.project = project;
     }
 
-    public void receive(RenameMethodElement e) {
-
-    }
-
-    public void receive(RenameClassElement e) {
+    public void receive(RenameMethodElement element) {
 
     }
 
-    public void receive(ExtractMethodElement e) {
+    public void receive(RenameClassElement element) {
+
+    }
+
+    public void receive(ExtractMethodElement element) {
 
     }
 
