@@ -7,11 +7,11 @@ import org.refactoringminer.api.Refactoring;
 
 public class RenameClassRenameMethodCell {
 
-    public static boolean renameClassRenameMethodDependenceCell(Node elementNode, Node visitorNode) {
-        return checkRenameMethodRenameClassDependence(elementNode, visitorNode);
+    public static boolean renameClassRenameMethodDependenceCell(Node dispatcherNode, Node receiverNode) {
+        return checkRenameMethodRenameClassDependence(dispatcherNode, receiverNode);
     }
 
-    public static boolean checkRenameMethodRenameClassDependence(Node classNode, Node methodNode) {
+    public static boolean checkRenameMethodRenameClassDependence(Node methodNode, Node classNode) {
         Refactoring classRefactoring = classNode.getRefactoring();
         Refactoring methodRefactoring = methodNode.getRefactoring();
         String classClass = ((RenameClassRefactoring) classRefactoring).getOriginalClass().getName();

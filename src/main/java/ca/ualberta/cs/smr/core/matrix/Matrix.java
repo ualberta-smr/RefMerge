@@ -3,10 +3,10 @@ package ca.ualberta.cs.smr.core.matrix;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.DependenceGraph;
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
-import ca.ualberta.cs.smr.core.matrix.elements.ExtractMethodElement;
-import ca.ualberta.cs.smr.core.matrix.elements.RefactoringElement;
-import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
-import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.ExtractMethodDispatcher;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.RefactoringDispatcher;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameClassDispatcher;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.receivers.ExtractMethodReceiver;
 import ca.ualberta.cs.smr.core.matrix.receivers.Receiver;
 import ca.ualberta.cs.smr.core.matrix.receivers.RenameClassReceiver;
@@ -32,11 +32,11 @@ public class Matrix {
     final Project project;
     DependenceGraph graph;
 
-    static final HashMap<RefactoringType, RefactoringElement> elementMap =
-                                                    new HashMap<RefactoringType, RefactoringElement>() {{
-       put(RefactoringType.RENAME_METHOD, new RenameMethodElement());
-       put(RefactoringType.RENAME_CLASS, new RenameClassElement());
-       put(RefactoringType.EXTRACT_OPERATION, new ExtractMethodElement());
+    static final HashMap<RefactoringType, RefactoringDispatcher> dispatcherMap =
+                                                    new HashMap<RefactoringType, RefactoringDispatcher>() {{
+       put(RefactoringType.RENAME_METHOD, new RenameMethodDispatcher());
+       put(RefactoringType.RENAME_CLASS, new RenameClassDispatcher());
+       put(RefactoringType.EXTRACT_OPERATION, new ExtractMethodDispatcher());
     }};
 
     static final HashMap<RefactoringType, Receiver> receiverMap =
@@ -96,38 +96,38 @@ public class Matrix {
      * Perform double dispatch to check if the two refactoring elements conflict.
      */
     void dispatch(Node leftNode, Node rightNode) {
-        // Get the refactoring types so we can create the corresponding element and receiver
+        // Get the refactoring types so we can create the corresponding dispatcher and receiver
 
         int leftValue = getRefactoringValue(leftNode.getRefactoring().getRefactoringType());
         int rightValue = getRefactoringValue(rightNode.getRefactoring().getRefactoringType());
 
-        RefactoringElement element;
+        RefactoringDispatcher dispatcher;
         Receiver receiver;
         if(leftValue < rightValue) {
-            element = makeElement(rightNode);
+            dispatcher = makeDispatcher(rightNode);
             receiver = makeReceiver(leftNode);
         }
         else {
-            element = makeElement(leftNode);
+            dispatcher = makeDispatcher(leftNode);
             receiver = makeReceiver(rightNode);
         }
-        element.accept(receiver);
+        dispatcher.dispatch(receiver);
     }
 
     /*
-     * Use the refactoring type to get the refactoring element class from the elementMap.
-     * Set the refactoring field in the element.
+     * Use the refactoring type to get the refactoring dispatcher class from the dispatcherMap.
+     * Set the node field in the dispatcher.
      */
-    public RefactoringElement makeElement(Node node) {
+    public RefactoringDispatcher makeDispatcher(Node node) {
         RefactoringType type = node.getRefactoring().getRefactoringType();
-        RefactoringElement element = elementMap.get(type);
-        element.set(node, project);
-        return element;
+        RefactoringDispatcher dispatcher = dispatcherMap.get(type);
+        dispatcher.set(node, project);
+        return dispatcher;
     }
 
     /*
      * Use the refactoring type to get the refactoring receiver class from the receiverMap.
-     * Set the refactoring field in the receiver and get an instance of the graph so we can update it.
+     * Set the node field in the receiver and get an instance of the graph so we can update it.
      */
     public Receiver makeReceiver(Node node) {
         RefactoringType type = node.getRefactoring().getRefactoringType();

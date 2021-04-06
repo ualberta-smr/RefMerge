@@ -4,8 +4,8 @@ import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassRenameClassCell;
 import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassRenameMethodCell;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
-import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
-import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameClassDispatcher;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameMethodDispatcher;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
@@ -30,23 +30,23 @@ public class RenameClassReceiverTest extends LightJavaCodeInsightFixtureTestCase
         Assert.assertNotNull("The refactoring element should not be null", receiver.receiverNode);
     }
 
-    public void testRenameMethodElementVisit() {
-        RenameClassElement element = new RenameClassElement();
-        RenameMethodElement wrongElement = new RenameMethodElement();
+    public void testRenameMethodDispatcherReceive() {
+        RenameClassDispatcher dispatcher = new RenameClassDispatcher();
+        RenameMethodDispatcher wrongDispatcher = new RenameMethodDispatcher();
         RenameClassReceiver receiver = mock(RenameClassReceiver.class);
-        element.accept(receiver);
-        verify(receiver, times(1)).receive(element);
-        verify(receiver, never()).receive(wrongElement);
+        dispatcher.dispatch(receiver);
+        verify(receiver, times(1)).receive(dispatcher);
+        verify(receiver, never()).receive(wrongDispatcher);
 
     }
 
-    public void testRenameClassElementVisit() {
-        RenameMethodElement element = new RenameMethodElement();
-        RenameClassElement wrongElement = new RenameClassElement();
+    public void testRenameClassDispatcherReceive() {
+        RenameMethodDispatcher dispatcher = new RenameMethodDispatcher();
+        RenameClassDispatcher wrongDispatcher = new RenameClassDispatcher();
         RenameClassReceiver receiver = mock(RenameClassReceiver.class);
-        element.accept(receiver);
-        verify(receiver, times(1)).receive(element);
-        verify(receiver, never()).receive(wrongElement);
+        dispatcher.dispatch(receiver);
+        verify(receiver, times(1)).receive(dispatcher);
+        verify(receiver, never()).receive(wrongDispatcher);
     }
 
     public void testRenameClassRenameClassConflictCell() {
@@ -59,14 +59,14 @@ public class RenameClassReceiverTest extends LightJavaCodeInsightFixtureTestCase
         Refactoring foo = refactorings.get(0);
         Refactoring foo2 = refactorings.get(1);
         Refactoring bar = refactorings.get(2);
-        RenameClassElement renameClassElement = new RenameClassElement();
-        Node elementNode = new Node(foo);
-        Node visitorNode = new Node(foo2);
-        renameClassElement.set(elementNode, project);
-        boolean isConflicting = RenameClassRenameClassCell.renameClassRenameClassConflictCell(elementNode, visitorNode);
+        RenameClassDispatcher renameClassDispatcher = new RenameClassDispatcher();
+        Node leftNode = new Node(foo);
+        Node rightNode = new Node(foo2);
+        renameClassDispatcher.set(leftNode, project);
+        boolean isConflicting = RenameClassRenameClassCell.renameClassRenameClassConflictCell(leftNode, rightNode);
         Assert.assertTrue(isConflicting);
-        visitorNode = new Node(bar);
-        isConflicting = RenameClassRenameClassCell.renameClassRenameClassConflictCell(elementNode, visitorNode);
+        rightNode = new Node(bar);
+        isConflicting = RenameClassRenameClassCell.renameClassRenameClassConflictCell(leftNode, rightNode);
         Assert.assertFalse(isConflicting);
     }
 
@@ -78,14 +78,14 @@ public class RenameClassReceiverTest extends LightJavaCodeInsightFixtureTestCase
         List<Refactoring> methodRefs = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         List<Refactoring> classRefs = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert methodRefs != null;
-        Refactoring visitorRef = methodRefs.get(0);
+        Refactoring rightRef = methodRefs.get(0);
         assert classRefs != null;
-        Refactoring elementRef = classRefs.get(0);
-        Node elementNode = new Node(elementRef);
-        Node visitorNode = new Node(visitorRef);
-        RenameClassElement element = new RenameClassElement();
-        element.set(elementNode, project);
-        boolean isDependent = RenameClassRenameMethodCell.renameClassRenameMethodDependenceCell(elementNode, visitorNode);
+        Refactoring leftRef = classRefs.get(0);
+        Node leftNode = new Node(leftRef);
+        Node rightNode = new Node(rightRef);
+        RenameClassDispatcher dispatcher = new RenameClassDispatcher();
+        dispatcher.set(leftNode, project);
+        boolean isDependent = RenameClassRenameMethodCell.renameClassRenameMethodDependenceCell(rightNode, leftNode);
         Assert.assertTrue(isDependent);
     }
 }

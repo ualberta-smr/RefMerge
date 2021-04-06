@@ -3,9 +3,9 @@ package ca.ualberta.cs.smr.core.matrix;
 import ca.ualberta.cs.smr.core.dependenceGraph.DependenceGraph;
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
-import ca.ualberta.cs.smr.core.matrix.elements.RefactoringElement;
-import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
-import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.RefactoringDispatcher;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameClassDispatcher;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.receivers.Receiver;
 import ca.ualberta.cs.smr.core.matrix.receivers.RenameClassReceiver;
 import ca.ualberta.cs.smr.core.matrix.receivers.RenameMethodReceiver;
@@ -22,13 +22,13 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
 
     public void testElementMap() {
         RefactoringType type = RefactoringType.RENAME_CLASS;
-        RenameClassElement renameClassElement = new RenameClassElement();
-        RenameMethodElement renameMethodElement = new RenameMethodElement();
-        RefactoringElement element = Matrix.elementMap.get(type);
+        RenameClassDispatcher renameClassElement = new RenameClassDispatcher();
+        RenameMethodDispatcher renameMethodElement = new RenameMethodDispatcher();
+        RefactoringDispatcher element = Matrix.dispatcherMap.get(type);
         boolean equals = element.getClass().equals(renameClassElement.getClass());
         Assert.assertTrue(equals);
         type = RefactoringType.RENAME_METHOD;
-        element = Matrix.elementMap.get(type);
+        element = Matrix.dispatcherMap.get(type);
         equals = element.getClass().equals(renameMethodElement.getClass());
         Assert.assertTrue(equals);
     }
@@ -54,9 +54,9 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         assert refactorings != null;
         Refactoring ref = refactorings.get(0).getValue();
         Node node = new Node(ref);
-        RenameMethodElement mockElement = new RenameMethodElement();
+        RenameMethodDispatcher mockElement = new RenameMethodDispatcher();
         Matrix matrix = new Matrix(null);
-        RefactoringElement element = matrix.makeElement(node);
+        RefactoringDispatcher element = matrix.makeDispatcher(node);
         boolean equals = element.getClass().equals(mockElement.getClass());
         Assert.assertTrue(equals);
 

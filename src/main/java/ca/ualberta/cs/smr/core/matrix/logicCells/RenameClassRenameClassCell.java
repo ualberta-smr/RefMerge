@@ -8,8 +8,8 @@ import static ca.ualberta.cs.smr.utils.MatrixUtils.getRefactoredClassOperationNa
 
 public class RenameClassRenameClassCell {
 
-    public static boolean renameClassRenameClassConflictCell(Node elementNode, Node visitorNode) {
-        if(RenameClassRenameClassCell.checkClassNamingConflict(elementNode, visitorNode)) {
+    public static boolean renameClassRenameClassConflictCell(Node dispatcherNode, Node receiverNode) {
+        if(RenameClassRenameClassCell.checkClassNamingConflict(dispatcherNode, receiverNode)) {
             System.out.println("Naming conflict");
             return true;
         }
@@ -17,22 +17,22 @@ public class RenameClassRenameClassCell {
     }
 
 
-    public static boolean checkClassNamingConflict(Node elementNode, Node visitorNode) {
-        Refactoring elementRef = elementNode.getRefactoring();
-        Refactoring visitorRef = visitorNode.getRefactoring();
+    public static boolean checkClassNamingConflict(Node dispatcherNode, Node receiverNode) {
+        Refactoring dispatcherRef = dispatcherNode.getRefactoring();
+        Refactoring receiverRef = receiverNode.getRefactoring();
         // Get the package for each class
-        String elementPackage = getOriginalClassPackage(elementRef);
-        String visitorPackage = getOriginalClassPackage(visitorRef);
+        String dispatcherPackage = getOriginalClassPackage(dispatcherRef);
+        String receiverPackage = getOriginalClassPackage(receiverRef);
         // Check that the classes are in the same package
-        if(!isSameName(elementPackage, visitorPackage)) {
+        if(!isSameName(dispatcherPackage, receiverPackage)) {
             return false;
         }
-        String elementOriginalClassName = getOriginalClassOperationName(elementRef);
-        String visitorOriginalClassName = getOriginalClassOperationName(visitorRef);
-        String elementNewClassName = getRefactoredClassOperationName(elementRef);
-        String visitorNewClassName = getRefactoredClassOperationName(visitorRef);
+        String dispatcherOriginalClassName = getOriginalClassOperationName(dispatcherRef);
+        String receiverOriginalClassName = getOriginalClassOperationName(receiverRef);
+        String dispatcherNewClassName = getRefactoredClassOperationName(dispatcherRef);
+        String receiverNewClassName = getRefactoredClassOperationName(receiverRef);
 
-        return checkNamingConflict(elementOriginalClassName, visitorOriginalClassName,
-                elementNewClassName, visitorNewClassName);
+        return checkNamingConflict(dispatcherOriginalClassName, receiverOriginalClassName,
+                dispatcherNewClassName, receiverNewClassName);
     }
 }
