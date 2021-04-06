@@ -19,25 +19,25 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
     }
 
     public void testCheckNamingConflict() {
-        String originalElement = "foo";
-        String originalReceiver = "bar";
-        String refactoredElement = "newFoo";
-        String refactoredReceiver = "newBar";
-        boolean expectedFalse = MatrixUtils.checkNamingConflict(originalElement, originalReceiver,
-                                                                            refactoredElement, refactoredReceiver);
+        String originalLeft = "foo";
+        String originalRight = "bar";
+        String refactoredLeft = "newFoo";
+        String refactoredRight = "newBar";
+        boolean expectedFalse = MatrixUtils.checkNamingConflict(originalLeft, originalRight,
+                                                                            refactoredLeft, refactoredRight);
         Assert.assertFalse("Expected false because the renamings do not conflict", expectedFalse);
 
-        originalReceiver = "foo";
-        boolean expectedTrue = MatrixUtils.checkNamingConflict(originalElement, originalReceiver,
-                                                                            refactoredElement, refactoredReceiver);
+        originalRight = "foo";
+        boolean expectedTrue = MatrixUtils.checkNamingConflict(originalLeft, originalRight,
+                                                                            refactoredLeft, refactoredRight);
         Assert.assertTrue("Expected true because an element is renamed to two names", expectedTrue);
-        refactoredReceiver = "newFoo";
-        expectedFalse = MatrixUtils.checkNamingConflict(originalElement, originalReceiver,
-                                                                            refactoredElement, refactoredReceiver);
+        refactoredRight = "newFoo";
+        expectedFalse = MatrixUtils.checkNamingConflict(originalLeft, originalRight,
+                                                                            refactoredLeft, refactoredRight);
         Assert.assertFalse("Expected false because the renamings are the same", expectedFalse);
-        originalReceiver = "bar";
-        expectedTrue = MatrixUtils.checkNamingConflict(originalElement, originalReceiver,
-                                                                            refactoredElement, refactoredReceiver);
+        originalRight = "bar";
+        expectedTrue = MatrixUtils.checkNamingConflict(originalLeft, originalRight,
+                                                                            refactoredLeft, refactoredRight);
         Assert.assertTrue("Expected true because two elements are renamed to the same name", expectedTrue);
     }
 
@@ -76,19 +76,13 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
         myFixture.configureByFiles(configurePath);
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
-        assert refactorings.size() == 4;
-        Refactoring changeFirstOverloaded = refactorings.get(0);
-        Refactoring changeSecondOverloaded = refactorings.get(1);
-        Refactoring changeOtherMethodToSecondOverloaded = refactorings.get(2);
-        Refactoring changeOtherBarMethod = refactorings.get(3);
+        assert refactorings.size() == 3;
+        Refactoring leftRefactoring = refactorings.get(0);
+        Refactoring rightRefactoring = refactorings.get(2);
         RenameMethodRenameMethodCell renameMethodRenameMethodCell = new RenameMethodRenameMethodCell(project);
-        boolean isConflicting = renameMethodRenameMethodCell.checkOverloadConflict(new Node(changeFirstOverloaded), new Node(changeOtherBarMethod));
-        Assert.assertFalse("Methods in different classes should not cause overload conflict", isConflicting);
-        isConflicting = renameMethodRenameMethodCell.checkOverloadConflict(new Node(changeFirstOverloaded), new Node(changeOtherMethodToSecondOverloaded));
+        boolean isConflicting = renameMethodRenameMethodCell.checkOverloadConflict(new Node(leftRefactoring), new Node(rightRefactoring));
         Assert.assertFalse("Methods in the same class that do not have related names " +
                 "before or after being refactored should not conflict", isConflicting);
-        isConflicting = renameMethodRenameMethodCell.checkOverloadConflict(new Node(changeSecondOverloaded), new Node(changeOtherMethodToSecondOverloaded));
-        Assert.assertTrue("Methods that overload after refactoring should conflict", isConflicting);
     }
 
     public void testCheckMethodNamingConflict() {
@@ -98,20 +92,20 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
         String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
-        Refactoring elementRef = refactorings.get(1);
-        Refactoring receiverRef = refactorings.get(2);
-        Node elementNode = new Node(elementRef);
-        Node receiverNode = new Node(receiverRef);
+        Refactoring leftRef = refactorings.get(1);
+        Refactoring rightRef = refactorings.get(2);
+        Node leftNode = new Node(leftRef);
+        Node rightNode = new Node(rightRef);
         RenameMethodRenameMethodCell renameMethodRenameMethodCell = new RenameMethodRenameMethodCell(project);
-        boolean expectedFalse = renameMethodRenameMethodCell.checkMethodNamingConflict(elementNode, receiverNode);
+        boolean expectedFalse = renameMethodRenameMethodCell.checkMethodNamingConflict(leftNode, rightNode);
         Assert.assertFalse("Methods in different classes should not have naming conflicts", expectedFalse);
-        receiverRef = refactorings.get(0);
-        receiverNode = new Node(receiverRef);
-        boolean expectedTrue = renameMethodRenameMethodCell.checkMethodNamingConflict(elementNode, receiverNode);
+        rightRef = refactorings.get(0);
+        rightNode = new Node(rightRef);
+        boolean expectedTrue = renameMethodRenameMethodCell.checkMethodNamingConflict(leftNode, rightNode);
         Assert.assertTrue("Methods renamed to the same name in the same class should return true", expectedTrue);
-        expectedTrue = renameMethodRenameMethodCell.checkMethodNamingConflict(receiverNode, elementNode);
+        expectedTrue = renameMethodRenameMethodCell.checkMethodNamingConflict(rightNode, leftNode);
         Assert.assertTrue("The same refactorings in a different order should return true", expectedTrue);
-        expectedFalse = renameMethodRenameMethodCell.checkMethodNamingConflict(receiverNode, receiverNode);
+        expectedFalse = renameMethodRenameMethodCell.checkMethodNamingConflict(rightNode, rightNode);
         Assert.assertFalse("A method renamed to the same name in both versions should not conflict", expectedFalse);
     }
 
@@ -124,17 +118,17 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
         List<Refactoring> classRefactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert methodRefactorings != null;
         assert classRefactorings != null;
-        Refactoring elementRef = methodRefactorings.get(0);
-        Refactoring receiverRef = methodRefactorings.get(3);
+        Refactoring dispatcherRef = methodRefactorings.get(0);
+        Refactoring rightRef = methodRefactorings.get(3);
         Refactoring classRef = classRefactorings.get(0);
-        Node elementNode = new Node(elementRef);
-        Node receiverNode = new Node(receiverRef);
+        Node dispatcherNode = new Node(dispatcherRef);
+        Node rightNode = new Node(rightRef);
         Node classNode = new Node(classRef);
         ArrayList<Node> nodes = new ArrayList<>();
         nodes.add(classNode);
-        receiverNode.addDependsList(nodes);
+        rightNode.addDependsList(nodes);
         RenameMethodRenameMethodCell renameMethodRenameMethodCell = new RenameMethodRenameMethodCell(project);
-        boolean isConflicting = renameMethodRenameMethodCell.checkMethodNamingConflict(elementNode, receiverNode);
+        boolean isConflicting = renameMethodRenameMethodCell.checkMethodNamingConflict(dispatcherNode, rightNode);
         Assert.assertTrue(isConflicting);
     }
 
@@ -167,7 +161,7 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
         Refactoring classRef = classRefs.get(0);
         Node classNode = new Node(classRef);
         Node methodNode = new Node(methodRef);
-        boolean isDependent = RenameClassRenameMethodCell.checkRenameMethodRenameClassDependence(classNode, methodNode);
+        boolean isDependent = RenameClassRenameMethodCell.checkRenameMethodRenameClassDependence(methodNode, classNode);
         Assert.assertTrue(isDependent);
     }
 

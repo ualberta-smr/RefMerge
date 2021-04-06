@@ -21,125 +21,125 @@ public class RenameMethodRenameMethodCell {
     /*
      *  Check if a rename method refactoring conflicts with a second rename method refactoring.
      */
-    public boolean renameMethodRenameMethodConflictCell(Node elementNode, Node visitorNode) {
+    public boolean renameMethodRenameMethodConflictCell(Node dispatcherNode, Node receiverNode) {
         RenameMethodRenameMethodCell renameMethodRenameMethodCell = new RenameMethodRenameMethodCell(project);
         // Check for a method override conflict
-        if(renameMethodRenameMethodCell.checkOverrideConflict(elementNode, visitorNode)) {
+        if(renameMethodRenameMethodCell.checkOverrideConflict(dispatcherNode, receiverNode)) {
             System.out.println("Override conflict");
             return true;
         }
         // Check for method overload conflict
-        else if(renameMethodRenameMethodCell.checkOverloadConflict(elementNode, visitorNode)) {
+        else if(renameMethodRenameMethodCell.checkOverloadConflict(dispatcherNode, receiverNode)) {
             System.out.println("Overload conflict");
             return true;
         }
         // Check for naming conflict
 
-        else if(renameMethodRenameMethodCell.checkMethodNamingConflict(elementNode, visitorNode)) {
+        else if(renameMethodRenameMethodCell.checkMethodNamingConflict(dispatcherNode, receiverNode)) {
             System.out.println("Naming conflict");
             return true;
         }
         return false;
     }
 
-    public boolean checkOverrideConflict(Node elementNode, Node visitorNode) {
-        Refactoring elementRef = elementNode.getRefactoring();
-        Refactoring visitorRef = visitorNode.getRefactoring();
+    public boolean checkOverrideConflict(Node dispatcherNode, Node receiverNode) {
+        Refactoring dispatcherRef = dispatcherNode.getRefactoring();
+        Refactoring receiverRef = receiverNode.getRefactoring();
         // Get the original operations
-        UMLOperation elementOriginalOperation = getOriginalRenameOperation(elementRef);
-        UMLOperation visitorOriginalOperation = getOriginalRenameOperation(visitorRef);
+        UMLOperation dispatcherOriginalOperation = getOriginalRenameOperation(dispatcherRef);
+        UMLOperation receiverOriginalOperation = getOriginalRenameOperation(receiverRef);
         // Get the refactored operations
-        UMLOperation elementRefactoredOperation = getRefactoredRenameOperation(elementRef);
-        UMLOperation visitorRefactoredOperation = getRefactoredRenameOperation(visitorRef);
+        UMLOperation dispatcherRefactoredOperation = getRefactoredRenameOperation(dispatcherRef);
+        UMLOperation receiverRefactoredOperation = getRefactoredRenameOperation(receiverRef);
         // Get the class names
-        String elementClassName = elementNode.getDependenceChainClassHead();
-        String visitorClassName = visitorNode.getDependenceChainClassHead();
+        String dispatcherClassName = dispatcherNode.getDependenceChainClassHead();
+        String receiverClassName = receiverNode.getDependenceChainClassHead();
 
         // If the rename methods happen in the same class then there is no override conflict
-        if(isSameName(elementClassName, visitorClassName)) {
-            if(isSameOriginalClass(elementNode, visitorNode)) {
+        if(isSameName(dispatcherClassName, receiverClassName)) {
+            if(isSameOriginalClass(dispatcherNode, receiverNode)) {
                 return false;
             }
         }
         Utils utils = new Utils(project);
-        String elementFile = elementRefactoredOperation.getLocationInfo().getFilePath();
-        String visitorFile = visitorRefactoredOperation.getLocationInfo().getFilePath();
-        PsiClass psiElement = utils.getPsiClassByFilePath(elementFile, elementClassName);
-        PsiClass psiVisitor = utils.getPsiClassByFilePath(visitorFile, visitorClassName);
-        if(!ifClassExtends(psiElement, psiVisitor)) {
+        String dispatcherFile = dispatcherRefactoredOperation.getLocationInfo().getFilePath();
+        String receiverFile = receiverRefactoredOperation.getLocationInfo().getFilePath();
+        PsiClass psiDispatcher = utils.getPsiClassByFilePath(dispatcherFile, dispatcherClassName);
+        PsiClass psiReceiver = utils.getPsiClassByFilePath(receiverFile, receiverClassName);
+        if(!ifClassExtends(psiDispatcher, psiReceiver)) {
             return false;
         }
         // Get original method names
-        String elementOriginalMethodName = elementOriginalOperation.getName();
-        String visitorOriginalMethodName = visitorOriginalOperation.getName();
+        String dispatcherOriginalMethodName = dispatcherOriginalOperation.getName();
+        String receiverOriginalMethodName = receiverOriginalOperation.getName();
         // get new method names
-        String elementNewMethodName = elementRefactoredOperation.getName();
-        String visitorNewMethodName = visitorRefactoredOperation.getName();
+        String dispatcherNewMethodName = dispatcherRefactoredOperation.getName();
+        String receiverNewMethodName = receiverRefactoredOperation.getName();
         // Check if the methods start with the same name and end with different names, or if they end with the same name
         // and start with different names. If they do, then there's a likely override conflict.
-        return !isSameName(elementOriginalMethodName, visitorOriginalMethodName) &&
-                isSameName(elementNewMethodName, visitorNewMethodName) &&
-                elementRefactoredOperation.equalSignature(visitorRefactoredOperation);
+        return !isSameName(dispatcherOriginalMethodName, receiverOriginalMethodName) &&
+                isSameName(dispatcherNewMethodName, receiverNewMethodName) &&
+                dispatcherRefactoredOperation.equalSignature(receiverRefactoredOperation);
     }
 
-    public boolean checkOverloadConflict(Node elementNode, Node visitorNode) {
-        Refactoring elementRef = elementNode.getRefactoring();
-        Refactoring visitorRef = visitorNode.getRefactoring();
+    public boolean checkOverloadConflict(Node dispatcherNode, Node receiverNode) {
+        Refactoring dispatcherRef = dispatcherNode.getRefactoring();
+        Refactoring receiverRef = receiverNode.getRefactoring();
         // Get the original operations
-        UMLOperation elementOriginalOperation = getOriginalRenameOperation(elementRef);
-        UMLOperation visitorOriginalOperation = getOriginalRenameOperation(visitorRef);
+        UMLOperation dispatcherOriginalOperation = getOriginalRenameOperation(dispatcherRef);
+        UMLOperation receiverOriginalOperation = getOriginalRenameOperation(receiverRef);
         // Get the refactored operations
-        UMLOperation elementRefactoredOperation = getRefactoredRenameOperation(elementRef);
-        UMLOperation visitorRefactoredOperation = getRefactoredRenameOperation(visitorRef);
+        UMLOperation dispatcherRefactoredOperation = getRefactoredRenameOperation(dispatcherRef);
+        UMLOperation receiverRefactoredOperation = getRefactoredRenameOperation(receiverRef);
         // Get class names
-        String elementClassName = elementNode.getDependenceChainClassHead();
-        String visitorClassName = visitorNode.getDependenceChainClassHead();
+        String dispatcherClassName = dispatcherNode.getDependenceChainClassHead();
+        String receiverClassName = receiverNode.getDependenceChainClassHead();
         // If the methods are in different classes, no overloading happens
-        if (!isSameName(elementClassName, visitorClassName)) {
+        if (!isSameName(dispatcherClassName, receiverClassName)) {
             Utils utils = new Utils(project);
-            String elementFile = elementRefactoredOperation.getLocationInfo().getFilePath();
-            String visitorFile = visitorRefactoredOperation.getLocationInfo().getFilePath();
-            PsiClass psiElement = utils.getPsiClassByFilePath(elementFile, elementClassName);
-            PsiClass psiVisitor = utils.getPsiClassByFilePath(visitorFile, visitorClassName);
-            if(!ifClassExtends(psiElement, psiVisitor)) {
+            String dispatcherFile = dispatcherRefactoredOperation.getLocationInfo().getFilePath();
+            String receiverFile = receiverRefactoredOperation.getLocationInfo().getFilePath();
+            PsiClass psiDispatcher = utils.getPsiClassByFilePath(dispatcherFile, dispatcherClassName);
+            PsiClass psiReceiver = utils.getPsiClassByFilePath(receiverFile, receiverClassName);
+            if(!ifClassExtends(psiDispatcher, psiReceiver)) {
                 return false;
             }
         }
         // Get original method names
-        String elementOriginalMethodName = elementOriginalOperation.getName();
-        String visitorOriginalMethodName = visitorOriginalOperation.getName();
+        String dispatcherOriginalMethodName = dispatcherOriginalOperation.getName();
+        String receiverOriginalMethodName = receiverOriginalOperation.getName();
         // Get new method names
-        String elementNewMethodName = elementRefactoredOperation.getName();
-        String visitorNewMethodName = visitorRefactoredOperation.getName();
+        String dispatcherNewMethodName = dispatcherRefactoredOperation.getName();
+        String receiverNewMethodName = receiverRefactoredOperation.getName();
 
 
         // If two methods with different signatures are renamed to the same method, overloading conflict
-        return !isSameName(elementOriginalMethodName, visitorOriginalMethodName) &&
-                isSameName(elementNewMethodName, visitorNewMethodName) &&
-                !elementRefactoredOperation.equalParameters(visitorOriginalOperation);
+        return !isSameName(dispatcherOriginalMethodName, receiverOriginalMethodName) &&
+                isSameName(dispatcherNewMethodName, receiverNewMethodName) &&
+                !dispatcherRefactoredOperation.equalParameters(receiverOriginalOperation);
     }
 
-    public boolean checkMethodNamingConflict(Node elementNode, Node visitorNode) {
-        Refactoring elementRef = elementNode.getRefactoring();
-        Refactoring visitorRef = visitorNode.getRefactoring();
-//        String elementClassName = elementNode.getDependenceChainClassHead();
-//        String visitorClassName = visitorNode.getDependenceChainClassHead();
-        String elementClassName = ((RenameOperationRefactoring) elementRef).getOriginalOperation().getClassName();
-        String visitorClassName = ((RenameOperationRefactoring) visitorRef).getOriginalOperation().getClassName();
+    public boolean checkMethodNamingConflict(Node dispatcherNode, Node receiverNode) {
+        Refactoring dispatcherRef = dispatcherNode.getRefactoring();
+        Refactoring receiverRef = receiverNode.getRefactoring();
+//        String dispatcherClassName = dispatcherNode.getDependenceChainClassHead();
+//        String receiverClassName = receiverNode.getDependenceChainClassHead();
+        String dispatcherClassName = ((RenameOperationRefactoring) dispatcherRef).getOriginalOperation().getClassName();
+        String receiverClassName = ((RenameOperationRefactoring) receiverRef).getOriginalOperation().getClassName();
 
         // If the methods are in different classes
-        if (!isSameName(elementClassName, visitorClassName)) {
-            if(!isSameOriginalClass(elementNode, visitorNode))
+        if (!isSameName(dispatcherClassName, receiverClassName)) {
+            if(!isSameOriginalClass(dispatcherNode, receiverNode))
                 return false;
         }
         // Get original method names
-        String elementOriginalName = getOriginalMethodName(elementRef);
-        String visitorOriginalName = getOriginalMethodName(visitorRef);
+        String dispatcherOriginalName = getOriginalMethodName(dispatcherRef);
+        String receiverOriginalName = getOriginalMethodName(receiverRef);
         // get new method names
-        String elementNewName = getRefactoredMethodName(elementRef);
-        String visitorNewName = getRefactoredMethodName(visitorRef);
+        String dispatcherNewName = getRefactoredMethodName(dispatcherRef);
+        String receiverNewName = getRefactoredMethodName(receiverRef);
         // Check naming conflict
-        return checkNamingConflict(elementOriginalName, visitorOriginalName, elementNewName, visitorNewName);
+        return checkNamingConflict(dispatcherOriginalName, receiverOriginalName, dispatcherNewName, receiverNewName);
     }
 
 }

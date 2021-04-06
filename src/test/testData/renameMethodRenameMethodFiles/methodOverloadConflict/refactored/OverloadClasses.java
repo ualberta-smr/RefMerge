@@ -1,9 +1,9 @@
 
 public class Foo {
-    public void sumNumbers(int x, int y) {
+    public void addNumbers(int x, int y) {
         int z = x + y;
     }
-    public void sumNumbers() {
+    public void numbers() {
         int x = 5;
         int y = x + x;
         int z = y + x;
@@ -15,12 +15,13 @@ public class Foo {
         int z = y - x;
     }
 
-    public void multNumbers(int x, int y) {
+    public void numbers(int x, int y) {
         int z = y * x;
     }
 }
+
 public class Bar {
-    public void numbers() {
+    public void doNumbers() {
         int x = 4;
         int y = x + x;
         int z = y * x;

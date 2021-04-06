@@ -1,7 +1,6 @@
-package ca.ualberta.cs.smr.core.matrix.elements;
+package ca.ualberta.cs.smr.core.matrix.dispatcher;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
-import ca.ualberta.cs.smr.core.matrix.logicCells.RenameMethodRenameMethodCell;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.receivers.RenameMethodReceiver;
 import com.intellij.openapi.project.Project;
@@ -14,18 +13,11 @@ import java.util.List;
 
 import static org.mockito.Mockito.times;
 
-public class RenameMethodElementTest extends LightJavaCodeInsightFixtureTestCase {
+public class RenameMethodDispatcherTest extends LightJavaCodeInsightFixtureTestCase {
 
     @Override
     protected String getTestDataPath() {
         return "src/test/testData";
-    }
-
-    public void testAccept() {
-        RenameMethodElement element = Mockito.mock(RenameMethodElement.class);
-        RenameMethodReceiver visitor = new RenameMethodReceiver();
-        element.accept(visitor);
-        Mockito.verify(element, times(1)).accept(visitor);
     }
 
     public void testSet() {
@@ -37,9 +29,9 @@ public class RenameMethodElementTest extends LightJavaCodeInsightFixtureTestCase
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
         Node node = new Node(ref);
-        RenameMethodElement element = new RenameMethodElement();
-        element.set(node, project);
-        Assert.assertNotNull("The refactoring element should not be null", element.elementNode);
+        RenameMethodDispatcher dispatcher = new RenameMethodDispatcher();
+        dispatcher.set(node, project);
+        Assert.assertNotNull("The refactoring dispatcher should not be null", dispatcher.dispatcherNode);
 
     }
 
