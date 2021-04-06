@@ -14,7 +14,7 @@ public class RenameClassReceiver extends Receiver {
         boolean isDependent = RenameClassRenameMethodCell.renameClassRenameMethodDependenceCell(dispatcherNode, receiverNode);
         if (isDependent) {
             // If there is dependence between branches, the rename method needs to happen before the rename class
-            graph.updateGraph(receiverNode, dispatcherNode);
+            graph.updateGraph(dispatcherNode, receiverNode);
         }
     }
 

@@ -9,7 +9,8 @@ import com.intellij.openapi.project.Project;
 
 /*
  * The Receiver superclass contains each receive method that the receiver classes will need to use. Each time we
- * add a new refactoring type, we need to add a new receive method with the corresponding refactoring element.
+ * add a new refactoring type, we need to add a new receive method with the corresponding refactoring element. No
+ * methods other than `receive()` should be added to this class.
  */
 
 public class Receiver {
