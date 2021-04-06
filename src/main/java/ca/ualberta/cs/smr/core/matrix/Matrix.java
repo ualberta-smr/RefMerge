@@ -7,10 +7,10 @@ import ca.ualberta.cs.smr.core.matrix.elements.ExtractMethodElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RefactoringElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
-import ca.ualberta.cs.smr.core.matrix.visitors.ExtractMethodVisitor;
-import ca.ualberta.cs.smr.core.matrix.visitors.RefactoringVisitor;
-import ca.ualberta.cs.smr.core.matrix.visitors.RenameClassVisitor;
-import ca.ualberta.cs.smr.core.matrix.visitors.RenameMethodVisitor;
+import ca.ualberta.cs.smr.core.matrix.receivers.ExtractMethodReceiver;
+import ca.ualberta.cs.smr.core.matrix.receivers.Receiver;
+import ca.ualberta.cs.smr.core.matrix.receivers.RenameClassReceiver;
+import ca.ualberta.cs.smr.core.matrix.receivers.RenameMethodReceiver;
 import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import com.intellij.openapi.project.Project;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -39,11 +39,11 @@ public class Matrix {
        put(RefactoringType.EXTRACT_OPERATION, new ExtractMethodElement());
     }};
 
-    static final HashMap<RefactoringType, RefactoringVisitor> visitorMap =
-                                                    new HashMap<RefactoringType, RefactoringVisitor>() {{
-        put(RefactoringType.RENAME_METHOD, new RenameMethodVisitor());
-        put(RefactoringType.RENAME_CLASS, new RenameClassVisitor());
-        put(RefactoringType.EXTRACT_OPERATION, new ExtractMethodVisitor());
+    static final HashMap<RefactoringType, Receiver> receiverMap =
+                                                    new HashMap<RefactoringType, Receiver>() {{
+        put(RefactoringType.RENAME_METHOD, new RenameMethodReceiver());
+        put(RefactoringType.RENAME_CLASS, new RenameClassReceiver());
+        put(RefactoringType.EXTRACT_OPERATION, new ExtractMethodReceiver());
     }};
 
     public Matrix(Project project) {
@@ -96,20 +96,20 @@ public class Matrix {
      * Perform double dispatch to check if the two refactoring elements conflict.
      */
     void dispatch(Node leftNode, Node rightNode) {
-        // Get the refactoring types so we can create the corresponding element and visitor
+        // Get the refactoring types so we can create the corresponding element and receiver
 
         int leftValue = getRefactoringValue(leftNode.getRefactoring().getRefactoringType());
         int rightValue = getRefactoringValue(rightNode.getRefactoring().getRefactoringType());
 
         RefactoringElement element;
-        RefactoringVisitor visitor;
+        Receiver visitor;
         if(leftValue < rightValue) {
             element = makeElement(rightNode);
-            visitor = makeVisitor(leftNode);
+            visitor = makeReceiver(leftNode);
         }
         else {
             element = makeElement(leftNode);
-            visitor = makeVisitor(rightNode);
+            visitor = makeReceiver(rightNode);
         }
         element.accept(visitor);
     }
@@ -126,12 +126,12 @@ public class Matrix {
     }
 
     /*
-     * Use the refactoring type to get the refactoring visitor class from the visitorMap.
-     * Set the refactoring field in the visitor and get an instance of the graph so we can update it.
+     * Use the refactoring type to get the refactoring receiver class from the receiverMap.
+     * Set the refactoring field in the receiver and get an instance of the graph so we can update it.
      */
-    public RefactoringVisitor makeVisitor(Node node) {
+    public Receiver makeReceiver(Node node) {
         RefactoringType type = node.getRefactoring().getRefactoringType();
-        RefactoringVisitor visitor = visitorMap.get(type);
+        Receiver visitor = receiverMap.get(type);
         visitor.set(node, graph);
         return visitor;
     }

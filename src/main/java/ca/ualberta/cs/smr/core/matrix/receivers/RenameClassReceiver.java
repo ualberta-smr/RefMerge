@@ -1,19 +1,19 @@
-package ca.ualberta.cs.smr.core.matrix.visitors;
+package ca.ualberta.cs.smr.core.matrix.receivers;
 
 import ca.ualberta.cs.smr.core.matrix.elements.ExtractMethodElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
 
-public class RenameClassVisitor extends RefactoringVisitor {
+public class RenameClassReceiver extends Receiver {
 
     @Override
-    public void visit(RenameClassElement renameClass) {
+    public void receive(RenameClassElement renameClass) {
         // Check for rename class/rename class conflict if checking between branches
-        boolean foundConflict = renameClass.checkRenameClassConflict(visitorNode);
+        boolean foundConflict = renameClass.checkRenameClassConflict(receiverNode);
         System.out.println("Rename Class/Rename Class conflict: " + foundConflict);
     }
 
     @Override
-    public void visit(ExtractMethodElement extractMethod) {
+    public void receive(ExtractMethodElement extractMethod) {
 
     }
 }

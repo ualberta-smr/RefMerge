@@ -2,7 +2,7 @@ package ca.ualberta.cs.smr.core.matrix.elements;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.logicCells.RenameMethodRenameMethodCell;
-import ca.ualberta.cs.smr.core.matrix.visitors.RefactoringVisitor;
+import ca.ualberta.cs.smr.core.matrix.receivers.Receiver;
 import com.intellij.openapi.project.Project;
 
 
@@ -14,8 +14,8 @@ public class RenameMethodElement extends RefactoringElement {
     Node elementNode;
 
     @Override
-    public void accept(RefactoringVisitor v) {
-        v.visit(this);
+    public void accept(Receiver r) {
+        r.receive(this);
     }
 
     public void set(Node elementNode, Project project) {

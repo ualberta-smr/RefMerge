@@ -6,9 +6,9 @@ import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.elements.RefactoringElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameClassElement;
 import ca.ualberta.cs.smr.core.matrix.elements.RenameMethodElement;
-import ca.ualberta.cs.smr.core.matrix.visitors.RefactoringVisitor;
-import ca.ualberta.cs.smr.core.matrix.visitors.RenameClassVisitor;
-import ca.ualberta.cs.smr.core.matrix.visitors.RenameMethodVisitor;
+import ca.ualberta.cs.smr.core.matrix.receivers.Receiver;
+import ca.ualberta.cs.smr.core.matrix.receivers.RenameClassReceiver;
+import ca.ualberta.cs.smr.core.matrix.receivers.RenameMethodReceiver;
 import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
@@ -33,16 +33,16 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         Assert.assertTrue(equals);
     }
 
-    public void testVisitorMap() {
+    public void testReceiverMap() {
         RefactoringType type = RefactoringType.RENAME_CLASS;
-        RenameClassVisitor renameClassVisitor = new RenameClassVisitor();
-        RenameMethodVisitor renameMethodVisitor = new RenameMethodVisitor();
-        RefactoringVisitor visitor = Matrix.visitorMap.get(type);
-        boolean equals = visitor.getClass().equals(renameClassVisitor.getClass());
+        RenameClassReceiver renameClassReceiver = new RenameClassReceiver();
+        RenameMethodReceiver renameMethodReceiver = new RenameMethodReceiver();
+        Receiver receiver = Matrix.receiverMap.get(type);
+        boolean equals = receiver.getClass().equals(renameClassReceiver.getClass());
         Assert.assertTrue(equals);
         type = RefactoringType.RENAME_METHOD;
-        visitor = Matrix.visitorMap.get(type);
-        equals = visitor.getClass().equals(renameMethodVisitor.getClass());
+        receiver = Matrix.receiverMap.get(type);
+        equals = receiver.getClass().equals(renameMethodReceiver.getClass());
         Assert.assertTrue(equals);
     }
 
@@ -63,7 +63,7 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
 
     }
 
-    public void testMakeVisitor() {
+    public void testMakeReceiver() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/original";
         String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
@@ -71,10 +71,10 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
         Node node = new Node(ref);
-        RenameMethodVisitor mockVisitor = new RenameMethodVisitor();
+        RenameMethodReceiver mockReceiver = new RenameMethodReceiver();
         Matrix matrix = new Matrix(null);
-        RefactoringVisitor visitor = matrix.makeVisitor(node);
-        boolean equals = visitor.getClass().equals(mockVisitor.getClass());
+        Receiver receiver = matrix.makeReceiver(node);
+        boolean equals = receiver.getClass().equals(mockReceiver.getClass());
         Assert.assertTrue(equals);
     }
 
