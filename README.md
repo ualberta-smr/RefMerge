@@ -67,28 +67,31 @@ after reverting it. We use the `ReplayOperations` class to do this. Update the
 `undoOperations()` and `replayOperations()` methods in `RefMerge` to make sure the methods
 are called. 
 
-### 3. Add an element class 
+### 3. Add a dispatcher class 
 
-We need to add a new element class, so we can dispatch to the correct cell in the logic
-matrix. This class will extend `RefactoringElement` and even though it may be tempting
- not to, we need to override `accept()` in the new class. We need to add a method in this class for 
- each existing visitor as well as the corresponding visitor for this refactoring that 
- each visitor will dispatch to. 
+Although the design for the logic matrix is similar to visitor pattern, it does not follow
+an existing design pattern. Each time we add a new refactoring type, we need to add a new
+dispatcher class that extends `RefactoringDispatcher`. We need to override `dispatch()`
+in the new dispatcher class. This is everything that needs to be done in this step!
 
-### 4. Update visitor superclass and existing classes
+### 4. Update receiver superclass
 
-Next, update `RefactoringVisitor` by adding a new `visit(myRefactoringElement)` method 
-where myRefactoringElement is your new element class. You should not add anything else 
-to the superclass. You also need to update each of the existing visitors to visit your
-new element class. Override your `visit(myRefactoringElement)` method to dispatch to the
-correct method in myRefactoringElement.
+Next, update `Receiver` by adding a new `receive()` method with the dispatcher class that you
+just added as the parameter. This will allow us to implement the new receive method
+in our new receiver and future receivers. Do not add anything else to the receiver class.
 
-### 5. Add a visitor class
+### 5. Add a receiver class
 
-We need to add a new visitor class that extends `RefactoringVisitor`. The new visitor class
-will only have a `visit()` method for the new refactoring element. 
+Now we can add the receiver for our new refactoring. Create `myRefactoringReceiver` class
+and override the `receive()` method for each refactoring dispatcher. 
 
 ### 6. Add corresponding logic cells
 
-We need to add the cells that perform the refactoring conflict and dependence logic. Add
-a new cell for each comparison in the logicCells package.
+We need to add the logic cell that performs the logic for each `receive()`. Add a cell
+for each logic check in the logicCells package. 
+
+### 7. Update the matrix class
+
+There are three small updates that need to be made to `Matrix.java`. For the first two, add
+the new dispatcher and receiver to the corresponding `dispatcherMap` and `receiverMap`.
+Lastly, add the `vector.add(RefactoringType.myNewType)` to `Matrix.getRefactoringValue`.
