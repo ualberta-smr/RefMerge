@@ -32,6 +32,10 @@ public class Matrix {
     final Project project;
     DependenceGraph graph;
 
+    /*
+     * The dispatcherMap uses the refactoring type to create the corresponding dispatcher class. This needs to be updated
+     * each time a new refactoring is added.
+     */
     static final HashMap<RefactoringType, RefactoringDispatcher> dispatcherMap =
                                                     new HashMap<RefactoringType, RefactoringDispatcher>() {{
        put(RefactoringType.RENAME_METHOD, new RenameMethodDispatcher());
@@ -39,6 +43,10 @@ public class Matrix {
        put(RefactoringType.EXTRACT_OPERATION, new ExtractMethodDispatcher());
     }};
 
+    /*
+     * The receiverMap uses the refactoring type to create the corresponding receiver class. This needs to be updated
+     * each time a new refactoring is added.
+     */
     static final HashMap<RefactoringType, Receiver> receiverMap =
                                                     new HashMap<RefactoringType, Receiver>() {{
         put(RefactoringType.RENAME_METHOD, new RenameMethodReceiver());
@@ -97,13 +105,12 @@ public class Matrix {
      */
     void dispatch(Node leftNode, Node rightNode) {
         // Get the refactoring types so we can create the corresponding dispatcher and receiver
-
         int leftValue = getRefactoringValue(leftNode.getRefactoring().getRefactoringType());
         int rightValue = getRefactoringValue(rightNode.getRefactoring().getRefactoringType());
 
         RefactoringDispatcher dispatcher;
         Receiver receiver;
-        if(leftValue < rightValue) {
+        if(leftValue > rightValue) {
             dispatcher = makeDispatcher(rightNode);
             receiver = makeReceiver(leftNode);
         }
