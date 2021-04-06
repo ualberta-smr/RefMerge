@@ -12,5 +12,9 @@ public abstract class RefactoringElement implements Element {
         this.elementNode = elementNode;
         this.project = project;
     }
+
+    public Node getNode() {
+        return elementNode;
+    }
 }
 

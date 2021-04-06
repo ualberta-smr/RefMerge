@@ -102,16 +102,16 @@ public class Matrix {
         int rightValue = getRefactoringValue(rightNode.getRefactoring().getRefactoringType());
 
         RefactoringElement element;
-        Receiver visitor;
+        Receiver receiver;
         if(leftValue < rightValue) {
             element = makeElement(rightNode);
-            visitor = makeReceiver(leftNode);
+            receiver = makeReceiver(leftNode);
         }
         else {
             element = makeElement(leftNode);
-            visitor = makeReceiver(rightNode);
+            receiver = makeReceiver(rightNode);
         }
-        element.accept(visitor);
+        element.accept(receiver);
     }
 
     /*
@@ -131,9 +131,9 @@ public class Matrix {
      */
     public Receiver makeReceiver(Node node) {
         RefactoringType type = node.getRefactoring().getRefactoringType();
-        Receiver visitor = receiverMap.get(type);
-        visitor.set(node, graph);
-        return visitor;
+        Receiver receiver = receiverMap.get(type);
+        receiver.set(node, graph, project);
+        return receiver;
     }
 
     /*

@@ -23,7 +23,7 @@ public class RenameClassReceiverTest extends LightJavaCodeInsightFixtureTestCase
         Refactoring ref = refactorings.get(0);
         Node node = new Node(ref);
         RenameClassReceiver receiver = new RenameClassReceiver();
-        receiver.set(node, null);
+        receiver.set(node, null, null);
         Assert.assertNotNull("The refactoring element should not be null", receiver.receiverNode);
     }
 

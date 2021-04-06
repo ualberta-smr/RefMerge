@@ -18,6 +18,30 @@ public class RenameMethodRenameMethodCell {
         this.project = project;
     }
 
+    /*
+     *  Check if a rename method refactoring conflicts with a second rename method refactoring.
+     */
+    public boolean renameMethodRenameMethodConflictCell(Node elementNode, Node visitorNode) {
+        RenameMethodRenameMethodCell renameMethodRenameMethodCell = new RenameMethodRenameMethodCell(project);
+        // Check for a method override conflict
+        if(renameMethodRenameMethodCell.checkOverrideConflict(elementNode, visitorNode)) {
+            System.out.println("Override conflict");
+            return true;
+        }
+        // Check for method overload conflict
+        else if(renameMethodRenameMethodCell.checkOverloadConflict(elementNode, visitorNode)) {
+            System.out.println("Overload conflict");
+            return true;
+        }
+        // Check for naming conflict
+
+        else if(renameMethodRenameMethodCell.checkMethodNamingConflict(elementNode, visitorNode)) {
+            System.out.println("Naming conflict");
+            return true;
+        }
+        return false;
+    }
+
     public boolean checkOverrideConflict(Node elementNode, Node visitorNode) {
         Refactoring elementRef = elementNode.getRefactoring();
         Refactoring visitorRef = visitorNode.getRefactoring();

@@ -1,6 +1,8 @@
 package ca.ualberta.cs.smr.core.matrix.elements;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
+import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassRenameClassCell;
+import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassRenameMethodCell;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.receivers.RenameMethodReceiver;
 import com.intellij.openapi.project.Project;
@@ -51,10 +53,10 @@ public class RenameClassElementTest extends LightJavaCodeInsightFixtureTestCase 
         Node elementNode = new Node(foo);
         Node visitorNode = new Node(foo2);
         renameClassElement.set(elementNode, project);
-        boolean isConflicting = renameClassElement.checkRenameClassConflict(visitorNode);
+        boolean isConflicting = RenameClassRenameClassCell.renameClassRenameClassConflictCell(elementNode, visitorNode);
         Assert.assertTrue(isConflicting);
         visitorNode = new Node(bar);
-        isConflicting = renameClassElement.checkRenameClassConflict(visitorNode);
+        isConflicting = RenameClassRenameClassCell.renameClassRenameClassConflictCell(elementNode, visitorNode);
         Assert.assertFalse(isConflicting);
     }
 
@@ -73,9 +75,7 @@ public class RenameClassElementTest extends LightJavaCodeInsightFixtureTestCase 
         Node visitorNode = new Node(visitorRef);
         RenameClassElement element = new RenameClassElement();
         element.set(elementNode, project);
-//        boolean isDependent = element.checkRenameMethodDependence(visitorRef);
-//        Assert.assertTrue(isDependent);
-        Node result = element.checkRenameMethodDependence(visitorNode);
-        Assert.assertNotNull(result);
+        boolean isDependent = RenameClassRenameMethodCell.renameClassRenameMethodDependenceCell(elementNode, visitorNode);
+        Assert.assertTrue(isDependent);
     }
 }

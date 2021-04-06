@@ -7,6 +7,10 @@ import org.refactoringminer.api.Refactoring;
 
 public class RenameClassRenameMethodCell {
 
+    public static boolean renameClassRenameMethodDependenceCell(Node elementNode, Node visitorNode) {
+        return checkRenameMethodRenameClassDependence(elementNode, visitorNode);
+    }
+
     public static boolean checkRenameMethodRenameClassDependence(Node classNode, Node methodNode) {
         Refactoring classRefactoring = classNode.getRefactoring();
         Refactoring methodRefactoring = methodNode.getRefactoring();

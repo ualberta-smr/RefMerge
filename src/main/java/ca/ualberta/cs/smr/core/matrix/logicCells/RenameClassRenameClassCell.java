@@ -8,6 +8,15 @@ import static ca.ualberta.cs.smr.utils.MatrixUtils.getRefactoredClassOperationNa
 
 public class RenameClassRenameClassCell {
 
+    public static boolean renameClassRenameClassConflictCell(Node elementNode, Node visitorNode) {
+        if(RenameClassRenameClassCell.checkClassNamingConflict(elementNode, visitorNode)) {
+            System.out.println("Naming conflict");
+            return true;
+        }
+        return false;
+    }
+
+
     public static boolean checkClassNamingConflict(Node elementNode, Node visitorNode) {
         Refactoring elementRef = elementNode.getRefactoring();
         Refactoring visitorRef = visitorNode.getRefactoring();

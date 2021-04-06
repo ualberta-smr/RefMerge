@@ -6,7 +6,6 @@ import ca.ualberta.cs.smr.utils.MatrixUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
-import org.junit.Test;
 import org.refactoringminer.api.Refactoring;
 
 import java.util.ArrayList;
@@ -140,7 +139,6 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
     }
 
     public void testCheckClassNamingConflict() {
-        Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/testData/renameClassRenameClassFiles/renameClassNamingConflict/original";
         String refactoredPath = basePath + "/src/test/testData/renameClassRenameClassFiles/renameClassNamingConflict/refactored";
