@@ -42,7 +42,7 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
         Assert.assertTrue("Expected true because two elements are renamed to the same name", expectedTrue);
     }
 
-    public void testCheckOverrideConflict() {
+    public void testCheckRenameMethodRenameMethodOverrideConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverrideConflict/original";
@@ -68,7 +68,7 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
         Assert.assertTrue("Originally overriding methods that are renamed to different names conflict", isConflicting);
     }
 
-    public void testCheckOverloadConflict() {
+    public void testCheckRenameMethodRenameMethodOverloadConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/original";
@@ -86,7 +86,7 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
                 "before or after being refactored should not conflict", isConflicting);
     }
 
-    public void testCheckMethodNamingConflict() {
+    public void testCheckRenameMethodRenameMethodNamingConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/original";
@@ -110,7 +110,7 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
         Assert.assertFalse("A method renamed to the same name in both versions should not conflict", expectedFalse);
     }
 
-    public void testNestedMethodNamingConflict() {
+    public void testNestedRenameMethodRenameMethodNamingConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/original";
@@ -133,7 +133,7 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
         Assert.assertTrue(isConflicting);
     }
 
-    public void testCheckClassNamingConflict() {
+    public void testCheckRenameClassRenameClassNamingConflict() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/testData/renameClassRenameClassFiles/renameClassNamingConflict/original";
         String refactoredPath = basePath + "/src/test/testData/renameClassRenameClassFiles/renameClassNamingConflict/refactored";
