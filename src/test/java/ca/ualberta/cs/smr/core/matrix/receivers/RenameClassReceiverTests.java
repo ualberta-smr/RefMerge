@@ -15,7 +15,7 @@ import java.util.List;
 
 import static org.mockito.Mockito.*;
 
-public class RenameClassReceiverTest extends LightJavaCodeInsightFixtureTestCase {
+public class RenameClassReceiverTests extends LightJavaCodeInsightFixtureTestCase {
 
     public void testSet() {
         String basePath = System.getProperty("user.dir");
@@ -50,7 +50,6 @@ public class RenameClassReceiverTest extends LightJavaCodeInsightFixtureTestCase
     }
 
     public void testRenameClassRenameClassConflictCell() {
-        Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/testData/renameClassRenameClassFiles/renameClassNamingConflict/original";
         String refactoredPath = basePath + "/src/test/testData/renameClassRenameClassFiles/renameClassNamingConflict/refactored";
@@ -59,10 +58,8 @@ public class RenameClassReceiverTest extends LightJavaCodeInsightFixtureTestCase
         Refactoring foo = refactorings.get(0);
         Refactoring foo2 = refactorings.get(1);
         Refactoring bar = refactorings.get(2);
-        RenameClassDispatcher renameClassDispatcher = new RenameClassDispatcher();
         Node leftNode = new Node(foo);
         Node rightNode = new Node(foo2);
-        renameClassDispatcher.set(leftNode, project);
         boolean isConflicting = RenameClassRenameClassCell.renameClassRenameClassConflictCell(leftNode, rightNode);
         Assert.assertTrue(isConflicting);
         rightNode = new Node(bar);
@@ -71,7 +68,6 @@ public class RenameClassReceiverTest extends LightJavaCodeInsightFixtureTestCase
     }
 
     public void testRenameClassRenameMethodDependenceCell() {
-        Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/testData/renameMethodRenameClassFiles/dependence/original";
         String refactoredPath = basePath + "/src/test/testData/renameMethodRenameClassFiles/dependence/refactored";
@@ -83,8 +79,6 @@ public class RenameClassReceiverTest extends LightJavaCodeInsightFixtureTestCase
         Refactoring leftRef = classRefs.get(0);
         Node leftNode = new Node(leftRef);
         Node rightNode = new Node(rightRef);
-        RenameClassDispatcher dispatcher = new RenameClassDispatcher();
-        dispatcher.set(leftNode, project);
         boolean isDependent = RenameClassRenameMethodCell.renameClassRenameMethodDependenceCell(rightNode, leftNode);
         Assert.assertTrue(isDependent);
     }

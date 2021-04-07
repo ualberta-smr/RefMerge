@@ -12,7 +12,7 @@ import org.refactoringminer.api.Refactoring;
 import java.util.List;
 
 
-public class RenameMethodReceiverTest extends LightJavaCodeInsightFixtureTestCase {
+public class RenameMethodReceiverTests extends LightJavaCodeInsightFixtureTestCase {
 
     @Override
     protected String getTestDataPath() {
