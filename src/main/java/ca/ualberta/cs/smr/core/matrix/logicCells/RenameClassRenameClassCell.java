@@ -6,8 +6,17 @@ import org.refactoringminer.api.Refactoring;
 import static ca.ualberta.cs.smr.utils.MatrixUtils.*;
 import static ca.ualberta.cs.smr.utils.MatrixUtils.getRefactoredClassOperationName;
 
+/*
+ * Contains the logic check for rename class/rename class refactoring conflict.
+ */
 public class RenameClassRenameClassCell {
 
+    /*
+     *  Check if a conflict exists between rename class/rename class refactorings. The conflict that can exist is a
+     *  naming conflict.
+     *  @param dispatcherNode: A node containing the dispatcher rename class refactoring.
+     *  @param receiverNode: A node containing the receiver rename class refactoring.
+     */
     public static boolean renameClassRenameClassConflictCell(Node dispatcherNode, Node receiverNode) {
         if(checkClassNamingConflict(dispatcherNode, receiverNode)) {
             System.out.println("Naming conflict");

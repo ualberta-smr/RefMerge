@@ -11,6 +11,9 @@ import org.refactoringminer.api.Refactoring;
 import static ca.ualberta.cs.smr.utils.MatrixUtils.*;
 import static ca.ualberta.cs.smr.utils.MatrixUtils.getRefactoredMethodName;
 
+/*
+ * Contains the logic checks for rename method/rename method conflicts.
+ */
 public class RenameMethodRenameMethodCell {
     final private Project project;
 
@@ -19,7 +22,10 @@ public class RenameMethodRenameMethodCell {
     }
 
     /*
-     *  Check if a rename method refactoring conflicts with a second rename method refactoring.
+     *  Check if a rename method refactoring conflicts with a second rename method refactoring. Rename method/rename method
+     *  can result in an override conflict, an overload conflict, or a naming conflict.
+     *  @param dispatcherNode: A node containing the dispatcher rename method refactoring.
+     *  @param receiverNode: A node containing the receiver rename method refactoring.
      */
     public boolean renameMethodRenameMethodConflictCell(Node dispatcherNode, Node receiverNode) {
         RenameMethodRenameMethodCell renameMethodRenameMethodCell = new RenameMethodRenameMethodCell(project);
