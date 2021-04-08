@@ -17,7 +17,7 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
 
     @Override
     protected String getTestDataPath() {
-        return "src/test/testData";
+        return "src/test/resources";
     }
 
     public void testReplayRenameMethod() {

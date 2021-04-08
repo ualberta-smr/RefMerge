@@ -16,7 +16,7 @@ public class DependenceGraphTests extends LightJavaCodeInsightFixtureTestCase {
 
     @Override
     protected String getTestDataPath() {
-        return "src/test/testData";
+        return "src/test/resources";
     }
 
 
@@ -35,22 +35,22 @@ public class DependenceGraphTests extends LightJavaCodeInsightFixtureTestCase {
         List<Pair> leftList = new ArrayList<>();
         List<Pair> rightList = new ArrayList<>();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameMethodRenameClassFiles/dependenceGraph/original";
-        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameClassFiles/dependenceGraph/refactored";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameClassFiles/dependenceGraph/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameClassFiles/dependenceGraph/refactored";
 
         List<Refactoring> methodRefs = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         List<Refactoring> classRefs = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
 
         assert classRefs != null;
         assert methodRefs != null;
-        leftList.add(new Pair(0, classRefs.get(1))); // Original -> A
-        leftList.add(new Pair(1, methodRefs.get(2))); // A.foo -> A.bar
-        rightList.add(new Pair(0, methodRefs.get(3))); //Original.foo -> Original.fuzz
+        leftList.add(new Pair(0, classRefs.get(0))); // Original -> A
+        leftList.add(new Pair(1, methodRefs.get(0))); // A.foo -> A.bar
+        rightList.add(new Pair(0, methodRefs.get(1))); //Original.foo -> Original.fuzz
 
         List<Refactoring> expectedList = new ArrayList<>();
-        expectedList.add(methodRefs.get(3));
-        expectedList.add(classRefs.get(1));
-        expectedList.add(methodRefs.get(2));
+        expectedList.add(methodRefs.get(1));
+        expectedList.add(classRefs.get(0));
+        expectedList.add(methodRefs.get(0));
 
         SortPairs.sortList(leftList);
         SortPairs.sortList(rightList);

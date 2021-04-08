@@ -48,8 +48,8 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
 
     public void testMakeElement() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/original";
-        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
         List<Pair> refactorings = GetDataForTests.getPairs("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0).getValue();
@@ -65,8 +65,8 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
 
     public void testMakeReceiver() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/original";
-        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
@@ -81,13 +81,13 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
     public void testGetRefactoringValue() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/original";
-        String renamedPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/original";
+        String renamedPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
         List<Pair> refactorings = GetDataForTests.getPairs("RENAME_METHOD", originalPath, renamedPath);
         assert refactorings != null;
         Refactoring renameMethod = refactorings.get(1).getValue();
-        originalPath = basePath + "/src/test/testData/extractTestData/extractMethod/original/";
-        String extractedPath = basePath + "/src/test/testData/extractTestData/extractMethod/refactored/";
+        originalPath = basePath + "/src/test/resources/extractTestData/extractMethod/original/";
+        String extractedPath = basePath + "/src/test/resources/extractTestData/extractMethod/refactored/";
         refactorings = GetDataForTests.getPairs("EXTRACT_OPERATION", originalPath, extractedPath);
         assert refactorings != null;
         Refactoring extractMethod = refactorings.get(0).getValue();

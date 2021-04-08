@@ -1,0 +1,47 @@
+
+
+class Override {
+
+    public int foo() {
+        method();
+        boolean bool = false;
+        for(int i = 0; i < 10; i++) {
+            if(i > 5) {
+                bool = true;
+                return 0;
+            }
+        }
+        return 1;
+    }
+
+    public void method() {
+        int x = getX();
+        int y = 10;
+        System.out.println("Adding " + x + " and " + y);
+        int z = x + y;
+        String str = "Printing: ";
+        System.out.println(str + z);
+    }
+
+    private int getX() {
+        return 5;
+    }
+
+}
+
+class SubClass extends Override {
+
+    public void foo() {
+        int x = getX();
+        int y = 10;
+        System.out.println("Adding " + x + " and " + y);
+        int z = x + y;
+        String str = "Printing: ";
+        System.out.println(str + z);
+    }
+
+    private int getX() {
+        return 5;
+    }
+
+}

@@ -16,13 +16,13 @@ public class RenameMethodReceiverTests extends LightJavaCodeInsightFixtureTestCa
 
     @Override
     protected String getTestDataPath() {
-        return "src/test/testData";
+        return "src/test/resources";
     }
 
     public void testSet() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/original";
-        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
@@ -35,8 +35,8 @@ public class RenameMethodReceiverTests extends LightJavaCodeInsightFixtureTestCa
     public void testRenameMethodRenameMethodOverrideConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverrideConflict/original";
-        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverrideConflict/refactored";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverrideConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverrideConflict/refactored";
         String configurePath = "renameMethodRenameMethodFiles/methodOverrideConflict/original/Override.java";
         myFixture.configureByFiles(configurePath);
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
@@ -57,8 +57,8 @@ public class RenameMethodReceiverTests extends LightJavaCodeInsightFixtureTestCa
     public void testRenameMethodRenameMethodOverloadConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/original";
-        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         assert refactorings.size() == 3;
@@ -76,8 +76,8 @@ public class RenameMethodReceiverTests extends LightJavaCodeInsightFixtureTestCa
     public void testRenameMethodRenameMethodNamingConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/original";
-        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring leftRef = refactorings.get(0);
@@ -94,8 +94,8 @@ public class RenameMethodReceiverTests extends LightJavaCodeInsightFixtureTestCa
     public void testRenameMethodRenameMethodNoConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/original";
-        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring leftRef = refactorings.get(1);
