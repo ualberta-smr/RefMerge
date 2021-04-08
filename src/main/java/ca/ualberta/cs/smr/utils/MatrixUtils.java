@@ -6,6 +6,7 @@ import com.intellij.psi.PsiClass;
 import gr.uom.java.xmi.*;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
@@ -13,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class MatrixUtils {
     static public boolean isSameName(String elementName, String visitorName) {
@@ -85,11 +87,23 @@ public class MatrixUtils {
     static public boolean isSameOriginalClass(Node node1, Node node2) {
         String node1ClassName = getOriginalClassName(node1);
         String node2ClassName = getOriginalClassName(node2);
+        if(node1ClassName == null || node2ClassName == null) {
+            return false;
+        }
         return node1ClassName.equals(node2ClassName);
     }
 
     static public String getOriginalClassName(Node node) {
         ArrayList<Node> nodes = node.getDependsList();
+        if(nodes.isEmpty()) {
+            Set<ImmutablePair<String, String>> classes = node.getRefactoring().getInvolvedClassesBeforeRefactoring();
+            if(classes.iterator().hasNext()) {
+                return classes.iterator().next().getRight();
+            }
+            else {
+                return null;
+            }
+        }
         UMLOperation umlOperation = getOriginalRenameOperation(node.getRefactoring());
         String className = umlOperation.getClassName();
         if(nodes.isEmpty()) {
