@@ -14,8 +14,8 @@ public class ExtractMethodReceiverTests extends LightJavaCodeInsightFixtureTestC
 
     public void testRenameClassRenameMethodDependenceCell() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/extractMethodRenameClassFiles/dependence/original";
-        String refactoredPath = basePath + "/src/test/testData/extractMethodRenameClassFiles/dependence/refactored";
+        String originalPath = basePath + "/src/test/resources/extractMethodRenameClassFiles/dependence/original";
+        String refactoredPath = basePath + "/src/test/resources/extractMethodRenameClassFiles/dependence/refactored";
         List<Refactoring> extractMethodRefactorings = GetDataForTests.getRefactorings("EXTRACT_OPERATION", originalPath, refactoredPath);
         List<Refactoring> classRenameRefactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert extractMethodRefactorings != null;

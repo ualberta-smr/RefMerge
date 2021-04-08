@@ -6,7 +6,6 @@ import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassRenameMethodCell;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameClassDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameMethodDispatcher;
-import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
@@ -19,8 +18,8 @@ public class RenameClassReceiverTests extends LightJavaCodeInsightFixtureTestCas
 
     public void testSet() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameClassRenameClassFiles/renameClassNamingConflict/original";
-        String refactoredPath = basePath + "/src/test/testData/renameClassRenameClassFiles/renameClassNamingConflict/refactored";
+        String originalPath = basePath + "/src/test/resources/renameClassRenameClassFiles/renameClassNamingConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameClassRenameClassFiles/renameClassNamingConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
@@ -51,8 +50,8 @@ public class RenameClassReceiverTests extends LightJavaCodeInsightFixtureTestCas
 
     public void testRenameClassRenameClassConflictCell() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameClassRenameClassFiles/renameClassNamingConflict/original";
-        String refactoredPath = basePath + "/src/test/testData/renameClassRenameClassFiles/renameClassNamingConflict/refactored";
+        String originalPath = basePath + "/src/test/resources/renameClassRenameClassFiles/renameClassNamingConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameClassRenameClassFiles/renameClassNamingConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null && refactorings.size() == 3;
         Refactoring foo = refactorings.get(0);
@@ -69,8 +68,8 @@ public class RenameClassReceiverTests extends LightJavaCodeInsightFixtureTestCas
 
     public void testRenameClassRenameMethodDependenceCell() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameMethodRenameClassFiles/dependence/original";
-        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameClassFiles/dependence/refactored";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameClassFiles/dependence/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameClassFiles/dependence/refactored";
         List<Refactoring> methodRefs = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         List<Refactoring> classRefs = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert methodRefs != null;

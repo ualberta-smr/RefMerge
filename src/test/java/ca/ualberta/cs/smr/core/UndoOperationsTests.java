@@ -14,7 +14,7 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
 
     @Override
     protected String getTestDataPath() {
-        return "src/test/testData";
+        return "src/test/resources";
     }
 
 

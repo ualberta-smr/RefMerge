@@ -16,7 +16,7 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
 
     @Override
     protected String getTestDataPath() {
-        return "src/test/testData";
+        return "src/test/resources";
     }
 
     public void testCheckNamingConflict() {
@@ -45,8 +45,8 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
     public void testCheckRenameMethodRenameMethodOverrideConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverrideConflict/original";
-        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverrideConflict/refactored";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverrideConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverrideConflict/refactored";
         String configurePath = "renameMethodRenameMethodFiles/methodOverrideConflict/original/Override.java";
         myFixture.configureByFiles(configurePath);
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
@@ -71,8 +71,8 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
     public void testCheckRenameMethodRenameMethodOverloadConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/original";
-        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
         String configurePath = "renameMethodRenameMethodFiles/methodOverloadConflict/original/OverloadClasses.java";
         myFixture.configureByFiles(configurePath);
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
@@ -89,8 +89,8 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
     public void testCheckRenameMethodRenameMethodNamingConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/original";
-        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring leftRef = refactorings.get(1);
@@ -113,8 +113,8 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
     public void testNestedRenameMethodRenameMethodNamingConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/original";
-        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
         List<Refactoring> methodRefactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         List<Refactoring> classRefactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert methodRefactorings != null;
@@ -135,8 +135,8 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
 
     public void testCheckRenameClassRenameClassNamingConflict() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameClassRenameClassFiles/renameClassNamingConflict/original";
-        String refactoredPath = basePath + "/src/test/testData/renameClassRenameClassFiles/renameClassNamingConflict/refactored";
+        String originalPath = basePath + "/src/test/resources/renameClassRenameClassFiles/renameClassNamingConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameClassRenameClassFiles/renameClassNamingConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null && refactorings.size() == 3;
         Refactoring foo = refactorings.get(0);
@@ -152,8 +152,8 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
 
     public void testCheckRenameMethodRenameClassDependence() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/renameMethodRenameClassFiles/dependence/original";
-        String refactoredPath = basePath + "/src/test/testData/renameMethodRenameClassFiles/dependence/refactored";
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameClassFiles/dependence/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameClassFiles/dependence/refactored";
         List<Refactoring> methodRefs = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         List<Refactoring> classRefs = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert methodRefs != null;
@@ -168,8 +168,8 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
 
     public void testCheckExtractMethodRenameClassDependence() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/extractMethodRenameClassFiles/dependence/original";
-        String refactoredPath = basePath + "/src/test/testData/extractMethodRenameClassFiles/dependence/refactored";
+        String originalPath = basePath + "/src/test/resources/extractMethodRenameClassFiles/dependence/original";
+        String refactoredPath = basePath + "/src/test/resources/extractMethodRenameClassFiles/dependence/refactored";
         List<Refactoring> extractMethodRefactorings = GetDataForTests.getRefactorings("EXTRACT_OPERATION", originalPath, refactoredPath);
         assert extractMethodRefactorings != null;
         extractMethodRefactorings.addAll(Objects.requireNonNull(GetDataForTests.getRefactorings("EXTRACT_AND_MOVE_OPERATION",
@@ -191,8 +191,8 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
     public void testCheckExtractMethodRenameMethodOverrideConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/extractMethodRenameMethodFiles/original";
-        String refactoredPath = basePath + "/src/test/testData/extractMethodRenameMethodFiles/refactored";
+        String originalPath = basePath + "/src/test/resources/extractMethodRenameMethodFiles/original";
+        String refactoredPath = basePath + "/src/test/resources/extractMethodRenameMethodFiles/refactored";
 
         String configurePath = "extractMethodRenameMethodFiles/refactored/OverloadInheritance.java";
         myFixture.configureByFiles(configurePath);
@@ -229,8 +229,8 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
     public void testCheckExtractMethodRenameMethodOverloadConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/extractMethodRenameMethodFiles/original";
-        String refactoredPath = basePath + "/src/test/testData/extractMethodRenameMethodFiles/refactored";
+        String originalPath = basePath + "/src/test/resources/extractMethodRenameMethodFiles/original";
+        String refactoredPath = basePath + "/src/test/resources/extractMethodRenameMethodFiles/refactored";
 
         String configurePath = "extractMethodRenameMethodFiles/refactored/OverloadInheritance.java";
         myFixture.configureByFiles(configurePath);
@@ -259,8 +259,8 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
     public void testCheckExtractMethodRenameMethodNamingConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/extractMethodRenameMethodFiles/original";
-        String refactoredPath = basePath + "/src/test/testData/extractMethodRenameMethodFiles/refactored";
+        String originalPath = basePath + "/src/test/resources/extractMethodRenameMethodFiles/original";
+        String refactoredPath = basePath + "/src/test/resources/extractMethodRenameMethodFiles/refactored";
         List<Refactoring> extractMethodRefactorings = GetDataForTests.getRefactorings("EXTRACT_OPERATION",
                 originalPath, refactoredPath);
         List<Refactoring> renameMethodRefactorings = GetDataForTests.getRefactorings("RENAME_METHOD",
@@ -280,8 +280,8 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
 
     public void testCheckExtractMethodRenameMethodDependence() {
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/extractMethodRenameMethodFiles/original";
-        String refactoredPath = basePath + "/src/test/testData/extractMethodRenameMethodFiles/refactored";
+        String originalPath = basePath + "/src/test/resources/extractMethodRenameMethodFiles/original";
+        String refactoredPath = basePath + "/src/test/resources/extractMethodRenameMethodFiles/refactored";
         List<Refactoring> extractMethodRefactorings = GetDataForTests.getRefactorings("EXTRACT_OPERATION",
                 originalPath, refactoredPath);
         List<Refactoring> renameMethodRefactorings = GetDataForTests.getRefactorings("RENAME_METHOD",
@@ -302,8 +302,8 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
     public void testCheckExtractMethodExtractMethodOverlappingFragmentsConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/extractMethodExtractMethodFiles/original";
-        String refactoredPath = basePath + "/src/test/testData/extractMethodExtractMethodFiles/refactored";
+        String originalPath = basePath + "/src/test/resources/extractMethodExtractMethodFiles/original";
+        String refactoredPath = basePath + "/src/test/resources/extractMethodExtractMethodFiles/refactored";
         List<Refactoring> extractMethodRefactorings = GetDataForTests.getRefactorings("EXTRACT_OPERATION",
                 originalPath, refactoredPath);
 
@@ -321,8 +321,8 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
     public void testCheckExtractMethodExtractMethodOverrideConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/extractMethodExtractMethodFiles/original";
-        String refactoredPath = basePath + "/src/test/testData/extractMethodExtractMethodFiles/refactored";
+        String originalPath = basePath + "/src/test/resources/extractMethodExtractMethodFiles/original";
+        String refactoredPath = basePath + "/src/test/resources/extractMethodExtractMethodFiles/refactored";
         String configurePath = "extractMethodExtractMethodFiles/refactored/Override.java";
         myFixture.configureByFiles(configurePath);
         List<Refactoring> extractMethodRefactorings = GetDataForTests.getRefactorings("EXTRACT_OPERATION",
@@ -339,8 +339,8 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
     public void testCheckExtractMethodExtractMethodOverloadConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/extractMethodExtractMethodFiles/original";
-        String refactoredPath = basePath + "/src/test/testData/extractMethodExtractMethodFiles/refactored";
+        String originalPath = basePath + "/src/test/resources/extractMethodExtractMethodFiles/original";
+        String refactoredPath = basePath + "/src/test/resources/extractMethodExtractMethodFiles/refactored";
         List<Refactoring> extractMethodRefactorings = GetDataForTests.getRefactorings("EXTRACT_OPERATION",
                 originalPath, refactoredPath);
 
@@ -357,8 +357,8 @@ public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
     public void testCheckExtractMethodExtractMethodNamingConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/testData/extractMethodExtractMethodFiles/original";
-        String refactoredPath = basePath + "/src/test/testData/extractMethodExtractMethodFiles/refactored";
+        String originalPath = basePath + "/src/test/resources/extractMethodExtractMethodFiles/original";
+        String refactoredPath = basePath + "/src/test/resources/extractMethodExtractMethodFiles/refactored";
         List<Refactoring> extractMethodRefactorings = GetDataForTests.getRefactorings("EXTRACT_OPERATION",
                 originalPath, refactoredPath);
 
