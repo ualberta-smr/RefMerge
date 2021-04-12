@@ -24,16 +24,25 @@ public class Receiver {
         this.project = project;
     }
 
+    /*
+     * Any method that overrides this will dispatch to a logic cell containing a rename method refactoring.
+     */
     public void receive(RenameMethodDispatcher dispatcher) {
-
+        // This is empty because subclasses will override this to dispatch to the correct logic cell.
     }
 
+    /*
+     * Any method that overrides this will dispatch to a logic cell containing a rename class refactoring.
+     */
     public void receive(RenameClassDispatcher dispatcher) {
-
+        // This is empty because subclasses will override this to dispatch to the correct logic cell.
     }
 
+    /*
+     * Any method that overrides this will dispatch to a logic cell containing an extract method refactoring.
+     */
     public void receive(ExtractMethodDispatcher dispatcher) {
-
+        // This is empty because subclasses will override this to dispatch to the correct logic cell.
     }
 
 
