@@ -139,6 +139,10 @@ public class ReplayOperations {
 
     }
 
+    /*
+     * Use the new psi statement at the beginning and end of the extracted method to get all involved psi statements
+     * in the refactoring.
+     */
     private PsiElement[] getPsiElementsBetweenStatements(PsiStatement[] surroundingStatements, PsiMethod psiMethod) {
         PsiStatement firstStatement = surroundingStatements[0];
         PsiStatement lastStatement = surroundingStatements[1];
@@ -154,6 +158,10 @@ public class ReplayOperations {
 
     }
 
+    /*
+     * Use the code fragments to get the code fragments if the beginning and ending line of the extracted method are the
+     * same.
+     */
     private PsiElement[] getPsiElements(ExtractOperationRefactoring extractOperationRefactoring, PsiMethod psiMethod) {
         Set<AbstractCodeFragment> codeFragments = extractOperationRefactoring.getExtractedCodeFragmentsFromSourceOperation();
         AbstractCodeFragment[] codeFragmentsArray = new AbstractCodeFragment[codeFragments.size()];
@@ -169,6 +177,9 @@ public class ReplayOperations {
         return psiElements.toArray(new PsiElement[0]);
     }
 
+    /*
+     * Format the text to remove new lines and spaces for comparing code fragments
+     */
     private String formatText(String text) {
         text = text.replaceAll(" ", "");
         text = text.replaceAll("\n", "");
@@ -204,6 +215,9 @@ public class ReplayOperations {
 
     }
 
+    /*
+     * Gets the return type of the extracted method.
+     */
     private PsiType getPsiReturnType(ExtractOperationRefactoring extractOperationRefactoring, PsiMethod psiMethod) {
         UMLParameter returnParameter = extractOperationRefactoring.getExtractedOperation().getReturnParameter();
         String parameterType = returnParameter.getType().toString();
@@ -211,6 +225,9 @@ public class ReplayOperations {
         return factory.createTypeFromText(parameterType, psiMethod);
     }
 
+    /*
+     * Use the PSI method and UML operation to reorder the parameters in the extracted method.
+     */
     private ParameterInfoImpl[] getParameterInfo(PsiMethod psiMethod, UMLOperation umlOperation) {
 
         List<UMLParameter> umlParameterList = umlOperation.getParameters();
