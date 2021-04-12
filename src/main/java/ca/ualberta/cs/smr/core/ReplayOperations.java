@@ -114,12 +114,15 @@ public class ReplayOperations {
         ExtractMethodProcessor extractMethodProcessor = new ExtractMethodProcessor(project, editor, psiElements,
                 forcedReturnType, refactoringName, initialMethodName, helpId);
         extractMethodProcessor.setMethodName(refactoringName);
+        String visibility = extractedOperation.getVisibility();
+        extractMethodProcessor.setMethodVisibility(visibility);
         try {
             extractMethodProcessor.prepare();
         } catch (PrepareFailedException e) {
             e.printStackTrace();
         }
         extractMethodProcessor.setDataFromInputVariables();
+
         ExtractMethodHandler.extractMethod(project, extractMethodProcessor);
 
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
@@ -198,4 +201,6 @@ public class ReplayOperations {
         PsiElementFactory factory = PsiElementFactory.getInstance(project);
         return factory.createTypeFromText(parameterType, psiMethod);
     }
+
+
 }
