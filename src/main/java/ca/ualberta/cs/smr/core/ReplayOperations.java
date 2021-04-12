@@ -12,6 +12,8 @@ import com.intellij.psi.impl.source.SourceTreeToPsiMap;
 import com.intellij.refactoring.JavaRefactoringFactory;
 import com.intellij.refactoring.RefactoringFactory;
 import com.intellij.refactoring.RenameRefactoring;
+import com.intellij.refactoring.changeSignature.ChangeSignatureProcessor;
+import com.intellij.refactoring.changeSignature.ParameterInfoImpl;
 import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
 import com.intellij.refactoring.extractMethod.ExtractMethodProcessor;
 import com.intellij.refactoring.extractMethod.PrepareFailedException;
@@ -26,6 +28,7 @@ import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 
@@ -122,9 +125,15 @@ public class ReplayOperations {
             e.printStackTrace();
         }
         extractMethodProcessor.setDataFromInputVariables();
-
         ExtractMethodHandler.extractMethod(project, extractMethodProcessor);
-
+        PsiMethod extractedPsiMethod = extractMethodProcessor.getExtractedMethod();
+        if(extractedPsiMethod.getParameterList().getParametersCount() > 1) {
+            ParameterInfoImpl[] parameterInfo = getParameterInfo(extractedPsiMethod, extractedOperation);
+            ChangeSignatureProcessor changeSignatureProcessor =
+                    new ChangeSignatureProcessor(project, extractedPsiMethod, false, null,
+                            refactoringName, forcedReturnType, parameterInfo);
+            changeSignatureProcessor.run();
+        }
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);
 
@@ -202,5 +211,34 @@ public class ReplayOperations {
         return factory.createTypeFromText(parameterType, psiMethod);
     }
 
+    private ParameterInfoImpl[] getParameterInfo(PsiMethod psiMethod, UMLOperation umlOperation) {
+
+        List<UMLParameter> umlParameterList = umlOperation.getParameters();
+        PsiParameterList psiParameterList = psiMethod.getParameterList();
+        ParameterInfoImpl[] parameterInfoImplArray = new ParameterInfoImpl[umlParameterList.size() - 1];
+        for(int i = 1; i < umlParameterList.size(); i++) {
+            UMLParameter umlParameter = umlParameterList.get(i);
+            String umlParameterType = umlParameter.getType().toString();
+            String umlParameterName = umlParameter.getName();
+            ParameterInfoImpl parameterInfo;
+            for(PsiParameter psiParameter : psiParameterList.getParameters()) {
+                String psiParameterName = psiParameter.getName();
+                PsiType psiType = psiParameter.getType();
+                String psiParameterType = psiType.getPresentableText();
+                if(umlParameterName.equals(psiParameterName) && umlParameterType.equals(psiParameterType)) {
+                    int index = psiParameterList.getParameterIndex(psiParameter);
+                    parameterInfo = ParameterInfoImpl.create(index).withName(psiParameterName).withType(psiType);
+                    parameterInfoImplArray[i-1] = parameterInfo;
+                    break;
+                }
+            }
+
+        }
+
+
+
+        return parameterInfoImplArray;
+
+    }
 
 }
