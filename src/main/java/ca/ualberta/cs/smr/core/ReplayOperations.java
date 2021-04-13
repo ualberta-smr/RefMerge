@@ -3,6 +3,7 @@ package ca.ualberta.cs.smr.core;
 import ca.ualberta.cs.smr.core.refactoringWrappers.ExtractOperationRefactoringWrapper;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.lang.ASTNode;
+import com.intellij.lang.jvm.types.JvmReferenceType;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
@@ -14,6 +15,7 @@ import com.intellij.refactoring.RefactoringFactory;
 import com.intellij.refactoring.RenameRefactoring;
 import com.intellij.refactoring.changeSignature.ChangeSignatureProcessor;
 import com.intellij.refactoring.changeSignature.ParameterInfoImpl;
+import com.intellij.refactoring.changeSignature.ThrownExceptionInfo;
 import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
 import com.intellij.refactoring.extractMethod.ExtractMethodProcessor;
 import com.intellij.refactoring.extractMethod.PrepareFailedException;
@@ -127,11 +129,13 @@ public class ReplayOperations {
         extractMethodProcessor.setDataFromInputVariables();
         ExtractMethodHandler.extractMethod(project, extractMethodProcessor);
         PsiMethod extractedPsiMethod = extractMethodProcessor.getExtractedMethod();
+        ThrownExceptionInfo[] thrownExceptionInfo = refactoringWrapper.getThrownExceptionInfos();
+
         if(extractedPsiMethod.getParameterList().getParametersCount() > 1) {
             ParameterInfoImpl[] parameterInfo = getParameterInfo(extractedPsiMethod, extractedOperation);
             ChangeSignatureProcessor changeSignatureProcessor =
                     new ChangeSignatureProcessor(project, extractedPsiMethod, false, null,
-                            refactoringName, forcedReturnType, parameterInfo);
+                            refactoringName, forcedReturnType, parameterInfo, thrownExceptionInfo);
             changeSignatureProcessor.run();
         }
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();

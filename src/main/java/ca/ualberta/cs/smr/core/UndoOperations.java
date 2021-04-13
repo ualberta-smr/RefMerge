@@ -12,6 +12,8 @@ import com.intellij.refactoring.JavaRefactoringFactory;
 import com.intellij.refactoring.RefactoringFactory;
 import com.intellij.refactoring.RenameRefactoring;
 
+import com.intellij.refactoring.changeSignature.JavaThrownExceptionInfo;
+import com.intellij.refactoring.changeSignature.ThrownExceptionInfo;
 import com.intellij.refactoring.inline.InlineMethodProcessor;
 import com.intellij.usageView.UsageInfo;
 import gr.uom.java.xmi.UMLClass;
@@ -20,6 +22,8 @@ import gr.uom.java.xmi.diff.ExtractOperationRefactoring;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
+
+import java.util.ArrayList;
 
 
 public class UndoOperations {
@@ -97,8 +101,10 @@ public class UndoOperations {
         assert extractedMethod != null;
 
         PsiStatement[] surroundingStatements = getSurroundingStatements(extractedMethod);
+        ThrownExceptionInfo[] thrownExceptionInfo = getThrownExceptionInfo(extractedMethod);
         ExtractOperationRefactoringWrapper refactoringWrapper =
-                    RefactoringWrapperUtils.wrapExtractOperation(extractOperationRefactoring, surroundingStatements);
+                    RefactoringWrapperUtils.wrapExtractOperation(extractOperationRefactoring, surroundingStatements,
+                            thrownExceptionInfo);
 
         String sourceOperationClassName = sourceOperation.getClassName();
         filePath = sourceOperation.getLocationInfo().getFilePath();
@@ -139,6 +145,17 @@ public class UndoOperations {
             surroundingStatements[1] = psiStatements[lastIndex];
         }
         return surroundingStatements;
+    }
+
+    private ThrownExceptionInfo[] getThrownExceptionInfo(PsiMethod psiMethod) {
+        int size = psiMethod.getThrowsTypes().length;
+        ThrownExceptionInfo[] thrownExceptionInfos = new ThrownExceptionInfo[size];
+        for(int i = 0; i < size; i++) {
+            JavaThrownExceptionInfo thrownExceptionInfo = new JavaThrownExceptionInfo(i);
+            thrownExceptionInfo.updateFromMethod(psiMethod);
+            thrownExceptionInfos[i] = thrownExceptionInfo;
+        }
+        return thrownExceptionInfos;
     }
 
 }

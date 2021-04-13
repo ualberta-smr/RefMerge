@@ -106,11 +106,11 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
                 originalTestData, refactoredTestData);
         assert refactorings != null;
         Refactoring ref = refactorings.get(1);
-        ref = RefactoringWrapperUtils.wrapExtractOperation((ExtractOperationRefactoring) ref, null);
+        ref = RefactoringWrapperUtils.wrapExtractOperation((ExtractOperationRefactoring) ref, null, null);
         ReplayOperations replayOperations = new ReplayOperations(project);
         replayOperations.replayExtractMethod(ref);
         ref = refactorings.get(0);
-        ref = RefactoringWrapperUtils.wrapExtractOperation((ExtractOperationRefactoring) ref, null);
+        ref = RefactoringWrapperUtils.wrapExtractOperation((ExtractOperationRefactoring) ref, null, null);
         replayOperations.replayExtractMethod(ref);
 
         PsiFile psiFile1 = files[0];
