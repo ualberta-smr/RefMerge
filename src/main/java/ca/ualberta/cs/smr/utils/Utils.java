@@ -99,7 +99,16 @@ public class Utils {
         String umlType = umlParameter.getType().toString();
         // Check if the return types are the same
         if(!psiType.equals(umlType)) {
-            return false;
+            // Check if UML type is class type
+            if(umlType.contains(".")) {
+                umlType = umlType.substring(umlType.lastIndexOf(".") + 1);
+                if(!umlType.equals(psiType)) {
+                    return false;
+                }
+            }
+            else {
+                return false;
+            }
         }
         // Check if the parameters are the same
         for(int i = 1; i < umlParameters.size(); i++) {
@@ -107,7 +116,9 @@ public class Utils {
             umlParameter = umlParameters.get(i);
             PsiParameter psiParameter = psiParameterList[j];
             umlType = umlParameter.getType().toString();
-            psiType = psiParameter.getType().getPresentableText();
+            String parameterName = psiParameter.getName();
+            psiType = psiParameter.getText();
+            psiType = psiType.substring(0, psiType.indexOf(parameterName) - 1);
             if(!umlType.equals(psiType)) {
                 return false;
             }
