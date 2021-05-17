@@ -73,11 +73,12 @@ public class GitUtils {
         return null;
     }
 
-    public void merge(String leftCommit, String rightCommit) {
+    public void merge(String rightCommit) {
         Thread thread = new Thread(() -> {
             GitLineHandler lineHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.MERGE);
-            lineHandler.addParameters(leftCommit, rightCommit, "--no-commit");
-            Git.getInstance().runCommand(lineHandler);
+            lineHandler.addParameters(rightCommit, "--no-commit");
+            GitCommandResult result = Git.getInstance().runCommand(lineHandler);
+            System.out.println(result);
         });
         thread.start();
         try {
@@ -85,13 +86,10 @@ public class GitUtils {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-//        GitLineHandler lineHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.MERGE);
-//        lineHandler.addParameters(leftCommit, rightCommit, "--no-commit");
-//        Git.getInstance().runCommand(lineHandler);
     }
 
     /*
-     * Get the base commit of the merge.
+     * Get the base commit of the merge scenario.
      */
     public String getBaseCommit(String left, String right) throws VcsException {
         VirtualFile root = repo.getRoot();
@@ -137,9 +135,15 @@ class DoGitCommit implements Runnable {
         // Add message to commit to clearly show it's RefMerge step
         lineHandler.addParameters("-m", "RefMerge");
         GitCommandResult result = Git.getInstance().runCommand(lineHandler);
-        String res = result.getOutputAsJoinedString();
+        String res = result.getOutput().get(0);
         // get the commit hash from the output message
-        String commit = res.substring(res.indexOf("[") + 1, res.indexOf("]") - 1);
+        String commit = "";
+        if(res.contains("]")) {
+            commit = res.substring(res.indexOf("HEAD") + 1, res.indexOf("]") - 1);
+        }
+        else {
+            commit = res.substring(res.lastIndexOf(" ") + 1, res.length()-1);
+        }
         this.commit = commit.substring(commit.lastIndexOf(" ") + 1);
     }
 
