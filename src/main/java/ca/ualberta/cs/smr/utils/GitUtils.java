@@ -77,8 +77,7 @@ public class GitUtils {
         Thread thread = new Thread(() -> {
             GitLineHandler lineHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.MERGE);
             lineHandler.addParameters(rightCommit, "--no-commit");
-            GitCommandResult result = Git.getInstance().runCommand(lineHandler);
-            System.out.println(result);
+            Git.getInstance().runCommand(lineHandler);
         });
         thread.start();
         try {
@@ -91,11 +90,49 @@ public class GitUtils {
     /*
      * Get the base commit of the merge scenario.
      */
-    public String getBaseCommit(String left, String right) throws VcsException {
+    public String getBaseCommit(String left, String right) {
         VirtualFile root = repo.getRoot();
-        GitRevisionNumber num = GitHistoryUtils.getMergeBase(project, root, left, right);
-        assert num != null;
-        return num.getRev();
+        class BaseThread extends Thread {
+            private final Project project;
+            private final VirtualFile root;
+            private final String leftCommit;
+            private final String rightCommit;
+            private String baseCommit;
+
+            BaseThread(Project project, VirtualFile root, String leftCommit, String rightCommit) {
+                this.project = project;
+                this.root = root;
+                this.leftCommit = leftCommit;
+                this.rightCommit = rightCommit;
+            }
+            @Override
+            public void run() {
+                GitRevisionNumber num = null;
+                try {
+                    num = GitHistoryUtils.getMergeBase(project, root, leftCommit, rightCommit);
+                } catch (VcsException e) {
+                    System.out.println("Project: " + project + " LeftCommit: " + leftCommit + " RightCommit: " + rightCommit);
+                    e.printStackTrace();
+                }
+                assert num != null;
+                this.baseCommit = num.getRev();
+            }
+
+            public String getBaseCommit() {
+                return baseCommit;
+            }
+        }
+
+        BaseThread thread = new BaseThread(project, root, left, right);
+        thread.start();
+        try {
+            thread.join();
+            return thread.getBaseCommit();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return null;
+        }
+
     }
 
     /*
@@ -137,7 +174,7 @@ class DoGitCommit implements Runnable {
         GitCommandResult result = Git.getInstance().runCommand(lineHandler);
         String res = result.getOutput().get(0);
         // get the commit hash from the output message
-        String commit = "";
+        String commit;
         if(res.contains("]")) {
             commit = res.substring(res.indexOf("HEAD") + 1, res.indexOf("]") - 1);
         }
