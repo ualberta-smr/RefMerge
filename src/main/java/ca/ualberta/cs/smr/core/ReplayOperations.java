@@ -3,7 +3,8 @@ package ca.ualberta.cs.smr.core;
 import ca.ualberta.cs.smr.core.refactoringWrappers.ExtractOperationRefactoringWrapper;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.lang.ASTNode;
-import com.intellij.lang.jvm.types.JvmReferenceType;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
@@ -19,11 +20,13 @@ import com.intellij.refactoring.changeSignature.ThrownExceptionInfo;
 import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
 import com.intellij.refactoring.extractMethod.ExtractMethodProcessor;
 import com.intellij.refactoring.extractMethod.PrepareFailedException;
+import com.intellij.refactoring.util.duplicates.Match;
 import com.intellij.usageView.UsageInfo;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.UMLParameter;
 import gr.uom.java.xmi.decomposition.*;
+import gr.uom.java.xmi.decomposition.replacement.Replacement;
 import gr.uom.java.xmi.diff.ExtractOperationRefactoring;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
@@ -113,12 +116,17 @@ public class ReplayOperations {
         else {
             psiElements = getPsiElementsBetweenStatements(surroundingStatements, psiMethod);
         }
+        if(psiElements.length == 0) {
+            Set<Replacement> replacements = extractOperationRefactoring.getReplacements();
+            psiElements = useReplacements(replacements, psiMethod);
+        }
         PsiType forcedReturnType = getPsiReturnType(extractOperationRefactoring, psiMethod);
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
         // Set editor to null because we are not using the character offset in the editor
         ExtractMethodProcessor extractMethodProcessor = new ExtractMethodProcessor(project, editor, psiElements,
                 forcedReturnType, refactoringName, initialMethodName, helpId);
         extractMethodProcessor.setMethodName(refactoringName);
+
         String visibility = extractedOperation.getVisibility();
         extractMethodProcessor.setMethodVisibility(visibility);
         try {
@@ -128,9 +136,21 @@ public class ReplayOperations {
         }
         extractMethodProcessor.setDataFromInputVariables();
         ExtractMethodHandler.extractMethod(project, extractMethodProcessor);
+        Boolean hasDuplicates = extractMethodProcessor.hasDuplicates();
+        if(hasDuplicates == null || hasDuplicates) {
+            final List<Match> duplicates = extractMethodProcessor.getDuplicates();
+            for(final Match match : duplicates) {
+                if (!match.getMatchStart().isValid() || !match.getMatchEnd().isValid()) continue;
+                PsiDocumentManager.getInstance(project).commitAllDocuments();
+                Runnable runnable = () -> ApplicationManager.getApplication().runWriteAction(() -> {
+                    extractMethodProcessor.processMatch(match);
+                });
+                CommandProcessor.getInstance().executeCommand(project, runnable, "Extract Method", null);
+            }
+        }
+
         PsiMethod extractedPsiMethod = extractMethodProcessor.getExtractedMethod();
         ThrownExceptionInfo[] thrownExceptionInfo = refactoringWrapper.getThrownExceptionInfos();
-
         if(extractedPsiMethod.getParameterList().getParametersCount() > 1) {
             ParameterInfoImpl[] parameterInfo = getParameterInfo(extractedPsiMethod, extractedOperation);
             ChangeSignatureProcessor changeSignatureProcessor =
@@ -140,7 +160,6 @@ public class ReplayOperations {
         }
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);
-
     }
 
     /*
@@ -176,11 +195,30 @@ public class ReplayOperations {
         AbstractCodeFragment firstCodeFragment = codeFragmentsArray[0];
         AbstractCodeFragment lastCodeFragment = codeFragmentsArray[codeFragmentsArray.length - 1];
         String startingText = formatText(firstCodeFragment.getString());
+
         String endingText = formatText(lastCodeFragment.getString());
         ArrayList<PsiElement> psiElements = getPsiElementsFromStatements(psiStatements, startingText, endingText);
         return psiElements.toArray(new PsiElement[0]);
     }
 
+
+    private PsiElement[] useReplacements(Set<Replacement> replacements, PsiMethod psiMethod) {
+        ArrayList<PsiElement> psiElements = new ArrayList<>();
+        PsiCodeBlock psiCodeBlock = psiMethod.getBody();
+        assert psiCodeBlock != null;
+        PsiStatement[] psiStatements = psiCodeBlock.getStatements();
+        for(Replacement replacement : replacements) {
+            String after = replacement.getAfter();
+            after = formatText(after);
+            for(PsiStatement psiStatement : psiStatements) {
+                String psiStatementText = formatText(psiStatement.getText());
+                if(psiStatementText.equals(after)) {
+                    psiElements.add(psiStatement);
+                }
+            }
+        }
+        return psiElements.toArray(new PsiElement[0]);
+    }
     /*
      * Format the text to remove new lines and spaces for comparing code fragments
      */
