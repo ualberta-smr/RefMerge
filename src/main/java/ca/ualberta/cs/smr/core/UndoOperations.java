@@ -133,7 +133,12 @@ public class UndoOperations {
         PsiStatement[] psiStatements = psiCodeBlock.getStatements();
         int lastIndex = psiStatements.length - 1;
         if(lastIndex == 0) {
-            return null;
+            if(psiStatements[0] instanceof PsiReturnStatement) {
+                return null;
+            }
+            surroundingStatements[0] = psiStatements[0];
+            surroundingStatements[1] = psiStatements[0];
+            return surroundingStatements;
         }
         surroundingStatements[0] = psiStatements[0];
 
