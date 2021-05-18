@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
 import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.vcs.VcsException;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
@@ -39,13 +40,7 @@ public class RefMerge extends AnAction {
     public void update(@NotNull AnActionEvent e) {
         // Using the event, evaluate the context, and enable or disable the action.
     }
-    // Example: multiple rename methods
-    // Project: core
-    // URL: https://github.com/MasDennis/Rajawali
-    // merge commit: 98787ef5
-    // parent 1: 3d9b713ba
-    // parent 2: 5e7fcebe4
-    // base: 773d48939a2ccba
+
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         this.project = ProjectManager.getInstance().getOpenProjects()[0];
@@ -53,38 +48,19 @@ public class RefMerge extends AnAction {
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         List<GitRepository> repos = repoManager.getRepositories();
         GitRepository repo = repos.get(0);
-//        String mergeCommit = "27121f2";
-//        String rightCommit = "e5e397da6";
-//        String leftCommit = "5e59da77";
-//        String baseCommit = "c382b804";
-//        String mergeCommit = "";
-//        String rightCommit = "f42429d";
-//        String leftCommit = "1687e13";
-//        String baseCommit = "46eeb31";
-          // Rajawali
-//        String mergeCommit = "98787ef5";
-//        String rightCommit = "3d9b713ba";
-//        String leftCommit = "5e7fcebe4";
-//        String baseCommit = "773d48939a2ccba";
-        // Extract Method Scenario
-//        String mergeCommit = "2c959cae5";
-//        String rightCommit = "2b4f6d9b";
-//        String leftCommit = "e4270319fd07";
-//        String baseCommit = "b127f6e2634";
-        // Extract Method commit
-          String mergeCommit = "";
-          String rightCommit = "d290ecad7";
-          String leftCommit = "b127f6e2634";
-          String baseCommit = "b127f6e2634";
+        String mergeCommit = "19dace1b8a";
+        String rightCommit = "61bec859ac";
+        String leftCommit = "4ccfde2b57de4";
 
-        refMerge(mergeCommit, rightCommit, leftCommit, baseCommit, project, repo);
+
+        refMerge(mergeCommit, rightCommit, leftCommit, project, repo);
 
     }
 
     /*
      * Gets the directory of the project that's being merged, then it calls the function that performs the merge.
      */
-    public void refMerge(String mergeCommit, String rightCommit, String leftCommit, String baseCommit, Project project,
+    public void refMerge(String mergeCommit, String rightCommit, String leftCommit, Project project,
                          GitRepository repo) {
         Utils.clearTemp();
         File dir = new File(Objects.requireNonNull(project.getBasePath()));
@@ -94,7 +70,7 @@ public class RefMerge extends AnAction {
             ioException.printStackTrace();
         }
 
-        doMerge(rightCommit, leftCommit, baseCommit, repo);
+        doMerge(rightCommit, leftCommit, repo);
 
     }
 
@@ -106,10 +82,10 @@ public class RefMerge extends AnAction {
      * left commit, but it uses the current directory instead of saving it to a new one. After it's undone all the
      * refactorings, the merge function is called and it replays the refactorings.
      */
-    private void doMerge(String rightCommit, String leftCommit, String baseCommit,
-                         GitRepository repo) {
+    private void doMerge(String rightCommit, String leftCommit, GitRepository repo){
 
         GitUtils gitUtils = new GitUtils(repo, project);
+        String baseCommit = gitUtils.getBaseCommit(leftCommit, rightCommit);
         List<Pair> rightRefs = detectCommits(rightCommit, baseCommit);
         SortPairs.sortList(rightRefs);
         List<Pair> leftRefs = detectCommits(leftCommit, baseCommit);
@@ -134,8 +110,8 @@ public class RefMerge extends AnAction {
         Utils.dumbServiceHandler(project);
         leftRefs = undoRefactorings(leftRefs);
         Utils.saveContent(project, "left");
-        String leftUndoCommit = gitUtils.addAndCommit();
-        gitUtils.merge(leftUndoCommit, rightUndoCommit);
+        gitUtils.addAndCommit();
+        gitUtils.merge(rightUndoCommit);
         Utils.refreshVFS();
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
