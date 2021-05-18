@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
     compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '5.10.0.202012080955-r'
-    compile group: 'com.github.tsantalis', name: 'refactoring-miner', version: '2.0'
+    compile group: 'com.github.tsantalis', name: 'refactoring-miner', version: '2.1.0'
     compile group: 'org.jgrapht', name: 'jgrapht-core', version: '1.3.0'
     compile 'org.eclipse.jdt:org.eclipse.jdt.core:3.24.0'
 
