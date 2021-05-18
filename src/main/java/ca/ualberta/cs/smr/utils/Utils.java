@@ -83,42 +83,62 @@ public class Utils {
         List<UMLParameter> umlParameters = operation.getParameters();
         String umlName = operation.getName();
         String psiName = method.getName();
+        int firstUMLParam = 0;
         // Check if the method names are the same
-        if(!umlName.equals(psiName)) {
+        if (!umlName.equals(psiName)) {
             return false;
         }
         // If the number of parameters are different, the methods are different
         // Subtract 1 from umlParameters because umlParameters includes return type
-        if(umlParameters.size() - 1 != psiParameterList.length) {
-            return false;
-        }
-        PsiType psiReturnType = method.getReturnType();
-        assert psiReturnType != null;
-        String psiType = psiReturnType.getPresentableText();
-        UMLParameter umlParameter = umlParameters.get(0);
-        String umlType = umlParameter.getType().toString();
-        // Check if the return types are the same
-        if(!psiType.equals(umlType)) {
-            // Check if UML type is class type
-            if(umlType.contains(".")) {
-                umlType = umlType.substring(umlType.lastIndexOf(".") + 1);
-                if(!umlType.equals(psiType)) {
+        if (!operation.isConstructor()) {
+            if (umlParameters.size() - 1 != psiParameterList.length) {
+                return false;
+            }
+            PsiType psiReturnType = method.getReturnType();
+            assert psiReturnType != null;
+            String psiType = psiReturnType.getPresentableText();
+            UMLParameter umlParameter = umlParameters.get(0);
+            String umlType = umlParameter.getType().toString();
+            // Check if the return types are the same
+            if (!psiType.equals(umlType)) {
+                // Check if UML type is class type
+                if (umlType.contains(".")) {
+                    umlType = umlType.substring(umlType.lastIndexOf(".") + 1);
+                    if (!umlType.equals(psiType)) {
+                        return false;
+                    }
+                } else {
                     return false;
                 }
             }
-            else {
+            firstUMLParam = 1;
+        }
+        else {
+            if(umlParameters.size() != psiParameterList.length) {
                 return false;
             }
         }
         // Check if the parameters are the same
-        for(int i = 1; i < umlParameters.size(); i++) {
-            int j = i - 1;
+        return parameterComparator(firstUMLParam, umlParameters, psiParameterList);
+    }
+
+    private static boolean parameterComparator(int firstUMLParam, List<UMLParameter> umlParameters,
+                                        PsiParameter[] psiParameterList) {
+        UMLParameter umlParameter;
+        String umlType;
+        String psiType;
+        // Check if the parameters are the same
+        for(int i = firstUMLParam; i < umlParameters.size(); i++) {
+            int j = i;
+            if(firstUMLParam == 1) {
+                j = i - 1;
+            }
             umlParameter = umlParameters.get(i);
             PsiParameter psiParameter = psiParameterList[j];
             umlType = umlParameter.getType().toString();
             String parameterName = psiParameter.getName();
             psiType = psiParameter.getText();
-            psiType = psiType.substring(0, psiType.indexOf(parameterName) - 1);
+            psiType = psiType.substring(0, psiType.lastIndexOf(parameterName) - 1);
             if(!umlType.equals(psiType)) {
                 return false;
             }
@@ -143,7 +163,11 @@ public class Utils {
             PsiClass[] jClasses = psiFile.getClasses();
             for (PsiClass it : jClasses) {
                 // Find the class that the refactoring happens in
+                String x = it.getQualifiedName();
                 if (Objects.equals(it.getQualifiedName(), qualifiedClass)) {
+                    return it;
+                }
+                if(qualifiedClass.contains(it.getName())) {
                     return it;
                 }
                 PsiClass[] innerClasses = it.getInnerClasses();
