@@ -122,7 +122,6 @@ public class ReplayOperations {
         }
         PsiType forcedReturnType = getPsiReturnType(extractOperationRefactoring, psiMethod);
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
-        // Set editor to null because we are not using the character offset in the editor
         ExtractMethodProcessor extractMethodProcessor = new ExtractMethodProcessor(project, editor, psiElements,
                 forcedReturnType, refactoringName, initialMethodName, helpId);
         extractMethodProcessor.setMethodName(refactoringName);

@@ -8,6 +8,10 @@ import com.intellij.psi.*;
 import com.intellij.psi.impl.JavaPsiFacadeImpl;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.refactoring.JavaRefactoringFactory;
+import com.intellij.refactoring.RefactoringFactory;
+import com.intellij.refactoring.RenameRefactoring;
+import com.intellij.usageView.UsageInfo;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.UMLParameter;
 
@@ -163,7 +167,6 @@ public class Utils {
             PsiClass[] jClasses = psiFile.getClasses();
             for (PsiClass it : jClasses) {
                 // Find the class that the refactoring happens in
-                String x = it.getQualifiedName();
                 if (Objects.equals(it.getQualifiedName(), qualifiedClass)) {
                     return it;
                 }
@@ -201,24 +204,16 @@ public class Utils {
         return null;
     }
 
-    public static PsiJavaCodeReferenceElement getPsiReferenceForExtractMethod(UMLOperation extractedOperation,
-                                                                              PsiMethod psiMethod) {
-        String extractedOperationMethodName = extractedOperation.getName();
-        PsiCodeBlock psiCodeBlock = psiMethod.getBody();
-        assert psiCodeBlock != null;
-        PsiStatement[] psiStatements = psiCodeBlock.getStatements();
-        for(PsiStatement psiStatement : psiStatements) {
-            String text = psiStatement.getText();
-            if(text.contains(extractedOperationMethodName)) {
-                PsiElement[] elements = psiStatement.getChildren();
-                for(PsiElement psiElement : elements) {
-                    text = psiElement.getText();
-                    if(text.contains(extractedOperationMethodName)) {
-                        PsiReference psiReference = psiElement.findReferenceAt(0);
-                        if(psiReference instanceof PsiJavaCodeReferenceElement) {
-                            return (PsiJavaCodeReferenceElement) psiReference;
-                        }
-                    }
+    public static PsiJavaCodeReferenceElement getPsiReferenceExpressionsForExtractMethod(PsiMethod psiMethod, Project project) {
+        RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
+        // Create renameRefactoring to find usages of the extracted method
+        RenameRefactoring renameRefactoring = factory.createRename(psiMethod, "method", false, true);
+        UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
+        for(UsageInfo usageInfo : refactoringUsages) {
+            PsiElement element = usageInfo.getElement();
+            if(usageInfo.getElement() instanceof PsiReferenceExpression) {
+                if(usageInfo.getElement() instanceof PsiJavaCodeReferenceElement) {
+                    return (PsiJavaCodeReferenceElement) element;
                 }
             }
         }
