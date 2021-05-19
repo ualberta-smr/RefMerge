@@ -5,6 +5,8 @@ import ca.ualberta.cs.smr.utils.RefactoringWrapperUtils;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
@@ -23,7 +25,6 @@ import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 
-import java.util.ArrayList;
 
 
 public class UndoOperations {
@@ -111,11 +112,10 @@ public class UndoOperations {
         psiClass = utils.getPsiClassFromClassAndFileNames(sourceOperationClassName, filePath);
         PsiMethod psiMethod = Utils.getPsiMethod(psiClass, sourceOperation);
         assert psiMethod != null;
-
-        PsiJavaCodeReferenceElement referenceElement = Utils.getPsiReferenceForExtractMethod(extractedOperation, psiMethod);
-        // Set editor to null because we do not use the editor
+        PsiJavaCodeReferenceElement referenceElement = Utils.getPsiReferenceExpressionsForExtractMethod(extractedMethod, project);
+        Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
         InlineMethodProcessor inlineMethodProcessor = new InlineMethodProcessor(project, extractedMethod, referenceElement,
-                null, false);
+                editor, false);
         Application app = ApplicationManager.getApplication();
         app.invokeAndWait(inlineMethodProcessor);
 
