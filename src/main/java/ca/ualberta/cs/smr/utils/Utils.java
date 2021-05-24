@@ -126,6 +126,10 @@ public class Utils {
         return parameterComparator(firstUMLParam, umlParameters, psiParameterList);
     }
 
+    /*
+     * Compare the parameters in the UML parameter list to the parameters in the PSI parameter list to see if
+     * the method signatures are the same.
+     */
     private static boolean parameterComparator(int firstUMLParam, List<UMLParameter> umlParameters,
                                         PsiParameter[] psiParameterList) {
         UMLParameter umlParameter;
@@ -133,16 +137,18 @@ public class Utils {
         String psiType;
         // Check if the parameters are the same
         for(int i = firstUMLParam; i < umlParameters.size(); i++) {
-            int j = i;
-            if(firstUMLParam == 1) {
-                j = i - 1;
-            }
+            int j = i - firstUMLParam;
             umlParameter = umlParameters.get(i);
             PsiParameter psiParameter = psiParameterList[j];
             umlType = umlParameter.getType().toString();
+
             String parameterName = psiParameter.getName();
             psiType = psiParameter.getText();
             psiType = psiType.substring(0, psiType.lastIndexOf(parameterName) - 1);
+            // If the parameter has the final modifier, remove it for comparison with UML parameter.
+            if(psiParameter.hasModifierProperty(PsiModifier.FINAL)) {
+                psiType = psiType.substring(psiType.indexOf("final ") + 6);
+            }
             if(!umlType.equals(psiType)) {
                 return false;
             }
