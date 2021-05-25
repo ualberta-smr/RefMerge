@@ -79,6 +79,9 @@ public class ReplayOperations {
         Utils utils = new Utils(project);
         String filePath = original.getLocationInfo().getFilePath();
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(srcQualifiedClass, filePath);
+        if(psiClass == null) {
+            return;
+        }
         assert psiClass != null;
         RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
         RenameRefactoring renameRefactoring = factory.createRename(psiClass, destClassName, true, true);
@@ -125,7 +128,6 @@ public class ReplayOperations {
         ExtractMethodProcessor extractMethodProcessor = new ExtractMethodProcessor(project, editor, psiElements,
                 forcedReturnType, refactoringName, initialMethodName, helpId);
         extractMethodProcessor.setMethodName(refactoringName);
-
         String visibility = extractedOperation.getVisibility();
         extractMethodProcessor.setMethodVisibility(visibility);
         try {
@@ -135,30 +137,61 @@ public class ReplayOperations {
         }
         extractMethodProcessor.setDataFromInputVariables();
         ExtractMethodHandler.extractMethod(project, extractMethodProcessor);
-        Boolean hasDuplicates = extractMethodProcessor.hasDuplicates();
-        if(hasDuplicates == null || hasDuplicates) {
-            final List<Match> duplicates = extractMethodProcessor.getDuplicates();
-            for(final Match match : duplicates) {
-                if (!match.getMatchStart().isValid() || !match.getMatchEnd().isValid()) continue;
-                PsiDocumentManager.getInstance(project).commitAllDocuments();
-                Runnable runnable = () -> ApplicationManager.getApplication().runWriteAction(() -> {
-                    extractMethodProcessor.processMatch(match);
-                });
-                CommandProcessor.getInstance().executeCommand(project, runnable, "Extract Method", null);
-            }
+        // Check for duplicates and prepare method signature
+        if(extractMethodProcessor.initParametrizedDuplicates(false)) {
+            // Handle duplicate extract method calls
+            handleDuplicates(extractMethodProcessor, extractedOperation);
         }
 
-        PsiMethod extractedPsiMethod = extractMethodProcessor.getExtractedMethod();
-        ThrownExceptionInfo[] thrownExceptionInfo = refactoringWrapper.getThrownExceptionInfos();
-        if(extractedPsiMethod.getParameterList().getParametersCount() > 1) {
-            ParameterInfoImpl[] parameterInfo = getParameterInfo(extractedPsiMethod, extractedOperation);
-            ChangeSignatureProcessor changeSignatureProcessor =
-                    new ChangeSignatureProcessor(project, extractedPsiMethod, false, null,
-                            refactoringName, forcedReturnType, parameterInfo, thrownExceptionInfo);
-            changeSignatureProcessor.run();
-        }
+        updateSignature(extractMethodProcessor, extractedOperation, refactoringName,
+                forcedReturnType, refactoringWrapper.getThrownExceptionInfos());
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);
+    }
+
+    /*
+     * Extracts the duplicate extract method calls. After all duplicates have been extracted, it renames the
+     * parameters to match what the developers expected after the merge.
+     */
+    private void handleDuplicates(ExtractMethodProcessor processor, UMLOperation operation) {
+        final List<Match> duplicates = processor.getDuplicates();
+        for (final Match match : duplicates) {
+            if (!match.getMatchStart().isValid() || !match.getMatchEnd().isValid()) continue;
+            PsiDocumentManager.getInstance(project).commitAllDocuments();
+            Runnable runnable = () -> ApplicationManager.getApplication().runWriteAction(() -> {
+                processor.processMatch(match);
+            });
+            CommandProcessor.getInstance().executeCommand(project, runnable, "Extract Method", null);
+        }
+        PsiMethod extractedPsiMethod = processor.getExtractedMethod();
+        renameParameters(extractedPsiMethod, operation);
+    }
+
+    /*
+     * Update the extracted method signature to include the throws exception list and rearrange the parameters to be
+     * in the correct order.
+     */
+    private void updateSignature(ExtractMethodProcessor processor, UMLOperation operation, String refactoringName,
+                                 PsiType forcedReturnType, ThrownExceptionInfo[] thrownExceptionInfo) {
+        PsiMethod extractedPsiMethod = processor.getExtractedMethod();
+        if(extractedPsiMethod.getParameterList().getParametersCount() > 1) {
+            ParameterInfoImpl[] parameterInfo = getParameterInfo(extractedPsiMethod, operation);
+            // Temporary workaround until we rename the parameters in duplicates
+            if(parameterInfo[0] != null) {
+                if(thrownExceptionInfo == null) {
+                    ChangeSignatureProcessor changeSignatureProcessor =
+                            new ChangeSignatureProcessor(project, extractedPsiMethod, false, null,
+                                    refactoringName, forcedReturnType, parameterInfo);
+                    changeSignatureProcessor.run();
+                }
+                else {
+                    ChangeSignatureProcessor changeSignatureProcessor =
+                            new ChangeSignatureProcessor(project, extractedPsiMethod, false, null,
+                                    refactoringName, forcedReturnType, parameterInfo, thrownExceptionInfo);
+                    changeSignatureProcessor.run();
+                }
+            }
+        }
     }
 
     /*
@@ -293,10 +326,29 @@ public class ReplayOperations {
 
         }
 
-
-
         return parameterInfoImplArray;
+    }
 
+    /*
+     * Renames the parameters in the extracted method using the UML parameters detected by RefMiner.
+     */
+    private void renameParameters(PsiMethod psiMethod, UMLOperation umlOperation) {
+
+        List<UMLParameter> umlParameterList = umlOperation.getParameters();
+        PsiParameterList psiParameterList = psiMethod.getParameterList();
+        ParameterInfoImpl[] parameterInfoImplArray = new ParameterInfoImpl[umlParameterList.size() - 1];
+        // Start at 1 to ignore return type
+        for(int i = 1; i < umlParameterList.size(); i++) {
+            UMLParameter umlParameter = umlParameterList.get(i);
+            String umlParameterType = umlParameter.getType().toString();
+            String umlParameterName = umlParameter.getName();
+            PsiParameter psiParameter = psiParameterList.getParameter(i-1);
+            PsiDocumentManager.getInstance(project).commitAllDocuments();
+            RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
+            RenameRefactoring renameRefactoring = factory.createRename(psiParameter, umlParameterName, true, false);
+            UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
+            renameRefactoring.doRefactoring(refactoringUsages);
+        }
     }
 
 }
