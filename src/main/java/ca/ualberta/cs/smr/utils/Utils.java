@@ -1,8 +1,17 @@
 package ca.ualberta.cs.smr.utils;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.WriteAction;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ContentEntry;
+import com.intellij.openapi.roots.ModifiableRootModel;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.JavaPsiFacadeImpl;
@@ -14,6 +23,7 @@ import com.intellij.refactoring.RenameRefactoring;
 import com.intellij.usageView.UsageInfo;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.UMLParameter;
+import org.jetbrains.jps.model.serialization.PathMacroUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -76,6 +86,103 @@ public class Utils {
     public static void refreshVFS() {
         VirtualFileManager vFM = VirtualFileManager.getInstance();
         vFM.refreshWithoutFileWatcher(false);
+    }
+
+    /*
+     * Use the file path to add the source root to the module if it is not already in the module.
+     */
+    public void addSourceRoot(String filePath) {
+        // There are no modules or source roots in unit test mode
+        if (ApplicationManager.getApplication().isUnitTestMode()) {
+            return;
+        }
+        boolean isTestFolder = filePath.contains("test");
+
+        String projectPath = project.getBasePath();
+        String relativePath = projectPath + "/" + filePath;
+        relativePath = getRelativePathOfSourceRoot(relativePath, isTestFolder);
+        File directory = new File(relativePath);
+        VirtualFile sourceVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(directory);
+        assert sourceVirtualFile != null;
+        ModuleManager moduleManager = ModuleManager.getInstance(project);
+        // Get the first module that does not depend on any other modules
+        Module module = getModule(sourceVirtualFile, moduleManager.getModules());
+        assert module != null;
+        ModifiableRootModel rootModel = ModuleRootManager.getInstance(module).getModifiableModel();
+        directory = new File(Objects.requireNonNull(PathMacroUtil.getModuleDir(module.getModuleFilePath())));
+        VirtualFile moduleVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(directory);
+        ContentEntry contentEntry = getContentEntry(moduleVirtualFile, rootModel);
+        assert contentEntry != null;
+        if(checkIfSourceFolderExists(sourceVirtualFile, contentEntry)) {
+            return;
+        }
+        contentEntry.addSourceFolder(sourceVirtualFile, isTestFolder);
+        WriteAction.run(rootModel::commit);
+        Utils.dumbServiceHandler(project);
+    }
+
+    /*
+     * Get the relative path of the source root folder.
+     */
+    private String getRelativePathOfSourceRoot(String relativePath, boolean isTestFolder) {
+        if(isTestFolder) {
+            if(relativePath.contains("test/")) {
+                return relativePath.substring(0, relativePath.indexOf("test/") + 4);
+            }
+            else {
+                return relativePath.substring(0, relativePath.indexOf("main/") + 4);
+            }
+        }
+        else {
+            return relativePath.substring(0, relativePath.indexOf("main/") + 4);
+        }
+    }
+    /*
+     * Get the module that the virtual file is in.
+     */
+    private Module getModule(VirtualFile virtualFile, Module[] modules) {
+
+        for(Module module : modules) {
+            VirtualFile moduleFile = module.getModuleFile();
+            assert moduleFile != null;
+            VirtualFile moduleFileParent = moduleFile.getParent();
+            // Get the src directory
+            VirtualFile virtualFileParent = virtualFile.getParent();
+            // If the src directory and .iml file are in the same module
+            if(moduleFileParent.equals(virtualFileParent.getParent())) {
+                return module;
+            }
+        }
+        // If we could not find the module, there's probably only one module file in ./idea
+        if(modules.length > 0) {
+            return modules[0];
+        }
+        return null;
+    }
+
+    /*
+     * Get the content entry in the specified module.
+     */
+    private ContentEntry getContentEntry(VirtualFile moduleVirtualFile, ModifiableRootModel rootModel) {
+        for(ContentEntry contentEntry : rootModel.getContentEntries()) {
+            if(contentEntry.getFile().equals(moduleVirtualFile)) {
+                return contentEntry;
+            }
+        }
+        return null;
+    }
+
+    /*
+     * Check if the virtual file already exists as a source folder to avoid unnecessary indexing.
+     */
+    private boolean checkIfSourceFolderExists(VirtualFile sourceVirtualFile, ContentEntry contentEntry) {
+        VirtualFile[] sourceFolderFiles = contentEntry.getSourceFolderFiles();
+        for(VirtualFile sourceFolderFile : sourceFolderFiles) {
+            if(sourceVirtualFile.equals(sourceFolderFile)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void reparsePsiFiles(Project project) {
