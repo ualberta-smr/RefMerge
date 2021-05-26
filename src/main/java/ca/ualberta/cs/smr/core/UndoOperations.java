@@ -46,6 +46,7 @@ public class UndoOperations {
         // get the PSI class using the qualified class name
         String filePath = renamed.getLocationInfo().getFilePath();
         Utils utils = new Utils(project);
+        utils.addSourceRoot(filePath);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(qualifiedClass, filePath);
         assert psiClass != null;
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
@@ -61,7 +62,7 @@ public class UndoOperations {
     }
 
     /*
-     * Undo the class refactoring that was originally performed.
+     * Undo the rename class refactoring that was originally performed by performing another rename class refactoring.
      */
     public void undoRenameClass(Refactoring ref) {
         UMLClass original = ((RenameClassRefactoring) ref).getOriginalClass();
@@ -71,13 +72,13 @@ public class UndoOperations {
         String srcClassName = srcQualifiedClass.substring(srcQualifiedClass.lastIndexOf(".") + 1);
         String filePath = renamed.getLocationInfo().getFilePath();
         Utils utils = new Utils(project);
+        utils.addSourceRoot(filePath);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(destQualifiedClass, filePath);
         assert psiClass != null;
         RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
         RenameRefactoring renameRefactoring = factory.createRename(psiClass, srcClassName, true, true);
         UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
         renameRefactoring.doRefactoring(refactoringUsages);
-
         // Update the virtual file of the class
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);
@@ -96,6 +97,7 @@ public class UndoOperations {
         String extractedOperationClassName = extractedOperation.getClassName();
         String filePath = extractedOperation.getLocationInfo().getFilePath();
         Utils utils = new Utils(project);
+        utils.addSourceRoot(filePath);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(extractedOperationClassName, filePath);
         assert psiClass != null;
         PsiMethod extractedMethod = Utils.getPsiMethod(psiClass, extractedOperation);
@@ -118,7 +120,6 @@ public class UndoOperations {
                 editor, false);
         Application app = ApplicationManager.getApplication();
         app.invokeAndWait(inlineMethodProcessor);
-
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);
 
