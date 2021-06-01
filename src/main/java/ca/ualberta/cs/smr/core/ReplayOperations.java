@@ -2,7 +2,6 @@ package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.core.refactoringWrappers.ExtractOperationRefactoringWrapper;
 import ca.ualberta.cs.smr.utils.Utils;
-import com.intellij.lang.ASTNode;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
@@ -10,7 +9,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
-import com.intellij.psi.impl.source.SourceTreeToPsiMap;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.JavaRefactoringFactory;
 import com.intellij.refactoring.RefactoringFactory;
 import com.intellij.refactoring.RenameRefactoring;
@@ -25,7 +24,6 @@ import com.intellij.usageView.UsageInfo;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.UMLParameter;
-import gr.uom.java.xmi.decomposition.*;
 import gr.uom.java.xmi.decomposition.replacement.Replacement;
 import gr.uom.java.xmi.diff.ExtractOperationRefactoring;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
@@ -82,7 +80,6 @@ public class ReplayOperations {
         if(psiClass == null) {
             return;
         }
-        assert psiClass != null;
         RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
         RenameRefactoring renameRefactoring = factory.createRename(psiClass, destClassName, true, true);
         UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
@@ -110,15 +107,10 @@ public class ReplayOperations {
         PsiMethod psiMethod = Utils.getPsiMethod(psiClass, sourceOperation);
         assert psiMethod != null;
 
-        PsiElement[] psiElements;
-        PsiStatement[] surroundingStatements = refactoringWrapper.getSurroundingStatements();
+        PsiElement[] surroundingElements = refactoringWrapper.getSurroundingElements();
+        PsiElement[] psiElements = getPsiElementsBetweenElements(surroundingElements);
 
-        if(surroundingStatements == null) {
-            psiElements = getPsiElements(extractOperationRefactoring, psiMethod);
-        }
-        else {
-            psiElements = getPsiElementsBetweenStatements(surroundingStatements, psiMethod);
-        }
+
         if(psiElements.length == 0) {
             Set<Replacement> replacements = extractOperationRefactoring.getReplacements();
             psiElements = useReplacements(replacements, psiMethod);
@@ -198,38 +190,30 @@ public class ReplayOperations {
      * Use the new psi statement at the beginning and end of the extracted method to get all involved psi statements
      * in the refactoring.
      */
-    private PsiElement[] getPsiElementsBetweenStatements(PsiStatement[] surroundingStatements, PsiMethod psiMethod) {
-        PsiStatement firstStatement = surroundingStatements[0];
-        PsiStatement lastStatement = surroundingStatements[1];
-        String startingText = formatText(firstStatement.getText());
-        String endingText = formatText(lastStatement.getText());
-
-        PsiCodeBlock psiCodeBlock = psiMethod.getBody();
-        assert psiCodeBlock != null;
-        PsiStatement[] psiStatements = psiCodeBlock.getStatements();
-
-        ArrayList<PsiElement> psiElements = getPsiElementsFromStatements(psiStatements, startingText, endingText);
-        return psiElements.toArray(new PsiElement[0]);
-
-    }
-
-    /*
-     * Use the code fragments to get the code fragments if the beginning and ending line of the extracted method are the
-     * same.
-     */
-    private PsiElement[] getPsiElements(ExtractOperationRefactoring extractOperationRefactoring, PsiMethod psiMethod) {
-        Set<AbstractCodeFragment> codeFragments = extractOperationRefactoring.getExtractedCodeFragmentsFromSourceOperation();
-        AbstractCodeFragment[] codeFragmentsArray = new AbstractCodeFragment[codeFragments.size()];
-        codeFragments.toArray(codeFragmentsArray);
-        PsiCodeBlock psiCodeBlock = psiMethod.getBody();
-        assert psiCodeBlock != null;
-        PsiStatement[] psiStatements = psiCodeBlock.getStatements();
-        AbstractCodeFragment firstCodeFragment = codeFragmentsArray[0];
-        AbstractCodeFragment lastCodeFragment = codeFragmentsArray[codeFragmentsArray.length - 1];
-        String startingText = formatText(firstCodeFragment.getString());
-
-        String endingText = formatText(lastCodeFragment.getString());
-        ArrayList<PsiElement> psiElements = getPsiElementsFromStatements(psiStatements, startingText, endingText);
+    private PsiElement[] getPsiElementsBetweenElements(PsiElement[] surroundingElements) {
+        PsiElement firstElement = surroundingElements[0];
+        PsiElement lastElement = surroundingElements[1];
+        if(firstElement instanceof PsiJavaToken) {
+            firstElement = firstElement.getNextSibling();
+        }
+        else {
+            firstElement = firstElement.getNextSibling();
+        }
+        if(firstElement instanceof PsiWhiteSpace) {
+            firstElement = firstElement.getNextSibling();
+        }
+        if(lastElement instanceof PsiJavaToken) {
+            lastElement = lastElement.getPrevSibling();
+        }
+        else {
+            lastElement = lastElement.getPrevSibling();
+        }
+        if(lastElement instanceof PsiWhiteSpace) {
+            lastElement = lastElement.getPrevSibling();
+        }
+        assert firstElement != null;
+        assert lastElement != null;
+        List<PsiElement> psiElements = PsiTreeUtil.getElementsOfRange(firstElement, lastElement);
         return psiElements.toArray(new PsiElement[0]);
     }
 
@@ -241,9 +225,9 @@ public class ReplayOperations {
         PsiStatement[] psiStatements = psiCodeBlock.getStatements();
         for(Replacement replacement : replacements) {
             String after = replacement.getAfter();
-            after = formatText(after);
+            after = Utils.formatText(after);
             for(PsiStatement psiStatement : psiStatements) {
-                String psiStatementText = formatText(psiStatement.getText());
+                String psiStatementText = Utils.formatText(psiStatement.getText());
                 if(psiStatementText.equals(after)) {
                     psiElements.add(psiStatement);
                 }
@@ -251,43 +235,8 @@ public class ReplayOperations {
         }
         return psiElements.toArray(new PsiElement[0]);
     }
-    /*
-     * Format the text to remove new lines and spaces for comparing code fragments
-     */
-    private String formatText(String text) {
-        text = text.replaceAll(" ", "");
-        text = text.replaceAll("\n", "");
-        return text;
-    }
 
-    /*
-     * Gets the PSI elements for the extract method processor. If the surrounding statements are not null, use them to
-     * get the PSI elements. If they are null, use the code fragments instead.
-     */
-    private ArrayList<PsiElement> getPsiElementsFromStatements(PsiStatement[] psiStatements,
-                                                               String startingText,
-                                                               String endingText) {
 
-        ArrayList<PsiElement> psiElements = new ArrayList<>();
-        boolean statementInRange = false;
-
-        for(PsiStatement psiStatement : psiStatements) {
-            String psiStatementText = formatText(psiStatement.getText());
-            if(startingText.equals(psiStatementText)) {
-                statementInRange = true;
-            }
-            if(statementInRange) {
-                ASTNode node = SourceTreeToPsiMap.psiElementToTree(psiStatement);
-                assert node != null;
-                psiElements.add(node.getPsi());
-            }
-            if(endingText.equals(psiStatementText)) {
-                break;
-            }
-        }
-        return psiElements;
-
-    }
 
     /*
      * Gets the return type of the extracted method.

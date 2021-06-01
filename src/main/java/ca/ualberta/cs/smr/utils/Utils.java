@@ -317,6 +317,15 @@ public class Utils {
         return null;
     }
 
+    /*
+     * Format the text to remove new lines and spaces for comparing code fragments
+     */
+    public static String formatText(String text) {
+        text = text.replaceAll(" ", "");
+        text = text.replaceAll("\n", "");
+        return text;
+    }
+
     public static PsiJavaCodeReferenceElement getPsiReferenceExpressionsForExtractMethod(PsiMethod psiMethod, Project project) {
         RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
         // Create renameRefactoring to find usages of the extracted method
