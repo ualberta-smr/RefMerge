@@ -203,22 +203,18 @@ public class RenameMethodRenameMethodLogicTests extends LightJavaCodeInsightFixt
         boolean isTransitive = cell.checkRenameMethodRenameMethodTransitivity(firstRefactoring, secondRefactoring);
         if(expectedTransitivity) {
             Assert.assertTrue(isTransitive);
-            Assert.assertEquals(expectedRefactoring.getDestinationFilePath(), firstRefactoring.getDestinationFilePath());
-            Assert.assertEquals(((RenameMethodObject) expectedRefactoring).getDestinationMethodName(),
-                    ((RenameMethodObject) firstRefactoring).getDestinationMethodName());
-            Assert.assertEquals(((RenameMethodObject) expectedRefactoring).getDestinationClassName(),
-                    ((RenameMethodObject) firstRefactoring).getDestinationClassName());
-            Assert.assertEquals(((RenameMethodObject) expectedRefactoring).getOriginalMethodName(),
-                    ((RenameMethodObject) firstRefactoring).getOriginalMethodName());
-            Assert.assertNotEquals(((RenameMethodObject) expectedRefactoring).getOriginalMethodName(),
-                    ((RenameMethodObject) secondRefactoring).getOriginalMethodName());
         }
         else {
             Assert.assertFalse(isTransitive);
-            Assert.assertEquals(((RenameMethodObject) expectedRefactoring).getOriginalMethodName(),
-                    ((RenameMethodObject) firstRefactoring).getOriginalMethodName());
-            Assert.assertEquals(((RenameMethodObject) expectedRefactoring).getDestinationMethodName(),
-                    ((RenameMethodObject) firstRefactoring).getDestinationMethodName());
         }
+        Assert.assertEquals(expectedRefactoring.getDestinationFilePath(), firstRefactoring.getDestinationFilePath());
+        Assert.assertEquals(((RenameMethodObject) expectedRefactoring).getDestinationMethodName(),
+                ((RenameMethodObject) firstRefactoring).getDestinationMethodName());
+        Assert.assertEquals(((RenameMethodObject) expectedRefactoring).getDestinationClassName(),
+                ((RenameMethodObject) firstRefactoring).getDestinationClassName());
+        Assert.assertEquals(((RenameMethodObject) expectedRefactoring).getOriginalMethodName(),
+                ((RenameMethodObject) firstRefactoring).getOriginalMethodName());
+        Assert.assertNotEquals(((RenameMethodObject) expectedRefactoring).getOriginalMethodName(),
+                ((RenameMethodObject) secondRefactoring).getOriginalMethodName());
     }
 }
