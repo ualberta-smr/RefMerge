@@ -1,6 +1,8 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
+import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.RenameMethodObject;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
@@ -128,8 +130,6 @@ public class RenameMethodRenameMethodCell {
     public boolean checkMethodNamingConflict(Node dispatcherNode, Node receiverNode) {
         Refactoring dispatcherRef = dispatcherNode.getRefactoring();
         Refactoring receiverRef = receiverNode.getRefactoring();
-//        String dispatcherClassName = dispatcherNode.getDependenceChainClassHead();
-//        String receiverClassName = receiverNode.getDependenceChainClassHead();
         String dispatcherClassName = ((RenameOperationRefactoring) dispatcherRef).getOriginalOperation().getClassName();
         String receiverClassName = ((RenameOperationRefactoring) receiverRef).getOriginalOperation().getClassName();
 
@@ -146,6 +146,30 @@ public class RenameMethodRenameMethodCell {
         String receiverNewName = getRefactoredMethodName(receiverRef);
         // Check naming conflict
         return checkNamingConflict(dispatcherOriginalName, receiverOriginalName, dispatcherNewName, receiverNewName);
+    }
+
+    /*
+     * Check if the second refactoring is a transitive refactoring of the first refactoring.
+     */
+    public boolean checkRenameMethodRenameMethodTransitivity(RefactoringObject firstRefactoring,
+                                                             RefactoringObject secondRefactoring) {
+        boolean isTransitive = false;
+        RenameMethodObject firstObject = (RenameMethodObject) firstRefactoring;
+        RenameMethodObject secondObject = (RenameMethodObject) secondRefactoring;
+        String firstDestinationClass = firstObject.getDestinationClassName();
+        String firstDestinationMethod = firstObject.getDestinationMethodName();
+        String secondOriginalClass = secondObject.getOriginalClassName();
+        String secondOriginalMethod = secondObject.getOriginalMethodName();
+        // If the renamed method of the first refactoring and original method of the second refactoring are the same
+        if(firstDestinationClass.equals(secondOriginalClass) && firstDestinationMethod.equals(secondOriginalMethod)) {
+            //This is a transitive refactoring
+            isTransitive = true;
+            firstRefactoring.setDestinationFilePath(secondObject.getDestinationFilePath());
+            ((RenameMethodObject) firstRefactoring).setDestinationClassName(secondObject.getDestinationClassName());
+            ((RenameMethodObject) firstRefactoring).setDestinationMethodName(secondObject.getDestinationMethodName());
+        }
+
+        return isTransitive;
     }
 
 }
