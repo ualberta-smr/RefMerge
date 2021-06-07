@@ -11,17 +11,17 @@ import ca.ualberta.cs.smr.core.matrix.receivers.ExtractMethodReceiver;
 import ca.ualberta.cs.smr.core.matrix.receivers.Receiver;
 import ca.ualberta.cs.smr.core.matrix.receivers.RenameClassReceiver;
 import ca.ualberta.cs.smr.core.matrix.receivers.RenameMethodReceiver;
+import ca.ualberta.cs.smr.core.refactoringObjects.CreateRefactoringObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import com.intellij.openapi.project.Project;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
+import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 /*
  * Creates the dependence graph for the refactoring lists and dispatches to the corresponding logic cell for each pair
@@ -120,6 +120,22 @@ public class Matrix {
         }
         dispatcher.dispatch(receiver);
     }
+
+    /*
+     * Simplify refactorings based on the new refactoring and if the new refactoring is not a transitive refactoring,
+     * insert it to the list.
+     */
+    public static void simplifyAndInsertRefactorings(Refactoring refactoring, ArrayList<RefactoringObject> simplifiedRefactorings) {
+        // Create the refactoring object so we can compare and update
+        RefactoringObject refactoringObject = CreateRefactoringObject.createRefactoringObject(refactoring);
+
+        simplifiedRefactorings.add(refactoringObject);
+
+
+    }
+
+
+
 
     /*
      * Use the refactoring type to get the refactoring dispatcher class from the dispatcherMap.

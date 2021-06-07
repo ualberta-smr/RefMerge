@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.core.refactoringWrappers;
+package ca.ualberta.cs.smr.core.refactoringObjects;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.refactoring.changeSignature.ThrownExceptionInfo;
