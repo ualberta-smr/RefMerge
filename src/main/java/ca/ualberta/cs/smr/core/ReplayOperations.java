@@ -1,6 +1,6 @@
 package ca.ualberta.cs.smr.core;
 
-import ca.ualberta.cs.smr.core.refactoringWrappers.ExtractOperationRefactoringWrapper;
+import ca.ualberta.cs.smr.core.refactoringObjects.ExtractOperationRefactoringWrapper;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;

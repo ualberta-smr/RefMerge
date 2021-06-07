@@ -3,6 +3,7 @@ package ca.ualberta.cs.smr.core;
 import ca.ualberta.cs.smr.core.dependenceGraph.DependenceGraph;
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.Matrix;
+import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import ca.ualberta.cs.smr.utils.Utils;
 import ca.ualberta.cs.smr.utils.sortingUtils.SortPairs;
@@ -85,9 +86,9 @@ public class RefMerge extends AnAction {
 
         GitUtils gitUtils = new GitUtils(repo, project);
         String baseCommit = gitUtils.getBaseCommit(leftCommit, rightCommit);
-        List<Pair> rightRefs = detectCommits(rightCommit, baseCommit);
+        List<Pair> rightRefs = getAndSimplifyRefactorings(rightCommit, baseCommit);
         SortPairs.sortList(rightRefs);
-        List<Pair> leftRefs = detectCommits(leftCommit, baseCommit);
+        List<Pair> leftRefs = getAndSimplifyRefactorings(leftCommit, baseCommit);
         SortPairs.sortList(leftRefs);
 
         // Checkout base commit and store it in temp/base
@@ -190,9 +191,10 @@ public class RefMerge extends AnAction {
     /*
      * detectCommits uses RefactoringMiner to get the refactorings from commits between the base and commit.
      */
-    public List<Pair> detectCommits(String commit, String base) {
+    public List<Pair> getAndSimplifyRefactorings(String commit, String base) {
         // Store the resulting refactorings into refResult
         List<Pair> refResult = new ArrayList<>();
+        ArrayList<RefactoringObject> simplifiedRefactorings = new ArrayList<>();
         GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
         try {
             miner.detectBetweenCommits(git.getRepository(), base, commit,
@@ -203,7 +205,11 @@ public class RefMerge extends AnAction {
                             boolean skip = false;
                             // Add each refactoring to refResult
                             for(Refactoring refactoring : refactorings) {
+                                // simplify refactorings and check if factoring is transitive
+                                Matrix.simplifyAndInsertRefactorings(refactoring, simplifiedRefactorings);
+
                                 RefactoringType type = refactoring.getRefactoringType();
+
                                 if(type == RefactoringType.RENAME_CLASS || type == RefactoringType.RENAME_METHOD
                                         || type == RefactoringType.EXTRACT_OPERATION) {
                                     Pair pair = new Pair(count, refactoring);

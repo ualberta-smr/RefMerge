@@ -1,6 +1,6 @@
 package ca.ualberta.cs.smr.utils;
 
-import ca.ualberta.cs.smr.core.refactoringWrappers.ExtractOperationRefactoringWrapper;
+import ca.ualberta.cs.smr.core.refactoringObjects.ExtractOperationRefactoringWrapper;
 import com.intellij.psi.PsiElement;
 import com.intellij.refactoring.changeSignature.ThrownExceptionInfo;
 import gr.uom.java.xmi.UMLOperation;
