@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class LogicCellTests extends LightJavaCodeInsightFixtureTestCase {
+public class ConflictAndDependenceLogicTests extends LightJavaCodeInsightFixtureTestCase {
 
     @Override
     protected String getTestDataPath() {
