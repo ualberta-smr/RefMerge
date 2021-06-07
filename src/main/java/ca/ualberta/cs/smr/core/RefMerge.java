@@ -10,7 +10,6 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.vcs.VcsException;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
@@ -49,8 +48,8 @@ public class RefMerge extends AnAction {
         List<GitRepository> repos = repoManager.getRepositories();
         GitRepository repo = repos.get(0);
         String mergeCommit = "19dace1b8a";
-        String rightCommit = "61bec859ac";
-        String leftCommit = "4ccfde2b57de4";
+        String rightCommit = "f856983a2c85";
+        String leftCommit = "d76a02cd16f9d8";
 
 
         refMerge(mergeCommit, rightCommit, leftCommit, project, repo);
@@ -201,13 +200,21 @@ public class RefMerge extends AnAction {
                         private int count = 0;
                         @Override
                         public void handle(String commitId, List<Refactoring> refactorings) {
+                            boolean skip = false;
                             // Add each refactoring to refResult
                             for(Refactoring refactoring : refactorings) {
                                 RefactoringType type = refactoring.getRefactoringType();
                                 if(type == RefactoringType.RENAME_CLASS || type == RefactoringType.RENAME_METHOD
                                         || type == RefactoringType.EXTRACT_OPERATION) {
                                     Pair pair = new Pair(count, refactoring);
-                                    refResult.add(pair);
+                                    for(Pair p : refResult) {
+                                        if(refactoring.toString().equals(p.getValue().toString())) {
+                                            skip = true;
+                                        }
+                                    }
+                                    if(!skip) {
+                                        refResult.add(pair);
+                                    }
                                 }
                             }
                             count++;

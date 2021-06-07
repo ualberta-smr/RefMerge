@@ -88,39 +88,7 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
 
     }
 
-    public void testReplayMultipleExtractMethod() {
-        Project project = myFixture.getProject();
-        String basePath = System.getProperty("user.dir");
-        String testDir = "/extractTestData/extractMethod/";
-        String sourceTestData = testDir + "original/";
-        String resultTestData = testDir + "expectedReplayResults/";
-        String testFile = "Main.java";
-        String resultFile = "ReplayResults.java";
-        PsiFile[] files = myFixture.configureByFiles(sourceTestData + testFile, resultTestData + resultFile);
-
-        testDir = basePath + "/" + getTestDataPath() + testDir;
-        String originalTestData = testDir + "original/";
-        String refactoredTestData = testDir + "refactored/";
-
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("EXTRACT_OPERATION",
-                originalTestData, refactoredTestData);
-        assert refactorings != null;
-        Refactoring ref = refactorings.get(1);
-        ref = RefactoringWrapperUtils.wrapExtractOperation((ExtractOperationRefactoring) ref, null, null);
-        ReplayOperations replayOperations = new ReplayOperations(project);
-        replayOperations.replayExtractMethod(ref);
-        ref = refactorings.get(0);
-        ref = RefactoringWrapperUtils.wrapExtractOperation((ExtractOperationRefactoring) ref, null, null);
-        replayOperations.replayExtractMethod(ref);
-
-        PsiFile psiFile1 = files[0];
-        PsiFile psiFile2 = files[1];
-        String content1 = psiFile1.getText();
-        String content2 = psiFile2.getText();
-        LightJavaCodeInsightFixtureTestCase.assertEquals(content2, content1);
-    }
-
-    public void testReplayExtractMethodNewStartingLine() {
+    public void testReplayMultipleExtractMethodNewLine() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
         String testDir = "/extractTestData/extractMethod/";
