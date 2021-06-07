@@ -261,4 +261,5 @@ public class MatrixUtilsTests extends LightJavaCodeInsightFixtureTestCase {
         Assert.assertTrue("Expected true because two elements are renamed to the same name", expectedTrue);
     }
 
+
 }
