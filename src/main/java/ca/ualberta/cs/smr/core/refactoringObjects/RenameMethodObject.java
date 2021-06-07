@@ -14,6 +14,10 @@ public class RenameMethodObject implements RefactoringObject {
     private String originalClassName;
     private String destinationClassName;
 
+    public RenameMethodObject() {
+        this.refactoringType = RefactoringType.RENAME_METHOD;
+    }
+
     public RenameMethodObject(Refactoring refactoring) {
         RenameOperationRefactoring renameOperationRefactoring = (RenameOperationRefactoring) refactoring;
         this.refactoringType = refactoring.getRefactoringType();
@@ -29,6 +33,53 @@ public class RenameMethodObject implements RefactoringObject {
         return this.refactoringType;
     }
 
+    public void setOriginalFilePath(String originalFilePath) {
+        this.originalFilePath = originalFilePath;
+    }
+
+    public String getOriginalFilePath() {
+        return this.originalFilePath;
+    }
+
+    public void setDestinationFilePath(String destinationFilePath) {
+        this.destinationFilePath = destinationFilePath;
+    }
+
+    public String getDestinationFilePath() {
+        return this.destinationFilePath;
+    }
+
+    public void setOriginalMethodName(String originalMethodName) {
+        this.originalMethodName = originalMethodName;
+    }
+
+    public String getOriginalMethodName() {
+        return this.originalMethodName;
+    }
+
+    public void setDestinationMethodName(String destinationMethodName) {
+        this.destinationMethodName = destinationMethodName;
+    }
+
+    public String getDestinationMethodName() {
+        return this.destinationMethodName;
+    }
+
+    public void setOriginalClassName(String originalClassName) {
+        this.originalClassName = originalClassName;
+    }
+
+    public String getOriginalClassName() {
+        return this.originalClassName;
+    }
+
+    public void setDestinationClassName(String destinationClassName) {
+        this.destinationClassName = destinationClassName;
+    }
+
+    public String getDestinationClassName() {
+        return this.destinationClassName;
+    }
 
 
 }

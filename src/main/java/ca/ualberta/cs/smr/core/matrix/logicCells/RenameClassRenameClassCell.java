@@ -1,6 +1,8 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
+import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.RenameClassObject;
 import org.refactoringminer.api.Refactoring;
 
 import static ca.ualberta.cs.smr.utils.MatrixUtils.*;
@@ -43,5 +45,27 @@ public class RenameClassRenameClassCell {
 
         return checkNamingConflict(dispatcherOriginalClassName, receiverOriginalClassName,
                 dispatcherNewClassName, receiverNewClassName);
+    }
+
+    /*
+     * Checks for transitivity between the first and second rename class refactorings. If there is transitivity, the
+     * first rename class refactoring is updated.
+     */
+    public static boolean checkRenameClassRenameClassTransitivity(RefactoringObject firstRefactoring,
+                                                                  RefactoringObject secondRefactoring) {
+        boolean isTransitive = false;
+        RenameClassObject firstObject = (RenameClassObject) firstRefactoring;
+        RenameClassObject secondObject = (RenameClassObject) secondRefactoring;
+        String firstDestinationClass = firstObject.getDestinationClassName();
+        String secondOriginalClass = secondObject.getOriginalClassName();
+
+        // If the renamed class of the first refactoring is the original class of the second refactoring
+        if(firstDestinationClass.equals(secondOriginalClass)) {
+            isTransitive = true;
+            firstRefactoring.setDestinationFilePath(secondObject.getDestinationFilePath());
+            ((RenameClassObject) firstRefactoring).setDestinationClassName(secondObject.getDestinationClassName());
+        }
+
+        return isTransitive;
     }
 }
