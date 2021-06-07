@@ -2,7 +2,6 @@ package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.core.refactoringWrappers.ExtractOperationRefactoringWrapper;
 import ca.ualberta.cs.smr.utils.Utils;
-import com.intellij.lang.ASTNode;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
@@ -10,7 +9,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
-import com.intellij.psi.impl.source.SourceTreeToPsiMap;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.JavaRefactoringFactory;
 import com.intellij.refactoring.RefactoringFactory;
 import com.intellij.refactoring.RenameRefactoring;
@@ -25,7 +24,6 @@ import com.intellij.usageView.UsageInfo;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.UMLParameter;
-import gr.uom.java.xmi.decomposition.*;
 import gr.uom.java.xmi.decomposition.replacement.Replacement;
 import gr.uom.java.xmi.diff.ExtractOperationRefactoring;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
@@ -79,7 +77,9 @@ public class ReplayOperations {
         Utils utils = new Utils(project);
         String filePath = original.getLocationInfo().getFilePath();
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(srcQualifiedClass, filePath);
-        assert psiClass != null;
+        if(psiClass == null) {
+            return;
+        }
         RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
         RenameRefactoring renameRefactoring = factory.createRename(psiClass, destClassName, true, true);
         UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
@@ -107,26 +107,19 @@ public class ReplayOperations {
         PsiMethod psiMethod = Utils.getPsiMethod(psiClass, sourceOperation);
         assert psiMethod != null;
 
-        PsiElement[] psiElements;
-        PsiStatement[] surroundingStatements = refactoringWrapper.getSurroundingStatements();
+        PsiElement[] surroundingElements = refactoringWrapper.getSurroundingElements();
+        PsiElement[] psiElements = getPsiElementsBetweenElements(surroundingElements);
 
-        if(surroundingStatements == null) {
-            psiElements = getPsiElements(extractOperationRefactoring, psiMethod);
-        }
-        else {
-            psiElements = getPsiElementsBetweenStatements(surroundingStatements, psiMethod);
-        }
+
         if(psiElements.length == 0) {
             Set<Replacement> replacements = extractOperationRefactoring.getReplacements();
             psiElements = useReplacements(replacements, psiMethod);
         }
         PsiType forcedReturnType = getPsiReturnType(extractOperationRefactoring, psiMethod);
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
-        // Set editor to null because we are not using the character offset in the editor
         ExtractMethodProcessor extractMethodProcessor = new ExtractMethodProcessor(project, editor, psiElements,
                 forcedReturnType, refactoringName, initialMethodName, helpId);
         extractMethodProcessor.setMethodName(refactoringName);
-
         String visibility = extractedOperation.getVisibility();
         extractMethodProcessor.setMethodVisibility(visibility);
         try {
@@ -136,68 +129,91 @@ public class ReplayOperations {
         }
         extractMethodProcessor.setDataFromInputVariables();
         ExtractMethodHandler.extractMethod(project, extractMethodProcessor);
-        Boolean hasDuplicates = extractMethodProcessor.hasDuplicates();
-        if(hasDuplicates == null || hasDuplicates) {
-            final List<Match> duplicates = extractMethodProcessor.getDuplicates();
-            for(final Match match : duplicates) {
-                if (!match.getMatchStart().isValid() || !match.getMatchEnd().isValid()) continue;
-                PsiDocumentManager.getInstance(project).commitAllDocuments();
-                Runnable runnable = () -> ApplicationManager.getApplication().runWriteAction(() -> {
-                    extractMethodProcessor.processMatch(match);
-                });
-                CommandProcessor.getInstance().executeCommand(project, runnable, "Extract Method", null);
-            }
+        // Check for duplicates and prepare method signature
+        if(extractMethodProcessor.initParametrizedDuplicates(false)) {
+            // Handle duplicate extract method calls
+            handleDuplicates(extractMethodProcessor, extractedOperation);
         }
 
-        PsiMethod extractedPsiMethod = extractMethodProcessor.getExtractedMethod();
-        ThrownExceptionInfo[] thrownExceptionInfo = refactoringWrapper.getThrownExceptionInfos();
-        if(extractedPsiMethod.getParameterList().getParametersCount() > 1) {
-            ParameterInfoImpl[] parameterInfo = getParameterInfo(extractedPsiMethod, extractedOperation);
-            ChangeSignatureProcessor changeSignatureProcessor =
-                    new ChangeSignatureProcessor(project, extractedPsiMethod, false, null,
-                            refactoringName, forcedReturnType, parameterInfo, thrownExceptionInfo);
-            changeSignatureProcessor.run();
-        }
+        updateSignature(extractMethodProcessor, extractedOperation, refactoringName,
+                forcedReturnType, refactoringWrapper.getThrownExceptionInfos());
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);
+    }
+
+    /*
+     * Extracts the duplicate extract method calls. After all duplicates have been extracted, it renames the
+     * parameters to match what the developers expected after the merge.
+     */
+    private void handleDuplicates(ExtractMethodProcessor processor, UMLOperation operation) {
+        final List<Match> duplicates = processor.getDuplicates();
+        for (final Match match : duplicates) {
+            if (!match.getMatchStart().isValid() || !match.getMatchEnd().isValid()) continue;
+            PsiDocumentManager.getInstance(project).commitAllDocuments();
+            Runnable runnable = () -> ApplicationManager.getApplication().runWriteAction(() -> {
+                processor.processMatch(match);
+            });
+            CommandProcessor.getInstance().executeCommand(project, runnable, "Extract Method", null);
+        }
+        PsiMethod extractedPsiMethod = processor.getExtractedMethod();
+        renameParameters(extractedPsiMethod, operation);
+    }
+
+    /*
+     * Update the extracted method signature to include the throws exception list and rearrange the parameters to be
+     * in the correct order.
+     */
+    private void updateSignature(ExtractMethodProcessor processor, UMLOperation operation, String refactoringName,
+                                 PsiType forcedReturnType, ThrownExceptionInfo[] thrownExceptionInfo) {
+        PsiMethod extractedPsiMethod = processor.getExtractedMethod();
+        if(extractedPsiMethod.getParameterList().getParametersCount() > 1) {
+            ParameterInfoImpl[] parameterInfo = getParameterInfo(extractedPsiMethod, operation);
+            // Temporary workaround until we rename the parameters in duplicates
+            if(parameterInfo[0] != null) {
+                if(thrownExceptionInfo == null) {
+                    ChangeSignatureProcessor changeSignatureProcessor =
+                            new ChangeSignatureProcessor(project, extractedPsiMethod, false, null,
+                                    refactoringName, forcedReturnType, parameterInfo);
+                    changeSignatureProcessor.run();
+                }
+                else {
+                    ChangeSignatureProcessor changeSignatureProcessor =
+                            new ChangeSignatureProcessor(project, extractedPsiMethod, false, null,
+                                    refactoringName, forcedReturnType, parameterInfo, thrownExceptionInfo);
+                    changeSignatureProcessor.run();
+                }
+            }
+        }
     }
 
     /*
      * Use the new psi statement at the beginning and end of the extracted method to get all involved psi statements
      * in the refactoring.
      */
-    private PsiElement[] getPsiElementsBetweenStatements(PsiStatement[] surroundingStatements, PsiMethod psiMethod) {
-        PsiStatement firstStatement = surroundingStatements[0];
-        PsiStatement lastStatement = surroundingStatements[1];
-        String startingText = formatText(firstStatement.getText());
-        String endingText = formatText(lastStatement.getText());
-
-        PsiCodeBlock psiCodeBlock = psiMethod.getBody();
-        assert psiCodeBlock != null;
-        PsiStatement[] psiStatements = psiCodeBlock.getStatements();
-
-        ArrayList<PsiElement> psiElements = getPsiElementsFromStatements(psiStatements, startingText, endingText);
-        return psiElements.toArray(new PsiElement[0]);
-
-    }
-
-    /*
-     * Use the code fragments to get the code fragments if the beginning and ending line of the extracted method are the
-     * same.
-     */
-    private PsiElement[] getPsiElements(ExtractOperationRefactoring extractOperationRefactoring, PsiMethod psiMethod) {
-        Set<AbstractCodeFragment> codeFragments = extractOperationRefactoring.getExtractedCodeFragmentsFromSourceOperation();
-        AbstractCodeFragment[] codeFragmentsArray = new AbstractCodeFragment[codeFragments.size()];
-        codeFragments.toArray(codeFragmentsArray);
-        PsiCodeBlock psiCodeBlock = psiMethod.getBody();
-        assert psiCodeBlock != null;
-        PsiStatement[] psiStatements = psiCodeBlock.getStatements();
-        AbstractCodeFragment firstCodeFragment = codeFragmentsArray[0];
-        AbstractCodeFragment lastCodeFragment = codeFragmentsArray[codeFragmentsArray.length - 1];
-        String startingText = formatText(firstCodeFragment.getString());
-
-        String endingText = formatText(lastCodeFragment.getString());
-        ArrayList<PsiElement> psiElements = getPsiElementsFromStatements(psiStatements, startingText, endingText);
+    private PsiElement[] getPsiElementsBetweenElements(PsiElement[] surroundingElements) {
+        PsiElement firstElement = surroundingElements[0];
+        PsiElement lastElement = surroundingElements[1];
+        if(firstElement instanceof PsiJavaToken) {
+            firstElement = firstElement.getNextSibling();
+        }
+        else {
+            firstElement = firstElement.getNextSibling();
+        }
+        if(firstElement instanceof PsiWhiteSpace) {
+            firstElement = firstElement.getNextSibling();
+        }
+        if(lastElement instanceof PsiJavaToken) {
+            lastElement = lastElement.getPrevSibling();
+        }
+        else {
+            lastElement = lastElement.getPrevSibling();
+        }
+        if(lastElement instanceof PsiWhiteSpace) {
+            lastElement = lastElement.getPrevSibling();
+        }
+        assert firstElement != null;
+        assert lastElement != null;
+        List<PsiElement> psiElements = PsiTreeUtil.getElementsOfRange(firstElement, lastElement);
         return psiElements.toArray(new PsiElement[0]);
     }
 
@@ -209,9 +225,9 @@ public class ReplayOperations {
         PsiStatement[] psiStatements = psiCodeBlock.getStatements();
         for(Replacement replacement : replacements) {
             String after = replacement.getAfter();
-            after = formatText(after);
+            after = Utils.formatText(after);
             for(PsiStatement psiStatement : psiStatements) {
-                String psiStatementText = formatText(psiStatement.getText());
+                String psiStatementText = Utils.formatText(psiStatement.getText());
                 if(psiStatementText.equals(after)) {
                     psiElements.add(psiStatement);
                 }
@@ -219,43 +235,8 @@ public class ReplayOperations {
         }
         return psiElements.toArray(new PsiElement[0]);
     }
-    /*
-     * Format the text to remove new lines and spaces for comparing code fragments
-     */
-    private String formatText(String text) {
-        text = text.replaceAll(" ", "");
-        text = text.replaceAll("\n", "");
-        return text;
-    }
 
-    /*
-     * Gets the PSI elements for the extract method processor. If the surrounding statements are not null, use them to
-     * get the PSI elements. If they are null, use the code fragments instead.
-     */
-    private ArrayList<PsiElement> getPsiElementsFromStatements(PsiStatement[] psiStatements,
-                                                               String startingText,
-                                                               String endingText) {
 
-        ArrayList<PsiElement> psiElements = new ArrayList<>();
-        boolean statementInRange = false;
-
-        for(PsiStatement psiStatement : psiStatements) {
-            String psiStatementText = formatText(psiStatement.getText());
-            if(startingText.equals(psiStatementText)) {
-                statementInRange = true;
-            }
-            if(statementInRange) {
-                ASTNode node = SourceTreeToPsiMap.psiElementToTree(psiStatement);
-                assert node != null;
-                psiElements.add(node.getPsi());
-            }
-            if(endingText.equals(psiStatementText)) {
-                break;
-            }
-        }
-        return psiElements;
-
-    }
 
     /*
      * Gets the return type of the extracted method.
@@ -294,10 +275,29 @@ public class ReplayOperations {
 
         }
 
-
-
         return parameterInfoImplArray;
+    }
 
+    /*
+     * Renames the parameters in the extracted method using the UML parameters detected by RefMiner.
+     */
+    private void renameParameters(PsiMethod psiMethod, UMLOperation umlOperation) {
+
+        List<UMLParameter> umlParameterList = umlOperation.getParameters();
+        PsiParameterList psiParameterList = psiMethod.getParameterList();
+        ParameterInfoImpl[] parameterInfoImplArray = new ParameterInfoImpl[umlParameterList.size() - 1];
+        // Start at 1 to ignore return type
+        for(int i = 1; i < umlParameterList.size(); i++) {
+            UMLParameter umlParameter = umlParameterList.get(i);
+            String umlParameterType = umlParameter.getType().toString();
+            String umlParameterName = umlParameter.getName();
+            PsiParameter psiParameter = psiParameterList.getParameter(i-1);
+            PsiDocumentManager.getInstance(project).commitAllDocuments();
+            RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
+            RenameRefactoring renameRefactoring = factory.createRename(psiParameter, umlParameterName, true, false);
+            UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
+            renameRefactoring.doRefactoring(refactoringUsages);
+        }
     }
 
 }

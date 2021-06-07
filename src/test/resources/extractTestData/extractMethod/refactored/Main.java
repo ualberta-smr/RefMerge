@@ -24,8 +24,8 @@ public class Main {
     }
 
     private void extractedMethod(int x, int y) {
-        System.out.println("Added Line");
         System.out.println("Adding " + x + " and " + y);
+        System.out.println("Added Line");
         int z = x + y;
         String str = "Printing: ";
         System.out.println(str + z);
