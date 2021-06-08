@@ -22,8 +22,19 @@ public class ExtractMethodObject implements RefactoringObject {
     private PsiElement[] surroundingElements;
     private ThrownExceptionInfo[] thrownExceptionInfo;
 
-    public ExtractMethodObject() {
+
+    /*
+     * Use the provided information to create the extract method object for testing.
+     */
+    public ExtractMethodObject(String originalFilePath, String originalClassName, String originalMethodName,
+                              String destinationFilePath, String destinationClassName, String destinationMethodName) {
         this.refactoringType = RefactoringType.EXTRACT_OPERATION;
+        this.originalFilePath = originalFilePath;
+        this.originalClassName = originalClassName;
+        this.originalMethodName = originalMethodName;
+        this.destinationFilePath = destinationFilePath;
+        this.destinationClassName = destinationClassName;
+        this.destinationMethodName = destinationMethodName;
     }
 
     /*

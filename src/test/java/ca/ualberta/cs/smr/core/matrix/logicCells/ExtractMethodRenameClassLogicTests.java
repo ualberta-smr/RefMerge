@@ -43,82 +43,40 @@ public class ExtractMethodRenameClassLogicTests extends LightJavaCodeInsightFixt
 
     public void testCheckExtractMethodRenameClassCombination() {
         // Extract method A.efoo from A.foo
-        ExtractMethodObject extractMethodObject = new ExtractMethodObject();
-        extractMethodObject.setOriginalFilePath("A.java");
-        extractMethodObject.setDestinationFilePath("A.java");
-        extractMethodObject.setOriginalClassName("A");
-        extractMethodObject.setDestinationClassName("A");
-        extractMethodObject.setOriginalMethodName("foo");
-        extractMethodObject.setDestinationMethodName("efoo");
+        ExtractMethodObject extractMethodObject = new ExtractMethodObject("A.java", "A", "foo",
+                "A.java", "A", "efoo");
         // Rename Class A -> B
-        RenameClassObject renameClassObject = new RenameClassObject();
-        renameClassObject.setOriginalFilePath("A.java");
-        renameClassObject.setDestinationFilePath("B.java");
-        renameClassObject.setOriginalClassName("A");
-        renameClassObject.setDestinationClassName("B");
+        RenameClassObject renameClassObject = new RenameClassObject("A.java", "A",
+                "B.java", "B");
         // Extract method B.ebar from A.foo
-        ExtractMethodObject expectedRefactoring = new ExtractMethodObject();
-        expectedRefactoring.setOriginalFilePath("A.java");
-        expectedRefactoring.setDestinationFilePath("B.java");
-        expectedRefactoring.setOriginalClassName("A");
-        expectedRefactoring.setDestinationClassName("B");
-        expectedRefactoring.setOriginalMethodName("foo");
-        expectedRefactoring.setDestinationMethodName("ebar");
-
+        ExtractMethodObject expectedRefactoring = new ExtractMethodObject("A.java", "A", "foo",
+                "B.java", "B", "ebar");
         doExtractMethodRenameClassTest(renameClassObject, extractMethodObject, expectedRefactoring);
     }
 
     public void testCeckExtractMethodRenameClassCombination2() {
         // Extract method B.efoo from B.foo
-        ExtractMethodObject extractMethodObject = new ExtractMethodObject();
-        extractMethodObject.setOriginalFilePath("B.java");
-        extractMethodObject.setDestinationFilePath("B.java");
-        extractMethodObject.setOriginalClassName("B");
-        extractMethodObject.setDestinationClassName("B");
-        extractMethodObject.setOriginalMethodName("foo");
-        extractMethodObject.setDestinationMethodName("efoo");
+        ExtractMethodObject extractMethodObject = new ExtractMethodObject("B.java", "B", "foo",
+                "B.java", "B", "efoo");
         // Rename Class A -> B
-        RenameClassObject renameClassObject = new RenameClassObject();
-        renameClassObject.setOriginalFilePath("A.java");
-        renameClassObject.setDestinationClassName("B.java");
-        renameClassObject.setOriginalClassName("A");
-        renameClassObject.setDestinationClassName("B");
+        RenameClassObject renameClassObject = new RenameClassObject("A.java", "A",
+                "B.java", "B");
         // Extract method B.ebar from A.foo
-        ExtractMethodObject expectedRefactoring = new ExtractMethodObject();
-        expectedRefactoring.setOriginalFilePath("A.java");
-        expectedRefactoring.setDestinationFilePath("B.java");
-        expectedRefactoring.setOriginalClassName("A");
-        expectedRefactoring.setDestinationClassName("B");
-        expectedRefactoring.setOriginalMethodName("foo");
-        expectedRefactoring.setDestinationMethodName("ebar");
-
+        ExtractMethodObject expectedRefactoring = new ExtractMethodObject("A.java", "A", "foo",
+                "B.java", "B", "ebar");
         doExtractMethodRenameClassTest(renameClassObject, extractMethodObject, expectedRefactoring);
     }
 
     public void testCeckExtractMethodRenameClassCombinationInSameFile() {
         // Extract method B.efoo from B.foo
-        ExtractMethodObject extractMethodObject = new ExtractMethodObject();
-        extractMethodObject.setOriginalFilePath("Foo.java");
-        extractMethodObject.setDestinationFilePath("Foo.java");
-        extractMethodObject.setOriginalClassName("B");
-        extractMethodObject.setDestinationClassName("B");
-        extractMethodObject.setOriginalMethodName("foo");
-        extractMethodObject.setDestinationMethodName("efoo");
+        ExtractMethodObject extractMethodObject = new ExtractMethodObject("Foo.java", "B", "foo",
+                "Foo.java", "B", "efoo");
         // Rename Class A -> B
-        RenameClassObject renameClassObject = new RenameClassObject();
-        renameClassObject.setOriginalFilePath("Foo.java");
-        renameClassObject.setDestinationClassName("Foo.java");
-        renameClassObject.setOriginalClassName("A");
-        renameClassObject.setDestinationClassName("B");
+        RenameClassObject renameClassObject = new RenameClassObject("Foo.java", "A",
+                "Foo.java", "B");
         // Extract method B.ebar from A.foo
-        ExtractMethodObject expectedRefactoring = new ExtractMethodObject();
-        expectedRefactoring.setOriginalFilePath("Foo.java");
-        expectedRefactoring.setDestinationFilePath("Foo.java");
-        expectedRefactoring.setOriginalClassName("A");
-        expectedRefactoring.setDestinationClassName("B");
-        expectedRefactoring.setOriginalMethodName("foo");
-        expectedRefactoring.setDestinationMethodName("ebar");
-
+        ExtractMethodObject expectedRefactoring = new ExtractMethodObject("Foo.java", "A", "foo",
+                "Foo.java", "B", "ebar");
         doExtractMethodRenameClassTest(renameClassObject, extractMethodObject, expectedRefactoring);
     }
 

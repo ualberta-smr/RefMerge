@@ -19,8 +19,18 @@ public class RenameMethodObject implements RefactoringObject {
     private String originalClassName;
     private String destinationClassName;
 
-    public RenameMethodObject() {
+    /*
+     * Use the provided information to create the rename method object for testing.
+     */
+    public RenameMethodObject(String originalFilePath, String originalClassName, String originalMethodName,
+                              String destinationFilePath, String destinationClassName, String destinationMethodName) {
         this.refactoringType = RefactoringType.RENAME_METHOD;
+        this.originalFilePath = originalFilePath;
+        this.originalClassName = originalClassName;
+        this.originalMethodName = originalMethodName;
+        this.destinationFilePath = destinationFilePath;
+        this.destinationClassName = destinationClassName;
+        this.destinationMethodName = destinationMethodName;
     }
 
     /*
