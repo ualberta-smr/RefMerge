@@ -4,6 +4,11 @@ import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
+
+/*
+ * Represents a rename class refactoring. Contains the necessary information for logic checks and performing the
+ * refactoring using the IntelliJ refactoring engine.
+ */
 public class RenameClassObject implements RefactoringObject {
 
     private final RefactoringType refactoringType;
@@ -16,6 +21,10 @@ public class RenameClassObject implements RefactoringObject {
         this.refactoringType = RefactoringType.RENAME_CLASS;
     }
 
+
+    /*
+     * Creates the rename class object and takes the information that we need from the RefMiner refactoring object.
+     */
     public RenameClassObject(Refactoring refactoring) {
         RenameClassRefactoring renameOperationRefactoring = (RenameClassRefactoring) refactoring;
         this.refactoringType = refactoring.getRefactoringType();
