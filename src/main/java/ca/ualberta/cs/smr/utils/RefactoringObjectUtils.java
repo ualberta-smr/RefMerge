@@ -1,12 +1,16 @@
-package ca.ualberta.cs.smr.core.refactoringObjects;
+package ca.ualberta.cs.smr.utils;
 
+import ca.ualberta.cs.smr.core.refactoringObjects.ExtractMethodObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.RenameClassObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.RenameMethodObject;
 import org.refactoringminer.api.Refactoring;
 
 
 /*
  * Creates the refactoring object from the RefMiner refactoring object.
  */
-public class CreateRefactoringObject {
+public class RefactoringObjectUtils {
 
     public static RefactoringObject createRefactoringObject(Refactoring refactoring) {
         switch(refactoring.getRefactoringType()) {
