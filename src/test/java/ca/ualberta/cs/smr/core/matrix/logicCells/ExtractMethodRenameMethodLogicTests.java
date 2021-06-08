@@ -159,7 +159,7 @@ public class ExtractMethodRenameMethodLogicTests extends LightJavaCodeInsightFix
         doExtractMethodRenameMethodTest(renameMethodObject, extractMethodObject, expectedRefactoring, true);
     }
 
-    public void testCHeckExtractMethodRenameMethodCombination() {
+    public void testCheckExtractMethodRenameMethodCombination() {
         // Extract method A.ebar from A.bar
         ExtractMethodObject extractMethodObject = new ExtractMethodObject();
         extractMethodObject.setOriginalFilePath("A.java");
