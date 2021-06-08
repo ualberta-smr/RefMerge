@@ -1,6 +1,9 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
+import ca.ualberta.cs.smr.core.refactoringObjects.ExtractMethodObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.RenameMethodObject;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
@@ -165,5 +168,47 @@ public class ExtractMethodRenameMethodCell {
         // If the signatures are the same and they are in the same class, then the source method and original method
         // must be the same
         return originalMethodOperation.equalSignature(sourceMethodOperation);
+    }
+
+    /*
+     * Check for extract method and rename method transitivity and combinations. If there is transitivity, update the
+     * extracted method and return true. If there is a combination, update the extracted method and return false.
+     */
+    public static boolean checkExtractMethodRenameMethodTransitivity(RefactoringObject renameMethod,
+                                                                     RefactoringObject extractMethod) {
+        boolean isTransitive = false;
+        RenameMethodObject renameMethodObject = (RenameMethodObject) renameMethod;
+        String originalRenameClassName = renameMethodObject.getOriginalClassName();
+        String destinationRenameClassName = renameMethodObject.getDestinationClassName();
+        String originalRenameName = renameMethodObject.getOriginalMethodName();
+        String destinationRenameName = renameMethodObject.getDestinationMethodName();
+
+        ExtractMethodObject extractMethodObject = (ExtractMethodObject) extractMethod;
+        String originalExtractClassName = extractMethodObject.getOriginalClassName();
+        String destinationExtractClassName = extractMethodObject.getDestinationClassName();
+        String originalExtractName = extractMethodObject.getOriginalMethodName();
+        String destinationExtractName = extractMethodObject.getDestinationMethodName();
+
+
+        // If the source method and destination method are the same in extract method and rename method, then the
+        // extracted method was actually extracted from the original method in the rename method refactoring (for conflict
+        // checks). Update the source method details to use the original method.
+        if(destinationRenameName.equals(originalExtractName) && destinationRenameClassName.equals(originalExtractClassName)) {
+            extractMethod.setOriginalFilePath(renameMethodObject.getOriginalFilePath());
+            ((ExtractMethodObject) extractMethod).setOriginalClassName(renameMethodObject.getOriginalClassName());
+            ((ExtractMethodObject) extractMethod).setOriginalMethodName(renameMethodObject.getOriginalMethodName());
+        }
+        // If the original name of the rename method and the extracted method name are the same, then the method was extracted
+        // and then renamed. This is a transitive refactoring so we update the extract method refactoring with the new name
+        // of the extracted method.
+        else if(originalRenameName.equals(destinationExtractName) && originalRenameClassName.equals(destinationExtractClassName)) {
+            isTransitive = true;
+            extractMethod.setDestinationFilePath(renameMethodObject.getDestinationFilePath());
+            ((ExtractMethodObject) extractMethod).setDestinationClassName(renameMethodObject.getDestinationClassName());
+            ((ExtractMethodObject) extractMethod).setDestinationMethodName(renameMethodObject.getDestinationMethodName());
+        }
+
+
+        return isTransitive;
     }
 }

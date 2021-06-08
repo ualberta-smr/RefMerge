@@ -1,6 +1,9 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
+import ca.ualberta.cs.smr.core.refactoringObjects.ExtractMethodObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.RenameMethodObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
@@ -126,4 +129,88 @@ public class ExtractMethodRenameMethodLogicTests extends LightJavaCodeInsightFix
         isDependent = ExtractMethodRenameMethodCell.checkExtractMethodRenameMethodDependence(renameMethodNode, extractMethodNode);
         Assert.assertFalse(isDependent);
     }
+
+    public void testCheckExtractMethodRenameMethodTransitivity() {
+        // Extract method A.efoo from A.foo
+        ExtractMethodObject extractMethodObject = new ExtractMethodObject();
+        extractMethodObject.setOriginalFilePath("A.java");
+        extractMethodObject.setDestinationFilePath("A.java");
+        extractMethodObject.setOriginalClassName("A");
+        extractMethodObject.setDestinationClassName("A");
+        extractMethodObject.setOriginalMethodName("foo");
+        extractMethodObject.setDestinationMethodName("efoo");
+        // Rename method A.efoo -> A.ebar
+        RenameMethodObject renameMethodObject = new RenameMethodObject();
+        renameMethodObject.setOriginalFilePath("A.java");
+        renameMethodObject.setDestinationFilePath("A.java");
+        renameMethodObject.setOriginalClassName("A");
+        renameMethodObject.setDestinationClassName("A");
+        renameMethodObject.setOriginalMethodName("efoo");
+        renameMethodObject.setDestinationMethodName("ebar");
+        // Extract method A.ebar from A.foo
+        ExtractMethodObject expectedRefactoring = new ExtractMethodObject();
+        expectedRefactoring.setOriginalFilePath("A.java");
+        expectedRefactoring.setDestinationFilePath("A.java");
+        expectedRefactoring.setOriginalClassName("A");
+        expectedRefactoring.setDestinationClassName("A");
+        expectedRefactoring.setOriginalMethodName("foo");
+        expectedRefactoring.setDestinationMethodName("ebar");
+
+        doExtractMethodRenameMethodTest(renameMethodObject, extractMethodObject, expectedRefactoring, true);
+    }
+
+    public void testCHeckExtractMethodRenameMethodCombination() {
+        // Extract method A.ebar from A.bar
+        ExtractMethodObject extractMethodObject = new ExtractMethodObject();
+        extractMethodObject.setOriginalFilePath("A.java");
+        extractMethodObject.setDestinationFilePath("A.java");
+        extractMethodObject.setOriginalClassName("A");
+        extractMethodObject.setDestinationClassName("A");
+        extractMethodObject.setOriginalMethodName("bar");
+        extractMethodObject.setDestinationMethodName("ebar");
+        // Rename method A.foo -> A.bar
+        RenameMethodObject renameMethodObject = new RenameMethodObject();
+        renameMethodObject.setOriginalFilePath("A.java");
+        renameMethodObject.setDestinationFilePath("A.java");
+        renameMethodObject.setOriginalClassName("A");
+        renameMethodObject.setDestinationClassName("A");
+        renameMethodObject.setOriginalMethodName("foo");
+        renameMethodObject.setDestinationMethodName("bar");
+        // Extract method A.ebar from A.foo
+        ExtractMethodObject expectedRefactoring = new ExtractMethodObject();
+        expectedRefactoring.setOriginalFilePath("A.java");
+        expectedRefactoring.setDestinationFilePath("A.java");
+        expectedRefactoring.setOriginalClassName("A");
+        expectedRefactoring.setDestinationClassName("A");
+        expectedRefactoring.setOriginalMethodName("foo");
+        expectedRefactoring.setDestinationMethodName("ebar");
+
+        doExtractMethodRenameMethodTest(renameMethodObject, extractMethodObject, expectedRefactoring, false);
+    }
+
+
+    private void doExtractMethodRenameMethodTest(RefactoringObject renameMethodObject, RefactoringObject extractMethodObject,
+                                               RefactoringObject expectedRefactoring, boolean expectedTransitivity) {
+
+        boolean isTransitive = ExtractMethodRenameMethodCell.checkExtractMethodRenameMethodTransitivity(renameMethodObject,
+                extractMethodObject);
+
+        if(expectedTransitivity) {
+            Assert.assertTrue(isTransitive);
+        }
+        else {
+            Assert.assertFalse(isTransitive);
+        }
+        Assert.assertEquals(expectedRefactoring.getOriginalFilePath(), extractMethodObject.getOriginalFilePath());
+        Assert.assertEquals(expectedRefactoring.getDestinationFilePath(), extractMethodObject.getDestinationFilePath());
+        Assert.assertEquals(((ExtractMethodObject) expectedRefactoring).getOriginalClassName(),
+                ((ExtractMethodObject) extractMethodObject).getOriginalClassName());
+        Assert.assertEquals(((ExtractMethodObject) expectedRefactoring).getDestinationClassName(),
+                ((ExtractMethodObject) extractMethodObject).getDestinationClassName());
+        Assert.assertEquals(((ExtractMethodObject) expectedRefactoring).getOriginalMethodName(),
+                ((ExtractMethodObject) extractMethodObject).getOriginalMethodName());
+        Assert.assertEquals(((ExtractMethodObject) expectedRefactoring).getDestinationMethodName(),
+                ((ExtractMethodObject) extractMethodObject).getDestinationMethodName());
+    }
+
 }
