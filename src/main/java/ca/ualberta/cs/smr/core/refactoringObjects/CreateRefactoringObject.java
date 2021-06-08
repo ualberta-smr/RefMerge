@@ -2,6 +2,10 @@ package ca.ualberta.cs.smr.core.refactoringObjects;
 
 import org.refactoringminer.api.Refactoring;
 
+
+/*
+ * Creates the refactoring object from the RefMiner refactoring object.
+ */
 public class CreateRefactoringObject {
 
     public static RefactoringObject createRefactoringObject(Refactoring refactoring) {
