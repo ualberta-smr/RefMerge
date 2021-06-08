@@ -17,10 +17,18 @@ public class RenameClassObject implements RefactoringObject {
     private String originalClassName;
     private String destinationClassName;
 
-    public RenameClassObject() {
-        this.refactoringType = RefactoringType.RENAME_CLASS;
-    }
 
+    /*
+     * Use the provided information to create the rename class object for testing.
+     */
+    public RenameClassObject(String originalFilePath, String originalClassName,
+                              String destinationFilePath, String destinationClassName) {
+        this.refactoringType = RefactoringType.RENAME_CLASS;
+        this.originalFilePath = originalFilePath;
+        this.originalClassName = originalClassName;
+        this.destinationFilePath = destinationFilePath;
+        this.destinationClassName = destinationClassName;
+    }
 
     /*
      * Creates the rename class object and takes the information that we need from the RefMiner refactoring object.

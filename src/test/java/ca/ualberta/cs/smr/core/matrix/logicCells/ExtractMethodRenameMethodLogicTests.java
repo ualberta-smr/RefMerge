@@ -132,59 +132,27 @@ public class ExtractMethodRenameMethodLogicTests extends LightJavaCodeInsightFix
 
     public void testCheckExtractMethodRenameMethodTransitivity() {
         // Extract method A.efoo from A.foo
-        ExtractMethodObject extractMethodObject = new ExtractMethodObject();
-        extractMethodObject.setOriginalFilePath("A.java");
-        extractMethodObject.setDestinationFilePath("A.java");
-        extractMethodObject.setOriginalClassName("A");
-        extractMethodObject.setDestinationClassName("A");
-        extractMethodObject.setOriginalMethodName("foo");
-        extractMethodObject.setDestinationMethodName("efoo");
+        ExtractMethodObject extractMethodObject = new ExtractMethodObject("A.java", "A", "foo",
+                "A.java", "A", "efoo");
         // Rename method A.efoo -> A.ebar
-        RenameMethodObject renameMethodObject = new RenameMethodObject();
-        renameMethodObject.setOriginalFilePath("A.java");
-        renameMethodObject.setDestinationFilePath("A.java");
-        renameMethodObject.setOriginalClassName("A");
-        renameMethodObject.setDestinationClassName("A");
-        renameMethodObject.setOriginalMethodName("efoo");
-        renameMethodObject.setDestinationMethodName("ebar");
+        RenameMethodObject renameMethodObject = new RenameMethodObject("A.java", "A",
+                "efoo", "A.java", "A", "ebar");
         // Extract method A.ebar from A.foo
-        ExtractMethodObject expectedRefactoring = new ExtractMethodObject();
-        expectedRefactoring.setOriginalFilePath("A.java");
-        expectedRefactoring.setDestinationFilePath("A.java");
-        expectedRefactoring.setOriginalClassName("A");
-        expectedRefactoring.setDestinationClassName("A");
-        expectedRefactoring.setOriginalMethodName("foo");
-        expectedRefactoring.setDestinationMethodName("ebar");
-
+        ExtractMethodObject expectedRefactoring = new ExtractMethodObject("A.java", "A", "foo",
+                "A.java", "A", "ebar");
         doExtractMethodRenameMethodTest(renameMethodObject, extractMethodObject, expectedRefactoring, true);
     }
 
     public void testCheckExtractMethodRenameMethodCombination() {
         // Extract method A.ebar from A.bar
-        ExtractMethodObject extractMethodObject = new ExtractMethodObject();
-        extractMethodObject.setOriginalFilePath("A.java");
-        extractMethodObject.setDestinationFilePath("A.java");
-        extractMethodObject.setOriginalClassName("A");
-        extractMethodObject.setDestinationClassName("A");
-        extractMethodObject.setOriginalMethodName("bar");
-        extractMethodObject.setDestinationMethodName("ebar");
+        ExtractMethodObject extractMethodObject = new ExtractMethodObject("A.java", "A", "bar",
+                "A.java", "A", "ebar");
         // Rename method A.foo -> A.bar
-        RenameMethodObject renameMethodObject = new RenameMethodObject();
-        renameMethodObject.setOriginalFilePath("A.java");
-        renameMethodObject.setDestinationFilePath("A.java");
-        renameMethodObject.setOriginalClassName("A");
-        renameMethodObject.setDestinationClassName("A");
-        renameMethodObject.setOriginalMethodName("foo");
-        renameMethodObject.setDestinationMethodName("bar");
+        RenameMethodObject renameMethodObject = new RenameMethodObject("A.java", "A", "foo",
+                "A.java", "A", "bar");
         // Extract method A.ebar from A.foo
-        ExtractMethodObject expectedRefactoring = new ExtractMethodObject();
-        expectedRefactoring.setOriginalFilePath("A.java");
-        expectedRefactoring.setDestinationFilePath("A.java");
-        expectedRefactoring.setOriginalClassName("A");
-        expectedRefactoring.setDestinationClassName("A");
-        expectedRefactoring.setOriginalMethodName("foo");
-        expectedRefactoring.setDestinationMethodName("ebar");
-
+        ExtractMethodObject expectedRefactoring = new ExtractMethodObject("A.java", "A", "foo",
+                "A.java", "A", "ebar");
         doExtractMethodRenameMethodTest(renameMethodObject, extractMethodObject, expectedRefactoring, false);
     }
 

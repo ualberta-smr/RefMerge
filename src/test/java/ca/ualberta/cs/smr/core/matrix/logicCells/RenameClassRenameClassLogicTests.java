@@ -36,46 +36,29 @@ public class RenameClassRenameClassLogicTests extends LightJavaCodeInsightFixtur
 
     public void testFoundRenameClassRenameClassTransitivity() {
         // Rename class A -> B
-        RenameClassObject firstRefactoring = new RenameClassObject();
-        firstRefactoring.setOriginalFilePath("A.java");
-        firstRefactoring.setOriginalClassName("A");
-        firstRefactoring.setDestinationFilePath("B.java");
-        firstRefactoring.setDestinationClassName("B");
+        RenameClassObject firstRefactoring = new RenameClassObject("A.java", "A",
+                "B.java", "B");
         // Rename class B -> C
-        RenameClassObject secondRefactoring = new RenameClassObject();
-        secondRefactoring.setOriginalFilePath("B.java");
-        secondRefactoring.setOriginalClassName("B");
-        secondRefactoring.setDestinationFilePath("C.java");
+        RenameClassObject secondRefactoring = new RenameClassObject("B.java", "B",
+                "C.java", "C");
         secondRefactoring.setDestinationClassName("C");
         // Rename class A -> C
-        RenameClassObject expectedRefactoring = new RenameClassObject();
-        expectedRefactoring.setOriginalFilePath("A.java");
-        expectedRefactoring.setOriginalClassName("A");
-        expectedRefactoring.setDestinationFilePath("C.java");
-        expectedRefactoring.setDestinationClassName("C");
+        RenameClassObject expectedRefactoring = new RenameClassObject("A.java", "A",
+                "C.java", "C");
 
         doRenameClassRenameClassTest(firstRefactoring, secondRefactoring, expectedRefactoring,true);
     }
 
     public void testNotFoundRenameClassRenameClassTransitivity() {
         // Rename class A -> B
-        RenameClassObject firstRefactoring = new RenameClassObject();
-        firstRefactoring.setOriginalFilePath("A.java");
-        firstRefactoring.setOriginalClassName("A");
-        firstRefactoring.setDestinationFilePath("B.java");
-        firstRefactoring.setDestinationClassName("B");
+        RenameClassObject firstRefactoring = new RenameClassObject("A.java", "A",
+                "B.java", "B");
         // Rename class C -> D
-        RenameClassObject secondRefactoring = new RenameClassObject();
-        secondRefactoring.setOriginalFilePath("C.java");
-        secondRefactoring.setOriginalClassName("C");
-        secondRefactoring.setDestinationFilePath("D.java");
-        secondRefactoring.setDestinationClassName("D");
+        RenameClassObject secondRefactoring = new RenameClassObject("C.java", "C",
+                "D.java", "D");
         // Rename class A -> B
-        RenameClassObject expectedRefactoring = new RenameClassObject();
-        expectedRefactoring.setOriginalFilePath("A.java");
-        expectedRefactoring.setOriginalClassName("A");
-        expectedRefactoring.setDestinationFilePath("B.java");
-        expectedRefactoring.setDestinationClassName("B");
+        RenameClassObject expectedRefactoring = new RenameClassObject("A.java", "A",
+                "B.java", "B");
 
         doRenameClassRenameClassTest(firstRefactoring, secondRefactoring, expectedRefactoring,false);
     }
