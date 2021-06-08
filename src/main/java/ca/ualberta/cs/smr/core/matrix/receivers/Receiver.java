@@ -5,6 +5,7 @@ import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.ExtractMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameClassDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameMethodDispatcher;
+import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import com.intellij.openapi.project.Project;
 
 /*
@@ -17,11 +18,23 @@ public class Receiver {
     Node receiverNode;
     DependenceGraph graph;
     Project project;
+    RefactoringObject refactoringObject;
+    boolean isTransitive;
 
     public void set(Node receiverNode, DependenceGraph graph, Project project) {
         this.receiverNode = receiverNode;
         this.graph = graph;
         this.project = project;
+    }
+
+    public void set(RefactoringObject refactoringObject) {
+        this.refactoringObject = refactoringObject;
+        this.project = null;
+        this.isTransitive = false;
+    }
+
+    public boolean hasTransitivity() {
+        return isTransitive;
     }
 
     /*
