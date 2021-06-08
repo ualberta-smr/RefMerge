@@ -46,16 +46,22 @@ public class RenameClassRenameMethodCell {
         // If the original class of the rename method refactoring is the same as the original class of the rename class
         // refactoring, update the destination class for the rename method refactoring to be the destination class of
         // the rename class refactoring
-        if(originalMethodClass.equals(originalClassClass) && !destinationMethodClass.equals(destinationClassClass)) {
+        if (originalMethodClass.equals(originalClassClass) && !destinationMethodClass.equals(destinationClassClass)) {
             renameMethod.setDestinationFilePath(classObject.getDestinationFilePath());
             ((RenameMethodObject) renameMethod).setDestinationClassName(classObject.getDestinationClassName());
         }
         // If the destination classes for the rename method and rename class refactorings are the same but the original
         // names are different, then the class was renamed before the method was and we need to update the original
         // class name for the rename method refactoring
-        else if(!originalMethodClass.equals(originalClassClass) && destinationMethodClass.equals(destinationClassClass)) {
+        else if (!originalMethodClass.equals(originalClassClass) && destinationMethodClass.equals(destinationClassClass)) {
             renameMethod.setOriginalFilePath(classObject.getOriginalFilePath());
             ((RenameMethodObject) renameMethod).setOriginalClassName(classObject.getOriginalClassName());
+        }
+        // If the destination class of the rename method is equal to the destination class of the rename class, then the
+        // destination of the rename method class needs to be updated to the rename class's destination class name.
+        else if (destinationMethodClass.equals(originalClassClass) && !originalMethodClass.equals(originalClassClass)) {
+            renameMethod.setDestinationFilePath(classObject.getDestinationFilePath());
+            ((RenameMethodObject) renameMethod).setDestinationClassName(classObject.getDestinationClassName());
         }
 
     }
