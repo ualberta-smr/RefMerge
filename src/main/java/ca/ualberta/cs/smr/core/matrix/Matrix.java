@@ -11,14 +11,12 @@ import ca.ualberta.cs.smr.core.matrix.receivers.ExtractMethodReceiver;
 import ca.ualberta.cs.smr.core.matrix.receivers.Receiver;
 import ca.ualberta.cs.smr.core.matrix.receivers.RenameClassReceiver;
 import ca.ualberta.cs.smr.core.matrix.receivers.RenameMethodReceiver;
-import ca.ualberta.cs.smr.core.refactoringObjects.CreateRefactoringObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import com.intellij.openapi.project.Project;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
-import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
 import java.util.*;
@@ -125,16 +123,42 @@ public class Matrix {
      * Simplify refactorings based on the new refactoring and if the new refactoring is not a transitive refactoring,
      * insert it to the list.
      */
-    public static void simplifyAndInsertRefactorings(Refactoring refactoring, ArrayList<RefactoringObject> simplifiedRefactorings) {
-        // Create the refactoring object so we can compare and update
-        RefactoringObject refactoringObject = CreateRefactoringObject.createRefactoringObject(refactoring);
+    public void simplifyAndInsertRefactorings(RefactoringObject newRefactoring, ArrayList<RefactoringObject> simplifiedRefactorings) {
+        int transitiveCount = 0;
+        for(RefactoringObject simplifiedRefactoring : simplifiedRefactorings) {
+            boolean isTransitive = simplifyRefactorings(newRefactoring, simplifiedRefactoring);
+            // Keep track of how many refactorings are transitive
+            if(isTransitive) {
+                transitiveCount++;
+            }
+        }
 
-        simplifiedRefactorings.add(refactoringObject);
-
-
+        // If the refactoring is not transitive, add it to the simplified refactoring list
+        if(transitiveCount == 0) {
+            simplifiedRefactorings.add(newRefactoring);
+        }
     }
 
-
+    /*
+     * Simplify the refactorings that have been detected and combine transitive refactorings. Return true if the
+     * refactoring operations are transitive.
+     */
+    private boolean simplifyRefactorings(RefactoringObject newRefactoring, RefactoringObject previousRefactoring) {
+        int leftValue = getRefactoringValue(newRefactoring.getRefactoringType());
+        int rightValue = getRefactoringValue(previousRefactoring.getRefactoringType());
+        RefactoringDispatcher dispatcher;
+        Receiver receiver;
+        if(leftValue > rightValue) {
+            dispatcher = makeTransitivityDispatcher(previousRefactoring);
+            receiver = makeTransitivityReceiver(newRefactoring);
+        }
+        else {
+            dispatcher = makeTransitivityDispatcher(newRefactoring);
+            receiver = makeTransitivityReceiver(previousRefactoring);
+        }
+        dispatcher.dispatch(receiver);
+        return receiver.hasTransitivity();
+    }
 
 
     /*
@@ -158,6 +182,30 @@ public class Matrix {
         receiver.set(node, graph, project);
         return receiver;
     }
+
+    /*
+     * Use the refactoring type to get the refactoring dispatcher class from the dispatcherMap.
+     * Set the refactoring field in the dispatcher.
+     */
+    private RefactoringDispatcher makeTransitivityDispatcher(RefactoringObject refactoringObject) {
+        RefactoringType type = refactoringObject.getRefactoringType();
+        RefactoringDispatcher dispatcher = dispatcherMap.get(type);
+        dispatcher.set(refactoringObject, null);
+        return dispatcher;
+    }
+
+    /*
+     * Use the refactoring type to get the refactoring receiver class from the receiverMap.
+     * Set the refactoring field in the receiver.
+     * Set the node field in the receiver and get an instance of the graph so we can update it.
+     */
+    private Receiver makeTransitivityReceiver(RefactoringObject refactoringObject) {
+        RefactoringType type = refactoringObject.getRefactoringType();
+        Receiver receiver = receiverMap.get(type);
+        receiver.set(refactoringObject);
+        return receiver;
+    }
+
 
     /*
      * Get the ordered refactoring value of the refactoring type. We need to update this method each time we add a new
