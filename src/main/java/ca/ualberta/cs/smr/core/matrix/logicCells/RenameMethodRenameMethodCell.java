@@ -160,9 +160,16 @@ public class RenameMethodRenameMethodCell {
         String firstDestinationMethod = firstObject.getDestinationMethodName();
         String secondOriginalClass = secondObject.getOriginalClassName();
         String secondOriginalMethod = secondObject.getOriginalMethodName();
+        String secondDestinationClass = secondObject.getDestinationClassName();
         // If the renamed method of the first refactoring and original method of the second refactoring are the same
         if(firstDestinationClass.equals(secondOriginalClass) && firstDestinationMethod.equals(secondOriginalMethod)) {
             //This is a transitive refactoring
+            isTransitive = true;
+            firstRefactoring.setDestinationFilePath(secondObject.getDestinationFilePath());
+            ((RenameMethodObject) firstRefactoring).setDestinationClassName(secondObject.getDestinationClassName());
+            ((RenameMethodObject) firstRefactoring).setDestinationMethodName(secondObject.getDestinationMethodName());
+        }
+        else if(firstDestinationClass.equals(secondDestinationClass) && firstDestinationMethod.equals(secondOriginalMethod)) {
             isTransitive = true;
             firstRefactoring.setDestinationFilePath(secondObject.getDestinationFilePath());
             ((RenameMethodObject) firstRefactoring).setDestinationClassName(secondObject.getDestinationClassName());
