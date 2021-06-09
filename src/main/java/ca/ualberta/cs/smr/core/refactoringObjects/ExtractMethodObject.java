@@ -22,7 +22,6 @@ public class ExtractMethodObject implements RefactoringObject {
     private PsiElement[] surroundingElements;
     private ThrownExceptionInfo[] thrownExceptionInfo;
 
-
     /*
      * Use the provided information to create the extract method object for testing.
      */
@@ -55,6 +54,10 @@ public class ExtractMethodObject implements RefactoringObject {
 
     public RefactoringType getRefactoringType() {
         return this.refactoringType;
+    }
+
+    public RefactoringOrder getRefactoringOrder() {
+        return RefactoringOrder.EXTRACT_METHOD;
     }
 
     public void setOriginalFilePath(String originalFilePath) {

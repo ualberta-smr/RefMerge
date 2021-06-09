@@ -46,6 +46,10 @@ public class RenameClassObject implements RefactoringObject {
         return this.refactoringType;
     }
 
+    public RefactoringOrder getRefactoringOrder() {
+        return RefactoringOrder.RENAME_CLASS;
+    }
+
     public void setOriginalFilePath(String originalFilePath) {
         this.originalFilePath = originalFilePath;
     }

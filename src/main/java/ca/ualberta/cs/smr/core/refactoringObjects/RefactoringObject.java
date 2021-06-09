@@ -9,6 +9,8 @@ public interface RefactoringObject {
 
     RefactoringType getRefactoringType();
 
+    RefactoringOrder getRefactoringOrder();
+
     void setOriginalFilePath(String originalFilePath);
 
     String getOriginalFilePath();
