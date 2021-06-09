@@ -12,6 +12,7 @@ import ca.ualberta.cs.smr.core.matrix.receivers.Receiver;
 import ca.ualberta.cs.smr.core.matrix.receivers.RenameClassReceiver;
 import ca.ualberta.cs.smr.core.matrix.receivers.RenameMethodReceiver;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
+import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import com.intellij.openapi.project.Project;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -135,7 +136,7 @@ public class Matrix {
 
         // If the refactoring is not transitive, add it to the simplified refactoring list
         if(transitiveCount == 0) {
-            simplifiedRefactorings.add(newRefactoring);
+            RefactoringObjectUtils.insertRefactoringObject(newRefactoring, simplifiedRefactorings);
         }
     }
 
