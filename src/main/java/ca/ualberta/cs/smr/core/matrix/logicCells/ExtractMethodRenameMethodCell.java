@@ -193,7 +193,8 @@ public class ExtractMethodRenameMethodCell {
         // If the source method and destination method are the same in extract method and rename method, then the
         // extracted method was actually extracted from the original method in the rename method refactoring (for conflict
         // checks). Update the source method details to use the original method.
-        if(destinationRenameName.equals(originalExtractName) && destinationRenameClassName.equals(originalExtractClassName)) {
+        if(destinationRenameName.equals(originalExtractName) && (destinationRenameClassName.equals(originalExtractClassName)
+        || originalRenameClassName.equals(originalExtractClassName))) {
             extractMethod.setOriginalFilePath(renameMethodObject.getOriginalFilePath());
             ((ExtractMethodObject) extractMethod).setOriginalClassName(renameMethodObject.getOriginalClassName());
             ((ExtractMethodObject) extractMethod).setOriginalMethodName(renameMethodObject.getOriginalMethodName());
@@ -201,13 +202,14 @@ public class ExtractMethodRenameMethodCell {
         // If the original name of the rename method and the extracted method name are the same, then the method was extracted
         // and then renamed. This is a transitive refactoring so we update the extract method refactoring with the new name
         // of the extracted method.
-        else if(originalRenameName.equals(destinationExtractName) && originalRenameClassName.equals(destinationExtractClassName)) {
+        else if(originalRenameName.equals(destinationExtractName) && (destinationRenameClassName.equals(destinationExtractClassName)
+        || originalRenameClassName.equals(originalExtractClassName))) {
             isTransitive = true;
             extractMethod.setDestinationFilePath(renameMethodObject.getDestinationFilePath());
             ((ExtractMethodObject) extractMethod).setDestinationClassName(renameMethodObject.getDestinationClassName());
             ((ExtractMethodObject) extractMethod).setDestinationMethodName(renameMethodObject.getDestinationMethodName());
         }
-
+        // If the original class name
 
         return isTransitive;
     }
