@@ -51,6 +51,10 @@ public class RenameMethodObject implements RefactoringObject {
         return this.refactoringType;
     }
 
+    public RefactoringOrder getRefactoringOrder() {
+        return RefactoringOrder.RENAME_METHOD;
+    }
+
     public void setOriginalFilePath(String originalFilePath) {
         this.originalFilePath = originalFilePath;
     }
