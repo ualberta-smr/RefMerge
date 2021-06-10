@@ -151,15 +151,10 @@ public class Matrix {
      * Use the refactoring type to get the refactoring dispatcher class from the dispatcherMap.
      * Set the refactoring field in the dispatcher.
      */
-    RefactoringDispatcher makeDispatcher(RefactoringObject refactoringObject, boolean isTransitiveCheck) {
+    RefactoringDispatcher makeDispatcher(RefactoringObject refactoringObject, boolean simplify) {
         RefactoringType type = refactoringObject.getRefactoringType();
         RefactoringDispatcher dispatcher = dispatcherMap.get(type);
-        if(isTransitiveCheck) {
-            dispatcher.set(refactoringObject, null);
-        }
-        else {
-            dispatcher.set(refactoringObject, project);
-        }
+        dispatcher.set(refactoringObject, project, simplify);
         return dispatcher;
     }
 
