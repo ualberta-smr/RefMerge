@@ -1,6 +1,5 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
-import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.refactoringObjects.ExtractMethodObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
@@ -8,10 +7,6 @@ import ca.ualberta.cs.smr.core.refactoringObjects.RenameMethodObject;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
-import gr.uom.java.xmi.UMLOperation;
-import gr.uom.java.xmi.diff.ExtractOperationRefactoring;
-import gr.uom.java.xmi.diff.RenameOperationRefactoring;
-import org.refactoringminer.api.Refactoring;
 
 import static ca.ualberta.cs.smr.utils.MatrixUtils.*;
 
@@ -28,147 +23,134 @@ public class ExtractMethodRenameMethodCell {
     /*
      *  Check if a refactoring conflict exists between extract method/rename method refactorings. A refactoring conflict
      *  can occur if there is an accidental override, accidental overload, or naming conflict.
-     *  @param dispatcherNode: A node containing the dispatcher rename method refactoring.
-     *  @param receiverNode: A node containing the receiver extract method refactoring.
      */
-    public boolean extractMethodRenameMethodConflictCell(Node dispatcherNode, Node receiverNode) {
+    public boolean extractMethodRenameMethodConflictCell(RefactoringObject renameMethod, RefactoringObject extractMethod) {
         // Extract Method/Rename Method override conflict
-        if(checkOverrideConflict(dispatcherNode, receiverNode)) {
+        if(checkOverrideConflict(renameMethod, extractMethod)) {
             return true;
         }
         // Extract Method/Rename Method overload conflict
-        else if(checkOverloadConflict(dispatcherNode, receiverNode)) {
+        else if(checkOverloadConflict(renameMethod, extractMethod)) {
             return true;
         }
 
         // Extract Method/Rename Method naming conflict
-        else return checkMethodNamingConflict(dispatcherNode, receiverNode);
+        else return checkMethodNamingConflict(renameMethod, extractMethod);
     }
 
     /*
      *  Check if an ordering dependence exists between extract method/rename method refactorings.
-     *  @param dispatcherNode: A node containing the dispatcher rename method refactoring.
-     *  @param receiverNode: A node containing the receiver extract method refactoring.
      */
-    public boolean extractMethodRenameMethodDependenceCell(Node dispatcherNode, Node receiverNode) {
-        return checkExtractMethodRenameMethodDependence(dispatcherNode, receiverNode);
+    public boolean extractMethodRenameMethodDependenceCell(RefactoringObject renameMethod, RefactoringObject extractMethod) {
+        return checkExtractMethodRenameMethodDependence(renameMethod, extractMethod);
     }
 
-    public boolean checkOverrideConflict(Node dispatcherNode, Node receiverNode) {
-        Refactoring renameMethodRefactoring = dispatcherNode.getRefactoring();
-        Refactoring extractMethodRefactoring = receiverNode.getRefactoring();
+
+    /*
+     * Check if the extracted method and the renamed method cause an accidental override
+     */
+    public boolean checkOverrideConflict(RefactoringObject renameMethod, RefactoringObject extractMethod) {
+        RenameMethodObject renameMethodObject = (RenameMethodObject) renameMethod;
+        ExtractMethodObject extractMethodObject = (ExtractMethodObject) extractMethod;
 
         // Get the refactored operations
-        UMLOperation renamedOperation = getRefactoredRenameOperation(renameMethodRefactoring);
-        UMLOperation extractedOperation = ((ExtractOperationRefactoring) extractMethodRefactoring).getExtractedOperation();
+        MethodSignatureObject renameDestinationMethod = renameMethodObject.getDestinationMethodSignature();
+        MethodSignatureObject extractDestinationMethod = extractMethodObject.getDestinationMethodSignature();
         // Get the class names
-        String renamedMethodClassName = dispatcherNode.getDependenceChainClassHead();
-        String extractedMethodClassName = receiverNode.getDependenceChainClassHead();
+        String renameDestinationClassName = renameMethodObject.getDestinationClassName();
+        String extractDestinationClassName = extractMethodObject.getDestinationClassName();
 
         // If the rename methods happen in the same class then there is no override conflict
-        if(isSameName(renamedMethodClassName, extractedMethodClassName)) {
-            if(isSameOriginalClass(dispatcherNode, receiverNode)) {
-                return false;
-            }
+        if(renameDestinationClassName.equals(extractDestinationClassName)) {
+            return false;
         }
+        String renameDestinationFile = renameMethodObject.getDestinationFilePath();
+        String extractDestinationFile = extractMethodObject.getDestinationFilePath();
         Utils utils = new Utils(project);
-        String renameMethodFile = renamedOperation.getLocationInfo().getFilePath();
-        String extractMethodFile = extractedOperation.getLocationInfo().getFilePath();
-        PsiClass renameMethodPsiClass = utils.getPsiClassByFilePath(renameMethodFile, renamedMethodClassName);
-        PsiClass extractMethodPsiClass = utils.getPsiClassByFilePath(extractMethodFile, extractedMethodClassName);
+        PsiClass renameMethodPsiClass = utils.getPsiClassByFilePath(renameDestinationFile, renameDestinationClassName);
+        PsiClass extractMethodPsiClass = utils.getPsiClassByFilePath(extractDestinationFile, extractDestinationClassName);
         if(!ifClassExtends(renameMethodPsiClass, extractMethodPsiClass)) {
             return false;
         }
 
-        if(!renamedOperation.equalSignature(extractedOperation)) {
-            return false;
-        }
-
-        String renamedMethodName = renamedOperation.getName();
-        String extractedMethodName = extractedOperation.getName();
-
-        // If the signatures are different, then it cannot be an accidental override
-        if(!renamedOperation.equalSignature(extractedOperation)) {
-            return false;
-        }
-        // If the signatures are the same and the names are the same then it is a case of accidental overriding
-        return renamedMethodName.equals(extractedMethodName);
+        // If they have different signatures then there cannot be overriding
+        return renameDestinationMethod.equalsSignature(extractDestinationMethod);
     }
 
-    public boolean checkOverloadConflict(Node dispatcherNode, Node receiverNode) {
-        Refactoring renameMethodRefactoring = dispatcherNode.getRefactoring();
-        Refactoring extractMethodRefactoring = receiverNode.getRefactoring();
+    /*
+     * Check if the extracted method and renamed method cause an accidental overload
+     */
+    public boolean checkOverloadConflict(RefactoringObject renameMethod, RefactoringObject extractMethod) {
+        RenameMethodObject renameMethodObject = (RenameMethodObject) renameMethod;
+        ExtractMethodObject extractMethodObject = (ExtractMethodObject) extractMethod;
 
-        UMLOperation renameMethodOperation = getRefactoredRenameOperation(renameMethodRefactoring);
-        UMLOperation extractMethodOperation = ((ExtractOperationRefactoring) extractMethodRefactoring).getExtractedOperation();
-        // Get class names
-        String dispatcherClassName = dispatcherNode.getDependenceChainClassHead();
-        String receiverClassName = receiverNode.getDependenceChainClassHead();
+        MethodSignatureObject renameDestinationMethod = renameMethodObject.getDestinationMethodSignature();
+        MethodSignatureObject extractDestinationMethod = extractMethodObject.getDestinationMethodSignature();
+
+        String renameDestinationClassName = renameMethodObject.getDestinationClassName();
+        String extractDestinationClassName = extractMethodObject.getDestinationClassName();
         // If the methods are in different classes, check if one class inherits the other
-        if (!isSameName(dispatcherClassName, receiverClassName)) {
+        if (!renameDestinationClassName.equals(extractDestinationClassName)) {
             Utils utils = new Utils(project);
-            String renameMethodFile = renameMethodOperation.getLocationInfo().getFilePath();
-            String extractMethodFile = extractMethodOperation.getLocationInfo().getFilePath();
-            PsiClass renameMethodPsiClass = utils.getPsiClassByFilePath(renameMethodFile, dispatcherClassName);
-            PsiClass extractMethodPsiClass = utils.getPsiClassByFilePath(extractMethodFile, receiverClassName);
+            String renameMethodFile = renameMethodObject.getDestinationFilePath();
+            String extractMethodFile = extractMethodObject.getDestinationFilePath();
+            PsiClass renameMethodPsiClass = utils.getPsiClassByFilePath(renameMethodFile, renameDestinationClassName);
+            PsiClass extractMethodPsiClass = utils.getPsiClassByFilePath(extractMethodFile, extractDestinationClassName);
             if(!ifClassExtends(renameMethodPsiClass, extractMethodPsiClass)) {
                 return false;
             }
         }
-        String renamedMethodName = renameMethodOperation.getName();
-        String extractedMethodName = extractMethodOperation.getName();
+        String renameDestinationName = renameDestinationMethod.getName();
+        String extractDestinationName = extractDestinationMethod.getName();
 
         // If the signatures are equal, then it is not an accidental overload
-        if(renameMethodOperation.equalSignature(extractMethodOperation)) {
+        if(renameDestinationMethod.equalsSignature(extractDestinationMethod)) {
             return false;
         }
         // If the signatures are different and the names are the same, it is an accidental overload
-        return renamedMethodName.equals(extractedMethodName);
+        return renameDestinationName.equals(extractDestinationName);
     }
 
-    public boolean checkMethodNamingConflict(Node dispatcherNode, Node receiverNode) {
-        Refactoring renameMethodRefactoring = dispatcherNode.getRefactoring();
-        Refactoring extractMethodRefactoring = receiverNode.getRefactoring();
-        UMLOperation renamedMethodOperation = ((RenameOperationRefactoring) renameMethodRefactoring).getRenamedOperation();
-        UMLOperation extractedMethodOperation = ((ExtractOperationRefactoring) extractMethodRefactoring).getExtractedOperation();
-//        String dispatcherClassName = dispatcherNode.getDependenceChainClassHead();
-//        String receiverClassName = receiverNode.getDependenceChainClassHead();
-        String renamedMethodClassName = renamedMethodOperation.getClassName();
-        String extractedMethodClassName = extractedMethodOperation.getClassName();
+    /*
+     * Check if the extracted method has the same name as the renamed method
+     */
+    public boolean checkMethodNamingConflict(RefactoringObject renameMethod, RefactoringObject extractMethod) {
+        RenameMethodObject renameMethodObject = (RenameMethodObject) renameMethod;
+        ExtractMethodObject extractMethodObject = (ExtractMethodObject) extractMethod;
+        MethodSignatureObject renameDestinationMethod = renameMethodObject.getDestinationMethodSignature();
+        MethodSignatureObject extractDestinationMethod = extractMethodObject.getDestinationMethodSignature();
+
+        String renameDestinationClassName = renameMethodObject.getDestinationClassName();
+        String extractDestinationClassName = extractMethodObject.getDestinationClassName();
 
         // If the methods are in different classes
-        if (!isSameName(renamedMethodClassName, extractedMethodClassName)) {
-            if(!isSameOriginalClass(dispatcherNode, receiverNode))
+        if (!renameDestinationClassName.equals(extractDestinationClassName)) {
                 return false;
         }
-
-        if(!renamedMethodOperation.equalSignature(extractedMethodOperation)) {
-            return false;
-        }
-        String renamedMethodName = getRefactoredMethodName(renameMethodRefactoring);
-        String extractedMethodName = ((ExtractOperationRefactoring) extractMethodRefactoring).getExtractedOperation().getName();
-        // Check if the extracted method name is the same as the renamed method name
-        return renamedMethodName.equals(extractedMethodName);
+        return renameDestinationMethod.equalsSignature(extractDestinationMethod);
     }
 
-    public static boolean checkExtractMethodRenameMethodDependence(Node dispatcherNode, Node receiverNode) {
-        Refactoring renameMethodRefactoring = dispatcherNode.getRefactoring();
-        Refactoring extractMethodRefactoring = receiverNode.getRefactoring();
-        UMLOperation originalMethodOperation = ((RenameOperationRefactoring) renameMethodRefactoring).getOriginalOperation();
-        UMLOperation sourceMethodOperation = ((ExtractOperationRefactoring) extractMethodRefactoring).getSourceOperationBeforeExtraction();
+    /*
+     * Check if the method needs to be extracted before the source method is renamed
+     */
+    public static boolean checkExtractMethodRenameMethodDependence(RefactoringObject renameMethod,
+                                                                   RefactoringObject extractMethod) {
+        RenameMethodObject renameMethodObject = (RenameMethodObject) renameMethod;
+        ExtractMethodObject extractMethodObject = (ExtractMethodObject) extractMethod;
+        MethodSignatureObject renameOriginalMethod = renameMethodObject.getOriginalMethodSignature();
+        MethodSignatureObject extractOriginalMethod = extractMethodObject.getOriginalMethodSignature();
 
-        String originalMethodClassName = originalMethodOperation.getClassName();
-        String sourceMethodClassName = sourceMethodOperation.getClassName();
+        String renameOriginalClassName = renameMethodObject.getOriginalClassName();
+        String extractOriginalClassName = extractMethodObject.getOriginalClassName();
 
         // If the methods are in different classes then there cannot be ordering dependence
-        if (!isSameName(originalMethodClassName, sourceMethodClassName)) {
-            if(!isSameOriginalClass(dispatcherNode, receiverNode))
+        if (!renameOriginalClassName.equals(extractOriginalClassName)) {
                 return false;
         }
 
         // If the signatures are the same and they are in the same class, then the source method and original method
         // must be the same
-        return originalMethodOperation.equalSignature(sourceMethodOperation);
+        return renameOriginalMethod.equalsSignature(extractOriginalMethod);
     }
 
     /*
