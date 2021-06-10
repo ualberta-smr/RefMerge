@@ -30,6 +30,17 @@ public class RenameClassRenameMethodCell {
         return classClass.equals(methodClass);
     }
 
+
+    /*
+     * Check if the rename class needs to be performed before the rename method.
+     */
+    public static boolean checkRenameMethodRenameClassDependence(RefactoringObject methodRefactoringObject,
+                                                                 RefactoringObject classRefactoringObject) {
+        String classOriginalClassName = ((RenameClassObject) classRefactoringObject).getOriginalClassName();
+        String methodOriginalClassName = ((RenameMethodObject) methodRefactoringObject).getOriginalClassName();
+        return classOriginalClassName.equals(methodOriginalClassName);
+    }
+
     /*
      * Check if the rename class and rename method refactorings can be simplified. If they can, update the rename method
      * refactoring class details.
