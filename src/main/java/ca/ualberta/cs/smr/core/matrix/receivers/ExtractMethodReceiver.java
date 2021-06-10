@@ -22,7 +22,6 @@ public class ExtractMethodReceiver extends Receiver {
                     this.refactoringObject);
             dispatcher.setRefactoringObject(renameMethod);
         }
-
     }
 
     /*

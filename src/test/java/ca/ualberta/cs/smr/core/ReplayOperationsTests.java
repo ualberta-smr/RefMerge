@@ -1,14 +1,14 @@
 package ca.ualberta.cs.smr.core;
 
-import ca.ualberta.cs.smr.utils.RefactoringWrapperUtils;
+import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
+import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
-import gr.uom.java.xmi.diff.ExtractOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 
 import java.util.List;
@@ -45,7 +45,8 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
         ReplayOperations replay = new ReplayOperations(project);
-        replay.replayRenameMethod(ref);
+        RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
+        replay.replayRenameMethod(refactoringObject);
 
 
         list1 = TestUtils.getMethodNames(oldMethods);
@@ -79,7 +80,8 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
         ReplayOperations replay = new ReplayOperations(project);
-        replay.replayRenameClass(ref);
+        RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
+        replay.replayRenameClass(refactoringObject);
 
         list1 = TestUtils.getClassNames(oldClasses);
         list2 = TestUtils.getClassNames(newClasses);
@@ -104,14 +106,16 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
                 originalTestData, refactoredTestData);
         assert refactorings != null;
         Refactoring firstRef = refactorings.get(0);
+        RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(firstRef);
         UndoOperations undoOperations = new UndoOperations(project);
-        firstRef = undoOperations.undoExtractMethod(firstRef);
+        refactoringObject = undoOperations.undoExtractMethod(refactoringObject);
         Refactoring secondRef = refactorings.get(1);
-        secondRef = undoOperations.undoExtractMethod(secondRef);
+        RefactoringObject secondRefactoringObject = RefactoringObjectUtils.createRefactoringObject(secondRef);
+        secondRefactoringObject = undoOperations.undoExtractMethod(secondRefactoringObject);
 
         ReplayOperations replayOperations = new ReplayOperations(project);
-        replayOperations.replayExtractMethod(secondRef);
-        replayOperations.replayExtractMethod(firstRef);
+        replayOperations.replayExtractMethod(secondRefactoringObject);
+        replayOperations.replayExtractMethod(refactoringObject);
 
         PsiFile file1 = files[0];
         PsiFile file2 = files[1];

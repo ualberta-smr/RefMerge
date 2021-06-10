@@ -12,6 +12,8 @@ public class MethodSignatureObject {
 
     private String name;
     private List<ParameterObject> parameterList;
+    private String visibility;
+    private boolean isConstructor;
 
     /*
      * Create the method signature from the name and the given parameter object list
@@ -19,17 +21,21 @@ public class MethodSignatureObject {
     public MethodSignatureObject( List<ParameterObject> parameterList, String name) {
         this.name = name;
         this.parameterList = parameterList;
+        this.isConstructor = false;
+        this.visibility = "public";
     }
 
     /*
      * Create the method signature from the name and UML parameter list
      */
-    public MethodSignatureObject(String name, List<UMLParameter> umlParameterList) {
+    public MethodSignatureObject(String name, List<UMLParameter> umlParameterList, boolean isConstructor, String visibility) {
         this.name = name;
         this.parameterList = new ArrayList<>();
         for(UMLParameter umlParameter : umlParameterList) {
             this.parameterList.add(new ParameterObject(umlParameter.getType().toString(), umlParameter.getName()));
         }
+        this.visibility = visibility;
+        this.isConstructor = isConstructor;
     }
 
     public String getName() {
@@ -38,6 +44,14 @@ public class MethodSignatureObject {
 
     public List<ParameterObject> getParameterList() {
         return this.parameterList;
+    }
+
+    public boolean isConstructor() {
+        return this.isConstructor;
+    }
+
+    public String getVisibility() {
+        return this.visibility;
     }
 
     public boolean equalsSignature(MethodSignatureObject otherSignature) {
@@ -57,5 +71,14 @@ public class MethodSignatureObject {
         }
 
         return true;
+    }
+
+    public ParameterObject getReturnParameter() {
+        for(ParameterObject parameterObject : parameterList) {
+            if(parameterObject.getName().equals("return")) {
+                return parameterObject;
+            }
+        }
+        return null;
     }
 }

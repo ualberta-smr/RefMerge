@@ -1,7 +1,6 @@
 package ca.ualberta.cs.smr.core;
 
-import ca.ualberta.cs.smr.core.refactoringObjects.ExtractOperationRefactoringWrapper;
-import ca.ualberta.cs.smr.utils.RefactoringWrapperUtils;
+import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
@@ -21,13 +20,7 @@ import com.intellij.refactoring.changeSignature.ThrownExceptionInfo;
 import com.intellij.refactoring.inline.InlineMethodProcessor;
 import com.intellij.usageView.UsageInfo;
 import com.intellij.util.Query;
-import gr.uom.java.xmi.UMLClass;
-import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.decomposition.OperationInvocation;
-import gr.uom.java.xmi.diff.ExtractOperationRefactoring;
-import gr.uom.java.xmi.diff.RenameClassRefactoring;
-import gr.uom.java.xmi.diff.RenameOperationRefactoring;
-import org.refactoringminer.api.Refactoring;
 
 
 public class UndoOperations {
@@ -41,13 +34,14 @@ public class UndoOperations {
     /*
      * Undo the rename method refactoring that was performed in the commit
      */
-    public void undoRenameMethod(Refactoring ref) {
-        UMLOperation original = ((RenameOperationRefactoring) ref).getOriginalOperation();
-        UMLOperation renamed = ((RenameOperationRefactoring) ref).getRenamedOperation();
+    public void undoRenameMethod(RefactoringObject ref) {
+        RenameMethodObject renameMethodObject = (RenameMethodObject) ref;
+        MethodSignatureObject original = renameMethodObject.getOriginalMethodSignature();
+        MethodSignatureObject renamed = renameMethodObject.getDestinationMethodSignature();
         String srcName = original.getName();
-        String qualifiedClass = renamed.getClassName();
+        String qualifiedClass = renameMethodObject.getDestinationClassName();
         // get the PSI class using the qualified class name
-        String filePath = renamed.getLocationInfo().getFilePath();
+        String filePath = renameMethodObject.getDestinationFilePath();
         Utils utils = new Utils(project);
         utils.addSourceRoot(filePath);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(qualifiedClass, filePath);
@@ -67,13 +61,12 @@ public class UndoOperations {
     /*
      * Undo the rename class refactoring that was originally performed by performing another rename class refactoring.
      */
-    public void undoRenameClass(Refactoring ref) {
-        UMLClass original = ((RenameClassRefactoring) ref).getOriginalClass();
-        UMLClass renamed = ((RenameClassRefactoring) ref).getRenamedClass();
-        String srcQualifiedClass = original.getName();
-        String destQualifiedClass = renamed.getName();
+    public void undoRenameClass(RefactoringObject ref) {
+        RenameClassObject renameClassObject = (RenameClassObject) ref;
+        String srcQualifiedClass = renameClassObject.getOriginalClassName();
+        String destQualifiedClass = renameClassObject.getDestinationClassName();
         String srcClassName = srcQualifiedClass.substring(srcQualifiedClass.lastIndexOf(".") + 1);
-        String filePath = renamed.getLocationInfo().getFilePath();
+        String filePath = renameClassObject.getDestinationFilePath();
         Utils utils = new Utils(project);
         utils.addSourceRoot(filePath);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(destQualifiedClass, filePath);
@@ -91,36 +84,35 @@ public class UndoOperations {
     /*
      * Undo the extract method refactoring that was originally performed by performing an inline method refactoring.
      */
-    public ExtractOperationRefactoringWrapper undoExtractMethod(Refactoring ref) {
-        ExtractOperationRefactoring extractOperationRefactoring = (ExtractOperationRefactoring) ref;
-        UMLOperation sourceOperation = extractOperationRefactoring.getSourceOperationBeforeExtraction();
-        UMLOperation extractedOperation = extractOperationRefactoring.getExtractedOperation();
+    public RefactoringObject undoExtractMethod(RefactoringObject ref) {
+        ExtractMethodObject extractMethodObject = (ExtractMethodObject) ref;
+        MethodSignatureObject originalMethod = extractMethodObject.getOriginalMethodSignature();
+        MethodSignatureObject destinationMethod = extractMethodObject.getDestinationMethodSignature();
 
         // Get PSI Method using extractedOperation data
-        String extractedOperationClassName = extractedOperation.getClassName();
-        String filePath = extractedOperation.getLocationInfo().getFilePath();
+        String extractedOperationClassName = extractMethodObject.getOriginalClassName();
+        String filePath = extractMethodObject.getOriginalFilePath();
         Utils utils = new Utils(project);
         utils.addSourceRoot(filePath);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(extractedOperationClassName, filePath);
         assert psiClass != null;
-        PsiMethod extractedMethod = Utils.getPsiMethod(psiClass, extractedOperation);
+        PsiMethod extractedMethod = Utils.getPsiMethod(psiClass, destinationMethod);
         assert extractedMethod != null;
 
         ThrownExceptionInfo[] thrownExceptionInfo = getThrownExceptionInfo(extractedMethod);
 
-        String sourceOperationClassName = sourceOperation.getClassName();
-        filePath = sourceOperation.getLocationInfo().getFilePath();
+        String sourceOperationClassName = extractMethodObject.getOriginalClassName();
+        filePath = extractMethodObject.getOriginalFilePath();
         psiClass = utils.getPsiClassFromClassAndFileNames(sourceOperationClassName, filePath);
-        PsiMethod psiMethod = Utils.getPsiMethod(psiClass, sourceOperation);
+        PsiMethod psiMethod = Utils.getPsiMethod(psiClass, originalMethod);
         assert psiMethod != null;
         // Get the first method invocation
-        OperationInvocation methodInvocation = extractOperationRefactoring.getExtractedOperationInvocations().get(0);
+        OperationInvocation methodInvocation = extractMethodObject.getMethodInvocations().get(0);
 
         // Get the statements that surround the method invocation
         PsiElement[] surroundingElements = getSurroundingElements(psiMethod, extractedMethod, methodInvocation);
-        ExtractOperationRefactoringWrapper refactoringWrapper =
-                RefactoringWrapperUtils.wrapExtractOperation(extractOperationRefactoring, surroundingElements,
-                        thrownExceptionInfo);
+        extractMethodObject.setThrownExceptionInfo(thrownExceptionInfo);
+        extractMethodObject.setSurroundingElements(surroundingElements);
 
         PsiJavaCodeReferenceElement referenceElement = Utils.getPsiReferenceExpressionsForExtractMethod(extractedMethod, project);
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
@@ -132,7 +124,7 @@ public class UndoOperations {
 
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);
-        return refactoringWrapper;
+        return extractMethodObject;
     }
 
     /*

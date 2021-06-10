@@ -1,6 +1,5 @@
 package ca.ualberta.cs.smr.core.matrix.receivers;
 
-import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameClassDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassRenameClassCell;
@@ -15,18 +14,13 @@ public class RenameClassReceiver extends Receiver {
      */
     @Override
     public void receive(RenameMethodDispatcher dispatcher) {
+        RefactoringObject methodRefactoring = dispatcher.getRefactoringObject();
         if(dispatcher.getProject() == null) {
-            RefactoringObject methodRefactoring = dispatcher.getRefactoringObject();
             RenameClassRenameMethodCell.checkRenameClassRenameMethodCombination(methodRefactoring, this.refactoringObject);
             dispatcher.setRefactoringObject(methodRefactoring);
         }
         else {
-            Node dispatcherNode = dispatcher.getNode();
-            boolean isDependent = RenameClassRenameMethodCell.renameClassRenameMethodDependenceCell(dispatcherNode, receiverNode);
-            if (isDependent) {
-                // If there is dependence between branches, the rename method needs to happen before the rename class
-                graph.updateGraph(dispatcherNode, receiverNode);
-            }
+            boolean isDependent = RenameClassRenameMethodCell.renameClassRenameMethodDependenceCell(methodRefactoring, this.refactoringObject);
         }
     }
 
@@ -36,16 +30,15 @@ public class RenameClassReceiver extends Receiver {
      */
     @Override
     public void receive(RenameClassDispatcher dispatcher) {
+        RefactoringObject secondRefactoring = dispatcher.getRefactoringObject();
         if(dispatcher.getProject() == null) {
-            RefactoringObject secondRefactoring = dispatcher.getRefactoringObject();
             this.isTransitive = RenameClassRenameClassCell.checkRenameClassRenameClassTransitivity(this.refactoringObject,
                     secondRefactoring);
             dispatcher.setRefactoringObject(secondRefactoring);
 
         }
         else {
-            Node dispatcherNode = dispatcher.getNode();
-            boolean isConflicting = RenameClassRenameClassCell.renameClassRenameClassConflictCell(dispatcherNode, receiverNode);
+            boolean isConflicting = RenameClassRenameClassCell.renameClassRenameClassConflictCell(secondRefactoring, this.refactoringObject);
             System.out.println("Rename Class/Rename Class conflict: " + isConflicting);
         }
     }

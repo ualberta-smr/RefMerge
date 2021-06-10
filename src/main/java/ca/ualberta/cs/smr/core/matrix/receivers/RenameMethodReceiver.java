@@ -1,6 +1,5 @@
 package ca.ualberta.cs.smr.core.matrix.receivers;
 
-import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.logicCells.RenameMethodRenameMethodCell;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
@@ -22,9 +21,9 @@ public class RenameMethodReceiver extends Receiver {
         }
         // Check for rename method/rename method conflict
         else {
-            Node dispatcherNode = dispatcher.getNode();
+            RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
             RenameMethodRenameMethodCell cell = new RenameMethodRenameMethodCell(project);
-            boolean isConflicting = cell.renameMethodRenameMethodConflictCell(dispatcherNode, receiverNode);
+            boolean isConflicting = cell.renameMethodRenameMethodConflictCell(dispatcherRefactoring, this.refactoringObject);
             System.out.println("Rename Method/Rename Method conflict: " + isConflicting);
         }
     }

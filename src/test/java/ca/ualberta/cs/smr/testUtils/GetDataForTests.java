@@ -1,7 +1,8 @@
 package ca.ualberta.cs.smr.testUtils;
 
 
-import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
+import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
+import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLModel;
 import gr.uom.java.xmi.UMLModelASTReader;
@@ -44,9 +45,9 @@ public class GetDataForTests {
         return null;
     }
 
-    public static List<Pair> getPairs(String type, String originalPath, String refactoredPath) {
+    public static List<RefactoringObject> getRefactoringObjects(String type, String originalPath, String refactoredPath) {
 
-        List<Pair> refs = new ArrayList<>();
+        List<RefactoringObject> refs = new ArrayList<>();
         try {
 
             UMLModel model1 = new UMLModelASTReader(new File(originalPath)).getUmlModel();
@@ -58,8 +59,8 @@ public class GetDataForTests {
             }
             for(Refactoring ref : refactorings) {
                 if(ref.getRefactoringType().toString().equals(type)) {
-                    Pair pair = new Pair(0, ref);
-                    refs.add(pair);
+                    RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
+                    refs.add(refactoringObject);
                 }
             }
             return refs;

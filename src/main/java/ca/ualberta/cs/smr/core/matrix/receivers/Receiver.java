@@ -1,7 +1,5 @@
 package ca.ualberta.cs.smr.core.matrix.receivers;
 
-import ca.ualberta.cs.smr.core.dependenceGraph.DependenceGraph;
-import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.ExtractMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameClassDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameMethodDispatcher;
@@ -15,15 +13,12 @@ import com.intellij.openapi.project.Project;
  */
 
 public class Receiver {
-    Node receiverNode;
-    DependenceGraph graph;
     Project project;
     RefactoringObject refactoringObject;
     boolean isTransitive;
 
-    public void set(Node receiverNode, DependenceGraph graph, Project project) {
-        this.receiverNode = receiverNode;
-        this.graph = graph;
+    public void set(RefactoringObject refactoringObject,  Project project) {
+        this.refactoringObject = refactoringObject;
         this.project = project;
     }
 

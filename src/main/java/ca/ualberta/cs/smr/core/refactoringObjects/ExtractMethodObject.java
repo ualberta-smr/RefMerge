@@ -4,10 +4,13 @@ import com.intellij.psi.PsiElement;
 import com.intellij.refactoring.changeSignature.ThrownExceptionInfo;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.decomposition.AbstractCodeFragment;
+import gr.uom.java.xmi.decomposition.OperationInvocation;
+import gr.uom.java.xmi.decomposition.replacement.Replacement;
 import gr.uom.java.xmi.diff.ExtractOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
+import java.util.List;
 import java.util.Set;
 
 /*
@@ -23,7 +26,9 @@ public class ExtractMethodObject implements RefactoringObject {
     private String destinationClassName;
     private MethodSignatureObject originalMethodSignature;
     private MethodSignatureObject destinationMethodSignature;
+    private List<OperationInvocation> methodInvocations;
     private Set<AbstractCodeFragment> extractedCodeFragments;
+    private Set<Replacement> replacements;
     private PsiElement[] surroundingElements;
     private ThrownExceptionInfo[] thrownExceptionInfo;
 
@@ -53,9 +58,13 @@ public class ExtractMethodObject implements RefactoringObject {
         this.destinationFilePath = destinationOperation.getLocationInfo().getFilePath();
         this.originalClassName = originalOperation.getClassName();
         this.destinationClassName = destinationOperation.getClassName();
-        this.originalMethodSignature = new MethodSignatureObject(originalOperation.getName(), originalOperation.getParameters());
-        this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(), destinationOperation.getParameters());
+        this.originalMethodSignature = new MethodSignatureObject(originalOperation.getName(),
+                originalOperation.getParameters(), originalOperation.isConstructor(), originalOperation.getVisibility());
+        this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(),
+                destinationOperation.getParameters(), destinationOperation.isConstructor(), destinationOperation.getVisibility());
+        this.methodInvocations = extractOperationRefactoring.getExtractedOperationInvocations();
         this.extractedCodeFragments = extractOperationRefactoring.getExtractedCodeFragmentsFromSourceOperation();
+        this.replacements = extractOperationRefactoring.getReplacements();
         this.surroundingElements = null;
         this.thrownExceptionInfo = null;
     }
@@ -116,6 +125,10 @@ public class ExtractMethodObject implements RefactoringObject {
         this.destinationMethodSignature = destinationMethodSignature;
     }
 
+    public List<OperationInvocation> getMethodInvocations() {
+        return this.methodInvocations;
+    }
+
     public Set<AbstractCodeFragment> getExtractedCodeFragments() {
         return this.extractedCodeFragments;
     }
@@ -126,6 +139,10 @@ public class ExtractMethodObject implements RefactoringObject {
 
     public PsiElement[] getSurroundingElements() {
         return this.surroundingElements;
+    }
+
+    public Set<Replacement> getReplacements() {
+        return this.getReplacements();
     }
 
     public void setThrownExceptionInfo(ThrownExceptionInfo[] thrownExceptionInfo) {

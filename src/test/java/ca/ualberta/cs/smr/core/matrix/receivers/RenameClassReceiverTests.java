@@ -1,11 +1,12 @@
 package ca.ualberta.cs.smr.core.matrix.receivers;
 
-import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassRenameClassCell;
 import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassRenameMethodCell;
+import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameClassDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameMethodDispatcher;
+import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
@@ -23,10 +24,10 @@ public class RenameClassReceiverTests extends LightJavaCodeInsightFixtureTestCas
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
-        Node node = new Node(ref);
+        RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
         RenameClassReceiver receiver = new RenameClassReceiver();
-        receiver.set(node, null, null);
-        Assert.assertNotNull("The refactoring element should not be null", receiver.receiverNode);
+        receiver.set(refactoringObject, null);
+        Assert.assertNotNull("The refactoring element should not be null", receiver.refactoringObject);
     }
 
     public void testRenameMethodDispatcherReceive() {
@@ -57,12 +58,12 @@ public class RenameClassReceiverTests extends LightJavaCodeInsightFixtureTestCas
         Refactoring foo = refactorings.get(0);
         Refactoring foo2 = refactorings.get(1);
         Refactoring bar = refactorings.get(2);
-        Node leftNode = new Node(foo);
-        Node rightNode = new Node(foo2);
-        boolean isConflicting = RenameClassRenameClassCell.renameClassRenameClassConflictCell(leftNode, rightNode);
+        RefactoringObject leftRefactoring = RefactoringObjectUtils.createRefactoringObject(foo);
+        RefactoringObject rightRefactoring = RefactoringObjectUtils.createRefactoringObject(foo2);
+        boolean isConflicting = RenameClassRenameClassCell.renameClassRenameClassConflictCell(leftRefactoring, rightRefactoring);
         Assert.assertTrue(isConflicting);
-        rightNode = new Node(bar);
-        isConflicting = RenameClassRenameClassCell.renameClassRenameClassConflictCell(leftNode, rightNode);
+        rightRefactoring = RefactoringObjectUtils.createRefactoringObject(bar);
+        isConflicting = RenameClassRenameClassCell.renameClassRenameClassConflictCell(leftRefactoring, rightRefactoring);
         Assert.assertFalse(isConflicting);
     }
 
@@ -73,12 +74,12 @@ public class RenameClassReceiverTests extends LightJavaCodeInsightFixtureTestCas
         List<Refactoring> methodRefs = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         List<Refactoring> classRefs = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert methodRefs != null;
-        Refactoring rightRef = methodRefs.get(0);
+        Refactoring leftRef = methodRefs.get(0);
         assert classRefs != null;
-        Refactoring leftRef = classRefs.get(0);
-        Node leftNode = new Node(leftRef);
-        Node rightNode = new Node(rightRef);
-        boolean isDependent = RenameClassRenameMethodCell.renameClassRenameMethodDependenceCell(rightNode, leftNode);
+        Refactoring rightRef = classRefs.get(0);
+        RefactoringObject leftRefactoring = RefactoringObjectUtils.createRefactoringObject(leftRef);
+        RefactoringObject rightRefactoring = RefactoringObjectUtils.createRefactoringObject(rightRef);
+        boolean isDependent = RenameClassRenameMethodCell.renameClassRenameMethodDependenceCell(leftRefactoring, rightRefactoring);
         Assert.assertTrue(isDependent);
     }
 }
