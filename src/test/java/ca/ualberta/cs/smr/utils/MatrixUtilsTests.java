@@ -7,7 +7,6 @@ import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
-import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
 
@@ -44,64 +43,6 @@ public class MatrixUtilsTests extends LightJavaCodeInsightFixtureTestCase {
         Assert.assertEquals("The original name of the rename refactoring should be \"doStuff\"", "doStuff", name);
     }
 
-    public void testGetRefactoredRenameOperation() {
-        String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/matrixUtilsTests/original";
-        String refactoredPath = basePath + "/src/test/resources/matrixUtilsTests/refactored";
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
-        assert refactorings != null;
-        Refactoring refactoring = refactorings.get(0);
-
-        UMLOperation operation = MatrixUtils.getRefactoredRenameOperation(refactoring);
-        Assert.assertNotNull("The refactoring operation should not be null", operation);
-        String name = operation.getName();
-        Assert.assertEquals("The refactored name of the rename refactoring should be \"checkIfClassroomWorks\"",
-                                        "checkIfClassroomWorks", name);
-    }
-
-    public void testGetOriginalMethodName() {
-        String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/matrixUtilsTests/original";
-        String refactoredPath = basePath + "/src/test/resources/matrixUtilsTests/refactored";
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
-        assert refactorings != null;
-        Refactoring refactoring = refactorings.get(0);
-
-        String name = MatrixUtils.getOriginalMethodName(refactoring);
-        assert refactoring != null;
-        String expectedName = ((RenameOperationRefactoring) refactoring).getOriginalOperation().getName();
-        Assert.assertEquals("The original name of the rename refactoring should be \"doStuff\"", expectedName, name);
-    }
-
-    public void testGetRefactoredMethodName() {
-        String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/matrixUtilsTests/original";
-        String refactoredPath = basePath + "/src/test/resources/matrixUtilsTests/refactored";
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
-        assert refactorings != null;
-        Refactoring refactoring = refactorings.get(0);
-
-        String name = MatrixUtils.getRefactoredMethodName(refactoring);
-        assert refactoring != null;
-        String expectedName = ((RenameOperationRefactoring) refactoring).getRenamedOperation().getName();
-        Assert.assertEquals("The refactored name of the rename refactoring should be \"checkIfClassroomWorks\"",
-                expectedName, name);
-    }
-
-    public void testGetOriginalRenameOperationClassName() {
-        String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/matrixUtilsTests/original";
-        String refactoredPath = basePath + "/src/test/resources/matrixUtilsTests/refactored";
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
-        assert refactorings != null;
-        Refactoring refactoring = refactorings.get(0);
-
-        String name = MatrixUtils.getOriginalRenameOperationClassName(refactoring);
-        assert refactoring != null;
-        String expectedName = ((RenameOperationRefactoring) refactoring).getOriginalOperation().getClassName();
-        Assert.assertEquals("The original class name of the rename refactoring should be \"Main\"",
-                expectedName, name);
-    }
 
     public void testGetOriginalClassOperation() {
         String basePath = System.getProperty("user.dir");
@@ -131,18 +72,6 @@ public class MatrixUtilsTests extends LightJavaCodeInsightFixtureTestCase {
         Assert.assertEquals("The name should be \"ChildClass\"","ChildClass", name);
     }
 
-    public void testGetOriginalClassPackage() {
-        String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/matrixUtilsTests/original";
-        String refactoredPath = basePath + "/src/test/resources/matrixUtilsTests/refactored";
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
-        assert refactorings != null;
-        Refactoring refactoring = refactorings.get(0);
-        Assert.assertNotNull(refactoring);
-        String name = MatrixUtils.getOriginalClassPackage(refactoring);
-        String expectedName = ((RenameClassRefactoring) refactoring).getOriginalClass().getPackageName();
-        Assert.assertEquals(name, expectedName);
-    }
 
     public void testGetOriginalClassOperationName() {
         String basePath = System.getProperty("user.dir");
@@ -169,17 +98,6 @@ public class MatrixUtilsTests extends LightJavaCodeInsightFixtureTestCase {
         String name = MatrixUtils.getRefactoredClassOperationName(refactoring);
         String expectedName = ((RenameClassRefactoring) refactoring).getRenamedClass().getName();
         Assert.assertEquals("The original name of the class should be \"ClassFile\"", name, expectedName);
-    }
-
-    public void testGetUMLClass() {
-        String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/matrixUtilsTests/original";
-        String className = "Main";
-        UMLClass umlClass = MatrixUtils.getUMLClass(className, originalPath);
-        Assert.assertNotNull("The UML class should not be null", umlClass);
-        Assert.assertEquals("The name of the UML class should be \"Main\"", umlClass.getName(), className);
-        umlClass = MatrixUtils.getUMLClass("", "");
-        Assert.assertNull("getUMLClass should return null", umlClass);
     }
 
     public void testIfClassExtends() {
@@ -260,5 +178,6 @@ public class MatrixUtilsTests extends LightJavaCodeInsightFixtureTestCase {
                 refactoredElement, refactoredVisitor);
         Assert.assertTrue("Expected true because two elements are renamed to the same name", expectedTrue);
     }
+
 
 }

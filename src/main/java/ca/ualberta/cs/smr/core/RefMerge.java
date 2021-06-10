@@ -1,11 +1,9 @@
 package ca.ualberta.cs.smr.core;
 
-import ca.ualberta.cs.smr.core.dependenceGraph.DependenceGraph;
-import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.Matrix;
-import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
+import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
+import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.utils.Utils;
-import ca.ualberta.cs.smr.utils.sortingUtils.SortPairs;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
@@ -18,7 +16,6 @@ import com.intellij.openapi.project.ProjectManager;
 import org.refactoringminer.api.GitHistoryRefactoringMiner;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringHandler;
-import org.refactoringminer.api.RefactoringType;
 import org.refactoringminer.rm1.GitHistoryRefactoringMinerImpl;
 import org.eclipse.jgit.api.Git;
 import ca.ualberta.cs.smr.utils.GitUtils;
@@ -48,8 +45,8 @@ public class RefMerge extends AnAction {
         List<GitRepository> repos = repoManager.getRepositories();
         GitRepository repo = repos.get(0);
         String mergeCommit = "19dace1b8a";
-        String rightCommit = "f856983a2c85";
-        String leftCommit = "d76a02cd16f9d8";
+        String rightCommit = "871f7747de";
+        String leftCommit = "ed491954849";
 
 
         refMerge(mergeCommit, rightCommit, leftCommit, project, repo);
@@ -85,10 +82,8 @@ public class RefMerge extends AnAction {
 
         GitUtils gitUtils = new GitUtils(repo, project);
         String baseCommit = gitUtils.getBaseCommit(leftCommit, rightCommit);
-        List<Pair> rightRefs = detectCommits(rightCommit, baseCommit);
-        SortPairs.sortList(rightRefs);
-        List<Pair> leftRefs = detectCommits(leftCommit, baseCommit);
-        SortPairs.sortList(leftRefs);
+        ArrayList<RefactoringObject> rightRefs = getAndSimplifyRefactorings(rightCommit, baseCommit);
+        ArrayList<RefactoringObject> leftRefs = getAndSimplifyRefactorings(leftCommit, baseCommit);
 
         // Checkout base commit and store it in temp/base
         gitUtils.checkout(baseCommit);
@@ -117,11 +112,11 @@ public class RefMerge extends AnAction {
 
         // Check if any of the refactorings are conflicting or have ordering dependencies
         Matrix matrix = new Matrix(project);
-        DependenceGraph graph = matrix.runMatrix(leftRefs, rightRefs);
+        ArrayList<RefactoringObject> mergedRefactoringList = matrix.runMatrix(leftRefs, rightRefs);
 
         // Combine the lists so we can perform all the refactorings on the merged project
         // Replay all of the refactorings
-        replayRefactorings(graph);
+        replayRefactorings(mergedRefactoringList);
 
 
     }
@@ -129,53 +124,49 @@ public class RefMerge extends AnAction {
     /*
      * undoRefactorings takes a list of refactorings and performs the inverse for each one.
      */
-    public List<Pair> undoRefactorings(List<Pair> pairs) {
+    public ArrayList<RefactoringObject> undoRefactorings(ArrayList<RefactoringObject> refactoringObjects) {
         UndoOperations undo = new UndoOperations(project);
         // Iterate through the list of refactorings and undo each one
-        for(Pair pair : pairs) {
-            Refactoring ref = pair.getValue();
-            switch (ref.getRefactoringType()) {
+        for(RefactoringObject refactoringObject : refactoringObjects) {
+            switch (refactoringObject.getRefactoringType()) {
                 case RENAME_CLASS:
                     // Undo the rename class refactoring. This is commented out because of the prompt issue
-                    undo.undoRenameClass(ref);
+                    undo.undoRenameClass(refactoringObject);
                     break;
                 case RENAME_METHOD:
                     // Undo the rename method refactoring
-                    undo.undoRenameMethod(ref);
+                    undo.undoRenameMethod(refactoringObject);
                     break;
                 case EXTRACT_OPERATION:
-                    ref = undo.undoExtractMethod(ref);
-                    int index = pairs.indexOf(pair);
-                    pair.setValue(ref);
-                    pairs.set(index, pair);
+                    refactoringObject = undo.undoExtractMethod(refactoringObject);
+                    int index = refactoringObjects.indexOf(refactoringObject);
+                    refactoringObjects.set(index, refactoringObject);
 
             }
 
         }
         // Save all of the refactoring changes from memory onto disk
         FileDocumentManager.getInstance().saveAllDocuments();
-        return pairs;
+        return refactoringObjects;
     }
 
     /*
      * replayRefactorings takes a list of refactorings and performs each of the refactorings.
      */
-    public void replayRefactorings(DependenceGraph graph) {
+    public void replayRefactorings(ArrayList<RefactoringObject> refactoringObjects) {
         try {
             ReplayOperations replay = new ReplayOperations(project);
-            List<Node> nodes = graph.getSortedNodes();
-            for(Node node : nodes) {
-                Refactoring ref = node.getRefactoring();
-                switch (ref.getRefactoringType()) {
+            for(RefactoringObject refactoringObject : refactoringObjects) {
+                switch (refactoringObject.getRefactoringType()) {
                     case RENAME_CLASS:
-                        replay.replayRenameClass(ref);
+                        replay.replayRenameClass(refactoringObject);
                         break;
                     case RENAME_METHOD:
                         // Perform the rename method refactoring
-                        replay.replayRenameMethod(ref);
+                        replay.replayRenameMethod(refactoringObject);
                         break;
                     case EXTRACT_OPERATION:
-                        replay.replayExtractMethod(ref);
+                        replay.replayExtractMethod(refactoringObject);
                 }
 
             }
@@ -188,44 +179,36 @@ public class RefMerge extends AnAction {
     }
 
     /*
-     * detectCommits uses RefactoringMiner to get the refactorings from commits between the base and commit.
+     * Use RefMiner to detect refactorings in commits between the base commit and the parent commit. Compare each newly
+     * detected refactoring against previously detected refactorings to check for transitivity or if the refactorings can
+     * be simplified.
      */
-    public List<Pair> detectCommits(String commit, String base) {
-        // Store the resulting refactorings into refResult
-        List<Pair> refResult = new ArrayList<>();
+    public ArrayList<RefactoringObject> getAndSimplifyRefactorings(String commit, String base) {
+        ArrayList<RefactoringObject> simplifiedRefactorings = new ArrayList<>();
+        Matrix matrix = new Matrix(project);
         GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
         try {
             miner.detectBetweenCommits(git.getRepository(), base, commit,
-                    new RefactoringHandler() {
-                        private int count = 0;
-                        @Override
-                        public void handle(String commitId, List<Refactoring> refactorings) {
-                            boolean skip = false;
-                            // Add each refactoring to refResult
-                            for(Refactoring refactoring : refactorings) {
-                                RefactoringType type = refactoring.getRefactoringType();
-                                if(type == RefactoringType.RENAME_CLASS || type == RefactoringType.RENAME_METHOD
-                                        || type == RefactoringType.EXTRACT_OPERATION) {
-                                    Pair pair = new Pair(count, refactoring);
-                                    for(Pair p : refResult) {
-                                        if(refactoring.toString().equals(p.getValue().toString())) {
-                                            skip = true;
-                                        }
-                                    }
-                                    if(!skip) {
-                                        refResult.add(pair);
-                                    }
-                                }
+                new RefactoringHandler() {
+                    @Override
+                    public void handle(String commitId, List<Refactoring> refactorings) {
+                        // Add each refactoring to refResult
+                        for(Refactoring refactoring : refactorings) {
+                            // Create the refactoring object so we can compare and update
+                            RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(refactoring);
+                            // If the refactoring type is not presently supported, skip it
+                            if(refactoringObject == null) {
+                                continue;
                             }
-                            count++;
-                            // For undo, we want to start at the highest count and go to 0
-                            // For replay, start at 0 and continue to the highest.
+                            // simplify refactorings and check if factoring is transitive
+                            matrix.simplifyAndInsertRefactorings(refactoringObject, simplifiedRefactorings);
                         }
-                    });
+                    }
+                });
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return refResult;
+        return simplifiedRefactorings;
     }
 
 }

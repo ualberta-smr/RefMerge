@@ -1,9 +1,9 @@
 package ca.ualberta.cs.smr.core.matrix.receivers;
 
-import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.logicCells.ExtractMethodRenameClassCell;
-import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassRenameMethodCell;
+import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
+import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
@@ -20,10 +20,10 @@ public class ExtractMethodReceiverTests extends LightJavaCodeInsightFixtureTestC
         List<Refactoring> classRenameRefactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert extractMethodRefactorings != null;
         assert classRenameRefactorings != null;
-        Node extractMethodNode = new Node(extractMethodRefactorings.get(1));
-        Node renameClassNode = new Node(classRenameRefactorings.get(0));
+        RefactoringObject extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(1));
+        RefactoringObject renameClassObject = RefactoringObjectUtils.createRefactoringObject(classRenameRefactorings.get(0));
 
-        boolean isDependent = ExtractMethodRenameClassCell.extractMethodRenameClassDependenceCell(renameClassNode, extractMethodNode);
+        boolean isDependent = ExtractMethodRenameClassCell.extractMethodRenameClassDependenceCell(renameClassObject, extractMethodObject);
         Assert.assertTrue(isDependent);
     }
 
