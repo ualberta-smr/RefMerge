@@ -2,9 +2,13 @@ package ca.ualberta.cs.smr.core.refactoringObjects;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.refactoring.changeSignature.ThrownExceptionInfo;
+import gr.uom.java.xmi.UMLOperation;
+import gr.uom.java.xmi.UMLParameter;
 import gr.uom.java.xmi.diff.ExtractOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
+
+import java.util.List;
 
 /*
  * Represents an extract method refactoring. Contains the necessary information for logic checks and performing the
@@ -15,25 +19,25 @@ public class ExtractMethodObject implements RefactoringObject {
     private final RefactoringType refactoringType;
     private String originalFilePath;
     private String destinationFilePath;
-    private String originalMethodName;
-    private String destinationMethodName;
     private String originalClassName;
     private String destinationClassName;
+    private MethodSignatureObject originalMethodSignature;
+    private MethodSignatureObject destinationMethodSignature;
     private PsiElement[] surroundingElements;
     private ThrownExceptionInfo[] thrownExceptionInfo;
 
     /*
      * Use the provided information to create the extract method object for testing.
      */
-    public ExtractMethodObject(String originalFilePath, String originalClassName, String originalMethodName,
-                              String destinationFilePath, String destinationClassName, String destinationMethodName) {
+    public ExtractMethodObject(String originalFilePath, String originalClassName, MethodSignatureObject originalMethodSignature,
+                              String destinationFilePath, String destinationClassName, MethodSignatureObject destinationMethodSignature) {
         this.refactoringType = RefactoringType.EXTRACT_OPERATION;
         this.originalFilePath = originalFilePath;
         this.originalClassName = originalClassName;
-        this.originalMethodName = originalMethodName;
+        this.originalMethodSignature = originalMethodSignature;
         this.destinationFilePath = destinationFilePath;
         this.destinationClassName = destinationClassName;
-        this.destinationMethodName = destinationMethodName;
+        this.destinationMethodSignature = destinationMethodSignature;
     }
 
     /*
@@ -41,13 +45,15 @@ public class ExtractMethodObject implements RefactoringObject {
      */
     public ExtractMethodObject(Refactoring refactoring) {
         ExtractOperationRefactoring extractOperationRefactoring = (ExtractOperationRefactoring) refactoring;
+        UMLOperation originalOperation = extractOperationRefactoring.getSourceOperationBeforeExtraction();
+        UMLOperation destinationOperation = extractOperationRefactoring.getExtractedOperation();
         this.refactoringType = refactoring.getRefactoringType();
-        this.originalFilePath = extractOperationRefactoring.getSourceOperationBeforeExtraction().getLocationInfo().getFilePath();
-        this.destinationFilePath = extractOperationRefactoring.getExtractedOperation().getLocationInfo().getFilePath();
-        this.originalMethodName = extractOperationRefactoring.getSourceOperationBeforeExtraction().getName();
-        this.destinationMethodName = extractOperationRefactoring.getExtractedOperation().getName();
-        this.originalClassName = extractOperationRefactoring.getSourceOperationBeforeExtraction().getClassName();
-        this.destinationClassName = extractOperationRefactoring.getExtractedOperation().getClassName();
+        this.originalFilePath = originalOperation.getLocationInfo().getFilePath();
+        this.destinationFilePath = destinationOperation.getLocationInfo().getFilePath();
+        this.originalClassName = originalOperation.getClassName();
+        this.destinationClassName = destinationOperation.getClassName();
+        this.originalMethodSignature = new MethodSignatureObject(originalOperation.getName(), originalOperation.getParameters());
+        this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(), destinationOperation.getParameters());
         this.surroundingElements = null;
         this.thrownExceptionInfo = null;
     }
@@ -76,22 +82,6 @@ public class ExtractMethodObject implements RefactoringObject {
         return this.destinationFilePath;
     }
 
-    public void setOriginalMethodName(String originalMethodName) {
-        this.originalMethodName = originalMethodName;
-    }
-
-    public String getOriginalMethodName() {
-        return this.originalMethodName;
-    }
-
-    public void setDestinationMethodName(String destinationMethodName) {
-        this.destinationMethodName = destinationMethodName;
-    }
-
-    public String getDestinationMethodName() {
-        return this.destinationMethodName;
-    }
-
     public void setOriginalClassName(String originalClassName) {
         this.originalClassName = originalClassName;
     }
@@ -108,7 +98,23 @@ public class ExtractMethodObject implements RefactoringObject {
         return this.destinationClassName;
     }
 
-    public void getSurroundingElements(PsiElement[] surroundingElements) {
+    public MethodSignatureObject getOriginalMethodSignature() {
+        return originalMethodSignature;
+    }
+
+    public void setOriginalMethodSignature(MethodSignatureObject originalMethodSignature) {
+        this.originalMethodSignature = originalMethodSignature;
+    }
+
+    public MethodSignatureObject getDestinationMethodSignature() {
+        return destinationMethodSignature;
+    }
+
+    public void setDestinationMethodSignature(MethodSignatureObject destinationMethodSignature) {
+        this.destinationMethodSignature = destinationMethodSignature;
+    }
+
+    public void setSurroundingElements(PsiElement[] surroundingElements) {
         this.surroundingElements = surroundingElements;
     }
 

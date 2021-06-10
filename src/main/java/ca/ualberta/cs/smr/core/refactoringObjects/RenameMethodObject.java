@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core.refactoringObjects;
 
+import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
@@ -14,23 +15,24 @@ public class RenameMethodObject implements RefactoringObject {
     private final RefactoringType refactoringType;
     private String originalFilePath;
     private String destinationFilePath;
-    private String originalMethodName;
-    private String destinationMethodName;
+    private MethodSignatureObject originalMethodSignature;
     private String originalClassName;
     private String destinationClassName;
+    private MethodSignatureObject destinationMethodSignature;
 
     /*
      * Use the provided information to create the rename method object for testing.
      */
-    public RenameMethodObject(String originalFilePath, String originalClassName, String originalMethodName,
-                              String destinationFilePath, String destinationClassName, String destinationMethodName) {
+    public RenameMethodObject(String originalFilePath, String originalClassName, MethodSignatureObject originalMethodSignature,
+                              String destinationFilePath, String destinationClassName, MethodSignatureObject destinationMethodSignature) {
         this.refactoringType = RefactoringType.RENAME_METHOD;
         this.originalFilePath = originalFilePath;
         this.originalClassName = originalClassName;
-        this.originalMethodName = originalMethodName;
+        this.originalMethodSignature = originalMethodSignature;
         this.destinationFilePath = destinationFilePath;
         this.destinationClassName = destinationClassName;
-        this.destinationMethodName = destinationMethodName;
+        this.destinationMethodSignature = destinationMethodSignature;
+
     }
 
     /*
@@ -38,13 +40,15 @@ public class RenameMethodObject implements RefactoringObject {
      */
     public RenameMethodObject(Refactoring refactoring) {
         RenameOperationRefactoring renameOperationRefactoring = (RenameOperationRefactoring) refactoring;
+        UMLOperation originalOperation = renameOperationRefactoring.getOriginalOperation();
+        UMLOperation destinationOperation = renameOperationRefactoring.getRenamedOperation();
         this.refactoringType = refactoring.getRefactoringType();
-        this.originalFilePath = renameOperationRefactoring.getOriginalOperation().getLocationInfo().getFilePath();
-        this.destinationFilePath = renameOperationRefactoring.getRenamedOperation().getLocationInfo().getFilePath();
-        this.originalMethodName = renameOperationRefactoring.getOriginalOperation().getName();
-        this.destinationMethodName = renameOperationRefactoring.getRenamedOperation().getName();
-        this.originalClassName = renameOperationRefactoring.getOriginalOperation().getClassName();
-        this.destinationClassName = renameOperationRefactoring.getRenamedOperation().getClassName();
+        this.originalFilePath = originalOperation.getLocationInfo().getFilePath();
+        this.destinationFilePath = destinationOperation.getLocationInfo().getFilePath();
+        this.originalClassName = originalOperation.getClassName();
+        this.destinationClassName = destinationOperation.getClassName();
+        this.originalMethodSignature = new MethodSignatureObject(originalOperation.getName(), originalOperation.getParameters());
+        this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(), destinationOperation.getParameters());
     }
 
     public RefactoringType getRefactoringType() {
@@ -71,22 +75,6 @@ public class RenameMethodObject implements RefactoringObject {
         return this.destinationFilePath;
     }
 
-    public void setOriginalMethodName(String originalMethodName) {
-        this.originalMethodName = originalMethodName;
-    }
-
-    public String getOriginalMethodName() {
-        return this.originalMethodName;
-    }
-
-    public void setDestinationMethodName(String destinationMethodName) {
-        this.destinationMethodName = destinationMethodName;
-    }
-
-    public String getDestinationMethodName() {
-        return this.destinationMethodName;
-    }
-
     public void setOriginalClassName(String originalClassName) {
         this.originalClassName = originalClassName;
     }
@@ -101,6 +89,22 @@ public class RenameMethodObject implements RefactoringObject {
 
     public String getDestinationClassName() {
         return this.destinationClassName;
+    }
+
+    public MethodSignatureObject getOriginalMethodSignature() {
+        return originalMethodSignature;
+    }
+
+    public void setOriginalMethodSignature(MethodSignatureObject originalMethodSignature) {
+        this.originalMethodSignature = originalMethodSignature;
+    }
+
+    public MethodSignatureObject getDestinationMethodSignature() {
+        return destinationMethodSignature;
+    }
+
+    public void setDestinationMethodSignature(MethodSignatureObject destinationMethodSignature) {
+        this.destinationMethodSignature = destinationMethodSignature;
     }
 
 
