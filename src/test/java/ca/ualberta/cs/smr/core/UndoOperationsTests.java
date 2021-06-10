@@ -47,7 +47,7 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         Refactoring ref = refactorings.get(0);
         UndoOperations undo = new UndoOperations(project);
         RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
-        undo.undoRenameMethod(refactoringObject);
+        undo.undoMoveRenameMethod(refactoringObject);
 
         list1 = TestUtils.getMethodNames(oldMethods);
         list2 = TestUtils.getMethodNames(newMethods);

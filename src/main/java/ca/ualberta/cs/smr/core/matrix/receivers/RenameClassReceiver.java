@@ -1,12 +1,12 @@
 package ca.ualberta.cs.smr.core.matrix.receivers;
 
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameClassDispatcher;
-import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameMethodDispatcher;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassRenameClassCell;
-import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassRenameMethodCell;
+import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassMoveRenameMethodCell;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RenameClassObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.RenameMethodObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameMethodObject;
 
 public class RenameClassReceiver extends Receiver {
 
@@ -15,18 +15,18 @@ public class RenameClassReceiver extends Receiver {
      * rename method/rename method dependence.
      */
     @Override
-    public void receive(RenameMethodDispatcher dispatcher) {
+    public void receive(MoveRenameMethodDispatcher dispatcher) {
         RefactoringObject methodRefactoring = dispatcher.getRefactoringObject();
         if(dispatcher.isSimplify()) {
-            RenameClassRenameMethodCell.checkRenameClassRenameMethodCombination(methodRefactoring, this.refactoringObject);
+            RenameClassMoveRenameMethodCell.checkRenameClassRenameMethodCombination(methodRefactoring, this.refactoringObject);
             dispatcher.setRefactoringObject(methodRefactoring);
         }
         else {
-            boolean isDependent = RenameClassRenameMethodCell.renameClassRenameMethodDependenceCell(methodRefactoring, this.refactoringObject);
+            boolean isDependent = RenameClassMoveRenameMethodCell.renameClassRenameMethodDependenceCell(methodRefactoring, this.refactoringObject);
             // If the rename method happens in the rename class, update the renamed method's class name
             if(isDependent) {
                 methodRefactoring.setDestinationFilePath(refactoringObject.getDestinationFilePath());
-                ((RenameMethodObject) methodRefactoring).
+                ((MoveRenameMethodObject) methodRefactoring).
                         setDestinationClassName(((RenameClassObject) refactoringObject).getDestinationClassName());
             }
         }

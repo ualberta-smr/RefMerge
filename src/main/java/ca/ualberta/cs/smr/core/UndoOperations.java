@@ -34,14 +34,14 @@ public class UndoOperations {
     /*
      * Undo the rename method refactoring that was performed in the commit
      */
-    public void undoRenameMethod(RefactoringObject ref) {
-        RenameMethodObject renameMethodObject = (RenameMethodObject) ref;
-        MethodSignatureObject original = renameMethodObject.getOriginalMethodSignature();
-        MethodSignatureObject renamed = renameMethodObject.getDestinationMethodSignature();
+    public void undoMoveRenameMethod(RefactoringObject ref) {
+        MoveRenameMethodObject moveRenameMethodObject = (MoveRenameMethodObject) ref;
+        MethodSignatureObject original = moveRenameMethodObject.getOriginalMethodSignature();
+        MethodSignatureObject renamed = moveRenameMethodObject.getDestinationMethodSignature();
         String srcName = original.getName();
-        String qualifiedClass = renameMethodObject.getDestinationClassName();
+        String qualifiedClass = moveRenameMethodObject.getDestinationClassName();
         // get the PSI class using the qualified class name
-        String filePath = renameMethodObject.getDestinationFilePath();
+        String filePath = moveRenameMethodObject.getDestinationFilePath();
         Utils utils = new Utils(project);
         utils.addSourceRoot(filePath);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(qualifiedClass, filePath);

@@ -10,7 +10,7 @@ import org.refactoringminer.api.RefactoringType;
  * Represents a rename method refactoring. Contains the necessary information for logic checks and performing the
  * refactoring using the IntelliJ refactoring engine.
  */
-public class RenameMethodObject implements RefactoringObject {
+public class MoveRenameMethodObject implements RefactoringObject {
 
     private final RefactoringType refactoringType;
     private String originalFilePath;
@@ -23,8 +23,8 @@ public class RenameMethodObject implements RefactoringObject {
     /*
      * Use the provided information to create the rename method object for testing.
      */
-    public RenameMethodObject(String originalFilePath, String originalClassName, MethodSignatureObject originalMethodSignature,
-                              String destinationFilePath, String destinationClassName, MethodSignatureObject destinationMethodSignature) {
+    public MoveRenameMethodObject(String originalFilePath, String originalClassName, MethodSignatureObject originalMethodSignature,
+                                  String destinationFilePath, String destinationClassName, MethodSignatureObject destinationMethodSignature) {
         this.refactoringType = RefactoringType.RENAME_METHOD;
         this.originalFilePath = originalFilePath;
         this.originalClassName = originalClassName;
@@ -38,7 +38,7 @@ public class RenameMethodObject implements RefactoringObject {
     /*
      * Creates the rename method object and takes the information that we need from the RefMiner refactoring object.
      */
-    public RenameMethodObject(Refactoring refactoring) {
+    public MoveRenameMethodObject(Refactoring refactoring) {
         RenameOperationRefactoring renameOperationRefactoring = (RenameOperationRefactoring) refactoring;
         UMLOperation originalOperation = renameOperationRefactoring.getOriginalOperation();
         UMLOperation destinationOperation = renameOperationRefactoring.getRenamedOperation();
@@ -58,7 +58,7 @@ public class RenameMethodObject implements RefactoringObject {
     }
 
     public RefactoringOrder getRefactoringOrder() {
-        return RefactoringOrder.RENAME_METHOD;
+        return RefactoringOrder.MOVE_RENAME_METHOD;
     }
 
     public void setOriginalFilePath(String originalFilePath) {

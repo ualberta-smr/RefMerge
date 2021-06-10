@@ -29,7 +29,7 @@ public class RenameClassRenameMethodLogicTests extends LightJavaCodeInsightFixtu
         Refactoring classRef = classRefs.get(0);
         RefactoringObject methodRefactoringObject = RefactoringObjectUtils.createRefactoringObject(methodRef);
         RefactoringObject classRefactoringObject = RefactoringObjectUtils.createRefactoringObject(classRef);
-        boolean isDependent = RenameClassRenameMethodCell.checkRenameMethodRenameClassDependence(methodRefactoringObject,
+        boolean isDependent = RenameClassMoveRenameMethodCell.checkRenameMethodRenameClassDependence(methodRefactoringObject,
                 classRefactoringObject);
         Assert.assertTrue(isDependent);
     }
@@ -44,13 +44,13 @@ public class RenameClassRenameMethodLogicTests extends LightJavaCodeInsightFixtu
         RenameClassObject renameClassObject = new RenameClassObject("A.java", "A",
                 "B.java", "B");
         // Rename method A.foo -> B.bar
-        RenameMethodObject renameMethodObject = new RenameMethodObject("A.java", "A",
+        MoveRenameMethodObject moveRenameMethodObject = new MoveRenameMethodObject("A.java", "A",
                 foo, "B.java", "B", bar);
         // Rename Method A.foo -> B.bar
-        RenameMethodObject expectedMethodObject = new RenameMethodObject("A.java", "A",
+        MoveRenameMethodObject expectedMethodObject = new MoveRenameMethodObject("A.java", "A",
                 foo, "B.java", "B", bar);
 
-        doRenameClassRenameMethodTest(renameMethodObject, renameClassObject, expectedMethodObject);
+        doRenameClassRenameMethodTest(moveRenameMethodObject, renameClassObject, expectedMethodObject);
     }
 
     public void testFoundRenameClassRenameMethodCombination2() {
@@ -63,12 +63,12 @@ public class RenameClassRenameMethodLogicTests extends LightJavaCodeInsightFixtu
         RenameClassObject renameClassObject = new RenameClassObject("A.java", "A",
                 "B.java", "B");
         // Rename method A.foo -> A.bar
-        RenameMethodObject renameMethodObject = new RenameMethodObject("A.java", "A",
+        MoveRenameMethodObject moveRenameMethodObject = new MoveRenameMethodObject("A.java", "A",
                 foo, "A.java", "A", bar);
         // Rename Method A.foo -> B.bar
-        RenameMethodObject expectedMethodObject = new RenameMethodObject("A.java", "A",
+        MoveRenameMethodObject expectedMethodObject = new MoveRenameMethodObject("A.java", "A",
                 foo, "B.java", "B", bar);
-        doRenameClassRenameMethodTest(renameMethodObject, renameClassObject, expectedMethodObject);
+        doRenameClassRenameMethodTest(moveRenameMethodObject, renameClassObject, expectedMethodObject);
     }
 
     public void testFoundRenameClassRenameMethodCombination3() {
@@ -81,12 +81,12 @@ public class RenameClassRenameMethodLogicTests extends LightJavaCodeInsightFixtu
         RenameClassObject renameClassObject = new RenameClassObject("A.java", "A",
                 "B.java", "B");
         // Rename method B.foo -> B.bar
-        RenameMethodObject renameMethodObject = new RenameMethodObject("B.java", "B",
+        MoveRenameMethodObject moveRenameMethodObject = new MoveRenameMethodObject("B.java", "B",
                 foo, "B.java", "B", bar);
         // Rename Method A.foo -> B.bar
-        RenameMethodObject expectedMethodObject = new RenameMethodObject("A.java", "A",
+        MoveRenameMethodObject expectedMethodObject = new MoveRenameMethodObject("A.java", "A",
                 foo, "B.java", "B", bar);
-        doRenameClassRenameMethodTest(renameMethodObject, renameClassObject, expectedMethodObject);
+        doRenameClassRenameMethodTest(moveRenameMethodObject, renameClassObject, expectedMethodObject);
     }
 
 
@@ -100,24 +100,24 @@ public class RenameClassRenameMethodLogicTests extends LightJavaCodeInsightFixtu
         RenameClassObject renameClassObject = new RenameClassObject("A.java", "A",
                 "b.java", "B");
         // Rename method C.foo -> C.bar
-        RenameMethodObject renameMethodObject = new RenameMethodObject("C.java", "C", foo,
+        MoveRenameMethodObject moveRenameMethodObject = new MoveRenameMethodObject("C.java", "C", foo,
                 "C.java", "C", bar);
         // Rename Method C.foo -> C.bar
-        RenameMethodObject expectedMethodObject = new RenameMethodObject("C.java", "C", foo,
+        MoveRenameMethodObject expectedMethodObject = new MoveRenameMethodObject("C.java", "C", foo,
                 "C.java", "C", bar);
-        doRenameClassRenameMethodTest(renameMethodObject, renameClassObject, expectedMethodObject);
+        doRenameClassRenameMethodTest(moveRenameMethodObject, renameClassObject, expectedMethodObject);
     }
 
     private void doRenameClassRenameMethodTest(RefactoringObject renameMethodObject, RefactoringObject renameClassObject,
                                                RefactoringObject expectedRefactoring) {
-        RenameClassRenameMethodCell.checkRenameClassRenameMethodCombination(renameMethodObject, renameClassObject);
+        RenameClassMoveRenameMethodCell.checkRenameClassRenameMethodCombination(renameMethodObject, renameClassObject);
 
         Assert.assertEquals(expectedRefactoring.getOriginalFilePath(), renameMethodObject.getOriginalFilePath());
         Assert.assertEquals(expectedRefactoring.getDestinationFilePath(), renameMethodObject.getDestinationFilePath());
-        Assert.assertEquals(((RenameMethodObject) expectedRefactoring).getDestinationClassName(),
-                ((RenameMethodObject) renameMethodObject).getDestinationClassName());
-        Assert.assertEquals(((RenameMethodObject) expectedRefactoring).getOriginalClassName(),
-                ((RenameMethodObject) renameMethodObject).getOriginalClassName());
+        Assert.assertEquals(((MoveRenameMethodObject) expectedRefactoring).getDestinationClassName(),
+                ((MoveRenameMethodObject) renameMethodObject).getDestinationClassName());
+        Assert.assertEquals(((MoveRenameMethodObject) expectedRefactoring).getOriginalClassName(),
+                ((MoveRenameMethodObject) renameMethodObject).getOriginalClassName());
     }
 
 }
