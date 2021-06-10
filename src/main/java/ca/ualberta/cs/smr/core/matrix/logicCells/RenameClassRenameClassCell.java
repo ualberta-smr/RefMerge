@@ -27,7 +27,6 @@ public class RenameClassRenameClassCell {
         return false;
     }
 
-
     public static boolean checkClassNamingConflict(Node dispatcherNode, Node receiverNode) {
         Refactoring dispatcherRef = dispatcherNode.getRefactoring();
         Refactoring receiverRef = receiverNode.getRefactoring();
@@ -45,6 +44,23 @@ public class RenameClassRenameClassCell {
 
         return checkNamingConflict(dispatcherOriginalClassName, receiverOriginalClassName,
                 dispatcherNewClassName, receiverNewClassName);
+    }
+
+    /*
+     * If two classes are renamed to the same class or one class is renamed to two different names, then there is a
+     * class naming conflict.
+     */
+    public static boolean checkClassNamingConflict(RefactoringObject dispatcherRefactoringObject,
+                                                   RefactoringObject receiverRefactoringObject) {
+        RenameClassObject dispatcherRenameClass = (RenameClassObject) dispatcherRefactoringObject;
+        RenameClassObject receiverRenameClass = (RenameClassObject) receiverRefactoringObject;
+        String dispatcherOriginalClassName = dispatcherRenameClass.getOriginalClassName();
+        String receiverOriginalClassName = receiverRenameClass.getOriginalClassName();
+        String dispatcherDestinationClassName = dispatcherRenameClass.getDestinationClassName();
+        String receiverDestinationClassName = receiverRenameClass.getDestinationClassName();
+
+        return checkNamingConflict(dispatcherOriginalClassName, receiverOriginalClassName,
+                dispatcherDestinationClassName, receiverDestinationClassName);
     }
 
     /*
