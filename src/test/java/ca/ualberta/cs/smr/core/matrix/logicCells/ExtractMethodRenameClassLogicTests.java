@@ -1,14 +1,13 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
-import ca.ualberta.cs.smr.core.refactoringObjects.ExtractMethodObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.RenameClassObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -42,41 +41,60 @@ public class ExtractMethodRenameClassLogicTests extends LightJavaCodeInsightFixt
     }
 
     public void testCheckExtractMethodRenameClassCombination() {
+        List<ParameterObject> originalParameters = new ArrayList<>();
+        originalParameters.add(new ParameterObject("int", "return"));
+        originalParameters.add(new ParameterObject("int", "x"));
+        MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
+        MethodSignatureObject efoo = new MethodSignatureObject(originalParameters, "efoo");
+        MethodSignatureObject ebar = new MethodSignatureObject(originalParameters, "ebar");
         // Extract method A.efoo from A.foo
-        ExtractMethodObject extractMethodObject = new ExtractMethodObject("A.java", "A", "foo",
-                "A.java", "A", "efoo");
+        ExtractMethodObject extractMethodObject = new ExtractMethodObject("A.java", "A", foo,
+                "A.java", "A", efoo);
         // Rename Class A -> B
         RenameClassObject renameClassObject = new RenameClassObject("A.java", "A",
                 "B.java", "B");
         // Extract method B.ebar from A.foo
-        ExtractMethodObject expectedRefactoring = new ExtractMethodObject("A.java", "A", "foo",
-                "B.java", "B", "ebar");
+        ExtractMethodObject expectedRefactoring = new ExtractMethodObject("A.java", "A", foo,
+                "B.java", "B", ebar);
         doExtractMethodRenameClassTest(renameClassObject, extractMethodObject, expectedRefactoring);
     }
 
     public void testCeckExtractMethodRenameClassCombination2() {
+        List<ParameterObject> originalParameters = new ArrayList<>();
+        originalParameters.add(new ParameterObject("int", "return"));
+        originalParameters.add(new ParameterObject("int", "x"));
+        MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
+        MethodSignatureObject efoo = new MethodSignatureObject(originalParameters, "efoo");
+        MethodSignatureObject ebar = new MethodSignatureObject(originalParameters, "ebar");
         // Extract method B.efoo from B.foo
-        ExtractMethodObject extractMethodObject = new ExtractMethodObject("B.java", "B", "foo",
-                "B.java", "B", "efoo");
+        ExtractMethodObject extractMethodObject = new ExtractMethodObject("B.java", "B", foo,
+                "B.java", "B", efoo);
         // Rename Class A -> B
         RenameClassObject renameClassObject = new RenameClassObject("A.java", "A",
                 "B.java", "B");
         // Extract method B.ebar from A.foo
-        ExtractMethodObject expectedRefactoring = new ExtractMethodObject("A.java", "A", "foo",
-                "B.java", "B", "ebar");
+        ExtractMethodObject expectedRefactoring = new ExtractMethodObject("A.java", "A", foo,
+                "B.java", "B", ebar);
         doExtractMethodRenameClassTest(renameClassObject, extractMethodObject, expectedRefactoring);
     }
 
     public void testCeckExtractMethodRenameClassCombinationInSameFile() {
+        List<ParameterObject> originalParameters = new ArrayList<>();
+        originalParameters.add(new ParameterObject("int", "return"));
+        originalParameters.add(new ParameterObject("int", "x"));
+        MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
+        MethodSignatureObject efoo = new MethodSignatureObject(originalParameters, "efoo");
+        MethodSignatureObject bar = new MethodSignatureObject(originalParameters, "bar");
+        MethodSignatureObject ebar = new MethodSignatureObject(originalParameters, "ebar");
         // Extract method B.efoo from B.foo
-        ExtractMethodObject extractMethodObject = new ExtractMethodObject("Foo.java", "B", "foo",
-                "Foo.java", "B", "efoo");
+        ExtractMethodObject extractMethodObject = new ExtractMethodObject("Foo.java", "B", foo,
+                "Foo.java", "B", efoo);
         // Rename Class A -> B
         RenameClassObject renameClassObject = new RenameClassObject("Foo.java", "A",
                 "Foo.java", "B");
         // Extract method B.ebar from A.foo
-        ExtractMethodObject expectedRefactoring = new ExtractMethodObject("Foo.java", "A", "foo",
-                "Foo.java", "B", "ebar");
+        ExtractMethodObject expectedRefactoring = new ExtractMethodObject("Foo.java", "A", foo,
+                "Foo.java", "B", ebar);
         doExtractMethodRenameClassTest(renameClassObject, extractMethodObject, expectedRefactoring);
     }
 

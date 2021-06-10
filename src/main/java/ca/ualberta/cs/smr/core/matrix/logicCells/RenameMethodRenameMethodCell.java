@@ -1,6 +1,7 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
+import ca.ualberta.cs.smr.core.refactoringObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RenameMethodObject;
 import ca.ualberta.cs.smr.utils.Utils;
@@ -157,23 +158,23 @@ public class RenameMethodRenameMethodCell {
         RenameMethodObject firstObject = (RenameMethodObject) firstRefactoring;
         RenameMethodObject secondObject = (RenameMethodObject) secondRefactoring;
         String firstDestinationClass = firstObject.getDestinationClassName();
-        String firstDestinationMethod = firstObject.getDestinationMethodName();
+        MethodSignatureObject firstDestinationMethod = firstObject.getDestinationMethodSignature();
         String secondOriginalClass = secondObject.getOriginalClassName();
-        String secondOriginalMethod = secondObject.getOriginalMethodName();
+        MethodSignatureObject secondOriginalMethod = secondObject.getOriginalMethodSignature();
         String secondDestinationClass = secondObject.getDestinationClassName();
         // If the renamed method of the first refactoring and original method of the second refactoring are the same
-        if(firstDestinationClass.equals(secondOriginalClass) && firstDestinationMethod.equals(secondOriginalMethod)) {
+        if(firstDestinationClass.equals(secondOriginalClass) && firstDestinationMethod.equalsSignature(secondOriginalMethod)) {
             //This is a transitive refactoring
             isTransitive = true;
             firstRefactoring.setDestinationFilePath(secondObject.getDestinationFilePath());
             ((RenameMethodObject) firstRefactoring).setDestinationClassName(secondObject.getDestinationClassName());
-            ((RenameMethodObject) firstRefactoring).setDestinationMethodName(secondObject.getDestinationMethodName());
+            ((RenameMethodObject) firstRefactoring).setDestinationMethodSignature(secondObject.getDestinationMethodSignature());
         }
-        else if(firstDestinationClass.equals(secondDestinationClass) && firstDestinationMethod.equals(secondOriginalMethod)) {
+        else if(firstDestinationClass.equals(secondDestinationClass) && firstDestinationMethod.equalsSignature(secondOriginalMethod)) {
             isTransitive = true;
             firstRefactoring.setDestinationFilePath(secondObject.getDestinationFilePath());
             ((RenameMethodObject) firstRefactoring).setDestinationClassName(secondObject.getDestinationClassName());
-            ((RenameMethodObject) firstRefactoring).setDestinationMethodName(secondObject.getDestinationMethodName());
+            ((RenameMethodObject) firstRefactoring).setDestinationMethodSignature(secondObject.getDestinationMethodSignature());
         }
 
         return isTransitive;

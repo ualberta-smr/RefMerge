@@ -1,14 +1,13 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
-import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.RenameClassObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.RenameMethodObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RenameClassRenameMethodLogicTests extends LightJavaCodeInsightFixtureTestCase {
@@ -35,56 +34,76 @@ public class RenameClassRenameMethodLogicTests extends LightJavaCodeInsightFixtu
     }
 
     public void testFoundRenameClassRenameMethodCombination() {
+        List<ParameterObject> originalParameters = new ArrayList<>();
+        originalParameters.add(new ParameterObject("int", "return"));
+        originalParameters.add(new ParameterObject("int", "x"));
+        MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
+        MethodSignatureObject bar = new MethodSignatureObject(originalParameters, "bar");
         // Rename class A -> B
         RenameClassObject renameClassObject = new RenameClassObject("A.java", "A",
                 "B.java", "B");
         // Rename method A.foo -> B.bar
         RenameMethodObject renameMethodObject = new RenameMethodObject("A.java", "A",
-                "foo", "B.java", "B", "bar");
+                foo, "B.java", "B", bar);
         // Rename Method A.foo -> B.bar
         RenameMethodObject expectedMethodObject = new RenameMethodObject("A.java", "A",
-                "foo", "B.java", "B", "bar");
+                foo, "B.java", "B", bar);
 
         doRenameClassRenameMethodTest(renameMethodObject, renameClassObject, expectedMethodObject);
     }
 
     public void testFoundRenameClassRenameMethodCombination2() {
+        List<ParameterObject> originalParameters = new ArrayList<>();
+        originalParameters.add(new ParameterObject("int", "return"));
+        originalParameters.add(new ParameterObject("int", "x"));
+        MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
+        MethodSignatureObject bar = new MethodSignatureObject(originalParameters, "bar");
         // Rename class A -> B
         RenameClassObject renameClassObject = new RenameClassObject("A.java", "A",
                 "B.java", "B");
         // Rename method A.foo -> A.bar
         RenameMethodObject renameMethodObject = new RenameMethodObject("A.java", "A",
-                "foo", "A.java", "A", "bar");
+                foo, "A.java", "A", bar);
         // Rename Method A.foo -> B.bar
         RenameMethodObject expectedMethodObject = new RenameMethodObject("A.java", "A",
-                "foo", "B.java", "B", "bar");
+                foo, "B.java", "B", bar);
         doRenameClassRenameMethodTest(renameMethodObject, renameClassObject, expectedMethodObject);
     }
 
     public void testFoundRenameClassRenameMethodCombination3() {
+        List<ParameterObject> originalParameters = new ArrayList<>();
+        originalParameters.add(new ParameterObject("int", "return"));
+        originalParameters.add(new ParameterObject("int", "x"));
+        MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
+        MethodSignatureObject bar = new MethodSignatureObject(originalParameters, "bar");
         // Rename class A -> B
         RenameClassObject renameClassObject = new RenameClassObject("A.java", "A",
                 "B.java", "B");
         // Rename method B.foo -> B.bar
         RenameMethodObject renameMethodObject = new RenameMethodObject("B.java", "B",
-                "foo", "B.java", "B", "bar");
+                foo, "B.java", "B", bar);
         // Rename Method A.foo -> B.bar
         RenameMethodObject expectedMethodObject = new RenameMethodObject("A.java", "A",
-                "foo", "B.java", "B", "bar");
+                foo, "B.java", "B", bar);
         doRenameClassRenameMethodTest(renameMethodObject, renameClassObject, expectedMethodObject);
     }
 
 
     public void testNotFoundRenameClassRenameMethodCombination() {
+        List<ParameterObject> originalParameters = new ArrayList<>();
+        originalParameters.add(new ParameterObject("int", "return"));
+        originalParameters.add(new ParameterObject("int", "x"));
+        MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
+        MethodSignatureObject bar = new MethodSignatureObject(originalParameters, "bar");
         // Rename class A -> B
         RenameClassObject renameClassObject = new RenameClassObject("A.java", "A",
                 "b.java", "B");
         // Rename method C.foo -> C.bar
-        RenameMethodObject renameMethodObject = new RenameMethodObject("C.java", "C", "foo",
-                "C.java", "C", "bar");
+        RenameMethodObject renameMethodObject = new RenameMethodObject("C.java", "C", foo,
+                "C.java", "C", bar);
         // Rename Method C.foo -> C.bar
-        RenameMethodObject expectedMethodObject = new RenameMethodObject("C.java", "C", "foo",
-                "C.java", "C", "bar");
+        RenameMethodObject expectedMethodObject = new RenameMethodObject("C.java", "C", foo,
+                "C.java", "C", bar);
         doRenameClassRenameMethodTest(renameMethodObject, renameClassObject, expectedMethodObject);
     }
 
