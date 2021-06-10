@@ -1,6 +1,8 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
+import ca.ualberta.cs.smr.core.refactoringObjects.MethodSignatureObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.ParameterObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RenameMethodObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
@@ -111,43 +113,62 @@ public class RenameMethodRenameMethodLogicTests extends LightJavaCodeInsightFixt
     }
 
     public void testFoundRenameMethodRenameMethodTransitivity() {
+        List<ParameterObject> originalParameters = new ArrayList<>();
+        originalParameters.add(new ParameterObject("int", "return"));
+        originalParameters.add(new ParameterObject("int", "x"));
+        MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
+        MethodSignatureObject bar = new MethodSignatureObject(originalParameters, "bar");
+        MethodSignatureObject foobar = new MethodSignatureObject(originalParameters, "foobar");
         // Rename method A.foo -> A.bar
         RenameMethodObject firstRefactoring = new RenameMethodObject("A.java", "A",
-                "foo", "A.java", "A", "bar");
+                foo, "A.java", "A", bar);
         // Rename method A.bar -> A.foobar
         RenameMethodObject secondRefactoring = new RenameMethodObject("A.java", "A",
-                "bar", "A.java", "A", "foobar");
+                bar, "A.java", "A", foobar);
         // Rename Method A.foo -> A.foobar
         RenameMethodObject expectedRefactoring = new RenameMethodObject("A.java", "A",
-                "foo", "A.java", "A", "foobar");
+                foo, "A.java", "A", foobar);
 
         doRenameMethodRenameMethodTest(firstRefactoring, secondRefactoring, expectedRefactoring,true);
     }
 
     public void testFoundRenameMethodRenameMethodTransitivity2() {
+        List<ParameterObject> originalParameters = new ArrayList<>();
+        originalParameters.add(new ParameterObject("int", "return"));
+        originalParameters.add(new ParameterObject("int", "x"));
+        MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
+        MethodSignatureObject bar = new MethodSignatureObject(originalParameters, "bar");
+        MethodSignatureObject foobar = new MethodSignatureObject(originalParameters, "foobar");
         // Rename method A.foo -> B.bar
         RenameMethodObject firstRefactoring = new RenameMethodObject("A.java", "A",
-                "foo", "B.java", "B", "bar");
+                foo, "B.java", "B", bar);
         // Rename method B.bar -> C.foobar
         RenameMethodObject secondRefactoring = new RenameMethodObject("B.java", "B",
-                "bar", "C.java", "C", "foobar");
+                bar, "C.java", "C", foobar);
         // Rename Method A.foo -> C.foobar
         RenameMethodObject expectedRefactoring = new RenameMethodObject("A.java", "A",
-                "foo", "C.java", "C", "foobar");
+                foo, "C.java", "C", foobar);
 
         doRenameMethodRenameMethodTest(firstRefactoring, secondRefactoring, expectedRefactoring,true);
     }
 
     public void testNotFoundRenameMethodRenameMethodTransitivity() {
+        List<ParameterObject> originalParameters = new ArrayList<>();
+        originalParameters.add(new ParameterObject("int", "return"));
+        originalParameters.add(new ParameterObject("int", "x"));
+        MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
+        MethodSignatureObject bar = new MethodSignatureObject(originalParameters, "bar");
+        MethodSignatureObject buzz = new MethodSignatureObject(originalParameters, "buzz");
+        MethodSignatureObject foobar = new MethodSignatureObject(originalParameters, "foobar");
         // Rename method A.foo -> B.bar
         RenameMethodObject firstRefactoring = new RenameMethodObject("A.java", "A",
-                "foo", "B.java", "B", "bar");
+                foo, "B.java", "B", bar);
         // Rename method B.buzz -> C.foobar
         RenameMethodObject secondRefactoring = new RenameMethodObject("B.java", "B",
-                "buzz", "C.java", "C", "foobar");
+                buzz, "C.java", "C", foobar);
         // Rename Method A.foo -> B.bar
         RenameMethodObject expectedRefactoring = new RenameMethodObject("A.java", "A",
-                "foo", "B.java", "B", "bar");
+                foo, "B.java", "B", bar);
 
         doRenameMethodRenameMethodTest(firstRefactoring, secondRefactoring, expectedRefactoring,false);
     }
@@ -162,14 +183,16 @@ public class RenameMethodRenameMethodLogicTests extends LightJavaCodeInsightFixt
         else {
             Assert.assertFalse(isTransitive);
         }
+        MethodSignatureObject firstOriginalSignature = ((RenameMethodObject) firstRefactoring).getOriginalMethodSignature();
+        MethodSignatureObject expectedOriginalSignature = ((RenameMethodObject) expectedRefactoring).getOriginalMethodSignature();
+        MethodSignatureObject firstDestinationSignature = ((RenameMethodObject) firstRefactoring).getDestinationMethodSignature();
+        MethodSignatureObject expectedDestinationSignature = ((RenameMethodObject) expectedRefactoring).getDestinationMethodSignature();
+        MethodSignatureObject secondOriginalSignature = ((RenameMethodObject) secondRefactoring).getOriginalMethodSignature();
         Assert.assertEquals(expectedRefactoring.getDestinationFilePath(), firstRefactoring.getDestinationFilePath());
-        Assert.assertEquals(((RenameMethodObject) expectedRefactoring).getDestinationMethodName(),
-                ((RenameMethodObject) firstRefactoring).getDestinationMethodName());
         Assert.assertEquals(((RenameMethodObject) expectedRefactoring).getDestinationClassName(),
                 ((RenameMethodObject) firstRefactoring).getDestinationClassName());
-        Assert.assertEquals(((RenameMethodObject) expectedRefactoring).getOriginalMethodName(),
-                ((RenameMethodObject) firstRefactoring).getOriginalMethodName());
-        Assert.assertNotEquals(((RenameMethodObject) expectedRefactoring).getOriginalMethodName(),
-                ((RenameMethodObject) secondRefactoring).getOriginalMethodName());
+        Assert.assertFalse(expectedOriginalSignature.equalsSignature(secondOriginalSignature));
+        Assert.assertTrue(firstOriginalSignature.equalsSignature(expectedOriginalSignature));
+        Assert.assertTrue(firstDestinationSignature.equalsSignature(expectedDestinationSignature));
     }
 }

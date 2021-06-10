@@ -1,15 +1,14 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
-import ca.ualberta.cs.smr.core.refactoringObjects.ExtractMethodObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.RenameMethodObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExtractMethodRenameMethodLogicTests extends LightJavaCodeInsightFixtureTestCase {
@@ -131,28 +130,40 @@ public class ExtractMethodRenameMethodLogicTests extends LightJavaCodeInsightFix
     }
 
     public void testCheckExtractMethodRenameMethodTransitivity() {
+        List<ParameterObject> originalParameters = new ArrayList<>();
+        originalParameters.add(new ParameterObject("int", "return"));
+        originalParameters.add(new ParameterObject("int", "x"));
+        MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
+        MethodSignatureObject efoo = new MethodSignatureObject(originalParameters, "efoo");
+        MethodSignatureObject ebar = new MethodSignatureObject(originalParameters, "ebar");
         // Extract method A.efoo from A.foo
-        ExtractMethodObject extractMethodObject = new ExtractMethodObject("A.java", "A", "foo",
-                "A.java", "A", "efoo");
+        ExtractMethodObject extractMethodObject = new ExtractMethodObject("A.java", "A", foo,
+                "A.java", "A", efoo);
         // Rename method A.efoo -> A.ebar
         RenameMethodObject renameMethodObject = new RenameMethodObject("A.java", "A",
-                "efoo", "A.java", "A", "ebar");
+                efoo, "A.java", "A", ebar);
         // Extract method A.ebar from A.foo
-        ExtractMethodObject expectedRefactoring = new ExtractMethodObject("A.java", "A", "foo",
-                "A.java", "A", "ebar");
+        ExtractMethodObject expectedRefactoring = new ExtractMethodObject("A.java", "A", foo,
+                "A.java", "A", ebar);
         doExtractMethodRenameMethodTest(renameMethodObject, extractMethodObject, expectedRefactoring, true);
     }
 
     public void testCheckExtractMethodRenameMethodCombination() {
+        List<ParameterObject> originalParameters = new ArrayList<>();
+        originalParameters.add(new ParameterObject("int", "return"));
+        originalParameters.add(new ParameterObject("int", "x"));
+        MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
+        MethodSignatureObject bar = new MethodSignatureObject(originalParameters, "bar");
+        MethodSignatureObject ebar = new MethodSignatureObject(originalParameters, "ebar");
         // Extract method A.ebar from A.bar
-        ExtractMethodObject extractMethodObject = new ExtractMethodObject("A.java", "A", "bar",
-                "A.java", "A", "ebar");
+        ExtractMethodObject extractMethodObject = new ExtractMethodObject("A.java", "A", bar,
+                "A.java", "A", ebar);
         // Rename method A.foo -> A.bar
-        RenameMethodObject renameMethodObject = new RenameMethodObject("A.java", "A", "foo",
-                "A.java", "A", "bar");
+        RenameMethodObject renameMethodObject = new RenameMethodObject("A.java", "A", foo,
+                "A.java", "A", bar);
         // Extract method A.ebar from A.foo
-        ExtractMethodObject expectedRefactoring = new ExtractMethodObject("A.java", "A", "foo",
-                "A.java", "A", "ebar");
+        ExtractMethodObject expectedRefactoring = new ExtractMethodObject("A.java", "A", foo,
+                "A.java", "A", ebar);
         doExtractMethodRenameMethodTest(renameMethodObject, extractMethodObject, expectedRefactoring, false);
     }
 
@@ -169,16 +180,20 @@ public class ExtractMethodRenameMethodLogicTests extends LightJavaCodeInsightFix
         else {
             Assert.assertFalse(isTransitive);
         }
+
+        MethodSignatureObject firstOriginalSignature = ((ExtractMethodObject) extractMethodObject).getOriginalMethodSignature();
+        MethodSignatureObject expectedOriginalSignature = ((ExtractMethodObject) expectedRefactoring).getOriginalMethodSignature();
+        MethodSignatureObject firstDestinationSignature = ((ExtractMethodObject) extractMethodObject).getDestinationMethodSignature();
+        MethodSignatureObject expectedDestinationSignature = ((ExtractMethodObject) expectedRefactoring).getDestinationMethodSignature();
+
         Assert.assertEquals(expectedRefactoring.getOriginalFilePath(), extractMethodObject.getOriginalFilePath());
         Assert.assertEquals(expectedRefactoring.getDestinationFilePath(), extractMethodObject.getDestinationFilePath());
         Assert.assertEquals(((ExtractMethodObject) expectedRefactoring).getOriginalClassName(),
                 ((ExtractMethodObject) extractMethodObject).getOriginalClassName());
         Assert.assertEquals(((ExtractMethodObject) expectedRefactoring).getDestinationClassName(),
                 ((ExtractMethodObject) extractMethodObject).getDestinationClassName());
-        Assert.assertEquals(((ExtractMethodObject) expectedRefactoring).getOriginalMethodName(),
-                ((ExtractMethodObject) extractMethodObject).getOriginalMethodName());
-        Assert.assertEquals(((ExtractMethodObject) expectedRefactoring).getDestinationMethodName(),
-                ((ExtractMethodObject) extractMethodObject).getDestinationMethodName());
+        Assert.assertTrue(expectedOriginalSignature.equalsSignature(firstOriginalSignature));
+        Assert.assertTrue(expectedDestinationSignature.equalsSignature(firstDestinationSignature));
     }
 
 }

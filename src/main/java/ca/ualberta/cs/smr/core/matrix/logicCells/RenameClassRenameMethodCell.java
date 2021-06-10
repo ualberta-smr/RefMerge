@@ -63,6 +63,5 @@ public class RenameClassRenameMethodCell {
             renameMethod.setDestinationFilePath(classObject.getDestinationFilePath());
             ((RenameMethodObject) renameMethod).setDestinationClassName(classObject.getDestinationClassName());
         }
-
     }
 }
