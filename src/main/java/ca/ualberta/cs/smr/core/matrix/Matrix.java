@@ -1,8 +1,5 @@
 package ca.ualberta.cs.smr.core.matrix;
 
-
-import ca.ualberta.cs.smr.core.dependenceGraph.DependenceGraph;
-import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.ExtractMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RefactoringDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameClassDispatcher;
@@ -13,11 +10,7 @@ import ca.ualberta.cs.smr.core.matrix.receivers.RenameClassReceiver;
 import ca.ualberta.cs.smr.core.matrix.receivers.RenameMethodReceiver;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
-import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import com.intellij.openapi.project.Project;
-import org.jgrapht.graph.DefaultDirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.traverse.DepthFirstIterator;
 import org.refactoringminer.api.RefactoringType;
 
 import java.util.*;
@@ -29,7 +22,6 @@ import java.util.*;
 
 public class Matrix {
     final Project project;
-    DependenceGraph graph;
 
     /*
      * The dispatcherMap uses the refactoring type to create the corresponding dispatcher class. This needs to be updated
@@ -55,67 +47,60 @@ public class Matrix {
 
     public Matrix(Project project) {
         this.project = project;
-        this.graph = new DependenceGraph(project);
-    }
-
-    public Matrix(Project project, DependenceGraph graph) {
-        this.project = project;
-        this.graph = graph;
     }
 
     /*
      * Iterate through each of the left refactorings to compare against the right refactorings.
      */
-    public DependenceGraph runMatrix(List<Pair> leftPairs, List<Pair> rightPairs) {
-        if(!leftPairs.isEmpty() && rightPairs.isEmpty()) {
-            graph.createPartialGraph(leftPairs);
-            return graph;
+    public ArrayList<RefactoringObject> runMatrix(ArrayList<RefactoringObject> leftRefactoringList,
+                                             ArrayList<RefactoringObject> rightRefactoringList) {
+        if(leftRefactoringList.isEmpty() && rightRefactoringList.isEmpty()) {
+            return new ArrayList<>();
         }
-        if(!rightPairs.isEmpty() && leftPairs.isEmpty()) {
-            graph.createPartialGraph(rightPairs);
-            return graph;
+        // If the right refactoring list is empty, return the left refactoring list
+        else if(!leftRefactoringList.isEmpty() && rightRefactoringList.isEmpty()) {
+            return leftRefactoringList;
         }
-        if(leftPairs.isEmpty()) {
-            return null;
+        // If the left refactoring list is empty, return the right refactoring list
+        else if(leftRefactoringList.isEmpty()) {
+            return rightRefactoringList;
         }
-        DefaultDirectedGraph<Node, DefaultEdge> leftGraph = graph.createPartialGraph(leftPairs);
-        DefaultDirectedGraph<Node, DefaultEdge> rightGraph = graph.createPartialGraph(rightPairs);
-        DepthFirstIterator<Node, DefaultEdge> leftIterator = new DepthFirstIterator<>(leftGraph);
-        DepthFirstIterator<Node, DefaultEdge> rightIterator = new DepthFirstIterator<>(rightGraph);
-        while(leftIterator.hasNext()) {
-            Node leftNode = leftIterator.next();
-            compareRefactorings(leftNode, rightIterator);
+        for(RefactoringObject leftRefactoring : leftRefactoringList) {
+            compareRefactorings(leftRefactoring, rightRefactoringList);
         }
-        return graph;
+        // Insert each refactoring in the left refactoring list into the right to combine them
+        for(RefactoringObject leftRefactoring : leftRefactoringList) {
+            RefactoringObjectUtils.insertRefactoringObject(leftRefactoring, rightRefactoringList);
+        }
+        return rightRefactoringList;
     }
 
     /*
      * This calls dispatch for each pair of refactorings to check for conflicts.
      */
-    void compareRefactorings(Node leftNode, DepthFirstIterator<Node, DefaultEdge> rightIterator) {
-        while(rightIterator.hasNext()) {
-            Node rightNode = rightIterator.next();
-            dispatch(leftNode, rightNode);
+    void compareRefactorings(RefactoringObject leftRefactoring, List<RefactoringObject> rightRefactoringList) {
+        for(RefactoringObject rightRefactoring : rightRefactoringList) {
+            dispatch(leftRefactoring, rightRefactoring);
         }
     }
 
     /*
      * Perform double dispatch to check if the two refactoring elements conflict.
      */
-    void dispatch(Node leftNode, Node rightNode) {
+    void dispatch(RefactoringObject leftRefactoring, RefactoringObject rightRefactoring) {
         // Get the refactoring types so we can create the corresponding dispatcher and receiver
-        int leftValue = getRefactoringValue(leftNode.getRefactoring().getRefactoringType());
-        int rightValue = getRefactoringValue(rightNode.getRefactoring().getRefactoringType());
+        int leftValue = getRefactoringValue(leftRefactoring.getRefactoringType());
+        int rightValue = getRefactoringValue(rightRefactoring.getRefactoringType());
 
         RefactoringDispatcher dispatcher;
         Receiver receiver;
         if(leftValue > rightValue) {
-            dispatcher = makeDispatcher(rightNode);
-            receiver = makeReceiver(leftNode);
+            dispatcher = makeDispatcher(rightRefactoring, false);
+            receiver = makeReceiver(leftRefactoring);
         }
         else {
-            dispatcher = makeDispatcher(leftNode);
-            receiver = makeReceiver(rightNode);
+            dispatcher = makeDispatcher(leftRefactoring, false);
+            receiver = makeReceiver(rightRefactoring);
         }
         dispatcher.dispatch(receiver);
     }
@@ -150,12 +135,12 @@ public class Matrix {
         RefactoringDispatcher dispatcher;
         Receiver receiver;
         if(leftValue > rightValue) {
-            dispatcher = makeTransitivityDispatcher(previousRefactoring);
-            receiver = makeTransitivityReceiver(newRefactoring);
+            dispatcher = makeDispatcher(previousRefactoring, true);
+            receiver = makeReceiver(newRefactoring);
         }
         else {
-            dispatcher = makeTransitivityDispatcher(newRefactoring);
-            receiver = makeTransitivityReceiver(previousRefactoring);
+            dispatcher = makeDispatcher(newRefactoring, true);
+            receiver = makeReceiver(previousRefactoring);
         }
         dispatcher.dispatch(receiver);
         return receiver.hasTransitivity();
@@ -164,34 +149,17 @@ public class Matrix {
 
     /*
      * Use the refactoring type to get the refactoring dispatcher class from the dispatcherMap.
-     * Set the node field in the dispatcher.
-     */
-    public RefactoringDispatcher makeDispatcher(Node node) {
-        RefactoringType type = node.getRefactoring().getRefactoringType();
-        RefactoringDispatcher dispatcher = dispatcherMap.get(type);
-        dispatcher.set(node, project);
-        return dispatcher;
-    }
-
-    /*
-     * Use the refactoring type to get the refactoring receiver class from the receiverMap.
-     * Set the node field in the receiver and get an instance of the graph so we can update it.
-     */
-    public Receiver makeReceiver(Node node) {
-        RefactoringType type = node.getRefactoring().getRefactoringType();
-        Receiver receiver = receiverMap.get(type);
-        receiver.set(node, graph, project);
-        return receiver;
-    }
-
-    /*
-     * Use the refactoring type to get the refactoring dispatcher class from the dispatcherMap.
      * Set the refactoring field in the dispatcher.
      */
-    private RefactoringDispatcher makeTransitivityDispatcher(RefactoringObject refactoringObject) {
+    RefactoringDispatcher makeDispatcher(RefactoringObject refactoringObject, boolean isTransitiveCheck) {
         RefactoringType type = refactoringObject.getRefactoringType();
         RefactoringDispatcher dispatcher = dispatcherMap.get(type);
-        dispatcher.set(refactoringObject, null);
+        if(isTransitiveCheck) {
+            dispatcher.set(refactoringObject, null);
+        }
+        else {
+            dispatcher.set(refactoringObject, project);
+        }
         return dispatcher;
     }
 
@@ -200,7 +168,7 @@ public class Matrix {
      * Set the refactoring field in the receiver.
      * Set the node field in the receiver and get an instance of the graph so we can update it.
      */
-    private Receiver makeTransitivityReceiver(RefactoringObject refactoringObject) {
+    Receiver makeReceiver(RefactoringObject refactoringObject) {
         RefactoringType type = refactoringObject.getRefactoringType();
         Receiver receiver = receiverMap.get(type);
         receiver.set(refactoringObject);

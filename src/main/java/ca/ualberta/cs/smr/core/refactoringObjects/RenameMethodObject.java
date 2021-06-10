@@ -47,8 +47,10 @@ public class RenameMethodObject implements RefactoringObject {
         this.destinationFilePath = destinationOperation.getLocationInfo().getFilePath();
         this.originalClassName = originalOperation.getClassName();
         this.destinationClassName = destinationOperation.getClassName();
-        this.originalMethodSignature = new MethodSignatureObject(originalOperation.getName(), originalOperation.getParameters());
-        this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(), destinationOperation.getParameters());
+        this.originalMethodSignature = new MethodSignatureObject(originalOperation.getName(), originalOperation.getParameters(),
+                originalOperation.isConstructor(), originalOperation.getVisibility());
+        this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(), destinationOperation.getParameters(),
+                originalOperation.isConstructor(), originalOperation.getVisibility());
     }
 
     public RefactoringType getRefactoringType() {

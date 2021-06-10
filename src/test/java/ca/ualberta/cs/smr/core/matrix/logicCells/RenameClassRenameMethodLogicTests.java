@@ -1,6 +1,5 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
-import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;

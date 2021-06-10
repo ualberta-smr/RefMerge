@@ -1,7 +1,5 @@
 package ca.ualberta.cs.smr.core.matrix;
 
-import ca.ualberta.cs.smr.core.dependenceGraph.DependenceGraph;
-import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RefactoringDispatcher;
@@ -10,7 +8,7 @@ import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.receivers.Receiver;
 import ca.ualberta.cs.smr.core.matrix.receivers.RenameClassReceiver;
 import ca.ualberta.cs.smr.core.matrix.receivers.RenameMethodReceiver;
-import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
+import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
@@ -52,13 +50,13 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/original";
         String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
-        List<Pair> refactorings = GetDataForTests.getPairs("RENAME_METHOD", originalPath, refactoredPath);
+        List<RefactoringObject> refactorings = GetDataForTests.getRefactoringObjects("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
-        Refactoring ref = refactorings.get(0).getValue();
-        Node node = new Node(ref);
+        RefactoringObject refactoringObject = refactorings.get(0);
         RenameMethodDispatcher mockElement = new RenameMethodDispatcher();
         Matrix matrix = new Matrix(null);
-        RefactoringDispatcher element = matrix.makeDispatcher(node);
+        assert refactoringObject != null;
+        RefactoringDispatcher element = matrix.makeDispatcher(refactoringObject, false);
         boolean equals = element.getClass().equals(mockElement.getClass());
         Assert.assertTrue(equals);
 
@@ -72,10 +70,11 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
-        Node node = new Node(ref);
+        RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
         RenameMethodReceiver mockReceiver = new RenameMethodReceiver();
         Matrix matrix = new Matrix(null);
-        Receiver receiver = matrix.makeReceiver(node);
+        assert refactoringObject != null;
+        Receiver receiver = matrix.makeReceiver(refactoringObject);
         boolean equals = receiver.getClass().equals(mockReceiver.getClass());
         Assert.assertTrue(equals);
     }
@@ -85,20 +84,16 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/original";
         String renamedPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
-        List<Pair> refactorings = GetDataForTests.getPairs("RENAME_METHOD", originalPath, renamedPath);
+        List<RefactoringObject> refactorings = GetDataForTests.getRefactoringObjects("RENAME_METHOD", originalPath, renamedPath);
         assert refactorings != null;
-        Refactoring renameMethod = refactorings.get(1).getValue();
+        RefactoringObject renameMethod = refactorings.get(1);
         originalPath = basePath + "/src/test/resources/extractTestData/extractMethod/original/";
         String extractedPath = basePath + "/src/test/resources/extractTestData/extractMethod/refactored/";
-        refactorings = GetDataForTests.getPairs("EXTRACT_OPERATION", originalPath, extractedPath);
+        refactorings = GetDataForTests.getRefactoringObjects("EXTRACT_OPERATION", originalPath, extractedPath);
         assert refactorings != null;
-        Refactoring extractMethod = refactorings.get(0).getValue();
-        Node renameNode = new Node(renameMethod);
-        Node extractNode = new Node(extractMethod);
-        DependenceGraph graph = new DependenceGraph(project);
-        graph.addVertex(renameNode);
-        graph.addVertex(extractNode);
-        Matrix matrix = new Matrix(project, graph);
+        RefactoringObject extractMethod = refactorings.get(0);
+        Matrix matrix = new Matrix(project);
+        assert extractMethod != null && renameMethod != null;
         int renameValue = matrix.getRefactoringValue(renameMethod.getRefactoringType());
         int extractValue = matrix.getRefactoringValue(extractMethod.getRefactoringType());
         Assert.assertTrue(renameValue < extractValue);
