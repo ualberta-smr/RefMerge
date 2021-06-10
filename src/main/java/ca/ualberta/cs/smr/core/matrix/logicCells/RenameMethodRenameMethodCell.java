@@ -149,6 +149,110 @@ public class RenameMethodRenameMethodCell {
         return checkNamingConflict(dispatcherOriginalName, receiverOriginalName, dispatcherNewName, receiverNewName);
     }
 
+
+
+
+    /*
+     * If two methods are renamed to the same name with a different signature in classes that have an inheritance relationship,
+     * then they were likely part of an accidental override
+     */
+    public boolean checkOverrideConflict(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
+        RenameMethodObject dispatcherRenameMethod = ((RenameMethodObject) dispatcherObject);
+        RenameMethodObject receiverRenameMethod = ((RenameMethodObject) receiverObject);
+        // Get the original operations
+        MethodSignatureObject dispatcherOriginalMethod = dispatcherRenameMethod.getOriginalMethodSignature();
+        MethodSignatureObject receiverOriginalMethod = receiverRenameMethod.getOriginalMethodSignature();
+        // Get the refactored operations
+        MethodSignatureObject dispatcherDestinationMethod = dispatcherRenameMethod.getDestinationMethodSignature();
+        MethodSignatureObject receiverDestinationMethod = receiverRenameMethod.getDestinationMethodSignature();
+        // Get the class names
+        String dispatcherClassName = dispatcherRenameMethod.getOriginalClassName();
+        String receiverClassName = receiverRenameMethod.getOriginalClassName();
+
+        // If the rename methods happen in the same class then there is no override conflict
+        if(isSameName(dispatcherClassName, receiverClassName)) {
+            return false;
+        }
+        String dispatcherFile = dispatcherRenameMethod.getOriginalFilePath();
+        String receiverFile = receiverRenameMethod.getOriginalFilePath();
+        Utils utils = new Utils(project);
+        PsiClass psiDispatcher = utils.getPsiClassByFilePath(dispatcherFile, dispatcherClassName);
+        PsiClass psiReceiver = utils.getPsiClassByFilePath(receiverFile, receiverClassName);
+        if(!ifClassExtends(psiDispatcher, psiReceiver)) {
+            return false;
+        }
+        // Get original method names
+        String dispatcherOriginalMethodName = dispatcherOriginalMethod.getName();
+        String receiverOriginalMethodName = receiverOriginalMethod.getName();
+        // get new method names
+        String dispatcherNewMethodName = dispatcherDestinationMethod.getName();
+        String receiverNewMethodName = receiverDestinationMethod.getName();
+        // Check if the methods start with the same name and end with different names, or if they end with the same name
+        // and start with different names. If they do, then there's a likely override conflict.
+        return !isSameName(dispatcherOriginalMethodName, receiverOriginalMethodName) &&
+                isSameName(dispatcherNewMethodName, receiverNewMethodName) &&
+                dispatcherDestinationMethod.equalsSignature(receiverDestinationMethod);
+    }
+
+    /*
+     * Check if both branches renamed two methods with different signatures to the same name. If they did, this is a
+     * possible accidental overloading conflict.
+     */
+    public boolean checkOverloadConflict(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
+        RenameMethodObject dispatcherRenameMethod = ((RenameMethodObject) dispatcherObject);
+        RenameMethodObject receiverRenameMethod = ((RenameMethodObject) receiverObject);
+        // Get the original operations
+        MethodSignatureObject dispatcherOriginalMethod = dispatcherRenameMethod.getOriginalMethodSignature();
+        MethodSignatureObject receiverOriginalMethod = receiverRenameMethod.getOriginalMethodSignature();
+        // Get the refactored operations
+        MethodSignatureObject dispatcherDestinationMethod = dispatcherRenameMethod.getDestinationMethodSignature();
+        MethodSignatureObject receiverDestinationMethod = receiverRenameMethod.getDestinationMethodSignature();
+        // Get class names
+        String dispatcherClassName = dispatcherRenameMethod.getOriginalClassName();
+        String receiverClassName = receiverRenameMethod.getOriginalClassName();
+        // If the methods are in different classes, no overloading happens
+        if (!dispatcherClassName.equals(receiverClassName)) {
+            Utils utils = new Utils(project);
+            String dispatcherFile = dispatcherRenameMethod.getOriginalFilePath();
+            String receiverFile = receiverRenameMethod.getOriginalFilePath();
+            PsiClass psiDispatcher = utils.getPsiClassByFilePath(dispatcherFile, dispatcherClassName);
+            PsiClass psiReceiver = utils.getPsiClassByFilePath(receiverFile, receiverClassName);
+            if(!ifClassExtends(psiDispatcher, psiReceiver)) {
+                return false;
+            }
+        }
+        String dispatcherOriginalMethodName = dispatcherOriginalMethod.getName();
+        String dispatcherDestinationMethodName = dispatcherDestinationMethod.getName();
+        String receiverOriginalMethodName = receiverOriginalMethod.getName();
+        String receiverDestinationMethodname = receiverDestinationMethod.getName();
+        // If two methods with different signatures are renamed to the same method, this overloading conflict
+        return (!dispatcherOriginalMethodName.equals(receiverOriginalMethodName) &&
+                dispatcherDestinationMethodName.equals(receiverDestinationMethodname)) &&
+                !dispatcherDestinationMethod.equalsSignature(receiverDestinationMethod);
+    }
+
+    /*
+     * Check for two methods being renamed to the same name or one method being renamed to two different names.
+     */
+    public boolean checkMethodNamingConflict(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
+        // Use the original class name because they will have different class names if a class was renamed on one branch
+        String dispatcherClassName = ((RenameMethodObject) dispatcherObject).getOriginalClassName();
+        String receiverClassName = ((RenameMethodObject) receiverObject).getOriginalClassName();
+        if(!dispatcherClassName.equals(receiverClassName)) {
+            return false;
+        }
+        // We already checked for overriding and overloading so we can just use the name instead of the full
+        // signature
+        String dispatcherOriginalName = ((RenameMethodObject) dispatcherObject).getOriginalMethodSignature().getName();
+        String receiverOriginalName = ((RenameMethodObject) receiverObject).getOriginalMethodSignature().getName();
+        String dispatcherDestinationName = ((RenameMethodObject) dispatcherObject).getDestinationMethodSignature().getName();
+        String receiverDestinationName = ((RenameMethodObject) receiverObject).getDestinationMethodSignature().getName();
+
+        return checkNamingConflict(dispatcherOriginalName, receiverOriginalName,
+                dispatcherDestinationName, receiverDestinationName);
+
+    }
+
     /*
      * Check if the second refactoring is a transitive refactoring of the first refactoring.
      */
