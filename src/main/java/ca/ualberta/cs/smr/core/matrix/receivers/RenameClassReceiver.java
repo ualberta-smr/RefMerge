@@ -5,6 +5,8 @@ import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassRenameClassCell;
 import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassRenameMethodCell;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.RenameClassObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.RenameMethodObject;
 
 public class RenameClassReceiver extends Receiver {
 
@@ -21,6 +23,12 @@ public class RenameClassReceiver extends Receiver {
         }
         else {
             boolean isDependent = RenameClassRenameMethodCell.renameClassRenameMethodDependenceCell(methodRefactoring, this.refactoringObject);
+            // If the rename method happens in the rename class, update the renamed method's class name
+            if(isDependent) {
+                methodRefactoring.setDestinationFilePath(refactoringObject.getDestinationFilePath());
+                ((RenameMethodObject) methodRefactoring).
+                        setDestinationClassName(((RenameClassObject) refactoringObject).getDestinationClassName());
+            }
         }
     }
 
