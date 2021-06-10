@@ -1,7 +1,8 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
-import ca.ualberta.cs.smr.core.dependenceGraph.Node;
+import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
+import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
@@ -25,13 +26,13 @@ public class ExtractMethodExtractMethodLogicTests extends LightJavaCodeInsightFi
                 originalPath, refactoredPath);
 
         assert extractMethodRefactorings != null;
-        Node node1 = new Node(extractMethodRefactorings.get(0));
-        Node node2 = new Node(extractMethodRefactorings.get(1));
+        RefactoringObject dispatcherObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(0));
+        RefactoringObject receiverObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(1));
         ExtractMethodExtractMethodCell cell = new ExtractMethodExtractMethodCell(project);
-        boolean isConflicting = cell.checkOverlappingFragmentsConflict(node1, node2);
+        boolean isConflicting = cell.checkOverlappingFragmentsConflict(dispatcherObject, receiverObject);
         Assert.assertFalse(isConflicting);
-        node1 = new Node(extractMethodRefactorings.get(7));
-        isConflicting = cell.checkOverlappingFragmentsConflict(node1, node2);
+        dispatcherObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(7));
+        isConflicting = cell.checkOverlappingFragmentsConflict(dispatcherObject, receiverObject);
         Assert.assertTrue(isConflicting);
     }
 
@@ -46,10 +47,10 @@ public class ExtractMethodExtractMethodLogicTests extends LightJavaCodeInsightFi
                 originalPath, refactoredPath);
 
         assert extractMethodRefactorings != null;
-        Node node1 = new Node(extractMethodRefactorings.get(2));
-        Node node2 = new Node(extractMethodRefactorings.get(3));
+        RefactoringObject dispatcherObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(2));
+        RefactoringObject receiverObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(3));
         ExtractMethodExtractMethodCell cell = new ExtractMethodExtractMethodCell(project);
-        boolean isConflicting = cell.checkOverrideConflict(node1, node2);
+        boolean isConflicting = cell.checkOverrideConflict(dispatcherObject, receiverObject);
         Assert.assertTrue(isConflicting);
     }
 
@@ -62,12 +63,12 @@ public class ExtractMethodExtractMethodLogicTests extends LightJavaCodeInsightFi
                 originalPath, refactoredPath);
 
         assert extractMethodRefactorings != null;
-        Node node1 = new Node(extractMethodRefactorings.get(5));
-        Node node2 = new Node(extractMethodRefactorings.get(6));
+        RefactoringObject dispatcherObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(5));
+        RefactoringObject receiverObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(6));
         ExtractMethodExtractMethodCell cell = new ExtractMethodExtractMethodCell(project);
-        boolean isConflicting = cell.checkOverloadConflict(node1, node2);
+        boolean isConflicting = cell.checkOverloadConflict(dispatcherObject, receiverObject);
         Assert.assertTrue(isConflicting);
-        isConflicting = cell.checkOverloadConflict(node1, node1);
+        isConflicting = cell.checkOverloadConflict(dispatcherObject, dispatcherObject);
         Assert.assertFalse(isConflicting);
     }
 
@@ -80,12 +81,13 @@ public class ExtractMethodExtractMethodLogicTests extends LightJavaCodeInsightFi
                 originalPath, refactoredPath);
 
         assert extractMethodRefactorings != null;
-        Node node1 = new Node(extractMethodRefactorings.get(5));
+
+        RefactoringObject dispatcherObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(5));
+        RefactoringObject receiverObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(6));
         ExtractMethodExtractMethodCell cell = new ExtractMethodExtractMethodCell(project);
-        boolean isConflicting = cell.checkMethodNamingConflict(node1, node1);
+        boolean isConflicting = cell.checkMethodNamingConflict(dispatcherObject, dispatcherObject);
         Assert.assertTrue(isConflicting);
-        Node node2 = new Node(extractMethodRefactorings.get(6));
-        isConflicting = cell.checkMethodNamingConflict(node1, node2);
+        isConflicting = cell.checkMethodNamingConflict(dispatcherObject, receiverObject);
         Assert.assertFalse(isConflicting);
 
     }

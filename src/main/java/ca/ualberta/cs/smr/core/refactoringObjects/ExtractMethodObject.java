@@ -3,12 +3,12 @@ package ca.ualberta.cs.smr.core.refactoringObjects;
 import com.intellij.psi.PsiElement;
 import com.intellij.refactoring.changeSignature.ThrownExceptionInfo;
 import gr.uom.java.xmi.UMLOperation;
-import gr.uom.java.xmi.UMLParameter;
+import gr.uom.java.xmi.decomposition.AbstractCodeFragment;
 import gr.uom.java.xmi.diff.ExtractOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
-import java.util.List;
+import java.util.Set;
 
 /*
  * Represents an extract method refactoring. Contains the necessary information for logic checks and performing the
@@ -23,6 +23,7 @@ public class ExtractMethodObject implements RefactoringObject {
     private String destinationClassName;
     private MethodSignatureObject originalMethodSignature;
     private MethodSignatureObject destinationMethodSignature;
+    private Set<AbstractCodeFragment> extractedCodeFragments;
     private PsiElement[] surroundingElements;
     private ThrownExceptionInfo[] thrownExceptionInfo;
 
@@ -54,6 +55,7 @@ public class ExtractMethodObject implements RefactoringObject {
         this.destinationClassName = destinationOperation.getClassName();
         this.originalMethodSignature = new MethodSignatureObject(originalOperation.getName(), originalOperation.getParameters());
         this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(), destinationOperation.getParameters());
+        this.extractedCodeFragments = extractOperationRefactoring.getExtractedCodeFragmentsFromSourceOperation();
         this.surroundingElements = null;
         this.thrownExceptionInfo = null;
     }
@@ -112,6 +114,10 @@ public class ExtractMethodObject implements RefactoringObject {
 
     public void setDestinationMethodSignature(MethodSignatureObject destinationMethodSignature) {
         this.destinationMethodSignature = destinationMethodSignature;
+    }
+
+    public Set<AbstractCodeFragment> getExtractedCodeFragments() {
+        return this.extractedCodeFragments;
     }
 
     public void setSurroundingElements(PsiElement[] surroundingElements) {
