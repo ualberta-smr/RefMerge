@@ -1,10 +1,9 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
-import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RenameClassObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.RenameMethodObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
+import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
@@ -24,12 +23,15 @@ public class RenameClassRenameClassLogicTests extends LightJavaCodeInsightFixtur
         String refactoredPath = basePath + "/src/test/resources/renameClassRenameClassFiles/renameClassNamingConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null && refactorings.size() == 3;
-        Refactoring foo = refactorings.get(0);
-        Refactoring foo2 = refactorings.get(1);
-        Refactoring bar = refactorings.get(2);
-        boolean isConflicting = RenameClassRenameClassCell.checkClassNamingConflict(new Node(foo), new Node(bar));
+        Refactoring leftRefactoring = refactorings.get(0);
+        Refactoring rightRefactoring = refactorings.get(2);
+        Refactoring rightRefactoring2 = refactorings.get(1);
+        RefactoringObject leftRefactoringObject = RefactoringObjectUtils.createRefactoringObject(leftRefactoring);
+        RefactoringObject rightRefactoringObject = RefactoringObjectUtils.createRefactoringObject(rightRefactoring);
+        boolean isConflicting = RenameClassRenameClassCell.checkClassNamingConflict(leftRefactoringObject, rightRefactoringObject);
         Assert.assertFalse("Classes without related refactorings should not conflict", isConflicting);
-        isConflicting = RenameClassRenameClassCell.checkClassNamingConflict(new Node(foo), new Node(foo2));
+        rightRefactoringObject = RefactoringObjectUtils.createRefactoringObject(rightRefactoring2);
+        isConflicting = RenameClassRenameClassCell.checkClassNamingConflict(leftRefactoringObject, rightRefactoringObject);
         Assert.assertTrue("Classes renamed to the same name in the same package conflict", isConflicting);
 
     }
