@@ -3,9 +3,13 @@ package ca.ualberta.cs.smr.core.matrix.receivers;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.ExtractMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameClassDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameMethodDispatcher;
+import ca.ualberta.cs.smr.core.matrix.logicCells.ExtractMethodExtractMethodCell;
 import ca.ualberta.cs.smr.core.matrix.logicCells.ExtractMethodRenameClassCell;
 import ca.ualberta.cs.smr.core.matrix.logicCells.ExtractMethodRenameMethodCell;
+import ca.ualberta.cs.smr.core.refactoringObjects.ExtractMethodObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.RenameClassObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.RenameMethodObject;
 
 public class ExtractMethodReceiver extends Receiver {
 
@@ -22,6 +26,23 @@ public class ExtractMethodReceiver extends Receiver {
                     this.refactoringObject);
             dispatcher.setRefactoringObject(renameMethod);
         }
+        else {
+            RefactoringObject dispatcherObject = dispatcher.getRefactoringObject();
+            ExtractMethodRenameMethodCell cell = new ExtractMethodRenameMethodCell(project);
+            boolean isConflicting = cell.extractMethodRenameMethodConflictCell(dispatcherObject, this.refactoringObject);
+            if(isConflicting) {
+                System.out.println("Extract Method/Rename Method Conflict");
+            }
+            else {
+                boolean isDependant = cell.extractMethodRenameMethodDependenceCell(dispatcherObject, this.refactoringObject);
+                // If there is dependence, the source method of the extract method refactoring was renamed. Rename the source
+                // method to represent this so we can replay the extract method properly
+                if(isDependant) {
+                    ((ExtractMethodObject) this.refactoringObject).
+                            setOriginalMethodSignature(((RenameMethodObject) dispatcherObject).getDestinationMethodSignature());
+                }
+            }
+        }
     }
 
     /*
@@ -34,13 +55,28 @@ public class ExtractMethodReceiver extends Receiver {
             ExtractMethodRenameClassCell.checkExtractMethodRenameClassCombination(renameClass, this.refactoringObject);
             dispatcher.setRefactoringObject(renameClass);
         }
+        else {
+            RefactoringObject dispatcherObject = dispatcher.getRefactoringObject();
+            boolean isDependent = ExtractMethodRenameClassCell
+                    .extractMethodRenameClassDependenceCell(dispatcherObject, this.refactoringObject);
+            if(isDependent) {
+                this.refactoringObject.setDestinationFilePath(dispatcherObject.getDestinationFilePath());
+                ((ExtractMethodObject) this.refactoringObject)
+                        .setDestinationClassName(((RenameClassObject) dispatcherObject).getDestinationClassName());
+            }
+        }
     }
 
     /*
-     * If the project is null, check if we can simplify extract method/extract method and update.
+     * Check for extract method/extract method conflict.
      */
     @Override
     public void receive(ExtractMethodDispatcher dispatcher) {
-
+        ExtractMethodExtractMethodCell cell = new ExtractMethodExtractMethodCell(project);
+        RefactoringObject dispatcherObject = dispatcher.getRefactoringObject();
+        boolean isConflicting = cell.extractMethodExtractMethodConflictCell(dispatcherObject, this.refactoringObject);
+        if(isConflicting) {
+            System.out.println("Extract Method/Extract Method Conflict");
+        }
     }
 }
