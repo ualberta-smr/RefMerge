@@ -37,7 +37,7 @@ public class RefactoringObjectUtils {
         for(index = refactoringObjects.size()-1; index > 0; index--) {
             RefactoringObject existingRefactoring = refactoringObjects.get(index-1);
             int existingRefactoringValue = existingRefactoring.getRefactoringOrder().getOrder();
-            if(newRefactoringValue < existingRefactoringValue) {
+            if(newRefactoringValue <= existingRefactoringValue) {
                 refactoringObjects.set(index, existingRefactoring);
             }
             else {
