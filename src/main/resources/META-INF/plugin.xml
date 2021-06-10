@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>org.example.RefMerge</id>
-    <name>RefTest</name>
+    <name>RefMerge</name>
     <vendor email="mjellis@ualberta.ca" url="http://www.ualberta.ca"/>
 
     <description>
@@ -20,14 +20,13 @@
 <!--    </extensions>-->
 
     <actions>
-        <!-- Add your actions here -->
 
         <action id="RefMerge" class="ca.ualberta.cs.smr.core.RefMerge" text="RunRefMerge"
-                description="Will replay refactorings on merged file" >
+                description="RunRefMerge will run RefMerge, merging the parent commits while considering the refactoring semantics" >
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
         <action id="ca.ualberta.cs.smr.PipelineAction" class="ca.ualberta.cs.smr.PipelineAction" text="RunEvaluationPipeline"
-                description="Will run evaluation pipeline on project" >
+                description="Will run evaluation pipeline" >
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
     </actions>
