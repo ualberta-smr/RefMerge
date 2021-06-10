@@ -3,6 +3,7 @@ package ca.ualberta.cs.smr.core.matrix.logicCells;
 import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
+import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
@@ -27,9 +28,10 @@ public class RenameClassRenameMethodLogicTests extends LightJavaCodeInsightFixtu
         Refactoring methodRef = methodRefs.get(0);
         assert classRefs != null;
         Refactoring classRef = classRefs.get(0);
-        Node classNode = new Node(classRef);
-        Node methodNode = new Node(methodRef);
-        boolean isDependent = RenameClassRenameMethodCell.checkRenameMethodRenameClassDependence(methodNode, classNode);
+        RefactoringObject methodRefactoringObject = RefactoringObjectUtils.createRefactoringObject(methodRef);
+        RefactoringObject classRefactoringObject = RefactoringObjectUtils.createRefactoringObject(classRef);
+        boolean isDependent = RenameClassRenameMethodCell.checkRenameMethodRenameClassDependence(methodRefactoringObject,
+                classRefactoringObject);
         Assert.assertTrue(isDependent);
     }
 
