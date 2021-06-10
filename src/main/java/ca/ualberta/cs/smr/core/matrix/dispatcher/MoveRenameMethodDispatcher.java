@@ -6,7 +6,7 @@ import ca.ualberta.cs.smr.core.matrix.receivers.Receiver;
 /*
  * Dispatches the rename method refactoring to the corresponding receiver.
  */
-public class RenameMethodDispatcher extends RefactoringDispatcher {
+public class MoveRenameMethodDispatcher extends RefactoringDispatcher {
     @Override
     public void dispatch(Receiver r) {
         r.receive(this);

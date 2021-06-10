@@ -2,12 +2,12 @@ package ca.ualberta.cs.smr.core.matrix.logicCells;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RenameClassObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.RenameMethodObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameMethodObject;
 
 /*
  * Contains the logic check for rename class/rename method ordering dependence.
  */
-public class RenameClassRenameMethodCell {
+public class RenameClassMoveRenameMethodCell {
 
     /*
      *  Check if an ordering dependence exists between rename class and rename method refactorings.
@@ -22,7 +22,7 @@ public class RenameClassRenameMethodCell {
     public static boolean checkRenameMethodRenameClassDependence(RefactoringObject methodRefactoringObject,
                                                                  RefactoringObject classRefactoringObject) {
         String classOriginalClassName = ((RenameClassObject) classRefactoringObject).getOriginalClassName();
-        String methodOriginalClassName = ((RenameMethodObject) methodRefactoringObject).getOriginalClassName();
+        String methodOriginalClassName = ((MoveRenameMethodObject) methodRefactoringObject).getOriginalClassName();
         return classOriginalClassName.equals(methodOriginalClassName);
     }
 
@@ -32,7 +32,7 @@ public class RenameClassRenameMethodCell {
      */
     public static void checkRenameClassRenameMethodCombination(RefactoringObject renameMethod,
                                                                RefactoringObject renameClass) {
-        RenameMethodObject methodObject = (RenameMethodObject) renameMethod;
+        MoveRenameMethodObject methodObject = (MoveRenameMethodObject) renameMethod;
         String originalMethodClass = methodObject.getOriginalClassName();
         String destinationMethodClass = methodObject.getDestinationClassName();
         RenameClassObject classObject = (RenameClassObject) renameClass;
@@ -44,20 +44,20 @@ public class RenameClassRenameMethodCell {
         // the rename class refactoring
         if (originalMethodClass.equals(originalClassClass) && !destinationMethodClass.equals(destinationClassClass)) {
             renameMethod.setDestinationFilePath(classObject.getDestinationFilePath());
-            ((RenameMethodObject) renameMethod).setDestinationClassName(classObject.getDestinationClassName());
+            ((MoveRenameMethodObject) renameMethod).setDestinationClassName(classObject.getDestinationClassName());
         }
         // If the destination classes for the rename method and rename class refactorings are the same but the original
         // names are different, then the class was renamed before the method was and we need to update the original
         // class name for the rename method refactoring
         else if (!originalMethodClass.equals(originalClassClass) && destinationMethodClass.equals(destinationClassClass)) {
             renameMethod.setOriginalFilePath(classObject.getOriginalFilePath());
-            ((RenameMethodObject) renameMethod).setOriginalClassName(classObject.getOriginalClassName());
+            ((MoveRenameMethodObject) renameMethod).setOriginalClassName(classObject.getOriginalClassName());
         }
         // If the destination class of the rename method is equal to the destination class of the rename class, then the
         // destination of the rename method class needs to be updated to the rename class's destination class name.
         else if (destinationMethodClass.equals(originalClassClass) && !originalMethodClass.equals(originalClassClass)) {
             renameMethod.setDestinationFilePath(classObject.getDestinationFilePath());
-            ((RenameMethodObject) renameMethod).setDestinationClassName(classObject.getDestinationClassName());
+            ((MoveRenameMethodObject) renameMethod).setDestinationClassName(classObject.getDestinationClassName());
         }
     }
 }

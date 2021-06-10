@@ -1,9 +1,9 @@
 package ca.ualberta.cs.smr.core.matrix.receivers;
 
-import ca.ualberta.cs.smr.core.matrix.logicCells.RenameMethodRenameMethodCell;
+import ca.ualberta.cs.smr.core.matrix.logicCells.MoveRenameMethodMoveRenameMethodCell;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
-import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameMethodDispatcher;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
@@ -13,7 +13,7 @@ import org.refactoringminer.api.Refactoring;
 import java.util.List;
 
 
-public class RenameMethodReceiverTests extends LightJavaCodeInsightFixtureTestCase {
+public class MoveRenameMethodReceiverTests extends LightJavaCodeInsightFixtureTestCase {
 
     @Override
     protected String getTestDataPath() {
@@ -28,7 +28,7 @@ public class RenameMethodReceiverTests extends LightJavaCodeInsightFixtureTestCa
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
         RefactoringObject leftRefactoring = RefactoringObjectUtils.createRefactoringObject(ref);
-        RenameMethodReceiver receiver = new RenameMethodReceiver();
+        MoveRenameMethodReceiver receiver = new MoveRenameMethodReceiver();
         receiver.set(leftRefactoring, null);
         Assert.assertNotNull("The refactoring element should not be null", receiver.refactoringObject);
     }
@@ -47,10 +47,10 @@ public class RenameMethodReceiverTests extends LightJavaCodeInsightFixtureTestCa
         RefactoringObject leftRefactoring = RefactoringObjectUtils.createRefactoringObject(renameParentFooMethod);
         Refactoring renameChildBarMethod = refactorings.get(2);
         RefactoringObject rightRefactoring = RefactoringObjectUtils.createRefactoringObject(renameChildBarMethod);
-        RenameMethodDispatcher dispatcher = new RenameMethodDispatcher();
+        MoveRenameMethodDispatcher dispatcher = new MoveRenameMethodDispatcher();
         dispatcher.set(leftRefactoring, project, false);
 
-        RenameMethodRenameMethodCell cell = new RenameMethodRenameMethodCell(project);
+        MoveRenameMethodMoveRenameMethodCell cell = new MoveRenameMethodMoveRenameMethodCell(project);
         boolean isConflicting = cell.renameMethodRenameMethodConflictCell(leftRefactoring, rightRefactoring);
         Assert.assertTrue("Originally overriding methods that are renamed to different names conflict", isConflicting);
     }
@@ -67,9 +67,9 @@ public class RenameMethodReceiverTests extends LightJavaCodeInsightFixtureTestCa
         RefactoringObject leftRefactoring = RefactoringObjectUtils.createRefactoringObject(changeFirstOverloaded);
         Refactoring changeSecondOverloaded = refactorings.get(1);
         RefactoringObject rightRefactoring = RefactoringObjectUtils.createRefactoringObject(changeSecondOverloaded);
-        RenameMethodDispatcher dispatcher = new RenameMethodDispatcher();
+        MoveRenameMethodDispatcher dispatcher = new MoveRenameMethodDispatcher();
         dispatcher.set(leftRefactoring, project, false);
-        RenameMethodRenameMethodCell cell = new RenameMethodRenameMethodCell(project);
+        MoveRenameMethodMoveRenameMethodCell cell = new MoveRenameMethodMoveRenameMethodCell(project);
         boolean isConflicting = cell.renameMethodRenameMethodConflictCell(leftRefactoring, rightRefactoring);
         Assert.assertTrue("Methods that start overloaded and get changed to different names should conflict", isConflicting);
     }
@@ -85,9 +85,9 @@ public class RenameMethodReceiverTests extends LightJavaCodeInsightFixtureTestCa
         RefactoringObject leftRefactoring = RefactoringObjectUtils.createRefactoringObject(leftRef);
         Refactoring rightRef = refactorings.get(1);
         RefactoringObject rightRefactoring = RefactoringObjectUtils.createRefactoringObject(rightRef);
-        RenameMethodDispatcher dispatcher = new RenameMethodDispatcher();
+        MoveRenameMethodDispatcher dispatcher = new MoveRenameMethodDispatcher();
         dispatcher.set(leftRefactoring, project, false);
-        RenameMethodRenameMethodCell cell = new RenameMethodRenameMethodCell(project);
+        MoveRenameMethodMoveRenameMethodCell cell = new MoveRenameMethodMoveRenameMethodCell(project);
         boolean isConflicting = cell.renameMethodRenameMethodConflictCell(leftRefactoring, rightRefactoring);
         Assert.assertTrue("Methods renamed to the same name in the same class should return true", isConflicting);
     }
@@ -101,9 +101,9 @@ public class RenameMethodReceiverTests extends LightJavaCodeInsightFixtureTestCa
         assert refactorings != null;
         Refactoring leftRef = refactorings.get(1);
         RefactoringObject leftRefactoring = RefactoringObjectUtils.createRefactoringObject(leftRef);
-        RenameMethodDispatcher dispatcher = new RenameMethodDispatcher();
+        MoveRenameMethodDispatcher dispatcher = new MoveRenameMethodDispatcher();
         dispatcher.set(leftRefactoring, project, false);
-        RenameMethodRenameMethodCell cell = new RenameMethodRenameMethodCell(project);
+        MoveRenameMethodMoveRenameMethodCell cell = new MoveRenameMethodMoveRenameMethodCell(project);
         boolean isConflicting = cell.renameMethodRenameMethodConflictCell(leftRefactoring, leftRefactoring);
         Assert.assertFalse("A method renamed to the same name in both versions should not conflict", isConflicting);
     }

@@ -2,14 +2,14 @@ package ca.ualberta.cs.smr.core.matrix.receivers;
 
 import ca.ualberta.cs.smr.core.matrix.dispatcher.ExtractMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameClassDispatcher;
-import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameMethodDispatcher;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.logicCells.ExtractMethodExtractMethodCell;
 import ca.ualberta.cs.smr.core.matrix.logicCells.ExtractMethodRenameClassCell;
-import ca.ualberta.cs.smr.core.matrix.logicCells.ExtractMethodRenameMethodCell;
+import ca.ualberta.cs.smr.core.matrix.logicCells.ExtractMethodMoveRenameMethodCell;
 import ca.ualberta.cs.smr.core.refactoringObjects.ExtractMethodObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RenameClassObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.RenameMethodObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameMethodObject;
 
 public class ExtractMethodReceiver extends Receiver {
 
@@ -18,17 +18,17 @@ public class ExtractMethodReceiver extends Receiver {
      *  Check if we can simplify extract method/rename method and update or if there is conflict/dependence.
      */
     @Override
-    public void receive(RenameMethodDispatcher dispatcher) {
+    public void receive(MoveRenameMethodDispatcher dispatcher) {
         if(dispatcher.isSimplify()) {
             RefactoringObject renameMethod = dispatcher.getRefactoringObject();
             // Need to use this.refactoringObject/dispatcher.refactoringObject or set dispatcher.refactoringObject
-            this.isTransitive = ExtractMethodRenameMethodCell.checkExtractMethodRenameMethodTransitivity(renameMethod,
+            this.isTransitive = ExtractMethodMoveRenameMethodCell.checkExtractMethodRenameMethodTransitivity(renameMethod,
                     this.refactoringObject);
             dispatcher.setRefactoringObject(renameMethod);
         }
         else {
             RefactoringObject dispatcherObject = dispatcher.getRefactoringObject();
-            ExtractMethodRenameMethodCell cell = new ExtractMethodRenameMethodCell(project);
+            ExtractMethodMoveRenameMethodCell cell = new ExtractMethodMoveRenameMethodCell(project);
             boolean isConflicting = cell.extractMethodRenameMethodConflictCell(dispatcherObject, this.refactoringObject);
             if(isConflicting) {
                 System.out.println("Extract Method/Rename Method Conflict");
@@ -39,7 +39,7 @@ public class ExtractMethodReceiver extends Receiver {
                 // method to represent this so we can replay the extract method properly
                 if(isDependant) {
                     ((ExtractMethodObject) this.refactoringObject).
-                            setOriginalMethodSignature(((RenameMethodObject) dispatcherObject).getDestinationMethodSignature());
+                            setOriginalMethodSignature(((MoveRenameMethodObject) dispatcherObject).getDestinationMethodSignature());
                 }
             }
         }

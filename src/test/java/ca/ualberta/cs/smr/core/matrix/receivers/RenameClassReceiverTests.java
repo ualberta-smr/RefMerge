@@ -1,11 +1,11 @@
 package ca.ualberta.cs.smr.core.matrix.receivers;
 
 import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassRenameClassCell;
-import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassRenameMethodCell;
+import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassMoveRenameMethodCell;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameClassDispatcher;
-import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameMethodDispatcher;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
@@ -32,7 +32,7 @@ public class RenameClassReceiverTests extends LightJavaCodeInsightFixtureTestCas
 
     public void testRenameMethodDispatcherReceive() {
         RenameClassDispatcher dispatcher = new RenameClassDispatcher();
-        RenameMethodDispatcher wrongDispatcher = new RenameMethodDispatcher();
+        MoveRenameMethodDispatcher wrongDispatcher = new MoveRenameMethodDispatcher();
         RenameClassReceiver receiver = mock(RenameClassReceiver.class);
         dispatcher.dispatch(receiver);
         verify(receiver, times(1)).receive(dispatcher);
@@ -41,7 +41,7 @@ public class RenameClassReceiverTests extends LightJavaCodeInsightFixtureTestCas
     }
 
     public void testRenameClassDispatcherReceive() {
-        RenameMethodDispatcher dispatcher = new RenameMethodDispatcher();
+        MoveRenameMethodDispatcher dispatcher = new MoveRenameMethodDispatcher();
         RenameClassDispatcher wrongDispatcher = new RenameClassDispatcher();
         RenameClassReceiver receiver = mock(RenameClassReceiver.class);
         dispatcher.dispatch(receiver);
@@ -79,7 +79,7 @@ public class RenameClassReceiverTests extends LightJavaCodeInsightFixtureTestCas
         Refactoring rightRef = classRefs.get(0);
         RefactoringObject leftRefactoring = RefactoringObjectUtils.createRefactoringObject(leftRef);
         RefactoringObject rightRefactoring = RefactoringObjectUtils.createRefactoringObject(rightRef);
-        boolean isDependent = RenameClassRenameMethodCell.renameClassRenameMethodDependenceCell(leftRefactoring, rightRefactoring);
+        boolean isDependent = RenameClassMoveRenameMethodCell.renameClassRenameMethodDependenceCell(leftRefactoring, rightRefactoring);
         Assert.assertTrue(isDependent);
     }
 }

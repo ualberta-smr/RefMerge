@@ -3,11 +3,11 @@ package ca.ualberta.cs.smr.core.matrix;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.ExtractMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RefactoringDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameClassDispatcher;
-import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameMethodDispatcher;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.receivers.ExtractMethodReceiver;
 import ca.ualberta.cs.smr.core.matrix.receivers.Receiver;
 import ca.ualberta.cs.smr.core.matrix.receivers.RenameClassReceiver;
-import ca.ualberta.cs.smr.core.matrix.receivers.RenameMethodReceiver;
+import ca.ualberta.cs.smr.core.matrix.receivers.MoveRenameMethodReceiver;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
@@ -29,7 +29,7 @@ public class Matrix {
      */
     static final HashMap<RefactoringType, RefactoringDispatcher> dispatcherMap =
                                                     new HashMap<RefactoringType, RefactoringDispatcher>() {{
-       put(RefactoringType.RENAME_METHOD, new RenameMethodDispatcher());
+       put(RefactoringType.RENAME_METHOD, new MoveRenameMethodDispatcher());
        put(RefactoringType.RENAME_CLASS, new RenameClassDispatcher());
        put(RefactoringType.EXTRACT_OPERATION, new ExtractMethodDispatcher());
     }};
@@ -40,7 +40,7 @@ public class Matrix {
      */
     static final HashMap<RefactoringType, Receiver> receiverMap =
                                                     new HashMap<RefactoringType, Receiver>() {{
-        put(RefactoringType.RENAME_METHOD, new RenameMethodReceiver());
+        put(RefactoringType.RENAME_METHOD, new MoveRenameMethodReceiver());
         put(RefactoringType.RENAME_CLASS, new RenameClassReceiver());
         put(RefactoringType.EXTRACT_OPERATION, new ExtractMethodReceiver());
     }};

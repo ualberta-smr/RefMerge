@@ -46,7 +46,7 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         Refactoring ref = refactorings.get(0);
         ReplayOperations replay = new ReplayOperations(project);
         RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
-        replay.replayRenameMethod(refactoringObject);
+        replay.replayMoveRenameMethod(refactoringObject);
 
 
         list1 = TestUtils.getMethodNames(oldMethods);

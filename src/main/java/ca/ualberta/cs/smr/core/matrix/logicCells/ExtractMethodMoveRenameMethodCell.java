@@ -3,7 +3,7 @@ package ca.ualberta.cs.smr.core.matrix.logicCells;
 import ca.ualberta.cs.smr.core.refactoringObjects.ExtractMethodObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.RenameMethodObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameMethodObject;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
@@ -13,10 +13,10 @@ import static ca.ualberta.cs.smr.utils.MatrixUtils.*;
 /*
  * Contains the logic check for extract method/rename method refactoring conflict and ordering dependence checks.
  */
-public class ExtractMethodRenameMethodCell {
+public class ExtractMethodMoveRenameMethodCell {
     Project project;
 
-    public ExtractMethodRenameMethodCell(Project project) {
+    public ExtractMethodMoveRenameMethodCell(Project project) {
         this.project = project;
     }
 
@@ -50,21 +50,21 @@ public class ExtractMethodRenameMethodCell {
      * Check if the extracted method and the renamed method cause an accidental override
      */
     public boolean checkOverrideConflict(RefactoringObject renameMethod, RefactoringObject extractMethod) {
-        RenameMethodObject renameMethodObject = (RenameMethodObject) renameMethod;
+        MoveRenameMethodObject moveRenameMethodObject = (MoveRenameMethodObject) renameMethod;
         ExtractMethodObject extractMethodObject = (ExtractMethodObject) extractMethod;
 
         // Get the refactored operations
-        MethodSignatureObject renameDestinationMethod = renameMethodObject.getDestinationMethodSignature();
+        MethodSignatureObject renameDestinationMethod = moveRenameMethodObject.getDestinationMethodSignature();
         MethodSignatureObject extractDestinationMethod = extractMethodObject.getDestinationMethodSignature();
         // Get the class names
-        String renameDestinationClassName = renameMethodObject.getDestinationClassName();
+        String renameDestinationClassName = moveRenameMethodObject.getDestinationClassName();
         String extractDestinationClassName = extractMethodObject.getDestinationClassName();
 
         // If the rename methods happen in the same class then there is no override conflict
         if(renameDestinationClassName.equals(extractDestinationClassName)) {
             return false;
         }
-        String renameDestinationFile = renameMethodObject.getDestinationFilePath();
+        String renameDestinationFile = moveRenameMethodObject.getDestinationFilePath();
         String extractDestinationFile = extractMethodObject.getDestinationFilePath();
         Utils utils = new Utils(project);
         PsiClass renameMethodPsiClass = utils.getPsiClassByFilePath(renameDestinationFile, renameDestinationClassName);
@@ -81,18 +81,18 @@ public class ExtractMethodRenameMethodCell {
      * Check if the extracted method and renamed method cause an accidental overload
      */
     public boolean checkOverloadConflict(RefactoringObject renameMethod, RefactoringObject extractMethod) {
-        RenameMethodObject renameMethodObject = (RenameMethodObject) renameMethod;
+        MoveRenameMethodObject moveRenameMethodObject = (MoveRenameMethodObject) renameMethod;
         ExtractMethodObject extractMethodObject = (ExtractMethodObject) extractMethod;
 
-        MethodSignatureObject renameDestinationMethod = renameMethodObject.getDestinationMethodSignature();
+        MethodSignatureObject renameDestinationMethod = moveRenameMethodObject.getDestinationMethodSignature();
         MethodSignatureObject extractDestinationMethod = extractMethodObject.getDestinationMethodSignature();
 
-        String renameDestinationClassName = renameMethodObject.getDestinationClassName();
+        String renameDestinationClassName = moveRenameMethodObject.getDestinationClassName();
         String extractDestinationClassName = extractMethodObject.getDestinationClassName();
         // If the methods are in different classes, check if one class inherits the other
         if (!renameDestinationClassName.equals(extractDestinationClassName)) {
             Utils utils = new Utils(project);
-            String renameMethodFile = renameMethodObject.getDestinationFilePath();
+            String renameMethodFile = moveRenameMethodObject.getDestinationFilePath();
             String extractMethodFile = extractMethodObject.getDestinationFilePath();
             PsiClass renameMethodPsiClass = utils.getPsiClassByFilePath(renameMethodFile, renameDestinationClassName);
             PsiClass extractMethodPsiClass = utils.getPsiClassByFilePath(extractMethodFile, extractDestinationClassName);
@@ -115,12 +115,12 @@ public class ExtractMethodRenameMethodCell {
      * Check if the extracted method has the same name as the renamed method
      */
     public boolean checkMethodNamingConflict(RefactoringObject renameMethod, RefactoringObject extractMethod) {
-        RenameMethodObject renameMethodObject = (RenameMethodObject) renameMethod;
+        MoveRenameMethodObject moveRenameMethodObject = (MoveRenameMethodObject) renameMethod;
         ExtractMethodObject extractMethodObject = (ExtractMethodObject) extractMethod;
-        MethodSignatureObject renameDestinationMethod = renameMethodObject.getDestinationMethodSignature();
+        MethodSignatureObject renameDestinationMethod = moveRenameMethodObject.getDestinationMethodSignature();
         MethodSignatureObject extractDestinationMethod = extractMethodObject.getDestinationMethodSignature();
 
-        String renameDestinationClassName = renameMethodObject.getDestinationClassName();
+        String renameDestinationClassName = moveRenameMethodObject.getDestinationClassName();
         String extractDestinationClassName = extractMethodObject.getDestinationClassName();
 
         // If the methods are in different classes
@@ -135,12 +135,12 @@ public class ExtractMethodRenameMethodCell {
      */
     public static boolean checkExtractMethodRenameMethodDependence(RefactoringObject renameMethod,
                                                                    RefactoringObject extractMethod) {
-        RenameMethodObject renameMethodObject = (RenameMethodObject) renameMethod;
+        MoveRenameMethodObject moveRenameMethodObject = (MoveRenameMethodObject) renameMethod;
         ExtractMethodObject extractMethodObject = (ExtractMethodObject) extractMethod;
-        MethodSignatureObject renameOriginalMethod = renameMethodObject.getOriginalMethodSignature();
+        MethodSignatureObject renameOriginalMethod = moveRenameMethodObject.getOriginalMethodSignature();
         MethodSignatureObject extractOriginalMethod = extractMethodObject.getOriginalMethodSignature();
 
-        String renameOriginalClassName = renameMethodObject.getOriginalClassName();
+        String renameOriginalClassName = moveRenameMethodObject.getOriginalClassName();
         String extractOriginalClassName = extractMethodObject.getOriginalClassName();
 
         // If the methods are in different classes then there cannot be ordering dependence
@@ -160,11 +160,11 @@ public class ExtractMethodRenameMethodCell {
     public static boolean checkExtractMethodRenameMethodTransitivity(RefactoringObject renameMethod,
                                                                      RefactoringObject extractMethod) {
         boolean isTransitive = false;
-        RenameMethodObject renameMethodObject = (RenameMethodObject) renameMethod;
-        String originalRenameClassName = renameMethodObject.getOriginalClassName();
-        String destinationRenameClassName = renameMethodObject.getDestinationClassName();
-        MethodSignatureObject originalRenameMethod = renameMethodObject.getOriginalMethodSignature();
-        MethodSignatureObject destinationRenameMethod = renameMethodObject.getDestinationMethodSignature();
+        MoveRenameMethodObject moveRenameMethodObject = (MoveRenameMethodObject) renameMethod;
+        String originalRenameClassName = moveRenameMethodObject.getOriginalClassName();
+        String destinationRenameClassName = moveRenameMethodObject.getDestinationClassName();
+        MethodSignatureObject originalRenameMethod = moveRenameMethodObject.getOriginalMethodSignature();
+        MethodSignatureObject destinationRenameMethod = moveRenameMethodObject.getDestinationMethodSignature();
 
         ExtractMethodObject extractMethodObject = (ExtractMethodObject) extractMethod;
         String originalExtractClassName = extractMethodObject.getOriginalClassName();
@@ -177,8 +177,8 @@ public class ExtractMethodRenameMethodCell {
         // checks). Update the source method details to use the original method.
         if(destinationRenameMethod.equalsSignature(originalExtractMethod) && (destinationRenameClassName.equals(originalExtractClassName)
         || originalRenameClassName.equals(originalExtractClassName))) {
-            extractMethod.setOriginalFilePath(renameMethodObject.getOriginalFilePath());
-            ((ExtractMethodObject) extractMethod).setOriginalClassName(renameMethodObject.getOriginalClassName());
+            extractMethod.setOriginalFilePath(moveRenameMethodObject.getOriginalFilePath());
+            ((ExtractMethodObject) extractMethod).setOriginalClassName(moveRenameMethodObject.getOriginalClassName());
             ((ExtractMethodObject) extractMethod).setOriginalMethodSignature(originalRenameMethod);
         }
         // If the original name of the rename method and the extracted method name are the same, then the method was extracted
@@ -187,8 +187,8 @@ public class ExtractMethodRenameMethodCell {
         else if(originalRenameMethod.equalsSignature(destinationExtractMethod) && (destinationRenameClassName.equals(destinationExtractClassName)
         || originalRenameClassName.equals(originalExtractClassName))) {
             isTransitive = true;
-            extractMethod.setDestinationFilePath(renameMethodObject.getDestinationFilePath());
-            ((ExtractMethodObject) extractMethod).setDestinationClassName(renameMethodObject.getDestinationClassName());
+            extractMethod.setDestinationFilePath(moveRenameMethodObject.getDestinationFilePath());
+            ((ExtractMethodObject) extractMethod).setDestinationClassName(moveRenameMethodObject.getDestinationClassName());
             ((ExtractMethodObject) extractMethod).setDestinationMethodSignature(destinationRenameMethod);
         }
         // If the original class name

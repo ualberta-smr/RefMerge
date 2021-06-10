@@ -2,7 +2,7 @@ package ca.ualberta.cs.smr.core.matrix.receivers;
 
 import ca.ualberta.cs.smr.core.matrix.dispatcher.ExtractMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameClassDispatcher;
-import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameMethodDispatcher;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import com.intellij.openapi.project.Project;
 
@@ -35,7 +35,7 @@ public class Receiver {
     /*
      * Any method that overrides this will dispatch to a logic cell containing a rename method refactoring.
      */
-    public void receive(RenameMethodDispatcher dispatcher) {
+    public void receive(MoveRenameMethodDispatcher dispatcher) {
         // This is empty because subclasses will override this to dispatch to the correct logic cell.
     }
 

@@ -2,7 +2,7 @@ package ca.ualberta.cs.smr.core.matrix.logicCells;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.RenameMethodObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameMethodObject;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
@@ -12,10 +12,10 @@ import static ca.ualberta.cs.smr.utils.MatrixUtils.*;
 /*
  * Contains the logic checks for rename method/rename method conflicts.
  */
-public class RenameMethodRenameMethodCell {
+public class MoveRenameMethodMoveRenameMethodCell {
     final private Project project;
 
-    public RenameMethodRenameMethodCell(Project project) {
+    public MoveRenameMethodMoveRenameMethodCell(Project project) {
         this.project = project;
     }
 
@@ -24,20 +24,20 @@ public class RenameMethodRenameMethodCell {
      *  can result in an override conflict, an overload conflict, or a naming conflict.
      */
     public boolean renameMethodRenameMethodConflictCell(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
-        RenameMethodRenameMethodCell renameMethodRenameMethodCell = new RenameMethodRenameMethodCell(project);
+        MoveRenameMethodMoveRenameMethodCell moveRenameMethodMoveRenameMethodCell = new MoveRenameMethodMoveRenameMethodCell(project);
         // Check for a method override conflict
-        if(renameMethodRenameMethodCell.checkOverrideConflict(dispatcherObject, receiverObject)) {
+        if(moveRenameMethodMoveRenameMethodCell.checkOverrideConflict(dispatcherObject, receiverObject)) {
             System.out.println("Override conflict");
             return true;
         }
         // Check for method overload conflict
-        else if(renameMethodRenameMethodCell.checkOverloadConflict(dispatcherObject, receiverObject)) {
+        else if(moveRenameMethodMoveRenameMethodCell.checkOverloadConflict(dispatcherObject, receiverObject)) {
             System.out.println("Overload conflict");
             return true;
         }
         // Check for naming conflict
 
-        else if(renameMethodRenameMethodCell.checkMethodNamingConflict(dispatcherObject, receiverObject)) {
+        else if(moveRenameMethodMoveRenameMethodCell.checkMethodNamingConflict(dispatcherObject, receiverObject)) {
             System.out.println("Naming conflict");
             return true;
         }
@@ -49,8 +49,8 @@ public class RenameMethodRenameMethodCell {
      * then they were likely part of an accidental override
      */
     public boolean checkOverrideConflict(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
-        RenameMethodObject dispatcherRenameMethod = ((RenameMethodObject) dispatcherObject);
-        RenameMethodObject receiverRenameMethod = ((RenameMethodObject) receiverObject);
+        MoveRenameMethodObject dispatcherRenameMethod = ((MoveRenameMethodObject) dispatcherObject);
+        MoveRenameMethodObject receiverRenameMethod = ((MoveRenameMethodObject) receiverObject);
         // Get the original operations
         MethodSignatureObject dispatcherOriginalMethod = dispatcherRenameMethod.getOriginalMethodSignature();
         MethodSignatureObject receiverOriginalMethod = receiverRenameMethod.getOriginalMethodSignature();
@@ -91,8 +91,8 @@ public class RenameMethodRenameMethodCell {
      * possible accidental overloading conflict.
      */
     public boolean checkOverloadConflict(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
-        RenameMethodObject dispatcherRenameMethod = ((RenameMethodObject) dispatcherObject);
-        RenameMethodObject receiverRenameMethod = ((RenameMethodObject) receiverObject);
+        MoveRenameMethodObject dispatcherRenameMethod = ((MoveRenameMethodObject) dispatcherObject);
+        MoveRenameMethodObject receiverRenameMethod = ((MoveRenameMethodObject) receiverObject);
         // Get the original operations
         MethodSignatureObject dispatcherOriginalMethod = dispatcherRenameMethod.getOriginalMethodSignature();
         MethodSignatureObject receiverOriginalMethod = receiverRenameMethod.getOriginalMethodSignature();
@@ -128,17 +128,17 @@ public class RenameMethodRenameMethodCell {
      */
     public boolean checkMethodNamingConflict(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
         // Use the original class name because they will have different class names if a class was renamed on one branch
-        String dispatcherClassName = ((RenameMethodObject) dispatcherObject).getOriginalClassName();
-        String receiverClassName = ((RenameMethodObject) receiverObject).getOriginalClassName();
+        String dispatcherClassName = ((MoveRenameMethodObject) dispatcherObject).getOriginalClassName();
+        String receiverClassName = ((MoveRenameMethodObject) receiverObject).getOriginalClassName();
         if(!dispatcherClassName.equals(receiverClassName)) {
             return false;
         }
         // We already checked for overriding and overloading so we can just use the name instead of the full
         // signature
-        String dispatcherOriginalName = ((RenameMethodObject) dispatcherObject).getOriginalMethodSignature().getName();
-        String receiverOriginalName = ((RenameMethodObject) receiverObject).getOriginalMethodSignature().getName();
-        String dispatcherDestinationName = ((RenameMethodObject) dispatcherObject).getDestinationMethodSignature().getName();
-        String receiverDestinationName = ((RenameMethodObject) receiverObject).getDestinationMethodSignature().getName();
+        String dispatcherOriginalName = ((MoveRenameMethodObject) dispatcherObject).getOriginalMethodSignature().getName();
+        String receiverOriginalName = ((MoveRenameMethodObject) receiverObject).getOriginalMethodSignature().getName();
+        String dispatcherDestinationName = ((MoveRenameMethodObject) dispatcherObject).getDestinationMethodSignature().getName();
+        String receiverDestinationName = ((MoveRenameMethodObject) receiverObject).getDestinationMethodSignature().getName();
 
         return checkNamingConflict(dispatcherOriginalName, receiverOriginalName,
                 dispatcherDestinationName, receiverDestinationName);
@@ -151,8 +151,8 @@ public class RenameMethodRenameMethodCell {
     public boolean checkRenameMethodRenameMethodTransitivity(RefactoringObject firstRefactoring,
                                                              RefactoringObject secondRefactoring) {
         boolean isTransitive = false;
-        RenameMethodObject firstObject = (RenameMethodObject) firstRefactoring;
-        RenameMethodObject secondObject = (RenameMethodObject) secondRefactoring;
+        MoveRenameMethodObject firstObject = (MoveRenameMethodObject) firstRefactoring;
+        MoveRenameMethodObject secondObject = (MoveRenameMethodObject) secondRefactoring;
         String firstDestinationClass = firstObject.getDestinationClassName();
         MethodSignatureObject firstDestinationMethod = firstObject.getDestinationMethodSignature();
         String secondOriginalClass = secondObject.getOriginalClassName();
@@ -163,14 +163,14 @@ public class RenameMethodRenameMethodCell {
             //This is a transitive refactoring
             isTransitive = true;
             firstRefactoring.setDestinationFilePath(secondObject.getDestinationFilePath());
-            ((RenameMethodObject) firstRefactoring).setDestinationClassName(secondObject.getDestinationClassName());
-            ((RenameMethodObject) firstRefactoring).setDestinationMethodSignature(secondObject.getDestinationMethodSignature());
+            ((MoveRenameMethodObject) firstRefactoring).setDestinationClassName(secondObject.getDestinationClassName());
+            ((MoveRenameMethodObject) firstRefactoring).setDestinationMethodSignature(secondObject.getDestinationMethodSignature());
         }
         else if(firstDestinationClass.equals(secondDestinationClass) && firstDestinationMethod.equalsSignature(secondOriginalMethod)) {
             isTransitive = true;
             firstRefactoring.setDestinationFilePath(secondObject.getDestinationFilePath());
-            ((RenameMethodObject) firstRefactoring).setDestinationClassName(secondObject.getDestinationClassName());
-            ((RenameMethodObject) firstRefactoring).setDestinationMethodSignature(secondObject.getDestinationMethodSignature());
+            ((MoveRenameMethodObject) firstRefactoring).setDestinationClassName(secondObject.getDestinationClassName());
+            ((MoveRenameMethodObject) firstRefactoring).setDestinationMethodSignature(secondObject.getDestinationMethodSignature());
         }
 
         return isTransitive;

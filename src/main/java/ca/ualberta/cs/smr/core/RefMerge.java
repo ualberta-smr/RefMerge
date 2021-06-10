@@ -135,7 +135,7 @@ public class RefMerge extends AnAction {
                     break;
                 case RENAME_METHOD:
                     // Undo the rename method refactoring
-                    undo.undoRenameMethod(refactoringObject);
+                    undo.undoMoveRenameMethod(refactoringObject);
                     break;
                 case EXTRACT_OPERATION:
                     refactoringObject = undo.undoExtractMethod(refactoringObject);
@@ -163,7 +163,7 @@ public class RefMerge extends AnAction {
                         break;
                     case RENAME_METHOD:
                         // Perform the rename method refactoring
-                        replay.replayRenameMethod(refactoringObject);
+                        replay.replayMoveRenameMethod(refactoringObject);
                         break;
                     case EXTRACT_OPERATION:
                         replay.replayExtractMethod(refactoringObject);

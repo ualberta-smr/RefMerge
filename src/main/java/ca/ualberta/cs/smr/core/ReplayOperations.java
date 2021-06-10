@@ -39,13 +39,13 @@ public class ReplayOperations {
     /*
      * replayRenameMethod performs the rename method refactoring.
      */
-    public void replayRenameMethod(RefactoringObject ref) {
-        RenameMethodObject renameMethodObject = (RenameMethodObject) ref;
-        MethodSignatureObject original = renameMethodObject.getOriginalMethodSignature();
-        MethodSignatureObject renamed = renameMethodObject.getDestinationMethodSignature();
+    public void replayMoveRenameMethod(RefactoringObject ref) {
+        MoveRenameMethodObject moveRenameMethodObject = (MoveRenameMethodObject) ref;
+        MethodSignatureObject original = moveRenameMethodObject.getOriginalMethodSignature();
+        MethodSignatureObject renamed = moveRenameMethodObject.getDestinationMethodSignature();
         String destName = renamed.getName();
-        String qualifiedClass = renameMethodObject.getOriginalClassName();
-        String filePath = renameMethodObject.getOriginalFilePath();
+        String qualifiedClass = moveRenameMethodObject.getOriginalClassName();
+        String filePath = moveRenameMethodObject.getOriginalFilePath();
         Utils utils = new Utils(project);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(qualifiedClass, filePath);
         assert psiClass != null;
