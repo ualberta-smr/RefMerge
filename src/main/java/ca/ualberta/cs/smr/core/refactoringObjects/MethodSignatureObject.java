@@ -28,7 +28,7 @@ public class MethodSignatureObject {
         this.name = name;
         this.parameterList = new ArrayList<>();
         for(UMLParameter umlParameter : umlParameterList) {
-            new ParameterObject(umlParameter.getType().toString(), umlParameter.getName());
+            this.parameterList.add(new ParameterObject(umlParameter.getType().toString(), umlParameter.getName()));
         }
     }
 
