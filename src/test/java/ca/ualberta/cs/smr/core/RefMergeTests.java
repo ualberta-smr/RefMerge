@@ -1,9 +1,8 @@
 package ca.ualberta.cs.smr.core;
 
-import ca.ualberta.cs.smr.core.dependenceGraph.DependenceGraph;
+import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
-import ca.ualberta.cs.smr.utils.sortingUtils.Pair;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
@@ -44,10 +43,10 @@ public class RefMergeTests extends LightJavaCodeInsightFixtureTestCase {
         list2 = TestUtils.getClassNames(newClasses);
         LightJavaCodeInsightFixtureTestCase.assertNotSame(list1, list2);
 
-        List<Pair> classRefactorings = GetDataForTests.getPairs("RENAME_CLASS", originalPath, refactoredPath);
-        List<Pair> methodRefactorings = GetDataForTests.getPairs("RENAME_METHOD", originalPath, refactoredPath);
+        List<RefactoringObject> classRefactorings = GetDataForTests.getRefactoringObjects("RENAME_CLASS", originalPath, refactoredPath);
+        List<RefactoringObject> methodRefactorings = GetDataForTests.getRefactoringObjects("RENAME_METHOD", originalPath, refactoredPath);
         assert classRefactorings != null && methodRefactorings != null;
-        List<Pair> refactorings = new ArrayList<>();
+        ArrayList<RefactoringObject> refactorings = new ArrayList<>();
         refactorings.addAll(methodRefactorings);
         refactorings.addAll(classRefactorings);
         RefMerge refMerge = new RefMerge();
@@ -91,17 +90,15 @@ public class RefMergeTests extends LightJavaCodeInsightFixtureTestCase {
         list2 = TestUtils.getClassNames(newClasses);
         LightJavaCodeInsightFixtureTestCase.assertNotSame(list1, list2);
 
-        List<Pair> classRefactorings = GetDataForTests.getPairs("RENAME_CLASS", originalPath, refactoredPath);
-        List<Pair> methodRefactorings = GetDataForTests.getPairs("RENAME_METHOD", originalPath, refactoredPath);
+        List<RefactoringObject> classRefactorings = GetDataForTests.getRefactoringObjects("RENAME_CLASS", originalPath, refactoredPath);
+        List<RefactoringObject> methodRefactorings = GetDataForTests.getRefactoringObjects("RENAME_METHOD", originalPath, refactoredPath);
         assert classRefactorings != null && methodRefactorings != null;
-        List<Pair> refactorings = new ArrayList<>();
+        ArrayList<RefactoringObject> refactorings = new ArrayList<>();
         refactorings.addAll(methodRefactorings);
         refactorings.addAll(classRefactorings);
         RefMerge refMerge = new RefMerge();
         refMerge.project = project;
-        DependenceGraph graph = new DependenceGraph(project);
-        graph.createPartialGraph(refactorings);
-        refMerge.replayRefactorings(graph);
+        refMerge.replayRefactorings(refactorings);
 
         oldMethods = TestUtils.getPsiMethodsFromFile(psiFiles[0]);
         newMethods = TestUtils.getPsiMethodsFromFile(psiFiles[1]);

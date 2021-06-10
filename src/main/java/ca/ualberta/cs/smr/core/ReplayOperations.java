@@ -1,6 +1,6 @@
 package ca.ualberta.cs.smr.core;
 
-import ca.ualberta.cs.smr.core.refactoringWrappers.ExtractOperationRefactoringWrapper;
+import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
@@ -21,14 +21,7 @@ import com.intellij.refactoring.extractMethod.ExtractMethodProcessor;
 import com.intellij.refactoring.extractMethod.PrepareFailedException;
 import com.intellij.refactoring.util.duplicates.Match;
 import com.intellij.usageView.UsageInfo;
-import gr.uom.java.xmi.UMLClass;
-import gr.uom.java.xmi.UMLOperation;
-import gr.uom.java.xmi.UMLParameter;
 import gr.uom.java.xmi.decomposition.replacement.Replacement;
-import gr.uom.java.xmi.diff.ExtractOperationRefactoring;
-import gr.uom.java.xmi.diff.RenameClassRefactoring;
-import gr.uom.java.xmi.diff.RenameOperationRefactoring;
-import org.refactoringminer.api.Refactoring;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,12 +39,13 @@ public class ReplayOperations {
     /*
      * replayRenameMethod performs the rename method refactoring.
      */
-    public void replayRenameMethod(Refactoring ref) {
-        UMLOperation original = ((RenameOperationRefactoring) ref).getOriginalOperation();
-        UMLOperation renamed = ((RenameOperationRefactoring) ref).getRenamedOperation();
+    public void replayRenameMethod(RefactoringObject ref) {
+        RenameMethodObject renameMethodObject = (RenameMethodObject) ref;
+        MethodSignatureObject original = renameMethodObject.getOriginalMethodSignature();
+        MethodSignatureObject renamed = renameMethodObject.getDestinationMethodSignature();
         String destName = renamed.getName();
-        String qualifiedClass = renamed.getClassName();
-        String filePath = renamed.getLocationInfo().getFilePath();
+        String qualifiedClass = renameMethodObject.getOriginalClassName();
+        String filePath = renameMethodObject.getOriginalFilePath();
         Utils utils = new Utils(project);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(qualifiedClass, filePath);
         assert psiClass != null;
@@ -67,15 +61,13 @@ public class ReplayOperations {
     }
 
 
-    public void replayRenameClass(Refactoring ref) {
-
-        UMLClass original = ((RenameClassRefactoring) ref).getOriginalClass();
-        UMLClass renamed = ((RenameClassRefactoring) ref).getRenamedClass();
-        String srcQualifiedClass = original.getName();
-        String destQualifiedClass = renamed.getName();
+    public void replayRenameClass(RefactoringObject ref) {
+        RenameClassObject renameClassObject = (RenameClassObject) ref;
+        String srcQualifiedClass = renameClassObject.getOriginalClassName();
+        String destQualifiedClass = renameClassObject.getDestinationClassName();
         String destClassName = destQualifiedClass.substring(destQualifiedClass.lastIndexOf(".") + 1);
         Utils utils = new Utils(project);
-        String filePath = original.getLocationInfo().getFilePath();
+        String filePath = renameClassObject.getOriginalFilePath();
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(srcQualifiedClass, filePath);
         if(psiClass == null) {
             return;
@@ -90,15 +82,15 @@ public class ReplayOperations {
 
     }
 
-    public void replayExtractMethod(Refactoring ref) {
-        ExtractOperationRefactoringWrapper refactoringWrapper = (ExtractOperationRefactoringWrapper) ref;
-        ExtractOperationRefactoring extractOperationRefactoring = (ExtractOperationRefactoring) ref;
-        UMLOperation sourceOperation = extractOperationRefactoring.getSourceOperationBeforeExtraction();
-        UMLOperation extractedOperation = extractOperationRefactoring.getExtractedOperation();
+    public void replayExtractMethod(RefactoringObject ref) {
+        ExtractMethodObject extractMethodObject = (ExtractMethodObject) ref;
+        MethodSignatureObject sourceOperation = extractMethodObject.getOriginalMethodSignature();
+        MethodSignatureObject extractedOperation = extractMethodObject.getDestinationMethodSignature();
+
         String refactoringName = extractedOperation.getName();
         String initialMethodName = sourceOperation.getName();
-        String initialClassName = sourceOperation.getClassName();
-        String filePath = sourceOperation.getLocationInfo().getFilePath();
+        String initialClassName = extractMethodObject.getDestinationClassName();
+        String filePath = extractMethodObject.getDestinationFilePath();
         String helpId = "";
 
         Utils utils = new Utils(project);
@@ -107,15 +99,15 @@ public class ReplayOperations {
         PsiMethod psiMethod = Utils.getPsiMethod(psiClass, sourceOperation);
         assert psiMethod != null;
 
-        PsiElement[] surroundingElements = refactoringWrapper.getSurroundingElements();
+        PsiElement[] surroundingElements = extractMethodObject.getSurroundingElements();
         PsiElement[] psiElements = getPsiElementsBetweenElements(surroundingElements);
 
 
         if(psiElements.length == 0) {
-            Set<Replacement> replacements = extractOperationRefactoring.getReplacements();
+            Set<Replacement> replacements = extractMethodObject.getReplacements();
             psiElements = useReplacements(replacements, psiMethod);
         }
-        PsiType forcedReturnType = getPsiReturnType(extractOperationRefactoring, psiMethod);
+        PsiType forcedReturnType = getPsiReturnType(extractedOperation, psiMethod);
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
         ExtractMethodProcessor extractMethodProcessor = new ExtractMethodProcessor(project, editor, psiElements,
                 forcedReturnType, refactoringName, initialMethodName, helpId);
@@ -136,7 +128,7 @@ public class ReplayOperations {
         }
 
         updateSignature(extractMethodProcessor, extractedOperation, refactoringName,
-                forcedReturnType, refactoringWrapper.getThrownExceptionInfos());
+                forcedReturnType, extractMethodObject.getThrownExceptionInfo());
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);
     }
@@ -145,7 +137,7 @@ public class ReplayOperations {
      * Extracts the duplicate extract method calls. After all duplicates have been extracted, it renames the
      * parameters to match what the developers expected after the merge.
      */
-    private void handleDuplicates(ExtractMethodProcessor processor, UMLOperation operation) {
+    private void handleDuplicates(ExtractMethodProcessor processor, MethodSignatureObject operation) {
         final List<Match> duplicates = processor.getDuplicates();
         for (final Match match : duplicates) {
             if (!match.getMatchStart().isValid() || !match.getMatchEnd().isValid()) continue;
@@ -163,7 +155,7 @@ public class ReplayOperations {
      * Update the extracted method signature to include the throws exception list and rearrange the parameters to be
      * in the correct order.
      */
-    private void updateSignature(ExtractMethodProcessor processor, UMLOperation operation, String refactoringName,
+    private void updateSignature(ExtractMethodProcessor processor, MethodSignatureObject operation, String refactoringName,
                                  PsiType forcedReturnType, ThrownExceptionInfo[] thrownExceptionInfo) {
         PsiMethod extractedPsiMethod = processor.getExtractedMethod();
         if(extractedPsiMethod.getParameterList().getParametersCount() > 1) {
@@ -241,9 +233,9 @@ public class ReplayOperations {
     /*
      * Gets the return type of the extracted method.
      */
-    private PsiType getPsiReturnType(ExtractOperationRefactoring extractOperationRefactoring, PsiMethod psiMethod) {
-        UMLParameter returnParameter = extractOperationRefactoring.getExtractedOperation().getReturnParameter();
-        String parameterType = returnParameter.getType().toString();
+    private PsiType getPsiReturnType(MethodSignatureObject methodSignature, PsiMethod psiMethod) {
+        ParameterObject returnParameter = methodSignature.getReturnParameter();
+        String parameterType = returnParameter.getType();
         PsiElementFactory factory = PsiElementFactory.getInstance(project);
         return factory.createTypeFromText(parameterType, psiMethod);
     }
@@ -251,15 +243,15 @@ public class ReplayOperations {
     /*
      * Use the PSI method and UML operation to reorder the parameters in the extracted method.
      */
-    private ParameterInfoImpl[] getParameterInfo(PsiMethod psiMethod, UMLOperation umlOperation) {
+    private ParameterInfoImpl[] getParameterInfo(PsiMethod psiMethod, MethodSignatureObject methodSignatureObject) {
 
-        List<UMLParameter> umlParameterList = umlOperation.getParameters();
+        List<ParameterObject> parameterList = methodSignatureObject.getParameterList();
         PsiParameterList psiParameterList = psiMethod.getParameterList();
-        ParameterInfoImpl[] parameterInfoImplArray = new ParameterInfoImpl[umlParameterList.size() - 1];
-        for(int i = 1; i < umlParameterList.size(); i++) {
-            UMLParameter umlParameter = umlParameterList.get(i);
-            String umlParameterType = umlParameter.getType().toString();
-            String umlParameterName = umlParameter.getName();
+        ParameterInfoImpl[] parameterInfoImplArray = new ParameterInfoImpl[parameterList.size() - 1];
+        for(int i = 1; i < parameterList.size(); i++) {
+            ParameterObject parameter = parameterList.get(i);
+            String umlParameterType = parameter.getType();
+            String umlParameterName = parameter.getName();
             ParameterInfoImpl parameterInfo;
             for(PsiParameter psiParameter : psiParameterList.getParameters()) {
                 String psiParameterName = psiParameter.getName();
@@ -281,20 +273,19 @@ public class ReplayOperations {
     /*
      * Renames the parameters in the extracted method using the UML parameters detected by RefMiner.
      */
-    private void renameParameters(PsiMethod psiMethod, UMLOperation umlOperation) {
+    private void renameParameters(PsiMethod psiMethod, MethodSignatureObject methodSignatureObject) {
 
-        List<UMLParameter> umlParameterList = umlOperation.getParameters();
+        List<ParameterObject> parameterList = methodSignatureObject.getParameterList();
         PsiParameterList psiParameterList = psiMethod.getParameterList();
-        ParameterInfoImpl[] parameterInfoImplArray = new ParameterInfoImpl[umlParameterList.size() - 1];
+        ParameterInfoImpl[] parameterInfoImplArray = new ParameterInfoImpl[parameterList.size() - 1];
         // Start at 1 to ignore return type
-        for(int i = 1; i < umlParameterList.size(); i++) {
-            UMLParameter umlParameter = umlParameterList.get(i);
-            String umlParameterType = umlParameter.getType().toString();
-            String umlParameterName = umlParameter.getName();
+        for(int i = 1; i < parameterList.size(); i++) {
+            ParameterObject parameterObject = parameterList.get(i);
+            String parameterObjectName = parameterObject.getName();
             PsiParameter psiParameter = psiParameterList.getParameter(i-1);
             PsiDocumentManager.getInstance(project).commitAllDocuments();
             RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
-            RenameRefactoring renameRefactoring = factory.createRename(psiParameter, umlParameterName, true, false);
+            RenameRefactoring renameRefactoring = factory.createRename(psiParameter, parameterObjectName, true, false);
             UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
             renameRefactoring.doRefactoring(refactoringUsages);
         }

@@ -1,10 +1,9 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
-import ca.ualberta.cs.smr.core.dependenceGraph.Node;
-import org.refactoringminer.api.Refactoring;
+import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.RenameClassObject;
 
 import static ca.ualberta.cs.smr.utils.MatrixUtils.*;
-import static ca.ualberta.cs.smr.utils.MatrixUtils.getRefactoredClassOperationName;
 
 /*
  * Contains the logic check for rename class/rename class refactoring conflict.
@@ -14,34 +13,51 @@ public class RenameClassRenameClassCell {
     /*
      *  Check if a conflict exists between rename class/rename class refactorings. The conflict that can exist is a
      *  naming conflict.
-     *  @param dispatcherNode: A node containing the dispatcher rename class refactoring.
-     *  @param receiverNode: A node containing the receiver rename class refactoring.
      */
-    public static boolean renameClassRenameClassConflictCell(Node dispatcherNode, Node receiverNode) {
-        if(checkClassNamingConflict(dispatcherNode, receiverNode)) {
+    public static boolean renameClassRenameClassConflictCell(RefactoringObject firstRefactoring, RefactoringObject secondRefactoring) {
+        if(checkClassNamingConflict(firstRefactoring, secondRefactoring)) {
             System.out.println("Naming conflict");
             return true;
         }
         return false;
     }
 
-
-    public static boolean checkClassNamingConflict(Node dispatcherNode, Node receiverNode) {
-        Refactoring dispatcherRef = dispatcherNode.getRefactoring();
-        Refactoring receiverRef = receiverNode.getRefactoring();
-        // Get the package for each class
-        String dispatcherPackage = getOriginalClassPackage(dispatcherRef);
-        String receiverPackage = getOriginalClassPackage(receiverRef);
-        // Check that the classes are in the same package
-        if(!isSameName(dispatcherPackage, receiverPackage)) {
-            return false;
-        }
-        String dispatcherOriginalClassName = getOriginalClassOperationName(dispatcherRef);
-        String receiverOriginalClassName = getOriginalClassOperationName(receiverRef);
-        String dispatcherNewClassName = getRefactoredClassOperationName(dispatcherRef);
-        String receiverNewClassName = getRefactoredClassOperationName(receiverRef);
+    /*
+     * If two classes are renamed to the same class or one class is renamed to two different names, then there is a
+     * class naming conflict.
+     */
+    public static boolean checkClassNamingConflict(RefactoringObject dispatcherRefactoringObject,
+                                                   RefactoringObject receiverRefactoringObject) {
+        RenameClassObject dispatcherRenameClass = (RenameClassObject) dispatcherRefactoringObject;
+        RenameClassObject receiverRenameClass = (RenameClassObject) receiverRefactoringObject;
+        String dispatcherOriginalClassName = dispatcherRenameClass.getOriginalClassName();
+        String receiverOriginalClassName = receiverRenameClass.getOriginalClassName();
+        String dispatcherDestinationClassName = dispatcherRenameClass.getDestinationClassName();
+        String receiverDestinationClassName = receiverRenameClass.getDestinationClassName();
 
         return checkNamingConflict(dispatcherOriginalClassName, receiverOriginalClassName,
-                dispatcherNewClassName, receiverNewClassName);
+                dispatcherDestinationClassName, receiverDestinationClassName);
+    }
+
+    /*
+     * Checks for transitivity between the first and second rename class refactorings. If there is transitivity, the
+     * first rename class refactoring is updated.
+     */
+    public static boolean checkRenameClassRenameClassTransitivity(RefactoringObject firstRefactoring,
+                                                                  RefactoringObject secondRefactoring) {
+        boolean isTransitive = false;
+        RenameClassObject firstObject = (RenameClassObject) firstRefactoring;
+        RenameClassObject secondObject = (RenameClassObject) secondRefactoring;
+        String firstDestinationClass = firstObject.getDestinationClassName();
+        String secondOriginalClass = secondObject.getOriginalClassName();
+
+        // If the renamed class of the first refactoring is the original class of the second refactoring
+        if(firstDestinationClass.equals(secondOriginalClass)) {
+            isTransitive = true;
+            firstRefactoring.setDestinationFilePath(secondObject.getDestinationFilePath());
+            ((RenameClassObject) firstRefactoring).setDestinationClassName(secondObject.getDestinationClassName());
+        }
+
+        return isTransitive;
     }
 }

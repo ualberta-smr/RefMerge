@@ -1,5 +1,7 @@
 package ca.ualberta.cs.smr.utils;
 
+import ca.ualberta.cs.smr.core.refactoringObjects.MethodSignatureObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.ParameterObject;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.module.Module;
@@ -21,8 +23,6 @@ import com.intellij.refactoring.JavaRefactoringFactory;
 import com.intellij.refactoring.RefactoringFactory;
 import com.intellij.refactoring.RenameRefactoring;
 import com.intellij.usageView.UsageInfo;
-import gr.uom.java.xmi.UMLOperation;
-import gr.uom.java.xmi.UMLParameter;
 import org.jetbrains.jps.model.serialization.PathMacroUtil;
 
 import java.io.File;
@@ -189,10 +189,10 @@ public class Utils {
         PsiDocumentManager.getInstance(project).commitAllDocuments();
     }
 
-    public static boolean ifSameMethods(PsiMethod method, UMLOperation operation) {
+    public static boolean ifSameMethods(PsiMethod method, MethodSignatureObject methodSignature) {
         PsiParameter[] psiParameterList = method.getParameterList().getParameters();
-        List<UMLParameter> umlParameters = operation.getParameters();
-        String umlName = operation.getName();
+        List<ParameterObject> parameters = methodSignature.getParameterList();
+        String umlName = methodSignature.getName();
         String psiName = method.getName();
         int firstUMLParam = 0;
         // Check if the method names are the same
@@ -201,21 +201,21 @@ public class Utils {
         }
         // If the number of parameters are different, the methods are different
         // Subtract 1 from umlParameters because umlParameters includes return type
-        if (!operation.isConstructor()) {
-            if (umlParameters.size() - 1 != psiParameterList.length) {
+        if (!methodSignature.isConstructor()) {
+            if (parameters.size() - 1 != psiParameterList.length) {
                 return false;
             }
             PsiType psiReturnType = method.getReturnType();
             assert psiReturnType != null;
             String psiType = psiReturnType.getPresentableText();
-            UMLParameter umlParameter = umlParameters.get(0);
-            String umlType = umlParameter.getType().toString();
+            ParameterObject parameterObject = parameters.get(0);
+            String parameterType = parameterObject.getType();
             // Check if the return types are the same
-            if (!psiType.equals(umlType)) {
+            if (!psiType.equals(parameterType)) {
                 // Check if UML type is class type
-                if (umlType.contains(".")) {
-                    umlType = umlType.substring(umlType.lastIndexOf(".") + 1);
-                    if (!umlType.equals(psiType)) {
+                if (parameterType.contains(".")) {
+                    parameterType = parameterType.substring(parameterType.lastIndexOf(".") + 1);
+                    if (!parameterType.equals(psiType)) {
                         return false;
                     }
                 } else {
@@ -225,29 +225,29 @@ public class Utils {
             firstUMLParam = 1;
         }
         else {
-            if(umlParameters.size() != psiParameterList.length) {
+            if(parameters.size() != psiParameterList.length) {
                 return false;
             }
         }
         // Check if the parameters are the same
-        return parameterComparator(firstUMLParam, umlParameters, psiParameterList);
+        return parameterComparator(firstUMLParam, parameters, psiParameterList);
     }
 
     /*
      * Compare the parameters in the UML parameter list to the parameters in the PSI parameter list to see if
      * the method signatures are the same.
      */
-    private static boolean parameterComparator(int firstUMLParam, List<UMLParameter> umlParameters,
+    private static boolean parameterComparator(int firstUMLParam, List<ParameterObject> parameters,
                                         PsiParameter[] psiParameterList) {
-        UMLParameter umlParameter;
+        ParameterObject parameterObject;
         String umlType;
         String psiType;
         // Check if the parameters are the same
-        for(int i = firstUMLParam; i < umlParameters.size(); i++) {
+        for(int i = firstUMLParam; i < parameters.size(); i++) {
             int j = i - firstUMLParam;
-            umlParameter = umlParameters.get(i);
+            parameterObject = parameters.get(i);
             PsiParameter psiParameter = psiParameterList[j];
-            umlType = umlParameter.getType().toString();
+            umlType = parameterObject.getType();
 
             String parameterName = psiParameter.getName();
             psiType = psiParameter.getText();
@@ -307,10 +307,10 @@ public class Utils {
         return psiClass;
     }
 
-    public static PsiMethod getPsiMethod(PsiClass psiClass, UMLOperation operation) {
+    public static PsiMethod getPsiMethod(PsiClass psiClass, MethodSignatureObject methodSignatureObject) {
         PsiMethod[] methods = psiClass.getMethods();
         for(PsiMethod method : methods) {
-            if(Utils.ifSameMethods(method, operation)) {
+            if(Utils.ifSameMethods(method, methodSignatureObject)) {
                 return method;
             }
         }

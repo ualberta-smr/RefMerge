@@ -1,7 +1,9 @@
 package ca.ualberta.cs.smr.core;
 
+import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
+import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.testFramework.fixtures.*;
@@ -44,7 +46,8 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
         UndoOperations undo = new UndoOperations(project);
-        undo.undoRenameMethod(ref);
+        RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
+        undo.undoRenameMethod(refactoringObject);
 
         list1 = TestUtils.getMethodNames(oldMethods);
         list2 = TestUtils.getMethodNames(newMethods);
@@ -76,8 +79,9 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
+        RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
         UndoOperations undo = new UndoOperations(project);
-        undo.undoRenameClass(ref);
+        undo.undoRenameClass(refactoringObject);
 
         list1 = TestUtils.getClassNames(oldClasses);
         list2 = TestUtils.getClassNames(newClasses);
@@ -102,10 +106,12 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
                 originalTestData, refactoredTestData);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
+        RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
         UndoOperations undoOperations = new UndoOperations(project);
-        undoOperations.undoExtractMethod(ref);
+        undoOperations.undoExtractMethod(refactoringObject);
         ref = refactorings.get(1);
-        undoOperations.undoExtractMethod(ref);
+        refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
+        undoOperations.undoExtractMethod(refactoringObject);
 
         PsiFile file1 = files[0];
         PsiFile file2 = files[1];
