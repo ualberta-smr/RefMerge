@@ -11,13 +11,13 @@ import ca.ualberta.cs.smr.core.refactoringObjects.RenameMethodObject;
 public class RenameClassReceiver extends Receiver {
 
     /*
-     * If the project is null, check if we can simplify rename class/rename method and update. If it is not null, check for
+     * Check if we can simplify rename class/rename method and update. If we are not checking for transitivity, check for
      * rename method/rename method dependence.
      */
     @Override
     public void receive(RenameMethodDispatcher dispatcher) {
         RefactoringObject methodRefactoring = dispatcher.getRefactoringObject();
-        if(dispatcher.getProject() == null) {
+        if(dispatcher.isSimplify()) {
             RenameClassRenameMethodCell.checkRenameClassRenameMethodCombination(methodRefactoring, this.refactoringObject);
             dispatcher.setRefactoringObject(methodRefactoring);
         }
@@ -33,13 +33,13 @@ public class RenameClassReceiver extends Receiver {
     }
 
     /*
-     * If the project is null, check for rename class/rename class transitivity. If it is not null, check for
+     * If simplify is true, check for rename class/rename class transitivity. If it is not null, check for
      * rename class/rename class conflict.
      */
     @Override
     public void receive(RenameClassDispatcher dispatcher) {
         RefactoringObject secondRefactoring = dispatcher.getRefactoringObject();
-        if(dispatcher.getProject() == null) {
+        if(dispatcher.isSimplify()) {
             this.isTransitive = RenameClassRenameClassCell.checkRenameClassRenameClassTransitivity(this.refactoringObject,
                     secondRefactoring);
             dispatcher.setRefactoringObject(secondRefactoring);

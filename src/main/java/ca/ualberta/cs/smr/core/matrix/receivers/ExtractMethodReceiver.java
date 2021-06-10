@@ -11,11 +11,11 @@ public class ExtractMethodReceiver extends Receiver {
 
 
     /*
-     * If the project is null, check if we can simplify extract method/rename method and update.
+     *  Check if we can simplify extract method/rename method and update or if there is conflict/dependence.
      */
     @Override
     public void receive(RenameMethodDispatcher dispatcher) {
-        if(dispatcher.getProject() == null) {
+        if(dispatcher.isSimplify()) {
             RefactoringObject renameMethod = dispatcher.getRefactoringObject();
             // Need to use this.refactoringObject/dispatcher.refactoringObject or set dispatcher.refactoringObject
             this.isTransitive = ExtractMethodRenameMethodCell.checkExtractMethodRenameMethodTransitivity(renameMethod,
@@ -25,11 +25,11 @@ public class ExtractMethodReceiver extends Receiver {
     }
 
     /*
-     * If the project is null, check if we can simplify extract method/rename class and update.
+     * Check for transitivity, conflict, and dependence in extract method/rename class and update.
      */
     @Override
     public void receive(RenameClassDispatcher dispatcher) {
-        if(dispatcher.getProject() == null) {
+        if(dispatcher.isSimplify()) {
             RefactoringObject renameClass = dispatcher.getRefactoringObject();
             ExtractMethodRenameClassCell.checkExtractMethodRenameClassCombination(renameClass, this.refactoringObject);
             dispatcher.setRefactoringObject(renameClass);
