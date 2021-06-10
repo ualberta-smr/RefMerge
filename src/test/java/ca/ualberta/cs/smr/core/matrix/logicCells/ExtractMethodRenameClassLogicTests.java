@@ -1,8 +1,8 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
-import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
+import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
@@ -28,15 +28,12 @@ public class ExtractMethodRenameClassLogicTests extends LightJavaCodeInsightFixt
                 originalPath, refactoredPath)));
         List<Refactoring> renameClassRefactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert renameClassRefactorings != null;
-        Node extractMethodNode = new Node(extractMethodRefactorings.get(0));
-        Node renameClassNode = new Node(renameClassRefactorings.get(0));
-        boolean isDependent = ExtractMethodRenameClassCell.checkExtractMethodRenameClassDependence(renameClassNode, extractMethodNode);
+        RefactoringObject extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(0));
+        RefactoringObject renameClassObject = RefactoringObjectUtils.createRefactoringObject(renameClassRefactorings.get(0));
+        boolean isDependent = ExtractMethodRenameClassCell.checkExtractMethodRenameClassDependence(renameClassObject, extractMethodObject);
         Assert.assertFalse(isDependent);
-        extractMethodNode = new Node(extractMethodRefactorings.get(1));
-        isDependent = ExtractMethodRenameClassCell.checkExtractMethodRenameClassDependence(renameClassNode, extractMethodNode);
-        Assert.assertTrue(isDependent);
-        extractMethodNode = new Node(extractMethodRefactorings.get(2));
-        isDependent = ExtractMethodRenameClassCell.checkExtractMethodRenameClassDependence(renameClassNode, extractMethodNode);
+        extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(1));
+        isDependent = ExtractMethodRenameClassCell.checkExtractMethodRenameClassDependence(renameClassObject, extractMethodObject);
         Assert.assertTrue(isDependent);
     }
 
@@ -84,7 +81,6 @@ public class ExtractMethodRenameClassLogicTests extends LightJavaCodeInsightFixt
         originalParameters.add(new ParameterObject("int", "x"));
         MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
         MethodSignatureObject efoo = new MethodSignatureObject(originalParameters, "efoo");
-        MethodSignatureObject bar = new MethodSignatureObject(originalParameters, "bar");
         MethodSignatureObject ebar = new MethodSignatureObject(originalParameters, "ebar");
         // Extract method B.efoo from B.foo
         ExtractMethodObject extractMethodObject = new ExtractMethodObject("Foo.java", "B", foo,
