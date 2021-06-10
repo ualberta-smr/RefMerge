@@ -1,8 +1,8 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
-import ca.ualberta.cs.smr.core.dependenceGraph.Node;
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
+import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
@@ -34,25 +34,25 @@ public class ExtractMethodRenameMethodLogicTests extends LightJavaCodeInsightFix
 
         assert extractMethodRefactorings != null;
         assert renameMethodRefactorings != null;
-        Node extractMethodNode = new Node(extractMethodRefactorings.get(0));
-        Node renameMethodNode = new Node(renameMethodRefactorings.get(0));
+        RefactoringObject extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(0));
+        RefactoringObject renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(0));
         ExtractMethodRenameMethodCell cell = new ExtractMethodRenameMethodCell(project);
-        boolean isDependent = cell.checkOverrideConflict(renameMethodNode, extractMethodNode);
+        boolean isDependent = cell.checkOverrideConflict(renameMethodObject, extractMethodObject);
         Assert.assertFalse(isDependent);
-        renameMethodNode = new Node(renameMethodRefactorings.get(2));
-        isDependent = cell.checkOverrideConflict(renameMethodNode, extractMethodNode);
+        renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(2));
+        isDependent = cell.checkOverrideConflict(renameMethodObject, extractMethodObject);
         Assert.assertFalse(isDependent);
-        extractMethodNode = new Node(extractMethodRefactorings.get(3));
-        renameMethodNode = new Node(renameMethodRefactorings.get(5));
-        isDependent = cell.checkOverrideConflict(renameMethodNode, extractMethodNode);
+        extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(3));
+        renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(5));
+        isDependent = cell.checkOverrideConflict(renameMethodObject, extractMethodObject);
         Assert.assertFalse(isDependent);
-        extractMethodNode = new Node(extractMethodRefactorings.get(1));
-        renameMethodNode = new Node(renameMethodRefactorings.get(3));
+        extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(1));
+        renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(3));
 
         configurePath = "extractMethodRenameMethodFiles/refactored/Override.java";
         myFixture.configureByFiles(configurePath);
 
-        isDependent = cell.checkOverrideConflict(renameMethodNode, extractMethodNode);
+        isDependent = cell.checkOverrideConflict(renameMethodObject, extractMethodObject);
         Assert.assertTrue(isDependent);
     }
 
@@ -72,18 +72,14 @@ public class ExtractMethodRenameMethodLogicTests extends LightJavaCodeInsightFix
 
         assert extractMethodRefactorings != null;
         assert renameMethodRefactorings != null;
-        Node extractMethodNode = new Node(extractMethodRefactorings.get(0));
-        Node renameMethodNode = new Node(renameMethodRefactorings.get(0));
+        RefactoringObject extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(0));
+        RefactoringObject renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(0));
         ExtractMethodRenameMethodCell cell = new ExtractMethodRenameMethodCell(project);
-        boolean isDependent = cell.checkOverloadConflict(renameMethodNode, extractMethodNode);
-        Assert.assertFalse(isDependent);
-        renameMethodNode = new Node(renameMethodRefactorings.get(2));
-        isDependent = cell.checkOverloadConflict(renameMethodNode, extractMethodNode);
-        Assert.assertTrue(isDependent);
-        extractMethodNode = new Node(extractMethodRefactorings.get(3));
-        renameMethodNode = new Node(renameMethodRefactorings.get(5));
-        isDependent = cell.checkOverloadConflict(renameMethodNode, extractMethodNode);
-        Assert.assertTrue(isDependent);
+        boolean isConflicting = cell.checkOverloadConflict(renameMethodObject, extractMethodObject);
+        Assert.assertFalse(isConflicting);
+        renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(2));
+        isConflicting = cell.checkOverloadConflict(renameMethodObject, extractMethodObject);
+        Assert.assertTrue(isConflicting);
     }
 
     public void testCheckExtractMethodRenameMethodNamingConflict() {
@@ -98,13 +94,13 @@ public class ExtractMethodRenameMethodLogicTests extends LightJavaCodeInsightFix
 
         assert extractMethodRefactorings != null;
         assert renameMethodRefactorings != null;
-        Node extractMethodNode = new Node(extractMethodRefactorings.get(2));
-        Node renameMethodNode = new Node(renameMethodRefactorings.get(4));
+        RefactoringObject extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(2));
+        RefactoringObject renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(4));
         ExtractMethodRenameMethodCell cell = new ExtractMethodRenameMethodCell(project);
-        boolean isDependent = cell.checkMethodNamingConflict(renameMethodNode, extractMethodNode);
+        boolean isDependent = cell.checkMethodNamingConflict(renameMethodObject, extractMethodObject);
         Assert.assertTrue(isDependent);
-        renameMethodNode = new Node(renameMethodRefactorings.get(3));
-        isDependent = cell.checkMethodNamingConflict(renameMethodNode, extractMethodNode);
+        renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(3));
+        isDependent = cell.checkMethodNamingConflict(renameMethodObject, extractMethodObject);
         Assert.assertFalse(isDependent);
     }
 
@@ -119,13 +115,13 @@ public class ExtractMethodRenameMethodLogicTests extends LightJavaCodeInsightFix
 
         assert extractMethodRefactorings != null;
         assert renameMethodRefactorings != null;
-        Node extractMethodNode = new Node(extractMethodRefactorings.get(0));
-        Node renameMethodNode = new Node(renameMethodRefactorings.get(1));
-        boolean isDependent = ExtractMethodRenameMethodCell.checkExtractMethodRenameMethodDependence(renameMethodNode,
-                extractMethodNode);
+        RefactoringObject extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(0));
+        RefactoringObject renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(1));
+        boolean isDependent = ExtractMethodRenameMethodCell.checkExtractMethodRenameMethodDependence(renameMethodObject,
+                extractMethodObject);
         Assert.assertTrue(isDependent);
-        renameMethodNode = new Node(renameMethodRefactorings.get(2));
-        isDependent = ExtractMethodRenameMethodCell.checkExtractMethodRenameMethodDependence(renameMethodNode, extractMethodNode);
+        renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(2));
+        isDependent = ExtractMethodRenameMethodCell.checkExtractMethodRenameMethodDependence(renameMethodObject, extractMethodObject);
         Assert.assertFalse(isDependent);
     }
 

@@ -170,7 +170,7 @@ public class RenameMethodRenameMethodCell {
         String receiverClassName = receiverRenameMethod.getOriginalClassName();
 
         // If the rename methods happen in the same class then there is no override conflict
-        if(isSameName(dispatcherClassName, receiverClassName)) {
+        if(dispatcherClassName.equals(receiverClassName)) {
             return false;
         }
         String dispatcherFile = dispatcherRenameMethod.getOriginalFilePath();
