@@ -12,5 +12,4 @@ public class OtherClass {
     public int foobar(int x, double y) {
         return x;
     }
-
 }

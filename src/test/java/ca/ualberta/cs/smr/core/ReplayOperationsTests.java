@@ -1,5 +1,8 @@
 package ca.ualberta.cs.smr.core;
 
+import ca.ualberta.cs.smr.core.refactoringObjects.MethodSignatureObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameMethodObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.ParameterObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.core.replayOperations.ReplayOperations;
 import ca.ualberta.cs.smr.core.undoOperations.UndoOperations;
@@ -12,7 +15,9 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.refactoringminer.api.Refactoring;
+import org.refactoringminer.api.RefactoringType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
@@ -55,6 +60,64 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         list2 = TestUtils.getMethodNames(newMethods);
 
         LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
+    }
+
+    public void testReplayMoveRenameMethod() {
+        Project project = myFixture.getProject();
+        String testDir = "moveRenameMethod/";
+        String testDataRefactored = testDir + "refactored/";
+        String testDataOriginal = testDir + "original/";
+        String testFile = "Main.java";
+        String testFile2 = "OtherClass.java";
+        PsiFile[] psiFiles = myFixture.configureByFiles(testDataOriginal + testFile, testDataOriginal + testFile2,
+                testDataRefactored + testFile, testDataRefactored + testFile2);
+
+        PsiMethod[] oldMethods = TestUtils.getPsiMethodsFromFile(psiFiles[0]);
+        PsiMethod[] newMethods = TestUtils.getPsiMethodsFromFile(psiFiles[2]);
+
+        List<String> list1 = TestUtils.getMethodNames(oldMethods);
+        List<String> list2 = TestUtils.getMethodNames(newMethods);
+
+        LightJavaCodeInsightFixtureTestCase.assertNotSame(list1, list2);
+
+        List<ParameterObject> fooParameters = new ArrayList<>();
+        fooParameters.add(new ParameterObject("void", "return"));
+        MethodSignatureObject foo = new MethodSignatureObject(fooParameters, "foo");
+        List<ParameterObject> foobarParameters = new ArrayList<>();
+        foobarParameters.add(new ParameterObject("int", "return"));
+        foobarParameters.add(new ParameterObject("int", "x"));
+        foobarParameters.add(new ParameterObject("double", "y"));
+        MethodSignatureObject foobar = new MethodSignatureObject(foobarParameters, "foobar");
+        List<ParameterObject> equalsParameters = new ArrayList<>();
+        equalsParameters.add(new ParameterObject("boolean", "return"));
+        equalsParameters.add(new ParameterObject("Object", "o1"));
+        equalsParameters.add(new ParameterObject("Object", "o2"));
+        MethodSignatureObject equals = new MethodSignatureObject(equalsParameters, "equals");
+        MethodSignatureObject isEqual = new MethodSignatureObject(equalsParameters, "isEqual");
+        // Move Main.foo -> OtherClass.foo
+        MoveRenameMethodObject fooObject = new MoveRenameMethodObject("Main.java", "Main",
+                foo, "OtherClass.java", "OtherClass", foo);
+        fooObject.setType(RefactoringType.MOVE_OPERATION);
+        // Move Main.foobar -> OtherClass.foobar
+        MoveRenameMethodObject foobarObject = new MoveRenameMethodObject("Main.java", "Main",
+                foobar, "OtherClass.java", "OtherClass", foobar);
+        foobarObject.setType(RefactoringType.MOVE_OPERATION);
+        MoveRenameMethodObject moveRenameObject = new MoveRenameMethodObject("OtherClass.java", "OtherClass",
+                equals, "Main.java", "Main", isEqual);
+        moveRenameObject.setType(RefactoringType.MOVE_OPERATION);
+        moveRenameObject.setType(RefactoringType.RENAME_METHOD);
+
+        ReplayOperations replayOperations = new ReplayOperations(project);
+        replayOperations.replayMoveRenameMethod(foobarObject);
+        replayOperations.replayMoveRenameMethod(fooObject);
+        replayOperations.replayMoveRenameMethod(moveRenameObject);
+
+        System.out.println(psiFiles[0].getText() + "\n\n" + psiFiles[1].getText());
+        System.out.println("==============================================\n\n\n");
+        System.out.println(psiFiles[2].getText() + "\n\n" + psiFiles[3].getText());
+
+        LightJavaCodeInsightFixtureTestCase.assertEquals(psiFiles[2].getText(), psiFiles[0].getText());
+        LightJavaCodeInsightFixtureTestCase.assertEquals(psiFiles[3].getText(), psiFiles[1].getText());
     }
 
     public void testReplayRenameClass() {
