@@ -1,6 +1,7 @@
 package ca.ualberta.cs.smr.core.refactoringObjects;
 
 import gr.uom.java.xmi.UMLOperation;
+import gr.uom.java.xmi.diff.MoveOperationRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
@@ -41,21 +42,40 @@ public class MoveRenameMethodObject implements RefactoringObject {
      * Creates the rename method object and takes the information that we need from the RefMiner refactoring object.
      */
     public MoveRenameMethodObject(Refactoring refactoring) {
-        RenameOperationRefactoring renameOperationRefactoring = (RenameOperationRefactoring) refactoring;
-        UMLOperation originalOperation = renameOperationRefactoring.getOriginalOperation();
-        UMLOperation destinationOperation = renameOperationRefactoring.getRenamedOperation();
-        this.isMoveMethod = false;
-        this.isRenameMethod = false;
-        this.refactoringType = refactoring.getRefactoringType();
-        setType(refactoringType);
-        this.originalFilePath = originalOperation.getLocationInfo().getFilePath();
-        this.destinationFilePath = destinationOperation.getLocationInfo().getFilePath();
-        this.originalClassName = originalOperation.getClassName();
-        this.destinationClassName = destinationOperation.getClassName();
-        this.originalMethodSignature = new MethodSignatureObject(originalOperation.getName(), originalOperation.getParameters(),
-                originalOperation.isConstructor(), originalOperation.getVisibility(), originalOperation.isStatic());
-        this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(), destinationOperation.getParameters(),
-                originalOperation.isConstructor(), originalOperation.getVisibility(), originalOperation.isStatic());
+        if(refactoring instanceof RenameOperationRefactoring) {
+            RenameOperationRefactoring renameOperationRefactoring = (RenameOperationRefactoring) refactoring;
+            UMLOperation originalOperation = renameOperationRefactoring.getOriginalOperation();
+            UMLOperation destinationOperation = renameOperationRefactoring.getRenamedOperation();
+            this.isMoveMethod = false;
+            this.isRenameMethod = false;
+            this.refactoringType = refactoring.getRefactoringType();
+            setType(refactoringType);
+            this.originalFilePath = originalOperation.getLocationInfo().getFilePath();
+            this.destinationFilePath = destinationOperation.getLocationInfo().getFilePath();
+            this.originalClassName = originalOperation.getClassName();
+            this.destinationClassName = destinationOperation.getClassName();
+            this.originalMethodSignature = new MethodSignatureObject(originalOperation.getName(), originalOperation.getParameters(),
+                    originalOperation.isConstructor(), originalOperation.getVisibility(), originalOperation.isStatic());
+            this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(), destinationOperation.getParameters(),
+                    originalOperation.isConstructor(), originalOperation.getVisibility(), originalOperation.isStatic());
+        }
+        else {
+            MoveOperationRefactoring moveOperationRefactoring = (MoveOperationRefactoring) refactoring;
+            UMLOperation originalOperation = moveOperationRefactoring.getOriginalOperation();
+            UMLOperation destinationOperation = moveOperationRefactoring.getMovedOperation();
+            this.isMoveMethod = false;
+            this.isRenameMethod = false;
+            this.refactoringType = refactoring.getRefactoringType();
+            setType(refactoringType);
+            this.originalFilePath = originalOperation.getLocationInfo().getFilePath();
+            this.destinationFilePath = destinationOperation.getLocationInfo().getFilePath();
+            this.originalClassName = originalOperation.getClassName();
+            this.destinationClassName = destinationOperation.getClassName();
+            this.originalMethodSignature = new MethodSignatureObject(originalOperation.getName(), originalOperation.getParameters(),
+                    originalOperation.isConstructor(), originalOperation.getVisibility(), originalOperation.isStatic());
+            this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(), destinationOperation.getParameters(),
+                    originalOperation.isConstructor(), originalOperation.getVisibility(), originalOperation.isStatic());
+        }
     }
 
     public RefactoringType getRefactoringType() {

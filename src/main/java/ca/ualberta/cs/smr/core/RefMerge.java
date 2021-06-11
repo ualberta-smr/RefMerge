@@ -46,9 +46,9 @@ public class RefMerge extends AnAction {
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         List<GitRepository> repos = repoManager.getRepositories();
         GitRepository repo = repos.get(0);
-        String mergeCommit = "19dace1b8a";
-        String rightCommit = "871f7747de";
-        String leftCommit = "ed491954849";
+        String mergeCommit = "efd3ce4f8fa";
+        String rightCommit = "38602965d";
+        String leftCommit = "2462eb2c79";
 
 
         refMerge(mergeCommit, rightCommit, leftCommit, project, repo);
@@ -136,6 +136,7 @@ public class RefMerge extends AnAction {
                     undo.undoRenameClass(refactoringObject);
                     break;
                 case RENAME_METHOD:
+                case MOVE_OPERATION:
                     // Undo the rename method refactoring
                     undo.undoMoveRenameMethod(refactoringObject);
                     break;
@@ -164,6 +165,7 @@ public class RefMerge extends AnAction {
                         replay.replayRenameClass(refactoringObject);
                         break;
                     case RENAME_METHOD:
+                    case MOVE_OPERATION:
                         // Perform the rename method refactoring
                         replay.replayMoveRenameMethod(refactoringObject);
                         break;
