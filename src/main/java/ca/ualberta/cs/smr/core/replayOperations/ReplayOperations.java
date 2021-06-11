@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.JavaRefactoringFactory;
+import com.intellij.refactoring.MoveMembersRefactoring;
 import com.intellij.refactoring.RefactoringFactory;
 import com.intellij.refactoring.RenameRefactoring;
 import com.intellij.refactoring.changeSignature.ChangeSignatureProcessor;
@@ -43,18 +44,31 @@ public class ReplayOperations {
         MoveRenameMethodObject moveRenameMethodObject = (MoveRenameMethodObject) ref;
         MethodSignatureObject original = moveRenameMethodObject.getOriginalMethodSignature();
         MethodSignatureObject renamed = moveRenameMethodObject.getDestinationMethodSignature();
-        String destName = renamed.getName();
-        String qualifiedClass = moveRenameMethodObject.getOriginalClassName();
+        String destinationMethodName = renamed.getName();
+        String originalClassName = moveRenameMethodObject.getOriginalClassName();
+        String destinationClassName = moveRenameMethodObject.getDestinationClassName();
         String filePath = moveRenameMethodObject.getOriginalFilePath();
         Utils utils = new Utils(project);
-        PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(qualifiedClass, filePath);
+        PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(originalClassName, filePath);
         assert psiClass != null;
-        PsiMethod method = Utils.getPsiMethod(psiClass, original);
-        assert method != null;
-        RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
-        RenameRefactoring renameRefactoring = factory.createRename(method, destName, true, true);
-        UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
-        renameRefactoring.doRefactoring(refactoringUsages);
+        PsiMethod psiMethod = Utils.getPsiMethod(psiClass, original);
+        assert psiMethod != null;
+        if(moveRenameMethodObject.isRenameMethod()) {
+            RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
+            RenameRefactoring renameRefactoring = factory.createRename(psiMethod, destinationMethodName, true, true);
+            UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
+            renameRefactoring.doRefactoring(refactoringUsages);
+        }
+        if(moveRenameMethodObject.isMoveMethod()) {
+            JavaRefactoringFactory refactoringFactory = JavaRefactoringFactory.getInstance(project);
+            String visibility = original.getVisibility();
+            PsiMember[] psiMembers = new PsiMember[1];
+            psiMembers[0] = psiMethod;
+            MoveMembersRefactoring moveMethodRefactoring = refactoringFactory.createMoveMembers(psiMembers,
+                    destinationClassName, visibility);
+            UsageInfo[] refactoringUsages = moveMethodRefactoring.findUsages();
+            moveMethodRefactoring.doRefactoring(refactoringUsages);
+        }
         // Update the virtual file containing the refactoring
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);
