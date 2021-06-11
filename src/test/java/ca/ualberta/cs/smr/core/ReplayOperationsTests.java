@@ -112,9 +112,6 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         replayOperations.replayMoveRenameMethod(fooObject);
         replayOperations.replayMoveRenameMethod(moveRenameObject);
 
-        System.out.println(psiFiles[0].getText() + "\n\n" + psiFiles[1].getText());
-        System.out.println("==============================================\n\n\n");
-        System.out.println(psiFiles[2].getText() + "\n\n" + psiFiles[3].getText());
 
         LightJavaCodeInsightFixtureTestCase.assertEquals(psiFiles[2].getText(), psiFiles[0].getText());
         LightJavaCodeInsightFixtureTestCase.assertEquals(psiFiles[3].getText(), psiFiles[1].getText());
