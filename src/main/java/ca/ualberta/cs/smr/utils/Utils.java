@@ -27,6 +27,7 @@ import org.jetbrains.jps.model.serialization.PathMacroUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -106,19 +107,25 @@ public class Utils {
         assert sourceVirtualFile != null;
         ModuleManager moduleManager = ModuleManager.getInstance(project);
         // Get the first module that does not depend on any other modules
-        Module module = getModule(sourceVirtualFile, moduleManager.getModules());
-        assert module != null;
-        ModifiableRootModel rootModel = ModuleRootManager.getInstance(module).getModifiableModel();
-        directory = new File(Objects.requireNonNull(PathMacroUtil.getModuleDir(module.getModuleFilePath())));
-        VirtualFile moduleVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(directory);
-        ContentEntry contentEntry = getContentEntry(moduleVirtualFile, rootModel);
-        assert contentEntry != null;
-        if(checkIfSourceFolderExists(sourceVirtualFile, contentEntry)) {
-            return;
+        ArrayList<Module> modules = getModule(sourceVirtualFile, moduleManager.getModules());
+        for(Module module : modules) {
+            ModifiableRootModel rootModel = ModuleRootManager.getInstance(module).getModifiableModel();
+            directory = new File(Objects.requireNonNull(PathMacroUtil.getModuleDir(module.getModuleFilePath())));
+            VirtualFile moduleVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(directory);
+            ContentEntry contentEntry = getContentEntry(moduleVirtualFile, rootModel);
+            if(contentEntry == null) {
+                continue;
+            }
+            if (checkIfSourceFolderExists(sourceVirtualFile, contentEntry)) {
+                return;
+            }
+            else {
+                contentEntry.addSourceFolder(sourceVirtualFile, isTestFolder);
+                WriteAction.run(rootModel::commit);
+                Utils.dumbServiceHandler(project);
+                break;
+            }
         }
-        contentEntry.addSourceFolder(sourceVirtualFile, isTestFolder);
-        WriteAction.run(rootModel::commit);
-        Utils.dumbServiceHandler(project);
     }
 
     /*
@@ -140,8 +147,8 @@ public class Utils {
     /*
      * Get the module that the virtual file is in.
      */
-    private Module getModule(VirtualFile virtualFile, Module[] modules) {
-
+    private ArrayList<Module> getModule(VirtualFile virtualFile, Module[] modules) {
+        ArrayList<Module> potentialModules = new ArrayList<>();
         for(Module module : modules) {
             VirtualFile moduleFile = module.getModuleFile();
             assert moduleFile != null;
@@ -150,14 +157,15 @@ public class Utils {
             VirtualFile virtualFileParent = virtualFile.getParent();
             // If the src directory and .iml file are in the same module
             if(moduleFileParent.equals(virtualFileParent.getParent())) {
-                return module;
+                potentialModules.add(module);
             }
         }
         // If we could not find the module, there's probably only one module file in ./idea
-        if(modules.length > 0) {
-            return modules[0];
+        if(modules.length > 0 && potentialModules.size() == 0) {
+            potentialModules.add(modules[0]);
+            return potentialModules;
         }
-        return null;
+        return potentialModules;
     }
 
     /*
