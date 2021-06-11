@@ -1,6 +1,8 @@
 package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
+import ca.ualberta.cs.smr.core.replayOperations.ReplayOperations;
+import ca.ualberta.cs.smr.core.undoOperations.UndoOperations;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;

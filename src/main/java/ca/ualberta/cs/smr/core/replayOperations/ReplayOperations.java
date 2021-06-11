@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.core;
+package ca.ualberta.cs.smr.core.replayOperations;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.utils.Utils;

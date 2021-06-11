@@ -14,6 +14,7 @@ public class MethodSignatureObject {
     private List<ParameterObject> parameterList;
     private String visibility;
     private boolean isConstructor;
+    private boolean isStatic;
 
     /*
      * Create the method signature from the name and the given parameter object list
@@ -23,12 +24,14 @@ public class MethodSignatureObject {
         this.parameterList = parameterList;
         this.isConstructor = false;
         this.visibility = "public";
+        this.isStatic = false;
     }
 
     /*
      * Create the method signature from the name and UML parameter list
      */
-    public MethodSignatureObject(String name, List<UMLParameter> umlParameterList, boolean isConstructor, String visibility) {
+    public MethodSignatureObject(String name, List<UMLParameter> umlParameterList, boolean isConstructor,
+                                 String visibility, boolean isStatic) {
         this.name = name;
         this.parameterList = new ArrayList<>();
         for(UMLParameter umlParameter : umlParameterList) {
@@ -36,6 +39,7 @@ public class MethodSignatureObject {
         }
         this.visibility = visibility;
         this.isConstructor = isConstructor;
+        this.isStatic = isStatic;
     }
 
     public String getName() {
@@ -47,11 +51,15 @@ public class MethodSignatureObject {
     }
 
     public boolean isConstructor() {
-        return this.isConstructor;
+        return isConstructor;
     }
 
     public String getVisibility() {
-        return this.visibility;
+        return visibility;
+    }
+
+    public boolean isStatic() {
+        return isStatic;
     }
 
     public boolean equalsSignature(MethodSignatureObject otherSignature) {

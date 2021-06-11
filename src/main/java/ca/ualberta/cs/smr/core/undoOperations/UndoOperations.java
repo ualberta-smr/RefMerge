@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.core;
+package ca.ualberta.cs.smr.core.undoOperations;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.utils.Utils;
@@ -11,9 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.refactoring.JavaRefactoringFactory;
-import com.intellij.refactoring.RefactoringFactory;
-import com.intellij.refactoring.RenameRefactoring;
+import com.intellij.refactoring.*;
 
 import com.intellij.refactoring.changeSignature.JavaThrownExceptionInfo;
 import com.intellij.refactoring.changeSignature.ThrownExceptionInfo;
@@ -38,24 +36,42 @@ public class UndoOperations {
         MoveRenameMethodObject moveRenameMethodObject = (MoveRenameMethodObject) ref;
         MethodSignatureObject original = moveRenameMethodObject.getOriginalMethodSignature();
         MethodSignatureObject renamed = moveRenameMethodObject.getDestinationMethodSignature();
-        String srcName = original.getName();
-        String qualifiedClass = moveRenameMethodObject.getDestinationClassName();
+        String originalMethodName = original.getName();
+        String destinationMethodName = renamed.getName();
+        String originalClassName = moveRenameMethodObject.getOriginalClassName();
+        String destinationClassName = moveRenameMethodObject.getDestinationClassName();
         // get the PSI class using the qualified class name
         String filePath = moveRenameMethodObject.getDestinationFilePath();
         Utils utils = new Utils(project);
         utils.addSourceRoot(filePath);
-        PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(qualifiedClass, filePath);
+        PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(destinationClassName, filePath);
         assert psiClass != null;
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
-        PsiMethod method = Utils.getPsiMethod(psiClass, renamed);
-        assert method != null;
-        RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
-        RenameRefactoring renameRefactoring = factory.createRename(method, srcName, true, true);
-        UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
-        renameRefactoring.doRefactoring(refactoringUsages);
+        PsiMethod psiMethod = Utils.getPsiMethod(psiClass, renamed);
+        assert psiMethod != null;
+
+        // If the operation was renamed, undo the method rename by performing a rename method refactoring to rename it
+        // to the original name
+        if(moveRenameMethodObject.isRenameMethod()) {
+            RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
+            RenameRefactoring renameRefactoring = factory.createRename(psiMethod, originalMethodName, true, true);
+            UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
+            renameRefactoring.doRefactoring(refactoringUsages);
+        }
+        // If the operation was moved, undo the move method by performing a move method refactoring to move it to the
+        // original class
+        if(moveRenameMethodObject.isMoveMethod()) {
+            JavaRefactoringFactory refactoringFactory = JavaRefactoringFactory.getInstance(project);
+            String visibility = original.getVisibility();
+            PsiMember[] psiMembers = new PsiMember[1];
+            psiMembers[0] = psiMethod;
+            MoveMembersRefactoring moveMethodRefactoring = refactoringFactory.createMoveMembers(psiMembers,
+                    originalClassName, visibility);
+            UsageInfo[] refactoringUsages = moveMethodRefactoring.findUsages();
+            moveMethodRefactoring.doRefactoring(refactoringUsages);
+        }
         // Update the virtual file that contains the refactoring
         vFile.refresh(false, true);
-
     }
 
     /*
