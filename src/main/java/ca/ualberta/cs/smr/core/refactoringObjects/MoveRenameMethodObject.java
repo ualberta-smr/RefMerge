@@ -19,6 +19,8 @@ public class MoveRenameMethodObject implements RefactoringObject {
     private String originalClassName;
     private String destinationClassName;
     private MethodSignatureObject destinationMethodSignature;
+    private boolean isRenameMethod;
+    private boolean isMoveMethod;
 
     /*
      * Use the provided information to create the rename method object for testing.
@@ -42,15 +44,18 @@ public class MoveRenameMethodObject implements RefactoringObject {
         RenameOperationRefactoring renameOperationRefactoring = (RenameOperationRefactoring) refactoring;
         UMLOperation originalOperation = renameOperationRefactoring.getOriginalOperation();
         UMLOperation destinationOperation = renameOperationRefactoring.getRenamedOperation();
+        this.isMoveMethod = false;
+        this.isRenameMethod = false;
         this.refactoringType = refactoring.getRefactoringType();
+        setType(refactoringType);
         this.originalFilePath = originalOperation.getLocationInfo().getFilePath();
         this.destinationFilePath = destinationOperation.getLocationInfo().getFilePath();
         this.originalClassName = originalOperation.getClassName();
         this.destinationClassName = destinationOperation.getClassName();
         this.originalMethodSignature = new MethodSignatureObject(originalOperation.getName(), originalOperation.getParameters(),
-                originalOperation.isConstructor(), originalOperation.getVisibility());
+                originalOperation.isConstructor(), originalOperation.getVisibility(), originalOperation.isStatic());
         this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(), destinationOperation.getParameters(),
-                originalOperation.isConstructor(), originalOperation.getVisibility());
+                originalOperation.isConstructor(), originalOperation.getVisibility(), originalOperation.isStatic());
     }
 
     public RefactoringType getRefactoringType() {
@@ -109,5 +114,20 @@ public class MoveRenameMethodObject implements RefactoringObject {
         this.destinationMethodSignature = destinationMethodSignature;
     }
 
+    public void setType(RefactoringType refactoringType) {
+        if(refactoringType.equals(RefactoringType.RENAME_METHOD)) {
+            this.isRenameMethod = true;
+        }
+        else if(refactoringType.equals(RefactoringType.MOVE_OPERATION)) {
+            this.isMoveMethod = true;
+        }
+    }
 
+    public boolean isRenameMethod() {
+        return isRenameMethod;
+    }
+
+    public boolean isMoveMethod() {
+        return isMoveMethod;
+    }
 }

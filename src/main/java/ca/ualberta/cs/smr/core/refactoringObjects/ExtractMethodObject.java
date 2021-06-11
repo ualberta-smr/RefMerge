@@ -58,10 +58,10 @@ public class ExtractMethodObject implements RefactoringObject {
         this.destinationFilePath = destinationOperation.getLocationInfo().getFilePath();
         this.originalClassName = originalOperation.getClassName();
         this.destinationClassName = destinationOperation.getClassName();
-        this.originalMethodSignature = new MethodSignatureObject(originalOperation.getName(),
-                originalOperation.getParameters(), originalOperation.isConstructor(), originalOperation.getVisibility());
-        this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(),
-                destinationOperation.getParameters(), destinationOperation.isConstructor(), destinationOperation.getVisibility());
+        this.originalMethodSignature = new MethodSignatureObject(originalOperation.getName(), originalOperation.getParameters(),
+                originalOperation.isConstructor(), originalOperation.getVisibility(), originalOperation.isStatic());
+        this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(), destinationOperation.getParameters(),
+                destinationOperation.isConstructor(), destinationOperation.getVisibility(), destinationOperation.isStatic());
         this.methodInvocations = extractOperationRefactoring.getExtractedOperationInvocations();
         this.extractedCodeFragments = extractOperationRefactoring.getExtractedCodeFragmentsFromSourceOperation();
         this.replacements = extractOperationRefactoring.getReplacements();
@@ -142,7 +142,7 @@ public class ExtractMethodObject implements RefactoringObject {
     }
 
     public Set<Replacement> getReplacements() {
-        return this.getReplacements();
+        return this.replacements;
     }
 
     public void setThrownExceptionInfo(ThrownExceptionInfo[] thrownExceptionInfo) {
