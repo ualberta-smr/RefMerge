@@ -36,9 +36,10 @@ public class MoveRenameMethodReceiver extends Receiver {
                         dispatcherRefactoring.setDestinationFilePath(this.refactoringObject.getDestinationFilePath());
                         ((MoveRenameMethodObject) dispatcherRefactoring)
                                 .setDestinationClassName(((MoveRenameMethodObject) this.refactoringObject).getDestinationClassName());
-                        // Set the moved method's signature to the renamed method's signature
                         ((MoveRenameMethodObject) this.refactoringObject)
-                                .setDestinationMethodSignature(((MoveRenameMethodObject) dispatcherRefactoring).getDestinationMethodSignature());
+                                .setDestinationMethodSignature(((MoveRenameMethodObject) dispatcherRefactoring)
+                                        .getDestinationMethodSignature());
+
                         dispatcher.setRefactoringObject(dispatcherRefactoring);
                     }
                     // Otherwise, if the receiver refactoring is the rename method operation
@@ -48,7 +49,8 @@ public class MoveRenameMethodReceiver extends Receiver {
                                 .setDestinationClassName(((MoveRenameMethodObject) dispatcherRefactoring).getDestinationClassName());
                         // Set the moved method's signature to the renamed method's signature
                         ((MoveRenameMethodObject) dispatcherRefactoring)
-                                .setDestinationMethodSignature(((MoveRenameMethodObject) this.refactoringObject).getDestinationMethodSignature());
+                                .setDestinationMethodSignature(((MoveRenameMethodObject) this.refactoringObject)
+                                        .getDestinationMethodSignature());
                         dispatcher.setRefactoringObject(dispatcherRefactoring);
                     }
                 }

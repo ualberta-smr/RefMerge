@@ -87,7 +87,7 @@ public class MoveRenameMethodMoveRenameMethodCell {
     }
 
     /*
-     * Check if both branches renamed two methods with different signatures to the same name. If they did, this is a
+     * Check if both branches refactored two methods with different signatures to the same name. If they did, this is a
      * possible accidental overloading conflict.
      */
     public boolean checkOverloadConflict(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
@@ -124,24 +124,46 @@ public class MoveRenameMethodMoveRenameMethodCell {
     }
 
     /*
-     * Check for two methods being renamed to the same name or one method being renamed to two different names.
+     * Check for two methods being refactored to the same signature or one method being refactored to two methods.
      */
-    public boolean checkMethodNamingConflict(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
-        // Use the original class name because they will have different class names if a class was renamed on one branch
-        String dispatcherClassName = ((MoveRenameMethodObject) dispatcherObject).getOriginalClassName();
-        String receiverClassName = ((MoveRenameMethodObject) receiverObject).getOriginalClassName();
-        if(!dispatcherClassName.equals(receiverClassName)) {
-            return false;
-        }
-        // We already checked for overriding and overloading so we can just use the name instead of the full
-        // signature
-        String dispatcherOriginalName = ((MoveRenameMethodObject) dispatcherObject).getOriginalMethodSignature().getName();
-        String receiverOriginalName = ((MoveRenameMethodObject) receiverObject).getOriginalMethodSignature().getName();
-        String dispatcherDestinationName = ((MoveRenameMethodObject) dispatcherObject).getDestinationMethodSignature().getName();
-        String receiverDestinationName = ((MoveRenameMethodObject) receiverObject).getDestinationMethodSignature().getName();
+    public boolean checkMethodNamingConflict(RefactoringObject dispatcherRefactoring, RefactoringObject receiverRefactoring) {
+        MoveRenameMethodObject dispatcherObject = (MoveRenameMethodObject) dispatcherRefactoring;
+        MoveRenameMethodObject receiverObject = (MoveRenameMethodObject) receiverRefactoring;
 
-        return checkNamingConflict(dispatcherOriginalName, receiverOriginalName,
-                dispatcherDestinationName, receiverDestinationName);
+        MethodSignatureObject dispatcherOriginalMethod = dispatcherObject.getOriginalMethodSignature();
+        MethodSignatureObject dispatcherDestinationMethod = dispatcherObject.getDestinationMethodSignature();
+        MethodSignatureObject receiverOriginalMethod = receiverObject.getOriginalMethodSignature();
+        MethodSignatureObject receiverDestinationMethod = receiverObject.getDestinationMethodSignature();
+
+        String dispatcherOriginalClass = dispatcherObject.getOriginalClassName();
+        String dispatcherDestinationClass = dispatcherObject.getDestinationClassName();
+        String receiverOriginalClass = receiverObject.getOriginalClassName();
+        String receiverDestinationClass = receiverObject.getDestinationClassName();
+
+        // If both objects are rename method operations or move method operations
+        if((dispatcherObject.isRenameMethod() && receiverObject.isRenameMethod())
+                || (dispatcherObject.isMoveMethod() && receiverObject.isMoveMethod())) {
+            // Check if the original method signature and class are the same
+            if(dispatcherOriginalClass.equals(receiverOriginalClass)
+                    && dispatcherOriginalMethod.equalsSignature(receiverOriginalMethod)) {
+                // Check if the new class or method signature are different
+                // A rename method or move method operation could be part of a move+rename method operation so check the class
+                // and method signature
+                return !dispatcherDestinationClass.equals(receiverDestinationClass)
+                        || !dispatcherDestinationMethod.equalsSignature(receiverDestinationMethod);
+            }
+            // If the original method signature and class are different
+            else {
+                // Check if the refactored method is in the same class with the same signature
+                // Two methods that were moved/renamed to the same method in the same class is conflicting
+                return dispatcherDestinationClass.equals(receiverDestinationClass)
+                        && dispatcherDestinationMethod.equalsSignature(receiverDestinationMethod);
+            }
+        }
+
+        return false;
+
+
 
     }
 
