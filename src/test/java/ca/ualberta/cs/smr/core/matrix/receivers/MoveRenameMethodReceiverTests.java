@@ -51,7 +51,7 @@ public class MoveRenameMethodReceiverTests extends LightJavaCodeInsightFixtureTe
         dispatcher.set(leftRefactoring, project, false);
 
         MoveRenameMethodMoveRenameMethodCell cell = new MoveRenameMethodMoveRenameMethodCell(project);
-        boolean isConflicting = cell.renameMethodRenameMethodConflictCell(leftRefactoring, rightRefactoring);
+        boolean isConflicting = cell.moveRenameMethodMoveRenameMethodConflictCell(leftRefactoring, rightRefactoring);
         Assert.assertTrue("Originally overriding methods that are renamed to different names conflict", isConflicting);
     }
 
@@ -70,7 +70,7 @@ public class MoveRenameMethodReceiverTests extends LightJavaCodeInsightFixtureTe
         MoveRenameMethodDispatcher dispatcher = new MoveRenameMethodDispatcher();
         dispatcher.set(leftRefactoring, project, false);
         MoveRenameMethodMoveRenameMethodCell cell = new MoveRenameMethodMoveRenameMethodCell(project);
-        boolean isConflicting = cell.renameMethodRenameMethodConflictCell(leftRefactoring, rightRefactoring);
+        boolean isConflicting = cell.moveRenameMethodMoveRenameMethodConflictCell(leftRefactoring, rightRefactoring);
         Assert.assertTrue("Methods that start overloaded and get changed to different names should conflict", isConflicting);
     }
 
@@ -88,7 +88,7 @@ public class MoveRenameMethodReceiverTests extends LightJavaCodeInsightFixtureTe
         MoveRenameMethodDispatcher dispatcher = new MoveRenameMethodDispatcher();
         dispatcher.set(leftRefactoring, project, false);
         MoveRenameMethodMoveRenameMethodCell cell = new MoveRenameMethodMoveRenameMethodCell(project);
-        boolean isConflicting = cell.renameMethodRenameMethodConflictCell(leftRefactoring, rightRefactoring);
+        boolean isConflicting = cell.moveRenameMethodMoveRenameMethodConflictCell(leftRefactoring, rightRefactoring);
         Assert.assertTrue("Methods renamed to the same name in the same class should return true", isConflicting);
     }
 
@@ -104,7 +104,7 @@ public class MoveRenameMethodReceiverTests extends LightJavaCodeInsightFixtureTe
         MoveRenameMethodDispatcher dispatcher = new MoveRenameMethodDispatcher();
         dispatcher.set(leftRefactoring, project, false);
         MoveRenameMethodMoveRenameMethodCell cell = new MoveRenameMethodMoveRenameMethodCell(project);
-        boolean isConflicting = cell.renameMethodRenameMethodConflictCell(leftRefactoring, leftRefactoring);
+        boolean isConflicting = cell.moveRenameMethodMoveRenameMethodConflictCell(leftRefactoring, leftRefactoring);
         Assert.assertFalse("A method renamed to the same name in both versions should not conflict", isConflicting);
     }
 
