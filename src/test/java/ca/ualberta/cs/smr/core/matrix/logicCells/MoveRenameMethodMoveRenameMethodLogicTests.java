@@ -11,11 +11,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
+import org.refactoringminer.api.RefactoringType;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class RenameMethodRenameMethodLogicTests extends LightJavaCodeInsightFixtureTestCase {
+public class MoveRenameMethodMoveRenameMethodLogicTests extends LightJavaCodeInsightFixtureTestCase {
 
     @Override
     protected String getTestDataPath() {
@@ -144,6 +145,42 @@ public class RenameMethodRenameMethodLogicTests extends LightJavaCodeInsightFixt
         Assert.assertTrue(isConflicting);
     }
 
+    public void testMoveRenameMethodDependence() {
+        List<ParameterObject> originalParameters = new ArrayList<>();
+        originalParameters.add(new ParameterObject("int", "return"));
+        originalParameters.add(new ParameterObject("int", "x"));
+        MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
+        MethodSignatureObject bar = new MethodSignatureObject(originalParameters, "bar");
+        MethodSignatureObject foobar = new MethodSignatureObject(originalParameters, "foobar");
+        // Rename method A.foo -> A.bar
+        MoveRenameMethodObject renameMethodObject = new MoveRenameMethodObject("A.java", "A",
+                foo, "A.java", "A", bar);
+        renameMethodObject.setType(RefactoringType.RENAME_METHOD);
+        // Move method A.foo -> B.foo
+        MoveRenameMethodObject moveMethodObject = new MoveRenameMethodObject("A.java", "A",
+                foo, "B.java", "B", foo);
+        moveMethodObject.setType(RefactoringType.MOVE_OPERATION);
+        // Move method A.foo -> C.foo
+        MoveRenameMethodObject moveMethodObject2 = new MoveRenameMethodObject("A.java", "A",
+                foo, "C.java", "B", foo);
+        moveMethodObject2.setType(RefactoringType.MOVE_OPERATION);
+        // Move and rename method A.foo -> B.bar
+        MoveRenameMethodObject moveRenameMethodObject = new MoveRenameMethodObject("A.java", "A",
+                foo, "B.java", "B", bar);
+        moveRenameMethodObject.setType(RefactoringType.RENAME_METHOD);
+        moveRenameMethodObject.setType(RefactoringType.MOVE_OPERATION);
+        MoveRenameMethodMoveRenameMethodCell cell = new MoveRenameMethodMoveRenameMethodCell(getProject());
+        // A.foo -> A.bar / A.foo -> B.foo
+        boolean isDependent = cell.checkMoveRenameMethodMoveRenameMethodDependence(renameMethodObject, moveMethodObject);
+        Assert.assertTrue(isDependent);
+        // A.foo -> B.foo / A.foo -> C.foo
+        isDependent = cell.checkMoveRenameMethodMoveRenameMethodDependence(moveMethodObject, moveMethodObject2);
+        Assert.assertFalse(isDependent);
+        // A.foo -> B.foo / A.foo -> B.bar
+        isDependent = cell.checkMoveRenameMethodMoveRenameMethodDependence(moveMethodObject, moveRenameMethodObject);
+        Assert.assertFalse(isDependent);
+    }
+
     public void testFoundRenameMethodRenameMethodTransitivity() {
         List<ParameterObject> originalParameters = new ArrayList<>();
         originalParameters.add(new ParameterObject("int", "return"));
@@ -208,7 +245,7 @@ public class RenameMethodRenameMethodLogicTests extends LightJavaCodeInsightFixt
     private void doRenameMethodRenameMethodTest(RefactoringObject firstRefactoring, RefactoringObject secondRefactoring,
                                                 RefactoringObject expectedRefactoring, boolean expectedTransitivity) {
         MoveRenameMethodMoveRenameMethodCell cell = new MoveRenameMethodMoveRenameMethodCell(null);
-        boolean isTransitive = cell.checkRenameMethodRenameMethodTransitivity(firstRefactoring, secondRefactoring);
+        boolean isTransitive = cell.checkMoveRenameMethodMoveRenameMethodTransitivity(firstRefactoring, secondRefactoring);
         if(expectedTransitivity) {
             Assert.assertTrue(isTransitive);
         }

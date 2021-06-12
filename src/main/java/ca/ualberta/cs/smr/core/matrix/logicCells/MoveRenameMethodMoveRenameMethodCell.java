@@ -23,7 +23,7 @@ public class MoveRenameMethodMoveRenameMethodCell {
      *  Check if a rename method refactoring conflicts with a second rename method refactoring. Rename method/rename method
      *  can result in an override conflict, an overload conflict, or a naming conflict.
      */
-    public boolean renameMethodRenameMethodConflictCell(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
+    public boolean moveRenameMethodMoveRenameMethodConflictCell(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
         MoveRenameMethodMoveRenameMethodCell moveRenameMethodMoveRenameMethodCell = new MoveRenameMethodMoveRenameMethodCell(project);
         // Check for a method override conflict
         if(moveRenameMethodMoveRenameMethodCell.checkOverrideConflict(dispatcherObject, receiverObject)) {
@@ -146,10 +146,36 @@ public class MoveRenameMethodMoveRenameMethodCell {
     }
 
     /*
+     * Check for dependence between rename method and move method operations specifically.
+     */
+    public boolean checkMoveRenameMethodMoveRenameMethodDependence(RefactoringObject dispatcherRefactoring,
+                                                                   RefactoringObject receiverRefactoring) {
+        MoveRenameMethodObject dispatcherObject = (MoveRenameMethodObject) dispatcherRefactoring;
+        MoveRenameMethodObject receiverObject = (MoveRenameMethodObject) receiverRefactoring;
+
+        MethodSignatureObject dispatcherOriginalMethod = dispatcherObject.getOriginalMethodSignature();
+        MethodSignatureObject receiverOriginalMethod = receiverObject.getOriginalMethodSignature();
+
+        // If both refactoring objects do not have the same original method signature, then there cannot be dependence
+        // between them.
+        if(!dispatcherOriginalMethod.equalsSignature(receiverOriginalMethod)) {
+            return false;
+        }
+        // If both refactoring types are move method refactorings, then there cannot be dependence between them
+        if(dispatcherObject.isMoveMethod() && receiverObject.isMoveMethod()) {
+            return false;
+        }
+        // If both refactorings are not rename method, one must be move method and the other must be rename method.
+        // Since they both have the same signature and they are rename method/move method only, they have dependence
+        return !(dispatcherObject.isRenameMethod() && receiverObject.isRenameMethod());
+
+    }
+
+    /*
      * Check if the second refactoring is a transitive refactoring of the first refactoring.
      */
-    public boolean checkRenameMethodRenameMethodTransitivity(RefactoringObject firstRefactoring,
-                                                             RefactoringObject secondRefactoring) {
+    public boolean checkMoveRenameMethodMoveRenameMethodTransitivity(RefactoringObject firstRefactoring,
+                                                                     RefactoringObject secondRefactoring) {
         boolean isTransitive = false;
         MoveRenameMethodObject firstObject = (MoveRenameMethodObject) firstRefactoring;
         MoveRenameMethodObject secondObject = (MoveRenameMethodObject) secondRefactoring;
@@ -175,5 +201,7 @@ public class MoveRenameMethodMoveRenameMethodCell {
 
         return isTransitive;
     }
+
+
 
 }
