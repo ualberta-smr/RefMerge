@@ -1,7 +1,7 @@
 package ca.ualberta.cs.smr.core.matrix.receivers;
 
 import ca.ualberta.cs.smr.core.matrix.logicCells.MoveRenameMethodMoveRenameMethodCell;
-import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
@@ -9,7 +9,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
+import org.refactoringminer.api.RefactoringType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -33,7 +35,7 @@ public class MoveRenameMethodReceiverTests extends LightJavaCodeInsightFixtureTe
         Assert.assertNotNull("The refactoring element should not be null", receiver.refactoringObject);
     }
 
-    public void testRenameMethodRenameMethodOverrideConflict() {
+    public void testMoveRenameMethodMoveRenameMethodOverrideConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverrideConflict/original";
@@ -55,7 +57,7 @@ public class MoveRenameMethodReceiverTests extends LightJavaCodeInsightFixtureTe
         Assert.assertTrue("Originally overriding methods that are renamed to different names conflict", isConflicting);
     }
 
-    public void testRenameMethodRenameMethodOverloadConflict() {
+    public void testMoveRenameMethodMoveRenameMethodOverloadConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/original";
@@ -74,7 +76,7 @@ public class MoveRenameMethodReceiverTests extends LightJavaCodeInsightFixtureTe
         Assert.assertTrue("Methods that start overloaded and get changed to different names should conflict", isConflicting);
     }
 
-    public void testRenameMethodRenameMethodNamingConflict() {
+    public void testMoveRenameMethodMoveRenameMethodNamingConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/original";
@@ -92,7 +94,7 @@ public class MoveRenameMethodReceiverTests extends LightJavaCodeInsightFixtureTe
         Assert.assertTrue("Methods renamed to the same name in the same class should return true", isConflicting);
     }
 
-    public void testRenameMethodRenameMethodNoConflict() {
+    public void testMoveRenameMethodMoveRenameMethodNoConflict() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/original";
@@ -106,6 +108,36 @@ public class MoveRenameMethodReceiverTests extends LightJavaCodeInsightFixtureTe
         MoveRenameMethodMoveRenameMethodCell cell = new MoveRenameMethodMoveRenameMethodCell(project);
         boolean isConflicting = cell.moveRenameMethodMoveRenameMethodConflictCell(leftRefactoring, leftRefactoring);
         Assert.assertFalse("A method renamed to the same name in both versions should not conflict", isConflicting);
+    }
+
+    public void testMoveRenameMethodMoveRenameMethodDependence() {
+        Project project = myFixture.getProject();
+        List<ParameterObject> parameters = new ArrayList<>();
+        parameters.add(new ParameterObject("int", "return"));
+        parameters.add(new ParameterObject("int", "x"));
+        MethodSignatureObject foo = new MethodSignatureObject(parameters, "foo");
+        MethodSignatureObject bar = new MethodSignatureObject(parameters, "bar");
+        // (1) A.foo -> A.bar
+        MoveRenameMethodObject leftMethodObject1 = new MoveRenameMethodObject("A.java", "A", foo,
+                "A.java", "A", bar);
+        leftMethodObject1.setType(RefactoringType.RENAME_METHOD);
+        // (1) A.foo -> B.foo
+        MoveRenameMethodObject rightMethodObject1 = new MoveRenameMethodObject("A.java", "A", foo,
+                "B.java", "B", foo);
+        rightMethodObject1.setType(RefactoringType.MOVE_OPERATION);
+        MoveRenameMethodDispatcher dispatcher = new MoveRenameMethodDispatcher();
+        dispatcher.set(leftMethodObject1, project,false);
+        MoveRenameMethodReceiver receiver = new MoveRenameMethodReceiver();
+        receiver.set(rightMethodObject1);
+        dispatcher.dispatch(receiver);
+
+        MethodSignatureObject leftSignature = leftMethodObject1.getDestinationMethodSignature();
+        MethodSignatureObject rightSignature = rightMethodObject1.getDestinationMethodSignature();
+        String leftClass = leftMethodObject1.getDestinationClassName();
+        String rightClass = rightMethodObject1.getDestinationClassName();
+        Assert.assertEquals(leftSignature, rightSignature);
+        Assert.assertEquals(leftClass, rightClass);
+
     }
 
 }

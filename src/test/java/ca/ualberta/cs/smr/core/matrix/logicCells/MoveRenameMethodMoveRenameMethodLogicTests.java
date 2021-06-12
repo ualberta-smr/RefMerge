@@ -145,13 +145,56 @@ public class MoveRenameMethodMoveRenameMethodLogicTests extends LightJavaCodeIns
         Assert.assertTrue(isConflicting);
     }
 
+    public void testNestedRenameMethodRenameMethodNamingConflict2() {
+        Project project = myFixture.getProject();
+
+        List<ParameterObject> originalParameters = new ArrayList<>();
+        originalParameters.add(new ParameterObject("void", "return"));
+        MethodSignatureObject sumNumbers = new MethodSignatureObject(originalParameters, "sumNumbers");
+        MethodSignatureObject subNumbers = new MethodSignatureObject(originalParameters, "subNumbers");
+        MethodSignatureObject numbers = new MethodSignatureObject(originalParameters, "numbers");
+        // Rename method Foo.sumNumbers -> Fuzz.sumNumbers
+        MoveRenameMethodObject moveMethodObject = new MoveRenameMethodObject("Classes.java", "Foo",
+                sumNumbers, "Classes.java", "Fuzz", sumNumbers);
+        moveMethodObject.setType(RefactoringType.MOVE_OPERATION);
+        // Rename method Foo.sumNumbers -> Foo.numbers
+        MoveRenameMethodObject renameMethodObject = new MoveRenameMethodObject("Classes.java", "Foo",
+                numbers, "Classes.java", "Foo", sumNumbers);
+        renameMethodObject.setType(RefactoringType.RENAME_METHOD);
+        // Rename method Foo.sumNumbers -> Foo.subNumbers
+        MoveRenameMethodObject renameMethodObject2 = new MoveRenameMethodObject("Classes.java", "Foo",
+                numbers, "Classes.java", "Foo", subNumbers);
+        renameMethodObject2.setType(RefactoringType.RENAME_METHOD);
+        // Rename method Foo.sumNumbers -> Foo.subNumbers
+        MoveRenameMethodObject renameMethodObject3 = new MoveRenameMethodObject("Classes.java", "Foo",
+                sumNumbers, "Classes.java", "Foo", subNumbers);
+        renameMethodObject3.setType(RefactoringType.RENAME_METHOD);
+        // Rename and move method Foo.numbers -> Fuzz.sumNumbers
+        MoveRenameMethodObject moveRenameMethodObject = new MoveRenameMethodObject("Classes.java", "Foo",
+                numbers, "Classes.java", "Fuzz", sumNumbers);
+        moveRenameMethodObject.setType(RefactoringType.MOVE_OPERATION);
+        moveRenameMethodObject.setType(RefactoringType.RENAME_METHOD);
+        MoveRenameMethodMoveRenameMethodCell moveRenameMethodMoveRenameMethodCell = new MoveRenameMethodMoveRenameMethodCell(project);
+        boolean isConflicting = moveRenameMethodMoveRenameMethodCell.checkMethodNamingConflict(moveMethodObject, moveRenameMethodObject);
+        Assert.assertTrue(isConflicting);
+        isConflicting = moveRenameMethodMoveRenameMethodCell.checkMethodNamingConflict(renameMethodObject, moveRenameMethodObject);
+        Assert.assertTrue(isConflicting);
+        isConflicting = moveRenameMethodMoveRenameMethodCell.checkMethodNamingConflict(renameMethodObject, renameMethodObject2);
+        Assert.assertTrue(isConflicting);
+        isConflicting = moveRenameMethodMoveRenameMethodCell.checkMethodNamingConflict(renameMethodObject3, renameMethodObject2);
+        Assert.assertTrue(isConflicting);
+        isConflicting = moveRenameMethodMoveRenameMethodCell.checkMethodNamingConflict(renameMethodObject, renameMethodObject3);
+        Assert.assertFalse(isConflicting);
+
+    }
+
+
     public void testMoveRenameMethodDependence() {
         List<ParameterObject> originalParameters = new ArrayList<>();
         originalParameters.add(new ParameterObject("int", "return"));
         originalParameters.add(new ParameterObject("int", "x"));
         MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
         MethodSignatureObject bar = new MethodSignatureObject(originalParameters, "bar");
-        MethodSignatureObject foobar = new MethodSignatureObject(originalParameters, "foobar");
         // Rename method A.foo -> A.bar
         MoveRenameMethodObject renameMethodObject = new MoveRenameMethodObject("A.java", "A",
                 foo, "A.java", "A", bar);
