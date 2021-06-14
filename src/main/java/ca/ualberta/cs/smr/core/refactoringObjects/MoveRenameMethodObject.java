@@ -36,6 +36,8 @@ public class MoveRenameMethodObject implements RefactoringObject {
         this.destinationFilePath = destinationFilePath;
         this.destinationClassName = destinationClassName;
         this.destinationMethodSignature = destinationMethodSignature;
+        this.isMoveMethod = false;
+        this.isRenameMethod = false;
         this.isReplay = true;
 
     }
@@ -132,6 +134,10 @@ public class MoveRenameMethodObject implements RefactoringObject {
             this.isRenameMethod = true;
         }
         else if(refactoringType.equals(RefactoringType.MOVE_OPERATION)) {
+            this.isMoveMethod = true;
+        }
+        else {
+            this.isRenameMethod = true;
             this.isMoveMethod = true;
         }
     }

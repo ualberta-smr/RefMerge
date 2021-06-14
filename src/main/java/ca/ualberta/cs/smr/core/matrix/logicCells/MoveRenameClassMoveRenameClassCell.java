@@ -1,6 +1,5 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
-import ca.ualberta.cs.smr.core.refactoringObjects.ClassObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameClassObject;
 
@@ -38,6 +37,33 @@ public class MoveRenameClassMoveRenameClassCell {
 
         return checkNamingConflict(dispatcherOriginalClassName, receiverOriginalClassName,
                 dispatcherDestinationClassName, receiverDestinationClassName);
+    }
+
+    /*
+     * Check for dependence between move+rename class refactorings where one is move method and the other is rename method.
+     */
+    public static boolean checkMoveRenameClassMoveRenameClassDependence(RefactoringObject dispatcherRefactoringObject,
+                                                                        RefactoringObject receiverRefactoringObject) {
+        MoveRenameClassObject dispatcherClassRefactoring = (MoveRenameClassObject) dispatcherRefactoringObject;
+        MoveRenameClassObject receiverClassRefactoring = (MoveRenameClassObject) receiverRefactoringObject;
+
+        String dispatcherOriginalClassName = dispatcherClassRefactoring.getOriginalClassObject().getClassName();
+        String dispatcherOriginalPackageName = dispatcherClassRefactoring.getOriginalClassObject().getPackageName();
+        String receiverOriginalClassName = receiverClassRefactoring.getOriginalClassObject().getClassName();
+        String receiverOriginalPackageName = receiverClassRefactoring.getOriginalClassObject().getPackageName();
+
+        // If the original classes are not the same, there is no dependence between the class refactorings
+        if(!(dispatcherOriginalClassName.equals(receiverOriginalClassName) && dispatcherOriginalPackageName.equals(receiverOriginalPackageName))) {
+            return false;
+        }
+
+        // If both class refactorings are move class, then there cannot be dependence
+        if(dispatcherClassRefactoring.isMoveMethod() && receiverClassRefactoring.isMoveMethod()) {
+            return false;
+        }
+
+        // If both class refactorings are rename class, then there cannot be dependence
+        return !(dispatcherClassRefactoring.isRenameMethod() && receiverClassRefactoring.isRenameMethod());
     }
 
     /*

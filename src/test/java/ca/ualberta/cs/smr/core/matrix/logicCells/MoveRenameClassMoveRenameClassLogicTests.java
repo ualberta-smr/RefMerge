@@ -1,12 +1,12 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
-import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameClassObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
+import org.refactoringminer.api.RefactoringType;
 
 import java.util.List;
 
@@ -34,6 +34,28 @@ public class MoveRenameClassMoveRenameClassLogicTests extends LightJavaCodeInsig
         isConflicting = MoveRenameClassMoveRenameClassCell.checkClassNamingConflict(leftRefactoringObject, rightRefactoringObject);
         Assert.assertTrue("Classes renamed to the same name in the same package conflict", isConflicting);
 
+    }
+
+    public void testMoveRenameMethodDependence() {
+        // Rename class original.A -> original.B
+        MoveRenameClassObject renameClass = new MoveRenameClassObject("A.java", "A", "original",
+                "B.java", "B", "original");
+        renameClass.setType(RefactoringType.RENAME_CLASS);
+        // Move class original.A -> destination.B
+        MoveRenameClassObject moveClass = new MoveRenameClassObject("A.java", "A", "original",
+                "C.java", "C", "destination");
+        moveClass.setType(RefactoringType.MOVE_CLASS);
+        // Rename+Move class original.A -> destination.B
+        MoveRenameClassObject moveRenameClass = new MoveRenameClassObject("A.java", "A", "original",
+                "C.java", "C", "destination2");
+        moveRenameClass.setType(RefactoringType.MOVE_RENAME_CLASS);
+
+        boolean isDependent = MoveRenameClassMoveRenameClassCell.checkMoveRenameClassMoveRenameClassDependence(renameClass, moveClass);
+        Assert.assertTrue(isDependent);
+        isDependent = MoveRenameClassMoveRenameClassCell.checkMoveRenameClassMoveRenameClassDependence(moveClass, renameClass);
+        Assert.assertTrue(isDependent);
+        isDependent = MoveRenameClassMoveRenameClassCell.checkMoveRenameClassMoveRenameClassDependence(moveRenameClass, moveClass);
+        Assert.assertFalse(isDependent);
     }
 
     public void testFoundRenameClassRenameClassTransitivity() {
@@ -65,10 +87,10 @@ public class MoveRenameClassMoveRenameClassLogicTests extends LightJavaCodeInsig
     }
 
     public void testFoundMoveRenameClassMoveRenameClassTransitivity() {
-        // Rename class original.A -> destination1.B
+        // Rename+Move class original.A -> destination1.B
         MoveRenameClassObject firstRefactoring = new MoveRenameClassObject("A.java", "A", "original",
                 "B.java", "B", "destination1");
-        // Move class destination1.B -> destination2.C
+        // Rename+Move class destination1.B -> destination2.C
         MoveRenameClassObject secondRefactoring = new MoveRenameClassObject("B.java", "B", "destination1",
                 "C.java", "C", "destination2");
         // Rename+Move class original.A -> destination.B
