@@ -30,7 +30,11 @@ public class Matrix {
     static final HashMap<RefactoringType, RefactoringDispatcher> dispatcherMap =
                                                     new HashMap<RefactoringType, RefactoringDispatcher>() {{
        put(RefactoringType.RENAME_METHOD, new MoveRenameMethodDispatcher());
+       put(RefactoringType.MOVE_OPERATION, new MoveRenameMethodDispatcher());
+       put(RefactoringType.MOVE_AND_RENAME_OPERATION, new MoveRenameMethodDispatcher());
        put(RefactoringType.RENAME_CLASS, new MoveRenameClassDispatcher());
+       put(RefactoringType.MOVE_CLASS, new MoveRenameClassDispatcher());
+       put(RefactoringType.MOVE_RENAME_CLASS, new MoveRenameClassDispatcher());
        put(RefactoringType.EXTRACT_OPERATION, new ExtractMethodDispatcher());
     }};
 
@@ -41,7 +45,11 @@ public class Matrix {
     static final HashMap<RefactoringType, Receiver> receiverMap =
                                                     new HashMap<RefactoringType, Receiver>() {{
         put(RefactoringType.RENAME_METHOD, new MoveRenameMethodReceiver());
+        put(RefactoringType.MOVE_OPERATION, new MoveRenameMethodReceiver());
+        put(RefactoringType.MOVE_AND_RENAME_OPERATION, new MoveRenameMethodReceiver());
         put(RefactoringType.RENAME_CLASS, new MoveRenameClassReceiver());
+        put(RefactoringType.MOVE_CLASS, new MoveRenameClassReceiver());
+        put(RefactoringType.MOVE_RENAME_CLASS, new MoveRenameClassReceiver());
         put(RefactoringType.EXTRACT_OPERATION, new ExtractMethodReceiver());
     }};
 
@@ -187,7 +195,11 @@ public class Matrix {
     protected int getRefactoringValue(RefactoringType refactoringType) {
         Vector<RefactoringType> vector = new Vector<>();
         vector.add(RefactoringType.RENAME_METHOD);
+        vector.add(RefactoringType.MOVE_OPERATION);
+        vector.add(RefactoringType.MOVE_AND_RENAME_OPERATION);
         vector.add(RefactoringType.RENAME_CLASS);
+        vector.add(RefactoringType.MOVE_CLASS);
+        vector.add(RefactoringType.MOVE_RENAME_CLASS);
         vector.add(RefactoringType.EXTRACT_OPERATION);
 
         Enumeration<RefactoringType> enumeration = vector.elements();
