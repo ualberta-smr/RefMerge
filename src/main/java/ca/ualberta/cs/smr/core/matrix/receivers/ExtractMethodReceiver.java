@@ -34,12 +34,14 @@ public class ExtractMethodReceiver extends Receiver {
                 System.out.println("Extract Method/Rename Method Conflict");
             }
             else {
-                boolean isDependant = cell.extractMethodRenameMethodDependenceCell(dispatcherObject, this.refactoringObject);
+                boolean isDependent = cell.extractMethodRenameMethodDependenceCell(dispatcherObject, this.refactoringObject);
                 // If there is dependence, the source method of the extract method refactoring was renamed. Rename the source
                 // method to represent this so we can replay the extract method properly
-                if(isDependant) {
+                if(isDependent) {
                     ((ExtractMethodObject) this.refactoringObject).
                             setOriginalMethodSignature(((MoveRenameMethodObject) dispatcherObject).getDestinationMethodSignature());
+                    dispatcherObject.setReplayFlag(false);
+                    dispatcher.setRefactoringObject(dispatcherObject);
                 }
             }
         }
