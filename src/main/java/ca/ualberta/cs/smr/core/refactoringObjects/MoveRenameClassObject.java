@@ -1,5 +1,8 @@
 package ca.ualberta.cs.smr.core.refactoringObjects;
 
+import gr.uom.java.xmi.UMLClass;
+import gr.uom.java.xmi.diff.MoveAndRenameClassRefactoring;
+import gr.uom.java.xmi.diff.MoveClassRefactoring;
 import gr.uom.java.xmi.diff.RenameClassRefactoring;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
@@ -42,14 +45,31 @@ public class MoveRenameClassObject implements RefactoringObject {
      * Creates the rename class object and takes the information that we need from the RefMiner refactoring object.
      */
     public MoveRenameClassObject(Refactoring refactoring) {
-        RenameClassRefactoring renameClassRefactoring = (RenameClassRefactoring) refactoring;
+        UMLClass originalClass;
+        UMLClass destinationClass;
+        if(refactoring instanceof RenameClassRefactoring) {
+            RenameClassRefactoring renameClassRefactoring = (RenameClassRefactoring) refactoring;
+            originalClass = renameClassRefactoring.getOriginalClass();
+            destinationClass = renameClassRefactoring.getRenamedClass();
+
+        }
+        else if(refactoring instanceof MoveClassRefactoring) {
+            MoveClassRefactoring moveClassRefactoring = (MoveClassRefactoring) refactoring;
+            originalClass = moveClassRefactoring.getOriginalClass();
+            destinationClass = moveClassRefactoring.getMovedClass();
+        }
+        else {
+            MoveAndRenameClassRefactoring moveAndRenameClassRefactoring = (MoveAndRenameClassRefactoring) refactoring;
+            originalClass = moveAndRenameClassRefactoring.getOriginalClass();
+            destinationClass = moveAndRenameClassRefactoring.getRenamedClass();
+        }
         this.refactoringType = refactoring.getRefactoringType();
-        this.originalFilePath = renameClassRefactoring.getOriginalClass().getLocationInfo().getFilePath();
-        this.destinationFilePath = renameClassRefactoring.getRenamedClass().getLocationInfo().getFilePath();
+        this.originalFilePath = originalClass.getLocationInfo().getFilePath();
+        this.destinationFilePath = destinationClass.getLocationInfo().getFilePath();
         this.originalClassObject =
-                new ClassObject(renameClassRefactoring.getOriginalClassName(), renameClassRefactoring.getOriginalClass().getPackageName());
+                new ClassObject(originalClass.getName(), originalClass.getPackageName());
         this.destinationClassObject =
-                new ClassObject(renameClassRefactoring.getRenamedClassName(), renameClassRefactoring.getRenamedClass().getPackageName());
+                new ClassObject(destinationClass.getName(), destinationClass.getPackageName());
         this.isMoveMethod = false;
         this.isRenameMethod = false;
         setType(refactoringType);
