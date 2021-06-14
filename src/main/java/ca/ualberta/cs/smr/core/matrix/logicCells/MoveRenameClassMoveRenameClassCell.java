@@ -1,9 +1,9 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
+import ca.ualberta.cs.smr.core.refactoringObjects.ClassObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameClassObject;
 
-import static ca.ualberta.cs.smr.utils.MatrixUtils.*;
 
 /*
  * Contains the logic check for move+rename class/move+rename class refactoring conflict.
@@ -28,15 +28,26 @@ public class MoveRenameClassMoveRenameClassCell {
      */
     public static boolean checkClassNamingConflict(RefactoringObject dispatcherRefactoringObject,
                                                    RefactoringObject receiverRefactoringObject) {
-        MoveRenameClassObject dispatcherRenameClass = (MoveRenameClassObject) dispatcherRefactoringObject;
-        MoveRenameClassObject receiverRenameClass = (MoveRenameClassObject) receiverRefactoringObject;
-        String dispatcherOriginalClassName = dispatcherRenameClass.getOriginalClassObject().getClassName();
-        String receiverOriginalClassName = receiverRenameClass.getOriginalClassObject().getClassName();
-        String dispatcherDestinationClassName = dispatcherRenameClass.getDestinationClassObject().getClassName();
-        String receiverDestinationClassName = receiverRenameClass.getDestinationClassObject().getClassName();
+        MoveRenameClassObject dispatcherClassRefactoring = (MoveRenameClassObject) dispatcherRefactoringObject;
+        MoveRenameClassObject receiverClassRefactoring = (MoveRenameClassObject) receiverRefactoringObject;
+        ClassObject dispatcherOriginalClass = dispatcherClassRefactoring.getOriginalClassObject();
+        ClassObject receiverOriginalClass = receiverClassRefactoring.getOriginalClassObject();
+        ClassObject dispatcherDestinationClass = dispatcherClassRefactoring.getDestinationClassObject();
+        ClassObject receiverDestinationClass = receiverClassRefactoring.getDestinationClassObject();
 
-        return checkNamingConflict(dispatcherOriginalClassName, receiverOriginalClassName,
-                dispatcherDestinationClassName, receiverDestinationClassName);
+        // If the dispatcher and the receiver are both rename, move, or rename+move refactorings
+        if((dispatcherClassRefactoring.isRenameMethod() && receiverClassRefactoring.isRenameMethod())
+                || (dispatcherClassRefactoring.isMoveMethod() && receiverClassRefactoring.isMoveMethod())) {
+            // If the original class is refactored to two different destinations
+            if(dispatcherOriginalClass.equalsClass(receiverOriginalClass)
+                    && !dispatcherDestinationClass.equalsClass(receiverDestinationClass)) {
+                return true;
+            }
+            // If two classes are refactored to the same class
+            else return !dispatcherOriginalClass.equalsClass(receiverOriginalClass)
+                    && dispatcherDestinationClass.equalsClass(receiverDestinationClass);
+        }
+        return false;
     }
 
     /*

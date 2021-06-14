@@ -1,11 +1,8 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
-import ca.ualberta.cs.smr.testUtils.GetDataForTests;
-import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
-import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
 import java.util.List;
@@ -18,21 +15,33 @@ public class MoveRenameClassMoveRenameClassLogicTests extends LightJavaCodeInsig
     }
 
     public void testCheckRenameClassRenameClassNamingConflict() {
-        String basePath = System.getProperty("user.dir");
-        String originalPath = basePath + "/src/test/resources/renameClassRenameClassFiles/renameClassNamingConflict/original";
-        String refactoredPath = basePath + "/src/test/resources/renameClassRenameClassFiles/renameClassNamingConflict/refactored";
-        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
-        assert refactorings != null && refactorings.size() == 3;
-        Refactoring leftRefactoring = refactorings.get(0);
-        Refactoring rightRefactoring = refactorings.get(2);
-        Refactoring rightRefactoring2 = refactorings.get(1);
-        RefactoringObject leftRefactoringObject = RefactoringObjectUtils.createRefactoringObject(leftRefactoring);
-        RefactoringObject rightRefactoringObject = RefactoringObjectUtils.createRefactoringObject(rightRefactoring);
-        boolean isConflicting = MoveRenameClassMoveRenameClassCell.checkClassNamingConflict(leftRefactoringObject, rightRefactoringObject);
-        Assert.assertFalse("Classes without related refactorings should not conflict", isConflicting);
-        rightRefactoringObject = RefactoringObjectUtils.createRefactoringObject(rightRefactoring2);
-        isConflicting = MoveRenameClassMoveRenameClassCell.checkClassNamingConflict(leftRefactoringObject, rightRefactoringObject);
-        Assert.assertTrue("Classes renamed to the same name in the same package conflict", isConflicting);
+        // Rename class original.A -> original.B
+        MoveRenameClassObject leftRenameClass = new MoveRenameClassObject("A.java", "A", "original",
+                "B.java", "B", "original");
+        leftRenameClass.setType(RefactoringType.RENAME_CLASS);
+        // Rename class original.A -> original.C
+        MoveRenameClassObject rightRenameClass = new MoveRenameClassObject("A.java", "A", "original",
+                "C.java", "C", "original");
+        rightRenameClass.setType(RefactoringType.RENAME_CLASS);
+        // Move class original.A -> destination.B
+        MoveRenameClassObject moveClass = new MoveRenameClassObject("A.java", "A", "original",
+                "C.java", "C", "destination");
+        moveClass.setType(RefactoringType.MOVE_CLASS);
+        // Rename+Move class original.A -> destination.B
+        MoveRenameClassObject moveRenameClass = new MoveRenameClassObject("A.java", "A", "original",
+                "C.java", "C", "destination2");
+        moveRenameClass.setType(RefactoringType.MOVE_RENAME_CLASS);
+
+        boolean isConflicting = MoveRenameClassMoveRenameClassCell.checkClassNamingConflict(leftRenameClass, rightRenameClass);
+        Assert.assertTrue(isConflicting);
+        isConflicting = MoveRenameClassMoveRenameClassCell.checkClassNamingConflict(leftRenameClass, moveRenameClass);
+        Assert.assertTrue(isConflicting);
+        isConflicting = MoveRenameClassMoveRenameClassCell.checkClassNamingConflict(moveClass, moveRenameClass);
+        Assert.assertTrue(isConflicting);
+        isConflicting = MoveRenameClassMoveRenameClassCell.checkClassNamingConflict(moveClass, leftRenameClass);
+        Assert.assertFalse(isConflicting);
+        isConflicting = MoveRenameClassMoveRenameClassCell.checkClassNamingConflict(moveClass, moveClass);
+        Assert.assertFalse(isConflicting);
 
     }
 
@@ -128,6 +137,7 @@ public class MoveRenameClassMoveRenameClassLogicTests extends LightJavaCodeInsig
         else {
             Assert.assertFalse(isTransitive);
         }
+
         Assert.assertEquals(expectedRefactoring.getDestinationFilePath(), firstRefactoring.getDestinationFilePath());
         Assert.assertEquals(((MoveRenameClassObject) firstRefactoring).getDestinationClassObject(),
                 ((MoveRenameClassObject) firstRefactoring).getDestinationClassObject());
