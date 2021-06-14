@@ -1,9 +1,6 @@
 package ca.ualberta.cs.smr.core;
 
-import ca.ualberta.cs.smr.core.refactoringObjects.MethodSignatureObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameMethodObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.ParameterObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.core.undoOperations.UndoOperations;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
@@ -11,6 +8,7 @@ import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.testFramework.fixtures.*;
+import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
@@ -147,6 +145,26 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         list2 = TestUtils.getClassNames(newClasses);
 
         LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
+
+    }
+
+    public void testUndoMoveClass() {
+        Project project = myFixture.getProject();
+        String testDir = "renameTestData/classRenameTestData/";
+        String testDataRenamed = testDir + "renamed/";
+        String testResult = testDir + "expectedUndoResults/";
+        String testFile = "ClassRenameTestData.java";
+        PsiFile[] psiFiles = myFixture.configureByFiles(testDataRenamed + testFile, testResult + testFile);
+        String destinationPackage = "renameTestData.classRenameTestData";
+        String originalPackage = "renameTestData";
+        System.out.println(psiFiles[1].getText());
+        Assert.assertNotEquals(originalPackage, ((PsiJavaFile)psiFiles[1]).getPackageName());
+        MoveRenameClassObject moveClass = new MoveRenameClassObject("ClassRenameTestData.java", "ClassRenameTestData", originalPackage,
+                "ClassRenameTestData.java", "ClassRenameTestData", destinationPackage);
+        moveClass.setType(RefactoringType.MOVE_CLASS);
+        UndoOperations undo = new UndoOperations(project);
+        undo.undoMoveRenameClass(moveClass);
+        Assert.assertEquals(originalPackage, ((PsiJavaFile)psiFiles[1]).getPackageName());
 
     }
 

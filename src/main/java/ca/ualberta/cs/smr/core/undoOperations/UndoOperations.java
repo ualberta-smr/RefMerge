@@ -16,9 +16,13 @@ import com.intellij.refactoring.*;
 import com.intellij.refactoring.changeSignature.JavaThrownExceptionInfo;
 import com.intellij.refactoring.changeSignature.ThrownExceptionInfo;
 import com.intellij.refactoring.inline.InlineMethodProcessor;
+import com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesProcessor;
+import com.intellij.refactoring.move.moveClassesOrPackages.SingleSourceRootMoveDestination;
 import com.intellij.usageView.UsageInfo;
 import com.intellij.util.Query;
 import gr.uom.java.xmi.decomposition.OperationInvocation;
+
+import java.util.Objects;
 
 
 public class UndoOperations {
@@ -37,7 +41,6 @@ public class UndoOperations {
         MethodSignatureObject original = moveRenameMethodObject.getOriginalMethodSignature();
         MethodSignatureObject renamed = moveRenameMethodObject.getDestinationMethodSignature();
         String originalMethodName = original.getName();
-        String destinationMethodName = renamed.getName();
         String originalClassName = moveRenameMethodObject.getOriginalClassName();
         String destinationClassName = moveRenameMethodObject.getDestinationClassName();
         // get the PSI class using the qualified class name
@@ -87,10 +90,29 @@ public class UndoOperations {
         utils.addSourceRoot(filePath);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(destQualifiedClass, filePath);
         assert psiClass != null;
-        RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
-        RenameRefactoring renameRefactoring = factory.createRename(psiClass, srcClassName, true, true);
-        UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
-        renameRefactoring.doRefactoring(refactoringUsages);
+
+        if(moveRenameClassObject.isRenameMethod()) {
+            RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
+            RenameRefactoring renameRefactoring = factory.createRename(psiClass, srcClassName, true, true);
+            UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
+            renameRefactoring.doRefactoring(refactoringUsages);
+        }
+        if(moveRenameClassObject.isMoveMethod()) {
+            // use the original package to undo the move class
+            String originalPackage = moveRenameClassObject.getOriginalClassObject().getPackageName();
+            PsiPackage psiPackage = JavaPsiFacade.getInstance(project).findPackage(originalPackage);
+            assert psiPackage != null;
+            PsiDirectory dir = psiPackage.getDirectories()[0];
+            PsiElement[] psiElements = new PsiElement[1];
+
+            psiElements[0] = psiClass;
+            MoveClassesOrPackagesProcessor moveClassProcessor = new MoveClassesOrPackagesProcessor(project, psiElements,
+                    new SingleSourceRootMoveDestination(PackageWrapper
+                            .create(Objects.requireNonNull(JavaDirectoryService.getInstance().getPackage(dir))), dir),
+                    true, true, null);
+            Application app = ApplicationManager.getApplication();
+            app.invokeAndWait(moveClassProcessor);
+        }
         // Update the virtual file of the class
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);

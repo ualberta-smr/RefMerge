@@ -2,6 +2,7 @@ package ca.ualberta.cs.smr.core.replayOperations;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.utils.Utils;
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
@@ -10,22 +11,22 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.refactoring.JavaRefactoringFactory;
-import com.intellij.refactoring.MoveMembersRefactoring;
-import com.intellij.refactoring.RefactoringFactory;
-import com.intellij.refactoring.RenameRefactoring;
+import com.intellij.refactoring.*;
 import com.intellij.refactoring.changeSignature.ChangeSignatureProcessor;
 import com.intellij.refactoring.changeSignature.ParameterInfoImpl;
 import com.intellij.refactoring.changeSignature.ThrownExceptionInfo;
 import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
 import com.intellij.refactoring.extractMethod.ExtractMethodProcessor;
 import com.intellij.refactoring.extractMethod.PrepareFailedException;
+import com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesProcessor;
+import com.intellij.refactoring.move.moveClassesOrPackages.SingleSourceRootMoveDestination;
 import com.intellij.refactoring.util.duplicates.Match;
 import com.intellij.usageView.UsageInfo;
 import gr.uom.java.xmi.decomposition.replacement.Replacement;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 
@@ -86,10 +87,29 @@ public class ReplayOperations {
         if(psiClass == null) {
             return;
         }
-        RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
-        RenameRefactoring renameRefactoring = factory.createRename(psiClass, destClassName, true, true);
-        UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
-        renameRefactoring.doRefactoring(refactoringUsages);
+
+        if(moveRenameClassObject.isRenameMethod()) {
+            RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
+            RenameRefactoring renameRefactoring = factory.createRename(psiClass, destClassName, true, true);
+            UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
+            renameRefactoring.doRefactoring(refactoringUsages);
+        }
+        if(moveRenameClassObject.isMoveMethod()) {
+            // use the destination package to undo the move class
+            String destinationPackage = moveRenameClassObject.getDestinationClassObject().getPackageName();
+            PsiPackage psiPackage = JavaPsiFacade.getInstance(project).findPackage(destinationPackage);
+            assert psiPackage != null;
+            PsiDirectory dir = psiPackage.getDirectories()[0];
+            PsiElement[] psiElements = new PsiElement[1];
+
+            psiElements[0] = psiClass;
+            MoveClassesOrPackagesProcessor moveClassProcessor = new MoveClassesOrPackagesProcessor(project, psiElements,
+                    new SingleSourceRootMoveDestination(PackageWrapper
+                            .create(Objects.requireNonNull(JavaDirectoryService.getInstance().getPackage(dir))), dir),
+                    true, true, null);
+            Application app = ApplicationManager.getApplication();
+            app.invokeAndWait(moveClassProcessor);
+        }
         // Update the virtual file of the class
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);

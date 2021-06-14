@@ -1,9 +1,6 @@
 package ca.ualberta.cs.smr.core;
 
-import ca.ualberta.cs.smr.core.refactoringObjects.MethodSignatureObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameMethodObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.ParameterObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.core.replayOperations.ReplayOperations;
 import ca.ualberta.cs.smr.core.undoOperations.UndoOperations;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
@@ -12,8 +9,10 @@ import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
+import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
@@ -149,6 +148,25 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         list2 = TestUtils.getClassNames(newClasses);
 
         LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
+
+    }
+
+    public void testReplayMoveClass() {
+        Project project = myFixture.getProject();
+        String testDir = "renameTestData/classRenameTestData/";
+        String testDataRenamed = testDir + "renamed/";
+        String testResult = testDir + "expectedUndoResults/";
+        String testFile = "ClassRenameTestData.java";
+        PsiFile[] psiFiles = myFixture.configureByFiles(testDataRenamed + testFile, testResult + testFile);
+        String originalPackage = "renameTestData.classRenameTestData";
+        String destinationPackage = "renameTestData";
+        Assert.assertNotEquals(destinationPackage, ((PsiJavaFile)psiFiles[1]).getPackageName());
+        MoveRenameClassObject moveClass = new MoveRenameClassObject("ClassRenameTestData.java", "ClassRenameTestData", originalPackage,
+                "ClassRenameTestData.java", "ClassRenameTestData", destinationPackage);
+        moveClass.setType(RefactoringType.MOVE_CLASS);
+        ReplayOperations replayOperations = new ReplayOperations(project);
+        replayOperations.replayMoveRenameClass(moveClass);
+        Assert.assertEquals(destinationPackage, ((PsiJavaFile)psiFiles[1]).getPackageName());
 
     }
 
