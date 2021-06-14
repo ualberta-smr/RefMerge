@@ -5,7 +5,6 @@ import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 import org.refactoringminer.api.RefactoringType;
 
-import java.util.List;
 
 public class MoveRenameClassMoveRenameClassLogicTests extends LightJavaCodeInsightFixtureTestCase {
 

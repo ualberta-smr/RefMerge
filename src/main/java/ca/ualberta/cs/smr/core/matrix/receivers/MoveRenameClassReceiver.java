@@ -7,6 +7,7 @@ import ca.ualberta.cs.smr.core.matrix.logicCells.MoveRenameClassMoveRenameMethod
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameClassObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameMethodObject;
+import org.refactoringminer.api.RefactoringType;
 
 public class MoveRenameClassReceiver extends Receiver {
 
@@ -40,17 +41,52 @@ public class MoveRenameClassReceiver extends Receiver {
      */
     @Override
     public void receive(MoveRenameClassDispatcher dispatcher) {
-        RefactoringObject secondRefactoring = dispatcher.getRefactoringObject();
+        RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
         if(dispatcher.isSimplify()) {
             this.isTransitive = MoveRenameClassMoveRenameClassCell
-                    .checkMoveRenameClassMoveRenameClassTransitivity(this.refactoringObject, secondRefactoring);
-            dispatcher.setRefactoringObject(secondRefactoring);
+                    .checkMoveRenameClassMoveRenameClassTransitivity(this.refactoringObject, dispatcherRefactoring);
+            dispatcher.setRefactoringObject(dispatcherRefactoring);
 
         }
         else {
             boolean isConflicting = MoveRenameClassMoveRenameClassCell
-                    .MoveRenameClassMoveRenameClassConflictCell(secondRefactoring, this.refactoringObject);
-            System.out.println("Rename Class/Rename Class conflict: " + isConflicting);
+                    .MoveRenameClassMoveRenameClassConflictCell(dispatcherRefactoring, this.refactoringObject);
+            if(isConflicting) {
+                this.refactoringObject.setReplayFlag(false);
+                dispatcherRefactoring.setReplayFlag(false);
+                dispatcher.setRefactoringObject(dispatcherRefactoring);
+            }
+            else {
+                boolean isDependent = MoveRenameClassMoveRenameClassCell
+                        .checkMoveRenameClassMoveRenameClassDependence(dispatcherRefactoring, this.refactoringObject);
+                if(isDependent) {
+                    // If the dispatcher refactoring is the rename class refactoring
+                    if(((MoveRenameClassObject) dispatcherRefactoring).isMoveMethod()) {
+                        // Rename the class in the move class refactoring
+                        ((MoveRenameClassObject) this.refactoringObject)
+                                .getDestinationClassObject().updateClassName(((MoveRenameClassObject) dispatcherRefactoring)
+                                .getDestinationClassObject().getClassName());
+                        ((MoveRenameClassObject) this.refactoringObject).setType(RefactoringType.MOVE_RENAME_CLASS);
+                        // Set the dispatcher refactoring to the updated move+rename receiver refactoring
+                        ((MoveRenameClassObject) dispatcherRefactoring)
+                                .setDestinationClassObject(((MoveRenameClassObject) this.refactoringObject).getDestinationClassObject());
+                        ((MoveRenameClassObject) dispatcherRefactoring).setType(RefactoringType.MOVE_RENAME_CLASS);
+
+                    }
+                    // If the receiver refactoring is the rename class refactoring
+                    else {
+                        ((MoveRenameClassObject) dispatcherRefactoring)
+                                .getDestinationClassObject().updateClassName(((MoveRenameClassObject) this.refactoringObject)
+                                .getDestinationClassObject().getClassName());
+                        ((MoveRenameClassObject) dispatcherRefactoring).setType(RefactoringType.MOVE_RENAME_CLASS);
+                        ((MoveRenameClassObject) this.refactoringObject)
+                                .setDestinationClassObject(((MoveRenameClassObject) dispatcherRefactoring).getDestinationClassObject());
+                        ((MoveRenameClassObject) this.refactoringObject).setType(RefactoringType.MOVE_RENAME_CLASS);
+                    }
+                    dispatcherRefactoring.setReplayFlag(false);
+                    dispatcher.setRefactoringObject(dispatcherRefactoring);
+                }
+            }
         }
     }
 

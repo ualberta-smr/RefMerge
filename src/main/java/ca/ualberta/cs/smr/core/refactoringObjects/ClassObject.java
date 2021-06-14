@@ -25,6 +25,10 @@ public class ClassObject {
         return packageName;
     }
 
+    public void updateClassName(String className) {
+        this.className = packageName + "." + className;
+    }
+
     public boolean equalsClass(ClassObject otherClass) {
         if(!this.packageName.equals(otherClass.packageName)) {
             return false;
