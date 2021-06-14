@@ -10,7 +10,7 @@ import org.refactoringminer.api.Refactoring;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RenameClassRenameMethodLogicTests extends LightJavaCodeInsightFixtureTestCase {
+public class MoveRenameClassMoveRenameMethodLogicTests extends LightJavaCodeInsightFixtureTestCase {
 
     @Override
     protected String getTestDataPath() {

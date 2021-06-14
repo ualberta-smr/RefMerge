@@ -2,6 +2,7 @@ package ca.ualberta.cs.smr.core.matrix.receivers;
 
 import ca.ualberta.cs.smr.core.matrix.logicCells.MoveRenameClassMoveRenameClassCell;
 import ca.ualberta.cs.smr.core.matrix.logicCells.MoveRenameClassMoveRenameMethodCell;
+import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameClassObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameClassDispatcher;
@@ -10,6 +11,7 @@ import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
+import org.refactoringminer.api.RefactoringType;
 
 import java.util.List;
 
@@ -65,6 +67,28 @@ public class MoveRenameClassReceiverTests extends LightJavaCodeInsightFixtureTes
         rightRefactoring = RefactoringObjectUtils.createRefactoringObject(bar);
         isConflicting = MoveRenameClassMoveRenameClassCell.MoveRenameClassMoveRenameClassConflictCell(leftRefactoring, rightRefactoring);
         Assert.assertFalse(isConflicting);
+    }
+
+    public void testMoveRenameClassMoveRenameClassDependenceCell() {
+        // Rename class original.A -> original.B
+        MoveRenameClassObject renameClass = new MoveRenameClassObject("A.java", "A", "original",
+                "B.java", "B", "original");
+        renameClass.setType(RefactoringType.RENAME_CLASS);
+        // Move class original.A -> destination.B
+        MoveRenameClassObject moveClass = new MoveRenameClassObject("A.java", "A", "original",
+                "C.java", "C", "destination");
+        moveClass.setType(RefactoringType.MOVE_CLASS);
+
+        MoveRenameClassDispatcher dispatcher = new MoveRenameClassDispatcher();
+        dispatcher.set(renameClass, getProject(), false);
+        MoveRenameClassReceiver receiver = new MoveRenameClassReceiver();
+        receiver.set(moveClass);
+        dispatcher.dispatch(receiver);
+        Assert.assertFalse(renameClass.isReplay());
+        Assert.assertTrue(moveClass.isReplay());
+        Assert.assertTrue(renameClass.getDestinationClassObject().equalsClass(moveClass.getDestinationClassObject()));
+        Assert.assertTrue(renameClass.getOriginalClassObject().equalsClass(moveClass.getOriginalClassObject()));
+
     }
 
     public void testMoveRenameClassRenameMethodDependenceCell() {

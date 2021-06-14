@@ -39,8 +39,6 @@ public class MoveRenameMethodReceiver extends Receiver {
                         ((MoveRenameMethodObject) this.refactoringObject)
                                 .setDestinationMethodSignature(((MoveRenameMethodObject) dispatcherRefactoring)
                                         .getDestinationMethodSignature());
-                        dispatcherRefactoring.setReplayFlag(false);
-                        dispatcher.setRefactoringObject(dispatcherRefactoring);
                     }
                     // Otherwise, if the receiver refactoring is the rename method operation
                     else {
@@ -51,9 +49,9 @@ public class MoveRenameMethodReceiver extends Receiver {
                         ((MoveRenameMethodObject) dispatcherRefactoring)
                                 .setDestinationMethodSignature(((MoveRenameMethodObject) this.refactoringObject)
                                         .getDestinationMethodSignature());
-                        dispatcherRefactoring.setReplayFlag(false);
-                        dispatcher.setRefactoringObject(dispatcherRefactoring);
                     }
+                    dispatcherRefactoring.setReplayFlag(false);
+                    dispatcher.setRefactoringObject(dispatcherRefactoring);
                 }
             }
         }
