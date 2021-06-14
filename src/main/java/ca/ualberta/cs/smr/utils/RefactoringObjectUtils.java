@@ -17,6 +17,7 @@ public class RefactoringObjectUtils {
                 return new RenameClassObject(refactoring);
             case RENAME_METHOD:
             case MOVE_OPERATION:
+            case MOVE_AND_RENAME_OPERATION:
                 return new MoveRenameMethodObject(refactoring);
             case EXTRACT_OPERATION:
                 return new ExtractMethodObject(refactoring);
