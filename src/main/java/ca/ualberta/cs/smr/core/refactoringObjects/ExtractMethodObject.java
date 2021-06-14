@@ -31,6 +31,7 @@ public class ExtractMethodObject implements RefactoringObject {
     private Set<Replacement> replacements;
     private PsiElement[] surroundingElements;
     private ThrownExceptionInfo[] thrownExceptionInfo;
+    private boolean isReplay;
 
     /*
      * Use the provided information to create the extract method object for testing.
@@ -44,6 +45,7 @@ public class ExtractMethodObject implements RefactoringObject {
         this.destinationFilePath = destinationFilePath;
         this.destinationClassName = destinationClassName;
         this.destinationMethodSignature = destinationMethodSignature;
+        this.isReplay = true;
     }
 
     /*
@@ -67,6 +69,7 @@ public class ExtractMethodObject implements RefactoringObject {
         this.replacements = extractOperationRefactoring.getReplacements();
         this.surroundingElements = null;
         this.thrownExceptionInfo = null;
+        this.isReplay = true;
     }
 
     public RefactoringType getRefactoringType() {
@@ -151,6 +154,14 @@ public class ExtractMethodObject implements RefactoringObject {
 
     public ThrownExceptionInfo[] getThrownExceptionInfo() {
         return this.thrownExceptionInfo;
+    }
+
+    public void setReplayFlag(boolean isReplay) {
+        this.isReplay = isReplay;
+    }
+
+    public boolean isReplay() {
+        return isReplay;
     }
 
 }

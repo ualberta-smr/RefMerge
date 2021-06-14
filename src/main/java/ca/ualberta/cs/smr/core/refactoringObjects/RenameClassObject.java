@@ -16,6 +16,7 @@ public class RenameClassObject implements RefactoringObject {
     private String destinationFilePath;
     private String originalClassName;
     private String destinationClassName;
+    private boolean isReplay;
 
 
     /*
@@ -28,6 +29,7 @@ public class RenameClassObject implements RefactoringObject {
         this.originalClassName = originalClassName;
         this.destinationFilePath = destinationFilePath;
         this.destinationClassName = destinationClassName;
+        this.isReplay = true;
     }
 
     /*
@@ -40,6 +42,7 @@ public class RenameClassObject implements RefactoringObject {
         this.destinationFilePath = renameOperationRefactoring.getRenamedClass().getLocationInfo().getFilePath();
         this.originalClassName = renameOperationRefactoring.getOriginalClassName();
         this.destinationClassName = renameOperationRefactoring.getRenamedClassName();
+        this.isReplay = true;
     }
 
     public RefactoringType getRefactoringType() {
@@ -82,5 +85,12 @@ public class RenameClassObject implements RefactoringObject {
         return this.destinationClassName;
     }
 
+    public void setReplayFlag(boolean isReplay) {
+        this.isReplay = isReplay;
+    }
+
+    public boolean isReplay() {
+        return isReplay;
+    }
 
 }

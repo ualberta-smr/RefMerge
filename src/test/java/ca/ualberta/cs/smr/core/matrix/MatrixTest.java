@@ -184,6 +184,40 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         }
     }
 
+    public void testRunMatrix() {
+        Project project = myFixture.getProject();
+        List<ParameterObject> parameters = new ArrayList<>();
+        parameters.add(new ParameterObject("int", "return"));
+        parameters.add(new ParameterObject("int", "x"));
+        MethodSignatureObject foo = new MethodSignatureObject(parameters, "foo");
+        MethodSignatureObject bar = new MethodSignatureObject(parameters, "bar");
+        // (1) A.foo -> A.bar
+        MoveRenameMethodObject leftMethodObject1 = new MoveRenameMethodObject("A.java", "A", foo,
+                "A.java", "A", bar);
+        leftMethodObject1.setType(RefactoringType.RENAME_METHOD);
+        // (1) A.foo -> B.foo
+        MoveRenameMethodObject rightMethodObject1 = new MoveRenameMethodObject("A.java", "A", foo,
+                "B.java", "B", foo);
+        rightMethodObject1.setType(RefactoringType.MOVE_OPERATION);
+
+        ArrayList<RefactoringObject> leftRefactoringList = new ArrayList<>();
+        ArrayList<RefactoringObject> rightRefactoringList = new ArrayList<>();
+
+        leftRefactoringList.add(leftMethodObject1);
+        rightRefactoringList.add(rightMethodObject1);
+
+        Matrix matrix = new Matrix(project);
+
+        ArrayList<RefactoringObject> resultingList = matrix.runMatrix(leftRefactoringList, rightRefactoringList);
+        RefactoringObject actualObject = resultingList.get(0);
+
+        MethodSignatureObject actualSignature = ((MoveRenameMethodObject) actualObject).getDestinationMethodSignature();
+        String actualClass = ((MoveRenameMethodObject) actualObject).getDestinationClassName();
+        Assert.assertEquals(actualSignature, bar);
+        Assert.assertEquals("B", actualClass);
+
+    }
+
     private void compareRenameClass(RefactoringObject expected, RefactoringObject simplified) {
         Assert.assertEquals(expected.getDestinationFilePath(), simplified.getDestinationFilePath());
         Assert.assertEquals(((RenameClassObject) simplified).getDestinationClassName(),

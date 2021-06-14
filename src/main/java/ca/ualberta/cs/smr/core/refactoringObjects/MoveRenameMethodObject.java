@@ -22,6 +22,7 @@ public class MoveRenameMethodObject implements RefactoringObject {
     private MethodSignatureObject destinationMethodSignature;
     private boolean isRenameMethod;
     private boolean isMoveMethod;
+    private boolean isReplay;
 
     /*
      * Use the provided information to create the rename method object for testing.
@@ -35,6 +36,7 @@ public class MoveRenameMethodObject implements RefactoringObject {
         this.destinationFilePath = destinationFilePath;
         this.destinationClassName = destinationClassName;
         this.destinationMethodSignature = destinationMethodSignature;
+        this.isReplay = true;
 
     }
 
@@ -76,6 +78,7 @@ public class MoveRenameMethodObject implements RefactoringObject {
             this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(), destinationOperation.getParameters(),
                     originalOperation.isConstructor(), originalOperation.getVisibility(), originalOperation.isStatic());
         }
+        this.isReplay = true;
     }
 
     public RefactoringType getRefactoringType() {
@@ -149,5 +152,13 @@ public class MoveRenameMethodObject implements RefactoringObject {
 
     public boolean isMoveMethod() {
         return isMoveMethod;
+    }
+
+    public void setReplayFlag(boolean isReplay) {
+        this.isReplay = isReplay;
+    }
+
+    public boolean isReplay() {
+        return isReplay;
     }
 }
