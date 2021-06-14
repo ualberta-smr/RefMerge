@@ -75,13 +75,13 @@ public class ReplayOperations {
     }
 
 
-    public void replayRenameClass(RefactoringObject ref) {
-        RenameClassObject renameClassObject = (RenameClassObject) ref;
-        String srcQualifiedClass = renameClassObject.getOriginalClassName();
-        String destQualifiedClass = renameClassObject.getDestinationClassName();
+    public void replayMoveRenameClass(RefactoringObject ref) {
+        MoveRenameClassObject moveRenameClassObject = (MoveRenameClassObject) ref;
+        String srcQualifiedClass = moveRenameClassObject.getOriginalClassName();
+        String destQualifiedClass = moveRenameClassObject.getDestinationClassName();
         String destClassName = destQualifiedClass.substring(destQualifiedClass.lastIndexOf(".") + 1);
         Utils utils = new Utils(project);
-        String filePath = renameClassObject.getOriginalFilePath();
+        String filePath = moveRenameClassObject.getOriginalFilePath();
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(srcQualifiedClass, filePath);
         if(psiClass == null) {
             return;

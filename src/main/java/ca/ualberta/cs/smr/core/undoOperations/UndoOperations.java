@@ -77,12 +77,12 @@ public class UndoOperations {
     /*
      * Undo the rename class refactoring that was originally performed by performing another rename class refactoring.
      */
-    public void undoRenameClass(RefactoringObject ref) {
-        RenameClassObject renameClassObject = (RenameClassObject) ref;
-        String srcQualifiedClass = renameClassObject.getOriginalClassName();
-        String destQualifiedClass = renameClassObject.getDestinationClassName();
+    public void undoMoveRenameClass(RefactoringObject ref) {
+        MoveRenameClassObject moveRenameClassObject = (MoveRenameClassObject) ref;
+        String srcQualifiedClass = moveRenameClassObject.getOriginalClassName();
+        String destQualifiedClass = moveRenameClassObject.getDestinationClassName();
         String srcClassName = srcQualifiedClass.substring(srcQualifiedClass.lastIndexOf(".") + 1);
-        String filePath = renameClassObject.getDestinationFilePath();
+        String filePath = moveRenameClassObject.getDestinationFilePath();
         Utils utils = new Utils(project);
         utils.addSourceRoot(filePath);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(destQualifiedClass, filePath);

@@ -9,7 +9,7 @@ import org.refactoringminer.api.RefactoringType;
  * Represents a rename class refactoring. Contains the necessary information for logic checks and performing the
  * refactoring using the IntelliJ refactoring engine.
  */
-public class RenameClassObject implements RefactoringObject {
+public class MoveRenameClassObject implements RefactoringObject {
 
     private final RefactoringType refactoringType;
     private String originalFilePath;
@@ -22,8 +22,8 @@ public class RenameClassObject implements RefactoringObject {
     /*
      * Use the provided information to create the rename class object for testing.
      */
-    public RenameClassObject(String originalFilePath, String originalClassName,
-                              String destinationFilePath, String destinationClassName) {
+    public MoveRenameClassObject(String originalFilePath, String originalClassName,
+                                 String destinationFilePath, String destinationClassName) {
         this.refactoringType = RefactoringType.RENAME_CLASS;
         this.originalFilePath = originalFilePath;
         this.originalClassName = originalClassName;
@@ -35,7 +35,7 @@ public class RenameClassObject implements RefactoringObject {
     /*
      * Creates the rename class object and takes the information that we need from the RefMiner refactoring object.
      */
-    public RenameClassObject(Refactoring refactoring) {
+    public MoveRenameClassObject(Refactoring refactoring) {
         RenameClassRefactoring renameOperationRefactoring = (RenameClassRefactoring) refactoring;
         this.refactoringType = refactoring.getRefactoringType();
         this.originalFilePath = renameOperationRefactoring.getOriginalClass().getLocationInfo().getFilePath();
@@ -50,7 +50,7 @@ public class RenameClassObject implements RefactoringObject {
     }
 
     public RefactoringOrder getRefactoringOrder() {
-        return RefactoringOrder.RENAME_CLASS;
+        return RefactoringOrder.MOVE_RENAME_CLASS;
     }
 
     public void setOriginalFilePath(String originalFilePath) {

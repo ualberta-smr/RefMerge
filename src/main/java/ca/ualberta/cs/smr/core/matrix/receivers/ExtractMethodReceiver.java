@@ -1,14 +1,14 @@
 package ca.ualberta.cs.smr.core.matrix.receivers;
 
 import ca.ualberta.cs.smr.core.matrix.dispatcher.ExtractMethodDispatcher;
-import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameClassDispatcher;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameClassDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.logicCells.ExtractMethodExtractMethodCell;
-import ca.ualberta.cs.smr.core.matrix.logicCells.ExtractMethodRenameClassCell;
+import ca.ualberta.cs.smr.core.matrix.logicCells.ExtractMethodMoveRenameClassCell;
 import ca.ualberta.cs.smr.core.matrix.logicCells.ExtractMethodMoveRenameMethodCell;
 import ca.ualberta.cs.smr.core.refactoringObjects.ExtractMethodObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.RenameClassObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameClassObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameMethodObject;
 
 public class ExtractMethodReceiver extends Receiver {
@@ -51,20 +51,20 @@ public class ExtractMethodReceiver extends Receiver {
      * Check for transitivity, conflict, and dependence in extract method/rename class and update.
      */
     @Override
-    public void receive(RenameClassDispatcher dispatcher) {
+    public void receive(MoveRenameClassDispatcher dispatcher) {
         if(dispatcher.isSimplify()) {
             RefactoringObject renameClass = dispatcher.getRefactoringObject();
-            ExtractMethodRenameClassCell.checkExtractMethodRenameClassCombination(renameClass, this.refactoringObject);
+            ExtractMethodMoveRenameClassCell.checkExtractMethodMoveRenameClassCombination(renameClass, this.refactoringObject);
             dispatcher.setRefactoringObject(renameClass);
         }
         else {
             RefactoringObject dispatcherObject = dispatcher.getRefactoringObject();
-            boolean isDependent = ExtractMethodRenameClassCell
-                    .extractMethodRenameClassDependenceCell(dispatcherObject, this.refactoringObject);
+            boolean isDependent = ExtractMethodMoveRenameClassCell
+                    .extractMethodMoveRenameClassDependenceCell(dispatcherObject, this.refactoringObject);
             if(isDependent) {
                 this.refactoringObject.setDestinationFilePath(dispatcherObject.getDestinationFilePath());
                 ((ExtractMethodObject) this.refactoringObject)
-                        .setDestinationClassName(((RenameClassObject) dispatcherObject).getDestinationClassName());
+                        .setDestinationClassName(((MoveRenameClassObject) dispatcherObject).getDestinationClassName());
             }
         }
     }
