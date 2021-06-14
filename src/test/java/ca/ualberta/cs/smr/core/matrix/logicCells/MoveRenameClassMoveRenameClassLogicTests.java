@@ -50,6 +50,34 @@ public class MoveRenameClassMoveRenameClassLogicTests extends LightJavaCodeInsig
         doMoveRenameClassRenameClassTest(firstRefactoring, secondRefactoring, expectedRefactoring,true);
     }
 
+    public void testFoundRenameClassMoveClassTransitivity() {
+        // Rename class original.A -> original.B
+        MoveRenameClassObject firstRefactoring = new MoveRenameClassObject("A.java", "A", "original",
+                "B.java", "B", "original");
+        // Move class original.B -> destination.B
+        MoveRenameClassObject secondRefactoring = new MoveRenameClassObject("B.java", "B", "original",
+                "B.java", "B", "destination");
+        // Rename+Move class original.A -> destination.B
+        MoveRenameClassObject expectedRefactoring = new MoveRenameClassObject("A.java", "A", "original",
+                "B.java", "B", "destination");
+
+        doMoveRenameClassRenameClassTest(firstRefactoring, secondRefactoring, expectedRefactoring,true);
+    }
+
+    public void testFoundMoveRenameClassMoveRenameClassTransitivity() {
+        // Rename class original.A -> destination1.B
+        MoveRenameClassObject firstRefactoring = new MoveRenameClassObject("A.java", "A", "original",
+                "B.java", "B", "destination1");
+        // Move class destination1.B -> destination2.C
+        MoveRenameClassObject secondRefactoring = new MoveRenameClassObject("B.java", "B", "destination1",
+                "C.java", "C", "destination2");
+        // Rename+Move class original.A -> destination.B
+        MoveRenameClassObject expectedRefactoring = new MoveRenameClassObject("A.java", "A", "original",
+                "C.java", "C", "destination2");
+
+        doMoveRenameClassRenameClassTest(firstRefactoring, secondRefactoring, expectedRefactoring,true);
+    }
+
     public void testNotFoundRenameClassRenameClassTransitivity() {
         // Rename class A -> B
         MoveRenameClassObject firstRefactoring = new MoveRenameClassObject("A.java", "A", "package",
@@ -63,6 +91,9 @@ public class MoveRenameClassMoveRenameClassLogicTests extends LightJavaCodeInsig
 
         doMoveRenameClassRenameClassTest(firstRefactoring, secondRefactoring, expectedRefactoring,false);
     }
+
+
+
 
     private void doMoveRenameClassRenameClassTest(RefactoringObject firstRefactoring, RefactoringObject secondRefactoring,
                                                   RefactoringObject expectedRefactoring, boolean expectedTransitivity) {
@@ -81,5 +112,11 @@ public class MoveRenameClassMoveRenameClassLogicTests extends LightJavaCodeInsig
         Assert.assertEquals(expectedRefactoring.getOriginalFilePath(), firstRefactoring.getOriginalFilePath());
         Assert.assertEquals(((MoveRenameClassObject) expectedRefactoring).getOriginalClassObject().getClassName(),
                 ((MoveRenameClassObject) firstRefactoring).getOriginalClassObject().getClassName());
+        Assert.assertEquals(((MoveRenameClassObject) expectedRefactoring).getOriginalClassObject().getPackageName(),
+                ((MoveRenameClassObject) firstRefactoring).getOriginalClassObject().getPackageName());
+        Assert.assertEquals(((MoveRenameClassObject) expectedRefactoring).getDestinationClassObject().getClassName(),
+                ((MoveRenameClassObject) firstRefactoring).getDestinationClassObject().getClassName());
+        Assert.assertEquals(((MoveRenameClassObject) expectedRefactoring).getDestinationClassObject().getPackageName(),
+                ((MoveRenameClassObject) firstRefactoring).getDestinationClassObject().getPackageName());
     }
 }
