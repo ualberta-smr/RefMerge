@@ -24,4 +24,11 @@ public class ClassObject {
     public String getPackageName() {
         return packageName;
     }
+
+    public boolean equalsClass(ClassObject otherClass) {
+        if(!this.packageName.equals(otherClass.packageName)) {
+            return false;
+        }
+        return this.className.equals(otherClass.className);
+    }
 }

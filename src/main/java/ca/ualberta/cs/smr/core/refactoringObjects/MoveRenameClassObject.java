@@ -52,6 +52,7 @@ public class MoveRenameClassObject implements RefactoringObject {
                 new ClassObject(renameClassRefactoring.getRenamedClassName(), renameClassRefactoring.getRenamedClass().getPackageName());
         this.isMoveMethod = false;
         this.isRenameMethod = false;
+        setType(refactoringType);
         this.isReplay = true;
     }
 
