@@ -1,7 +1,7 @@
 package ca.ualberta.cs.smr.core.refactoringObjects;
 
 public enum RefactoringOrder {
-    RENAME_CLASS(1),
+    MOVE_RENAME_CLASS(1),
     MOVE_RENAME_METHOD(2),
     EXTRACT_METHOD(3);
 

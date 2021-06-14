@@ -1,10 +1,10 @@
 package ca.ualberta.cs.smr.core.matrix.receivers;
 
-import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassRenameClassCell;
-import ca.ualberta.cs.smr.core.matrix.logicCells.RenameClassMoveRenameMethodCell;
+import ca.ualberta.cs.smr.core.matrix.logicCells.MoveRenameClassMoveRenameClassCell;
+import ca.ualberta.cs.smr.core.matrix.logicCells.MoveRenameClassMoveRenameMethodCell;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
-import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameClassDispatcher;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameClassDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
@@ -15,7 +15,7 @@ import java.util.List;
 
 import static org.mockito.Mockito.*;
 
-public class RenameClassReceiverTests extends LightJavaCodeInsightFixtureTestCase {
+public class MoveRenameClassReceiverTests extends LightJavaCodeInsightFixtureTestCase {
 
     public void testSet() {
         String basePath = System.getProperty("user.dir");
@@ -25,31 +25,31 @@ public class RenameClassReceiverTests extends LightJavaCodeInsightFixtureTestCas
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
         RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
-        RenameClassReceiver receiver = new RenameClassReceiver();
+        MoveRenameClassReceiver receiver = new MoveRenameClassReceiver();
         receiver.set(refactoringObject, null);
         Assert.assertNotNull("The refactoring element should not be null", receiver.refactoringObject);
     }
 
-    public void testRenameMethodDispatcherReceive() {
-        RenameClassDispatcher dispatcher = new RenameClassDispatcher();
+    public void testMoveRenameMethodDispatcherReceive() {
+        MoveRenameClassDispatcher dispatcher = new MoveRenameClassDispatcher();
         MoveRenameMethodDispatcher wrongDispatcher = new MoveRenameMethodDispatcher();
-        RenameClassReceiver receiver = mock(RenameClassReceiver.class);
+        MoveRenameClassReceiver receiver = mock(MoveRenameClassReceiver.class);
         dispatcher.dispatch(receiver);
         verify(receiver, times(1)).receive(dispatcher);
         verify(receiver, never()).receive(wrongDispatcher);
 
     }
 
-    public void testRenameClassDispatcherReceive() {
+    public void testMoveRenameClassDispatcherReceive() {
         MoveRenameMethodDispatcher dispatcher = new MoveRenameMethodDispatcher();
-        RenameClassDispatcher wrongDispatcher = new RenameClassDispatcher();
-        RenameClassReceiver receiver = mock(RenameClassReceiver.class);
+        MoveRenameClassDispatcher wrongDispatcher = new MoveRenameClassDispatcher();
+        MoveRenameClassReceiver receiver = mock(MoveRenameClassReceiver.class);
         dispatcher.dispatch(receiver);
         verify(receiver, times(1)).receive(dispatcher);
         verify(receiver, never()).receive(wrongDispatcher);
     }
 
-    public void testRenameClassRenameClassConflictCell() {
+    public void testMoveRenameClassMoveRenameClassConflictCell() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/renameClassRenameClassFiles/renameClassNamingConflict/original";
         String refactoredPath = basePath + "/src/test/resources/renameClassRenameClassFiles/renameClassNamingConflict/refactored";
@@ -60,14 +60,14 @@ public class RenameClassReceiverTests extends LightJavaCodeInsightFixtureTestCas
         Refactoring bar = refactorings.get(2);
         RefactoringObject leftRefactoring = RefactoringObjectUtils.createRefactoringObject(foo);
         RefactoringObject rightRefactoring = RefactoringObjectUtils.createRefactoringObject(foo2);
-        boolean isConflicting = RenameClassRenameClassCell.renameClassRenameClassConflictCell(leftRefactoring, rightRefactoring);
+        boolean isConflicting = MoveRenameClassMoveRenameClassCell.MoveRenameClassMoveRenameClassConflictCell(leftRefactoring, rightRefactoring);
         Assert.assertTrue(isConflicting);
         rightRefactoring = RefactoringObjectUtils.createRefactoringObject(bar);
-        isConflicting = RenameClassRenameClassCell.renameClassRenameClassConflictCell(leftRefactoring, rightRefactoring);
+        isConflicting = MoveRenameClassMoveRenameClassCell.MoveRenameClassMoveRenameClassConflictCell(leftRefactoring, rightRefactoring);
         Assert.assertFalse(isConflicting);
     }
 
-    public void testRenameClassRenameMethodDependenceCell() {
+    public void testMoveRenameClassRenameMethodDependenceCell() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/renameMethodRenameClassFiles/dependence/original";
         String refactoredPath = basePath + "/src/test/resources/renameMethodRenameClassFiles/dependence/refactored";
@@ -79,7 +79,7 @@ public class RenameClassReceiverTests extends LightJavaCodeInsightFixtureTestCas
         Refactoring rightRef = classRefs.get(0);
         RefactoringObject leftRefactoring = RefactoringObjectUtils.createRefactoringObject(leftRef);
         RefactoringObject rightRefactoring = RefactoringObjectUtils.createRefactoringObject(rightRef);
-        boolean isDependent = RenameClassMoveRenameMethodCell.renameClassRenameMethodDependenceCell(leftRefactoring, rightRefactoring);
+        boolean isDependent = MoveRenameClassMoveRenameMethodCell.moveRenameClassMoveRenameMethodDependenceCell(leftRefactoring, rightRefactoring);
         Assert.assertTrue(isDependent);
     }
 }

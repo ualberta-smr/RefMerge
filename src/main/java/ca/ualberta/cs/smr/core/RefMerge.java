@@ -133,10 +133,11 @@ public class RefMerge extends AnAction {
             switch (refactoringObject.getRefactoringType()) {
                 case RENAME_CLASS:
                     // Undo the rename class refactoring. This is commented out because of the prompt issue
-                    undo.undoRenameClass(refactoringObject);
+                    undo.undoMoveRenameClass(refactoringObject);
                     break;
                 case RENAME_METHOD:
                 case MOVE_OPERATION:
+                case MOVE_AND_RENAME_OPERATION:
                     // Undo the rename method refactoring
                     undo.undoMoveRenameMethod(refactoringObject);
                     break;
@@ -162,10 +163,11 @@ public class RefMerge extends AnAction {
             for(RefactoringObject refactoringObject : refactoringObjects) {
                 switch (refactoringObject.getRefactoringType()) {
                     case RENAME_CLASS:
-                        replay.replayRenameClass(refactoringObject);
+                        replay.replayMoveRenameClass(refactoringObject);
                         break;
                     case RENAME_METHOD:
                     case MOVE_OPERATION:
+                    case MOVE_AND_RENAME_OPERATION:
                         // Perform the rename method refactoring
                         replay.replayMoveRenameMethod(refactoringObject);
                         break;

@@ -14,7 +14,7 @@ public class RefactoringObjectUtils {
     public static RefactoringObject createRefactoringObject(Refactoring refactoring) {
         switch(refactoring.getRefactoringType()) {
             case RENAME_CLASS:
-                return new RenameClassObject(refactoring);
+                return new MoveRenameClassObject(refactoring);
             case RENAME_METHOD:
             case MOVE_OPERATION:
             case MOVE_AND_RENAME_OPERATION:

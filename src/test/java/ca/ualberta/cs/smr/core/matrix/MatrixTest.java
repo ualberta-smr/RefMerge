@@ -3,10 +3,10 @@ package ca.ualberta.cs.smr.core.matrix;
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RefactoringDispatcher;
-import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameClassDispatcher;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameClassDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.receivers.Receiver;
-import ca.ualberta.cs.smr.core.matrix.receivers.RenameClassReceiver;
+import ca.ualberta.cs.smr.core.matrix.receivers.MoveRenameClassReceiver;
 import ca.ualberta.cs.smr.core.matrix.receivers.MoveRenameMethodReceiver;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
@@ -22,7 +22,7 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
 
     public void testElementMap() {
         RefactoringType type = RefactoringType.RENAME_CLASS;
-        RenameClassDispatcher renameClassElement = new RenameClassDispatcher();
+        MoveRenameClassDispatcher renameClassElement = new MoveRenameClassDispatcher();
         MoveRenameMethodDispatcher renameMethodElement = new MoveRenameMethodDispatcher();
         RefactoringDispatcher element = Matrix.dispatcherMap.get(type);
         boolean equals = element.getClass().equals(renameClassElement.getClass());
@@ -35,10 +35,10 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
 
     public void testReceiverMap() {
         RefactoringType type = RefactoringType.RENAME_CLASS;
-        RenameClassReceiver renameClassReceiver = new RenameClassReceiver();
+        MoveRenameClassReceiver moveRenameClassReceiver = new MoveRenameClassReceiver();
         MoveRenameMethodReceiver moveRenameMethodReceiver = new MoveRenameMethodReceiver();
         Receiver receiver = Matrix.receiverMap.get(type);
-        boolean equals = receiver.getClass().equals(renameClassReceiver.getClass());
+        boolean equals = receiver.getClass().equals(moveRenameClassReceiver.getClass());
         Assert.assertTrue(equals);
         type = RefactoringType.RENAME_METHOD;
         receiver = Matrix.receiverMap.get(type);
@@ -115,10 +115,10 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         MoveRenameMethodObject refactoring1 = new MoveRenameMethodObject("A.java", "A", foo,
                 "A.java", "A", bar);
         // (2) A -> B
-        RenameClassObject refactoring2 = new RenameClassObject("A.java", "A",
+        MoveRenameClassObject refactoring2 = new MoveRenameClassObject("A.java", "A",
                 "B.java", "B");
         // (3) B -> C
-        RenameClassObject refactoring3 = new RenameClassObject("B.java", "B",
+        MoveRenameClassObject refactoring3 = new MoveRenameClassObject("B.java", "B",
                 "C.java", "C");
         // (3) B.bar -> C.foobar
         MoveRenameMethodObject refactoring4 = new MoveRenameMethodObject("B.java", "B", bar,
@@ -130,7 +130,7 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         MoveRenameMethodObject refactoring6 = new MoveRenameMethodObject("X.java", "X", m1,
                 "X.java", "X", m2);
         // (6) C -> D
-        RenameClassObject refactoring7 = new RenameClassObject("C.java", "C",
+        MoveRenameClassObject refactoring7 = new MoveRenameClassObject("C.java", "C",
                 "D.java", "D");
         // (7) D.extractedMethod -> D.newName
         MoveRenameMethodObject refactoring8 = new MoveRenameMethodObject("D.java", "D", extractedMethod,
@@ -149,7 +149,7 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         matrix.simplifyAndInsertRefactorings(refactoring8, simplifiedRefactorings);
 
         // A -> D
-        RenameClassObject expected1 = new RenameClassObject("A.java", "A",
+        MoveRenameClassObject expected1 = new MoveRenameClassObject("A.java", "A",
                 "D.java", "D");
         // X.m1 -> X.m2
         MoveRenameMethodObject expected2 = new MoveRenameMethodObject("X.java", "X", m1,
@@ -220,11 +220,11 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
 
     private void compareRenameClass(RefactoringObject expected, RefactoringObject simplified) {
         Assert.assertEquals(expected.getDestinationFilePath(), simplified.getDestinationFilePath());
-        Assert.assertEquals(((RenameClassObject) simplified).getDestinationClassName(),
-                ((RenameClassObject) simplified).getDestinationClassName());
+        Assert.assertEquals(((MoveRenameClassObject) simplified).getDestinationClassName(),
+                ((MoveRenameClassObject) simplified).getDestinationClassName());
         Assert.assertEquals(expected.getOriginalFilePath(), simplified.getOriginalFilePath());
-        Assert.assertEquals(((RenameClassObject) expected).getOriginalClassName(),
-                ((RenameClassObject) simplified).getOriginalClassName());
+        Assert.assertEquals(((MoveRenameClassObject) expected).getOriginalClassName(),
+                ((MoveRenameClassObject) simplified).getOriginalClassName());
     }
 
     private void compareRenameMethod(RefactoringObject expected, RefactoringObject simplified) {

@@ -18,7 +18,7 @@ public class ExtractMethodRenameClassLogicTests extends LightJavaCodeInsightFixt
         return "src/test/resources";
     }
 
-    public void testCheckExtractMethodRenameClassDependence() {
+    public void testCheckExtractMethodMoveRenameClassDependence() {
         String basePath = System.getProperty("user.dir");
         String originalPath = basePath + "/src/test/resources/extractMethodRenameClassFiles/dependence/original";
         String refactoredPath = basePath + "/src/test/resources/extractMethodRenameClassFiles/dependence/refactored";
@@ -30,14 +30,14 @@ public class ExtractMethodRenameClassLogicTests extends LightJavaCodeInsightFixt
         assert renameClassRefactorings != null;
         RefactoringObject extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(0));
         RefactoringObject renameClassObject = RefactoringObjectUtils.createRefactoringObject(renameClassRefactorings.get(0));
-        boolean isDependent = ExtractMethodRenameClassCell.checkExtractMethodRenameClassDependence(renameClassObject, extractMethodObject);
+        boolean isDependent = ExtractMethodMoveRenameClassCell.checkExtractMethodMoveRenameClassDependence(renameClassObject, extractMethodObject);
         Assert.assertFalse(isDependent);
         extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(1));
-        isDependent = ExtractMethodRenameClassCell.checkExtractMethodRenameClassDependence(renameClassObject, extractMethodObject);
+        isDependent = ExtractMethodMoveRenameClassCell.checkExtractMethodMoveRenameClassDependence(renameClassObject, extractMethodObject);
         Assert.assertTrue(isDependent);
     }
 
-    public void testCheckExtractMethodRenameClassCombination() {
+    public void testCheckExtractMethodMoveRenameClassCombination() {
         List<ParameterObject> originalParameters = new ArrayList<>();
         originalParameters.add(new ParameterObject("int", "return"));
         originalParameters.add(new ParameterObject("int", "x"));
@@ -48,15 +48,15 @@ public class ExtractMethodRenameClassLogicTests extends LightJavaCodeInsightFixt
         ExtractMethodObject extractMethodObject = new ExtractMethodObject("A.java", "A", foo,
                 "A.java", "A", efoo);
         // Rename Class A -> B
-        RenameClassObject renameClassObject = new RenameClassObject("A.java", "A",
+        MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("A.java", "A",
                 "B.java", "B");
         // Extract method B.ebar from A.foo
         ExtractMethodObject expectedRefactoring = new ExtractMethodObject("A.java", "A", foo,
                 "B.java", "B", ebar);
-        doExtractMethodRenameClassTest(renameClassObject, extractMethodObject, expectedRefactoring);
+        doExtractMethodMoveRenameClassTest(moveRenameClassObject, extractMethodObject, expectedRefactoring);
     }
 
-    public void testCeckExtractMethodRenameClassCombination2() {
+    public void testCheckExtractMethodMoveRenameClassCombination2() {
         List<ParameterObject> originalParameters = new ArrayList<>();
         originalParameters.add(new ParameterObject("int", "return"));
         originalParameters.add(new ParameterObject("int", "x"));
@@ -67,15 +67,15 @@ public class ExtractMethodRenameClassLogicTests extends LightJavaCodeInsightFixt
         ExtractMethodObject extractMethodObject = new ExtractMethodObject("B.java", "B", foo,
                 "B.java", "B", efoo);
         // Rename Class A -> B
-        RenameClassObject renameClassObject = new RenameClassObject("A.java", "A",
+        MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("A.java", "A",
                 "B.java", "B");
         // Extract method B.ebar from A.foo
         ExtractMethodObject expectedRefactoring = new ExtractMethodObject("A.java", "A", foo,
                 "B.java", "B", ebar);
-        doExtractMethodRenameClassTest(renameClassObject, extractMethodObject, expectedRefactoring);
+        doExtractMethodMoveRenameClassTest(moveRenameClassObject, extractMethodObject, expectedRefactoring);
     }
 
-    public void testCeckExtractMethodRenameClassCombinationInSameFile() {
+    public void testCheckExtractMethodMoveRenameClassCombinationInSameFile() {
         List<ParameterObject> originalParameters = new ArrayList<>();
         originalParameters.add(new ParameterObject("int", "return"));
         originalParameters.add(new ParameterObject("int", "x"));
@@ -86,19 +86,19 @@ public class ExtractMethodRenameClassLogicTests extends LightJavaCodeInsightFixt
         ExtractMethodObject extractMethodObject = new ExtractMethodObject("Foo.java", "B", foo,
                 "Foo.java", "B", efoo);
         // Rename Class A -> B
-        RenameClassObject renameClassObject = new RenameClassObject("Foo.java", "A",
+        MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("Foo.java", "A",
                 "Foo.java", "B");
         // Extract method B.ebar from A.foo
         ExtractMethodObject expectedRefactoring = new ExtractMethodObject("Foo.java", "A", foo,
                 "Foo.java", "B", ebar);
-        doExtractMethodRenameClassTest(renameClassObject, extractMethodObject, expectedRefactoring);
+        doExtractMethodMoveRenameClassTest(moveRenameClassObject, extractMethodObject, expectedRefactoring);
     }
 
 
-    private void doExtractMethodRenameClassTest(RefactoringObject renameClassObject, RefactoringObject extractMethodObject,
+    private void doExtractMethodMoveRenameClassTest(RefactoringObject renameClassObject, RefactoringObject extractMethodObject,
                                                 RefactoringObject expectedRefactoring) {
 
-        ExtractMethodRenameClassCell.checkExtractMethodRenameClassCombination(renameClassObject, extractMethodObject);
+        ExtractMethodMoveRenameClassCell.checkExtractMethodMoveRenameClassCombination(renameClassObject, extractMethodObject);
 
         Assert.assertEquals(expectedRefactoring.getOriginalFilePath(), extractMethodObject.getOriginalFilePath());
         Assert.assertEquals(expectedRefactoring.getDestinationFilePath(), extractMethodObject.getDestinationFilePath());

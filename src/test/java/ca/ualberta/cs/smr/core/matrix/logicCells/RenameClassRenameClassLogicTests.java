@@ -1,7 +1,7 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.RenameClassObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameClassObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
@@ -28,46 +28,46 @@ public class RenameClassRenameClassLogicTests extends LightJavaCodeInsightFixtur
         Refactoring rightRefactoring2 = refactorings.get(1);
         RefactoringObject leftRefactoringObject = RefactoringObjectUtils.createRefactoringObject(leftRefactoring);
         RefactoringObject rightRefactoringObject = RefactoringObjectUtils.createRefactoringObject(rightRefactoring);
-        boolean isConflicting = RenameClassRenameClassCell.checkClassNamingConflict(leftRefactoringObject, rightRefactoringObject);
+        boolean isConflicting = MoveRenameClassMoveRenameClassCell.checkClassNamingConflict(leftRefactoringObject, rightRefactoringObject);
         Assert.assertFalse("Classes without related refactorings should not conflict", isConflicting);
         rightRefactoringObject = RefactoringObjectUtils.createRefactoringObject(rightRefactoring2);
-        isConflicting = RenameClassRenameClassCell.checkClassNamingConflict(leftRefactoringObject, rightRefactoringObject);
+        isConflicting = MoveRenameClassMoveRenameClassCell.checkClassNamingConflict(leftRefactoringObject, rightRefactoringObject);
         Assert.assertTrue("Classes renamed to the same name in the same package conflict", isConflicting);
 
     }
 
     public void testFoundRenameClassRenameClassTransitivity() {
         // Rename class A -> B
-        RenameClassObject firstRefactoring = new RenameClassObject("A.java", "A",
+        MoveRenameClassObject firstRefactoring = new MoveRenameClassObject("A.java", "A",
                 "B.java", "B");
         // Rename class B -> C
-        RenameClassObject secondRefactoring = new RenameClassObject("B.java", "B",
+        MoveRenameClassObject secondRefactoring = new MoveRenameClassObject("B.java", "B",
                 "C.java", "C");
         secondRefactoring.setDestinationClassName("C");
         // Rename class A -> C
-        RenameClassObject expectedRefactoring = new RenameClassObject("A.java", "A",
+        MoveRenameClassObject expectedRefactoring = new MoveRenameClassObject("A.java", "A",
                 "C.java", "C");
 
-        doRenameClassRenameClassTest(firstRefactoring, secondRefactoring, expectedRefactoring,true);
+        doMoveRenameClassRenameClassTest(firstRefactoring, secondRefactoring, expectedRefactoring,true);
     }
 
     public void testNotFoundRenameClassRenameClassTransitivity() {
         // Rename class A -> B
-        RenameClassObject firstRefactoring = new RenameClassObject("A.java", "A",
+        MoveRenameClassObject firstRefactoring = new MoveRenameClassObject("A.java", "A",
                 "B.java", "B");
         // Rename class C -> D
-        RenameClassObject secondRefactoring = new RenameClassObject("C.java", "C",
+        MoveRenameClassObject secondRefactoring = new MoveRenameClassObject("C.java", "C",
                 "D.java", "D");
         // Rename class A -> B
-        RenameClassObject expectedRefactoring = new RenameClassObject("A.java", "A",
+        MoveRenameClassObject expectedRefactoring = new MoveRenameClassObject("A.java", "A",
                 "B.java", "B");
 
-        doRenameClassRenameClassTest(firstRefactoring, secondRefactoring, expectedRefactoring,false);
+        doMoveRenameClassRenameClassTest(firstRefactoring, secondRefactoring, expectedRefactoring,false);
     }
 
-    private void doRenameClassRenameClassTest(RefactoringObject firstRefactoring, RefactoringObject secondRefactoring,
-                                                RefactoringObject expectedRefactoring, boolean expectedTransitivity) {
-        boolean isTransitive = RenameClassRenameClassCell.checkRenameClassRenameClassTransitivity(firstRefactoring,
+    private void doMoveRenameClassRenameClassTest(RefactoringObject firstRefactoring, RefactoringObject secondRefactoring,
+                                                  RefactoringObject expectedRefactoring, boolean expectedTransitivity) {
+        boolean isTransitive = MoveRenameClassMoveRenameClassCell.checkMoveRenameClassMoveRenameClassTransitivity(firstRefactoring,
                 secondRefactoring);
         if(expectedTransitivity) {
             Assert.assertTrue(isTransitive);
@@ -77,10 +77,10 @@ public class RenameClassRenameClassLogicTests extends LightJavaCodeInsightFixtur
             Assert.assertFalse(isTransitive);
         }
         Assert.assertEquals(expectedRefactoring.getDestinationFilePath(), firstRefactoring.getDestinationFilePath());
-        Assert.assertEquals(((RenameClassObject) firstRefactoring).getDestinationClassName(),
-                ((RenameClassObject) firstRefactoring).getDestinationClassName());
+        Assert.assertEquals(((MoveRenameClassObject) firstRefactoring).getDestinationClassName(),
+                ((MoveRenameClassObject) firstRefactoring).getDestinationClassName());
         Assert.assertEquals(expectedRefactoring.getOriginalFilePath(), firstRefactoring.getOriginalFilePath());
-        Assert.assertEquals(((RenameClassObject) expectedRefactoring).getOriginalClassName(),
-                ((RenameClassObject) firstRefactoring).getOriginalClassName());
+        Assert.assertEquals(((MoveRenameClassObject) expectedRefactoring).getOriginalClassName(),
+                ((MoveRenameClassObject) firstRefactoring).getOriginalClassName());
     }
 }
