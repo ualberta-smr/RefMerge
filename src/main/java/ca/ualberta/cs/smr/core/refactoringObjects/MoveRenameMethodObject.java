@@ -53,6 +53,7 @@ public class MoveRenameMethodObject implements RefactoringObject {
             originalOperation = renameOperationRefactoring.getOriginalOperation();
             destinationOperation = renameOperationRefactoring.getRenamedOperation();
         }
+        // Both move and rename+move cases
         else {
             MoveOperationRefactoring moveOperationRefactoring = (MoveOperationRefactoring) refactoring;
             originalOperation = moveOperationRefactoring.getOriginalOperation();
