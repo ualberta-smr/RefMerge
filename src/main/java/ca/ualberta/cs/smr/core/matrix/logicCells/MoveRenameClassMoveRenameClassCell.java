@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
+import ca.ualberta.cs.smr.core.refactoringObjects.ClassObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameClassObject;
 
@@ -48,11 +49,14 @@ public class MoveRenameClassMoveRenameClassCell {
         boolean isTransitive = false;
         MoveRenameClassObject firstObject = (MoveRenameClassObject) firstRefactoring;
         MoveRenameClassObject secondObject = (MoveRenameClassObject) secondRefactoring;
+
+        String firstDestinationPackage = firstObject.getDestinationClassObject().getPackageName();
         String firstDestinationClass = firstObject.getDestinationClassObject().getClassName();
+        String secondOriginalPackage = secondObject.getOriginalClassObject().getPackageName();
         String secondOriginalClass = secondObject.getOriginalClassObject().getClassName();
 
         // If the refactored class of the first refactoring is the original class of the second refactoring
-        if(firstDestinationClass.equals(secondOriginalClass)) {
+        if(firstDestinationClass.equals(secondOriginalClass) && firstDestinationPackage.equals(secondOriginalPackage)) {
             isTransitive = true;
             firstRefactoring.setDestinationFilePath(secondObject.getDestinationFilePath());
             ((MoveRenameClassObject) firstRefactoring).setDestinationClassObject(secondObject.getDestinationClassObject());
