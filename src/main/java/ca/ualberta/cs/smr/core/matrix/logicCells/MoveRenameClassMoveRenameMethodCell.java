@@ -21,7 +21,7 @@ public class MoveRenameClassMoveRenameMethodCell {
      */
     public static boolean checkMoveRenameMethodMoveRenameClassDependence(RefactoringObject methodRefactoringObject,
                                                                          RefactoringObject classRefactoringObject) {
-        String classOriginalClassName = ((MoveRenameClassObject) classRefactoringObject).getOriginalClassName();
+        String classOriginalClassName = ((MoveRenameClassObject) classRefactoringObject).getOriginalClassObject().getClassName();
         String methodOriginalClassName = ((MoveRenameMethodObject) methodRefactoringObject).getOriginalClassName();
         return classOriginalClassName.equals(methodOriginalClassName);
     }
@@ -36,28 +36,28 @@ public class MoveRenameClassMoveRenameMethodCell {
         String originalMethodClass = methodObject.getOriginalClassName();
         String destinationMethodClass = methodObject.getDestinationClassName();
         MoveRenameClassObject classObject = (MoveRenameClassObject) renameClass;
-        String originalClassClass = classObject.getOriginalClassName();
-        String destinationClassClass = classObject.getDestinationClassName();
+        String originalClassClass = classObject.getOriginalClassObject().getClassName();
+        String destinationClassClass = classObject.getDestinationClassObject().getClassName();
 
         // If the original class of the method refactoring is the same as the original class of the class
         // refactoring, update the destination class for the method refactoring to be the destination class of
         // the class refactoring
         if (originalMethodClass.equals(originalClassClass) && !destinationMethodClass.equals(destinationClassClass)) {
             renameMethod.setDestinationFilePath(classObject.getDestinationFilePath());
-            ((MoveRenameMethodObject) renameMethod).setDestinationClassName(classObject.getDestinationClassName());
+            ((MoveRenameMethodObject) renameMethod).setDestinationClassName(classObject.getDestinationClassObject().getClassName());
         }
         // If the destination classes for the rename method and rename class refactorings are the same but the original
         // names are different, then the class was renamed before the method was and we need to update the original
         // class name for the rename method refactoring
         else if (!originalMethodClass.equals(originalClassClass) && destinationMethodClass.equals(destinationClassClass)) {
             renameMethod.setOriginalFilePath(classObject.getOriginalFilePath());
-            ((MoveRenameMethodObject) renameMethod).setOriginalClassName(classObject.getOriginalClassName());
+            ((MoveRenameMethodObject) renameMethod).setOriginalClassName(classObject.getOriginalClassObject().getClassName());
         }
         // If the destination class of the rename method is equal to the destination class of the rename class, then the
         // destination of the rename method class needs to be updated to the rename class's destination class name.
         else if (destinationMethodClass.equals(originalClassClass) && !originalMethodClass.equals(originalClassClass)) {
             renameMethod.setDestinationFilePath(classObject.getDestinationFilePath());
-            ((MoveRenameMethodObject) renameMethod).setDestinationClassName(classObject.getDestinationClassName());
+            ((MoveRenameMethodObject) renameMethod).setDestinationClassName(classObject.getDestinationClassObject().getClassName());
         }
     }
 }

@@ -30,10 +30,10 @@ public class MoveRenameClassMoveRenameClassCell {
                                                    RefactoringObject receiverRefactoringObject) {
         MoveRenameClassObject dispatcherRenameClass = (MoveRenameClassObject) dispatcherRefactoringObject;
         MoveRenameClassObject receiverRenameClass = (MoveRenameClassObject) receiverRefactoringObject;
-        String dispatcherOriginalClassName = dispatcherRenameClass.getOriginalClassName();
-        String receiverOriginalClassName = receiverRenameClass.getOriginalClassName();
-        String dispatcherDestinationClassName = dispatcherRenameClass.getDestinationClassName();
-        String receiverDestinationClassName = receiverRenameClass.getDestinationClassName();
+        String dispatcherOriginalClassName = dispatcherRenameClass.getOriginalClassObject().getClassName();
+        String receiverOriginalClassName = receiverRenameClass.getOriginalClassObject().getClassName();
+        String dispatcherDestinationClassName = dispatcherRenameClass.getDestinationClassObject().getClassName();
+        String receiverDestinationClassName = receiverRenameClass.getDestinationClassObject().getClassName();
 
         return checkNamingConflict(dispatcherOriginalClassName, receiverOriginalClassName,
                 dispatcherDestinationClassName, receiverDestinationClassName);
@@ -48,14 +48,14 @@ public class MoveRenameClassMoveRenameClassCell {
         boolean isTransitive = false;
         MoveRenameClassObject firstObject = (MoveRenameClassObject) firstRefactoring;
         MoveRenameClassObject secondObject = (MoveRenameClassObject) secondRefactoring;
-        String firstDestinationClass = firstObject.getDestinationClassName();
-        String secondOriginalClass = secondObject.getOriginalClassName();
+        String firstDestinationClass = firstObject.getDestinationClassObject().getClassName();
+        String secondOriginalClass = secondObject.getOriginalClassObject().getClassName();
 
         // If the refactored class of the first refactoring is the original class of the second refactoring
         if(firstDestinationClass.equals(secondOriginalClass)) {
             isTransitive = true;
             firstRefactoring.setDestinationFilePath(secondObject.getDestinationFilePath());
-            ((MoveRenameClassObject) firstRefactoring).setDestinationClassName(secondObject.getDestinationClassName());
+            ((MoveRenameClassObject) firstRefactoring).setDestinationClassObject(secondObject.getDestinationClassObject());
         }
 
         return isTransitive;

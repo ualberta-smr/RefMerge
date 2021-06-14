@@ -115,11 +115,11 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         MoveRenameMethodObject refactoring1 = new MoveRenameMethodObject("A.java", "A", foo,
                 "A.java", "A", bar);
         // (2) A -> B
-        MoveRenameClassObject refactoring2 = new MoveRenameClassObject("A.java", "A",
-                "B.java", "B");
+        MoveRenameClassObject refactoring2 = new MoveRenameClassObject("A.java", "A", "package",
+                "B.java", "B", "package");
         // (3) B -> C
-        MoveRenameClassObject refactoring3 = new MoveRenameClassObject("B.java", "B",
-                "C.java", "C");
+        MoveRenameClassObject refactoring3 = new MoveRenameClassObject("B.java", "B", "package",
+                "C.java", "C", "package");
         // (3) B.bar -> C.foobar
         MoveRenameMethodObject refactoring4 = new MoveRenameMethodObject("B.java", "B", bar,
                 "C.java", "C", foobar);
@@ -130,8 +130,8 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         MoveRenameMethodObject refactoring6 = new MoveRenameMethodObject("X.java", "X", m1,
                 "X.java", "X", m2);
         // (6) C -> D
-        MoveRenameClassObject refactoring7 = new MoveRenameClassObject("C.java", "C",
-                "D.java", "D");
+        MoveRenameClassObject refactoring7 = new MoveRenameClassObject("C.java", "C", "package",
+                "D.java", "D", "package");
         // (7) D.extractedMethod -> D.newName
         MoveRenameMethodObject refactoring8 = new MoveRenameMethodObject("D.java", "D", extractedMethod,
                 "D.java", "D", newName);
@@ -149,8 +149,8 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
         matrix.simplifyAndInsertRefactorings(refactoring8, simplifiedRefactorings);
 
         // A -> D
-        MoveRenameClassObject expected1 = new MoveRenameClassObject("A.java", "A",
-                "D.java", "D");
+        MoveRenameClassObject expected1 = new MoveRenameClassObject("A.java", "A", "package",
+                "D.java", "D", "package");
         // X.m1 -> X.m2
         MoveRenameMethodObject expected2 = new MoveRenameMethodObject("X.java", "X", m1,
                 "X.java", "X", m2);
@@ -220,11 +220,11 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
 
     private void compareRenameClass(RefactoringObject expected, RefactoringObject simplified) {
         Assert.assertEquals(expected.getDestinationFilePath(), simplified.getDestinationFilePath());
-        Assert.assertEquals(((MoveRenameClassObject) simplified).getDestinationClassName(),
-                ((MoveRenameClassObject) simplified).getDestinationClassName());
+        Assert.assertEquals(((MoveRenameClassObject) simplified).getDestinationClassObject(),
+                ((MoveRenameClassObject) simplified).getDestinationClassObject());
         Assert.assertEquals(expected.getOriginalFilePath(), simplified.getOriginalFilePath());
-        Assert.assertEquals(((MoveRenameClassObject) expected).getOriginalClassName(),
-                ((MoveRenameClassObject) simplified).getOriginalClassName());
+        Assert.assertEquals(((MoveRenameClassObject) expected).getOriginalClassObject().getClassName(),
+                ((MoveRenameClassObject) simplified).getOriginalClassObject().getClassName());
     }
 
     private void compareRenameMethod(RefactoringObject expected, RefactoringObject simplified) {

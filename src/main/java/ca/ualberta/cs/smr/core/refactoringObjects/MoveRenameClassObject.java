@@ -14,21 +14,23 @@ public class MoveRenameClassObject implements RefactoringObject {
     private final RefactoringType refactoringType;
     private String originalFilePath;
     private String destinationFilePath;
-    private String originalClassName;
-    private String destinationClassName;
+    private ClassObject originalClassObject;
+    private ClassObject destinationClassObject;
     private boolean isReplay;
 
 
     /*
      * Use the provided information to create the rename class object for testing.
      */
-    public MoveRenameClassObject(String originalFilePath, String originalClassName,
-                                 String destinationFilePath, String destinationClassName) {
+    public MoveRenameClassObject(String originalFilePath, String originalClassName, String originalPackageName,
+                                 String destinationFilePath, String destinationClassName, String destinationPackageName) {
         this.refactoringType = RefactoringType.RENAME_CLASS;
         this.originalFilePath = originalFilePath;
-        this.originalClassName = originalClassName;
         this.destinationFilePath = destinationFilePath;
-        this.destinationClassName = destinationClassName;
+        this.originalClassObject =
+                new ClassObject(originalClassName, originalPackageName);
+        this.destinationClassObject =
+                new ClassObject(destinationClassName, destinationPackageName);
         this.isReplay = true;
     }
 
@@ -36,12 +38,14 @@ public class MoveRenameClassObject implements RefactoringObject {
      * Creates the rename class object and takes the information that we need from the RefMiner refactoring object.
      */
     public MoveRenameClassObject(Refactoring refactoring) {
-        RenameClassRefactoring renameOperationRefactoring = (RenameClassRefactoring) refactoring;
+        RenameClassRefactoring renameClassRefactoring = (RenameClassRefactoring) refactoring;
         this.refactoringType = refactoring.getRefactoringType();
-        this.originalFilePath = renameOperationRefactoring.getOriginalClass().getLocationInfo().getFilePath();
-        this.destinationFilePath = renameOperationRefactoring.getRenamedClass().getLocationInfo().getFilePath();
-        this.originalClassName = renameOperationRefactoring.getOriginalClassName();
-        this.destinationClassName = renameOperationRefactoring.getRenamedClassName();
+        this.originalFilePath = renameClassRefactoring.getOriginalClass().getLocationInfo().getFilePath();
+        this.destinationFilePath = renameClassRefactoring.getRenamedClass().getLocationInfo().getFilePath();
+        this.originalClassObject =
+                new ClassObject(renameClassRefactoring.getOriginalClassName(), renameClassRefactoring.getOriginalClass().getPackageName());
+        this.destinationClassObject =
+                new ClassObject(renameClassRefactoring.getRenamedClassName(), renameClassRefactoring.getRenamedClass().getPackageName());
         this.isReplay = true;
     }
 
@@ -69,20 +73,20 @@ public class MoveRenameClassObject implements RefactoringObject {
         return this.destinationFilePath;
     }
 
-    public void setOriginalClassName(String originalClassName) {
-        this.originalClassName = originalClassName;
+    public void setOriginalClassObject(ClassObject originalClassObject) {
+        this.originalClassObject = originalClassObject;
     }
 
-    public String getOriginalClassName() {
-        return this.originalClassName;
+    public ClassObject getOriginalClassObject() {
+        return originalClassObject;
     }
 
-    public void setDestinationClassName(String destinationClassName) {
-        this.destinationClassName = destinationClassName;
+    public void setDestinationClassObject(ClassObject destinationClassObject) {
+        this.destinationClassObject = destinationClassObject;
     }
 
-    public String getDestinationClassName() {
-        return this.destinationClassName;
+    public ClassObject getDestinationClassObject() {
+        return destinationClassObject;
     }
 
     public void setReplayFlag(boolean isReplay) {
