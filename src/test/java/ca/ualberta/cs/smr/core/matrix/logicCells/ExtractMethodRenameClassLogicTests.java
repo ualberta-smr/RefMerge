@@ -48,8 +48,8 @@ public class ExtractMethodRenameClassLogicTests extends LightJavaCodeInsightFixt
         ExtractMethodObject extractMethodObject = new ExtractMethodObject("A.java", "A", foo,
                 "A.java", "A", efoo);
         // Rename Class A -> B
-        MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("A.java", "A",
-                "B.java", "B");
+        MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("A.java", "A", "package",
+                "B.java", "B", "package");
         // Extract method B.ebar from A.foo
         ExtractMethodObject expectedRefactoring = new ExtractMethodObject("A.java", "A", foo,
                 "B.java", "B", ebar);
@@ -67,8 +67,8 @@ public class ExtractMethodRenameClassLogicTests extends LightJavaCodeInsightFixt
         ExtractMethodObject extractMethodObject = new ExtractMethodObject("B.java", "B", foo,
                 "B.java", "B", efoo);
         // Rename Class A -> B
-        MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("A.java", "A",
-                "B.java", "B");
+        MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("A.java", "A", "package",
+                "B.java", "B", "package");
         // Extract method B.ebar from A.foo
         ExtractMethodObject expectedRefactoring = new ExtractMethodObject("A.java", "A", foo,
                 "B.java", "B", ebar);
@@ -86,8 +86,8 @@ public class ExtractMethodRenameClassLogicTests extends LightJavaCodeInsightFixt
         ExtractMethodObject extractMethodObject = new ExtractMethodObject("Foo.java", "B", foo,
                 "Foo.java", "B", efoo);
         // Rename Class A -> B
-        MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("Foo.java", "A",
-                "Foo.java", "B");
+        MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("Foo.java", "A", "package",
+                "Foo.java", "B", "package");
         // Extract method B.ebar from A.foo
         ExtractMethodObject expectedRefactoring = new ExtractMethodObject("Foo.java", "A", foo,
                 "Foo.java", "B", ebar);

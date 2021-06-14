@@ -10,7 +10,7 @@ import org.refactoringminer.api.Refactoring;
 
 import java.util.List;
 
-public class RenameClassRenameClassLogicTests extends LightJavaCodeInsightFixtureTestCase {
+public class MoveRenameClassMoveRenameClassLogicTests extends LightJavaCodeInsightFixtureTestCase {
 
     @Override
     protected String getTestDataPath() {
@@ -38,29 +38,28 @@ public class RenameClassRenameClassLogicTests extends LightJavaCodeInsightFixtur
 
     public void testFoundRenameClassRenameClassTransitivity() {
         // Rename class A -> B
-        MoveRenameClassObject firstRefactoring = new MoveRenameClassObject("A.java", "A",
-                "B.java", "B");
+        MoveRenameClassObject firstRefactoring = new MoveRenameClassObject("A.java", "A", "package",
+                "B.java", "B", "package");
         // Rename class B -> C
-        MoveRenameClassObject secondRefactoring = new MoveRenameClassObject("B.java", "B",
-                "C.java", "C");
-        secondRefactoring.setDestinationClassName("C");
+        MoveRenameClassObject secondRefactoring = new MoveRenameClassObject("B.java", "B", "package",
+                "C.java", "C", "package");
         // Rename class A -> C
-        MoveRenameClassObject expectedRefactoring = new MoveRenameClassObject("A.java", "A",
-                "C.java", "C");
+        MoveRenameClassObject expectedRefactoring = new MoveRenameClassObject("A.java", "A", "package",
+                "C.java", "C", "package");
 
         doMoveRenameClassRenameClassTest(firstRefactoring, secondRefactoring, expectedRefactoring,true);
     }
 
     public void testNotFoundRenameClassRenameClassTransitivity() {
         // Rename class A -> B
-        MoveRenameClassObject firstRefactoring = new MoveRenameClassObject("A.java", "A",
-                "B.java", "B");
+        MoveRenameClassObject firstRefactoring = new MoveRenameClassObject("A.java", "A", "package",
+                "B.java", "B", "package");
         // Rename class C -> D
-        MoveRenameClassObject secondRefactoring = new MoveRenameClassObject("C.java", "C",
-                "D.java", "D");
+        MoveRenameClassObject secondRefactoring = new MoveRenameClassObject("C.java", "C", "package",
+                "D.java", "D", "package");
         // Rename class A -> B
-        MoveRenameClassObject expectedRefactoring = new MoveRenameClassObject("A.java", "A",
-                "B.java", "B");
+        MoveRenameClassObject expectedRefactoring = new MoveRenameClassObject("A.java", "A", "package",
+                "B.java", "B", "package");
 
         doMoveRenameClassRenameClassTest(firstRefactoring, secondRefactoring, expectedRefactoring,false);
     }
@@ -77,10 +76,10 @@ public class RenameClassRenameClassLogicTests extends LightJavaCodeInsightFixtur
             Assert.assertFalse(isTransitive);
         }
         Assert.assertEquals(expectedRefactoring.getDestinationFilePath(), firstRefactoring.getDestinationFilePath());
-        Assert.assertEquals(((MoveRenameClassObject) firstRefactoring).getDestinationClassName(),
-                ((MoveRenameClassObject) firstRefactoring).getDestinationClassName());
+        Assert.assertEquals(((MoveRenameClassObject) firstRefactoring).getDestinationClassObject(),
+                ((MoveRenameClassObject) firstRefactoring).getDestinationClassObject());
         Assert.assertEquals(expectedRefactoring.getOriginalFilePath(), firstRefactoring.getOriginalFilePath());
-        Assert.assertEquals(((MoveRenameClassObject) expectedRefactoring).getOriginalClassName(),
-                ((MoveRenameClassObject) firstRefactoring).getOriginalClassName());
+        Assert.assertEquals(((MoveRenameClassObject) expectedRefactoring).getOriginalClassObject().getClassName(),
+                ((MoveRenameClassObject) firstRefactoring).getOriginalClassObject().getClassName());
     }
 }

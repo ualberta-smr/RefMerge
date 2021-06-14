@@ -64,7 +64,7 @@ public class ExtractMethodReceiver extends Receiver {
             if(isDependent) {
                 this.refactoringObject.setDestinationFilePath(dispatcherObject.getDestinationFilePath());
                 ((ExtractMethodObject) this.refactoringObject)
-                        .setDestinationClassName(((MoveRenameClassObject) dispatcherObject).getDestinationClassName());
+                        .setDestinationClassName(((MoveRenameClassObject) dispatcherObject).getDestinationClassObject().getClassName());
             }
         }
     }

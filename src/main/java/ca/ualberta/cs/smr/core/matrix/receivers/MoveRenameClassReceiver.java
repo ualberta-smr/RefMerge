@@ -29,7 +29,7 @@ public class MoveRenameClassReceiver extends Receiver {
             if(isDependent) {
                 methodRefactoring.setDestinationFilePath(refactoringObject.getDestinationFilePath());
                 ((MoveRenameMethodObject) methodRefactoring).
-                        setDestinationClassName(((MoveRenameClassObject) refactoringObject).getDestinationClassName());
+                        setDestinationClassName(((MoveRenameClassObject) refactoringObject).getDestinationClassObject().getClassName());
             }
         }
     }

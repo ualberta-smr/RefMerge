@@ -41,8 +41,8 @@ public class RenameClassRenameMethodLogicTests extends LightJavaCodeInsightFixtu
         MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
         MethodSignatureObject bar = new MethodSignatureObject(originalParameters, "bar");
         // Rename class A -> B
-        MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("A.java", "A",
-                "B.java", "B");
+        MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("A.java", "A", "package",
+                "B.java", "B", "package");
         // Rename method A.foo -> B.bar
         MoveRenameMethodObject moveRenameMethodObject = new MoveRenameMethodObject("A.java", "A",
                 foo, "B.java", "B", bar);
@@ -60,8 +60,8 @@ public class RenameClassRenameMethodLogicTests extends LightJavaCodeInsightFixtu
         MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
         MethodSignatureObject bar = new MethodSignatureObject(originalParameters, "bar");
         // Rename class A -> B
-        MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("A.java", "A",
-                "B.java", "B");
+        MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("A.java", "A", "package",
+                "B.java", "B", "package");
         // Rename method A.foo -> A.bar
         MoveRenameMethodObject moveRenameMethodObject = new MoveRenameMethodObject("A.java", "A",
                 foo, "A.java", "A", bar);
@@ -78,8 +78,8 @@ public class RenameClassRenameMethodLogicTests extends LightJavaCodeInsightFixtu
         MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
         MethodSignatureObject bar = new MethodSignatureObject(originalParameters, "bar");
         // Rename class A -> B
-        MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("A.java", "A",
-                "B.java", "B");
+        MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("A.java", "A", "package",
+                "B.java", "B", "package");
         // Rename method B.foo -> B.bar
         MoveRenameMethodObject moveRenameMethodObject = new MoveRenameMethodObject("B.java", "B",
                 foo, "B.java", "B", bar);
@@ -97,8 +97,8 @@ public class RenameClassRenameMethodLogicTests extends LightJavaCodeInsightFixtu
         MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
         MethodSignatureObject bar = new MethodSignatureObject(originalParameters, "bar");
         // Rename class A -> B
-        MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("A.java", "A",
-                "b.java", "B");
+        MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("A.java", "A", "package",
+                "b.java", "B", "package");
         // Rename method C.foo -> C.bar
         MoveRenameMethodObject moveRenameMethodObject = new MoveRenameMethodObject("C.java", "C", foo,
                 "C.java", "C", bar);

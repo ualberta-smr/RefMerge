@@ -79,8 +79,8 @@ public class UndoOperations {
      */
     public void undoMoveRenameClass(RefactoringObject ref) {
         MoveRenameClassObject moveRenameClassObject = (MoveRenameClassObject) ref;
-        String srcQualifiedClass = moveRenameClassObject.getOriginalClassName();
-        String destQualifiedClass = moveRenameClassObject.getDestinationClassName();
+        String srcQualifiedClass = moveRenameClassObject.getOriginalClassObject().getClassName();
+        String destQualifiedClass = moveRenameClassObject.getDestinationClassObject().getClassName();
         String srcClassName = srcQualifiedClass.substring(srcQualifiedClass.lastIndexOf(".") + 1);
         String filePath = moveRenameClassObject.getDestinationFilePath();
         Utils utils = new Utils(project);

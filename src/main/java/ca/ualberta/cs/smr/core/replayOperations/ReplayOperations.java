@@ -77,8 +77,8 @@ public class ReplayOperations {
 
     public void replayMoveRenameClass(RefactoringObject ref) {
         MoveRenameClassObject moveRenameClassObject = (MoveRenameClassObject) ref;
-        String srcQualifiedClass = moveRenameClassObject.getOriginalClassName();
-        String destQualifiedClass = moveRenameClassObject.getDestinationClassName();
+        String srcQualifiedClass = moveRenameClassObject.getOriginalClassObject().getClassName();
+        String destQualifiedClass = moveRenameClassObject.getDestinationClassObject().getClassName();
         String destClassName = destQualifiedClass.substring(destQualifiedClass.lastIndexOf(".") + 1);
         Utils utils = new Utils(project);
         String filePath = moveRenameClassObject.getOriginalFilePath();

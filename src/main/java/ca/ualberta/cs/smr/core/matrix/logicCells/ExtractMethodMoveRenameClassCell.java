@@ -22,7 +22,7 @@ public class ExtractMethodMoveRenameClassCell {
     public static boolean checkExtractMethodMoveRenameClassDependence(RefactoringObject renameClass, RefactoringObject extractMethod) {
         MoveRenameClassObject moveRenameClassObject = (MoveRenameClassObject) renameClass;
         ExtractMethodObject extractMethodObject = (ExtractMethodObject) extractMethod;
-        String renameOriginalClassName = moveRenameClassObject.getOriginalClassName();
+        String renameOriginalClassName = moveRenameClassObject.getOriginalClassObject().getClassName();
         String extractOriginalClassname = extractMethodObject.getOriginalClassName();
         String extractDestinationClassname = extractMethodObject.getDestinationClassName();
 
@@ -37,8 +37,8 @@ public class ExtractMethodMoveRenameClassCell {
     public static void checkExtractMethodMoveRenameClassCombination(RefactoringObject renameClass,
                                                                     RefactoringObject extractMethod) {
         MoveRenameClassObject moveRenameClassObject = (MoveRenameClassObject) renameClass;
-        String originalClassClass = moveRenameClassObject.getOriginalClassName();
-        String destinationClassClass = moveRenameClassObject.getDestinationClassName();
+        String originalClassClass = moveRenameClassObject.getOriginalClassObject().getClassName();
+        String destinationClassClass = moveRenameClassObject.getDestinationClassObject().getClassName();
         ExtractMethodObject extractMethodObject = (ExtractMethodObject) extractMethod;
         String sourceMethodClass = extractMethodObject.getOriginalClassName();
         String extractedMethodClass = extractMethodObject.getDestinationClassName();
