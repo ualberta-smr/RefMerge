@@ -17,6 +17,8 @@ public class MoveRenameClassObject implements RefactoringObject {
     private ClassObject originalClassObject;
     private ClassObject destinationClassObject;
     private boolean isReplay;
+    private boolean isRenameMethod;
+    private boolean isMoveMethod;
 
 
     /*
@@ -31,6 +33,8 @@ public class MoveRenameClassObject implements RefactoringObject {
                 new ClassObject(originalClassName, originalPackageName);
         this.destinationClassObject =
                 new ClassObject(destinationClassName, destinationPackageName);
+        this.isMoveMethod = false;
+        this.isRenameMethod = false;
         this.isReplay = true;
     }
 
@@ -46,6 +50,8 @@ public class MoveRenameClassObject implements RefactoringObject {
                 new ClassObject(renameClassRefactoring.getOriginalClassName(), renameClassRefactoring.getOriginalClass().getPackageName());
         this.destinationClassObject =
                 new ClassObject(renameClassRefactoring.getRenamedClassName(), renameClassRefactoring.getRenamedClass().getPackageName());
+        this.isMoveMethod = false;
+        this.isRenameMethod = false;
         this.isReplay = true;
     }
 
@@ -87,6 +93,27 @@ public class MoveRenameClassObject implements RefactoringObject {
 
     public ClassObject getDestinationClassObject() {
         return destinationClassObject;
+    }
+
+    public void setType(RefactoringType refactoringType) {
+        if(refactoringType.equals(RefactoringType.RENAME_CLASS)) {
+            this.isRenameMethod = true;
+        }
+        else if(refactoringType.equals(RefactoringType.MOVE_CLASS)) {
+            this.isMoveMethod = true;
+        }
+        else {
+            this.isRenameMethod = true;
+            this.isMoveMethod = true;
+        }
+    }
+
+    public boolean isRenameMethod() {
+        return isRenameMethod;
+    }
+
+    public boolean isMoveMethod() {
+        return isMoveMethod;
     }
 
     public void setReplayFlag(boolean isReplay) {
