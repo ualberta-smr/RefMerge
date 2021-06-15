@@ -98,20 +98,34 @@ public class UndoOperations {
             renameRefactoring.doRefactoring(refactoringUsages);
         }
         if(moveRenameClassObject.isMoveMethod()) {
+            // If the class is an inner class, skip it for now
+            if(psiClass.getContainingClass() != null) {
+                return;
+            }
             // use the original package to undo the move class
             String originalPackage = moveRenameClassObject.getOriginalClassObject().getPackageName();
             PsiPackage psiPackage = JavaPsiFacade.getInstance(project).findPackage(originalPackage);
-            assert psiPackage != null;
-            PsiDirectory dir = psiPackage.getDirectories()[0];
-            PsiElement[] psiElements = new PsiElement[1];
-
-            psiElements[0] = psiClass;
-            MoveClassesOrPackagesProcessor moveClassProcessor = new MoveClassesOrPackagesProcessor(project, psiElements,
-                    new SingleSourceRootMoveDestination(PackageWrapper
-                            .create(Objects.requireNonNull(JavaDirectoryService.getInstance().getPackage(dir))), dir),
-                    true, true, null);
-            Application app = ApplicationManager.getApplication();
-            app.invokeAndWait(moveClassProcessor);
+            if(psiPackage == null) {
+                MoveDestination moveDestination = JavaRefactoringFactory
+                        .getInstance(project).createSourceFolderPreservingMoveDestination(originalPackage);
+                PsiElement[] psiElements = new PsiElement[1];
+                psiElements[0] = psiClass;
+                MoveClassesOrPackagesProcessor moveClassProcessor = new MoveClassesOrPackagesProcessor(project, psiElements,
+                        moveDestination, true, true, null);
+                Application app = ApplicationManager.getApplication();
+                app.invokeAndWait(moveClassProcessor);
+            }
+            else {
+                PsiDirectory dir = psiPackage.getDirectories()[0];
+                PsiElement[] psiElements = new PsiElement[1];
+                psiElements[0] = psiClass;
+                MoveClassesOrPackagesProcessor moveClassProcessor = new MoveClassesOrPackagesProcessor(project, psiElements,
+                        new SingleSourceRootMoveDestination(PackageWrapper
+                                .create(Objects.requireNonNull(JavaDirectoryService.getInstance().getPackage(dir))), dir),
+                        true, true, null);
+                Application app = ApplicationManager.getApplication();
+                app.invokeAndWait(moveClassProcessor);
+            }
         }
         // Update the virtual file of the class
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();

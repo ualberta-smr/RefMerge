@@ -99,14 +99,25 @@ public class ReplayOperations {
             String destinationPackage = moveRenameClassObject.getDestinationClassObject().getPackageName();
             PsiPackage psiPackage = JavaPsiFacade.getInstance(project).findPackage(destinationPackage);
             assert psiPackage != null;
-            PsiDirectory dir = psiPackage.getDirectories()[0];
+            PsiDirectory[] psiDirectories = psiPackage.getDirectories();
+            PsiDirectory psiDirectory = psiDirectories[0];
+            String path = filePath.substring(0, filePath.lastIndexOf("/"));
+            for(PsiDirectory directory : psiDirectories) {
+                String dirPath = directory.getVirtualFile().getPath();
+                if(dirPath.contains(path)) {
+                    psiDirectory = directory;
+                    break;
+                }
+            }
             PsiElement[] psiElements = new PsiElement[1];
 
             psiElements[0] = psiClass;
             MoveClassesOrPackagesProcessor moveClassProcessor = new MoveClassesOrPackagesProcessor(project, psiElements,
                     new SingleSourceRootMoveDestination(PackageWrapper
-                            .create(Objects.requireNonNull(JavaDirectoryService.getInstance().getPackage(dir))), dir),
+                            .create(Objects.requireNonNull(JavaDirectoryService.getInstance()
+                                    .getPackage(psiDirectory))), psiDirectory),
                     true, true, null);
+
             Application app = ApplicationManager.getApplication();
             app.invokeAndWait(moveClassProcessor);
         }
