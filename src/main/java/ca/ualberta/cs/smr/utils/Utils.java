@@ -101,13 +101,16 @@ public class Utils {
 
         String projectPath = project.getBasePath();
         String relativePath = projectPath + "/" + filePath;
-        relativePath = getRelativePathOfSourceRoot(relativePath, isTestFolder);
+        relativePath = getRelativePathOfSourceRoot(relativePath, project.getName());
         File directory = new File(relativePath);
         VirtualFile sourceVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(directory);
         assert sourceVirtualFile != null;
         ModuleManager moduleManager = ModuleManager.getInstance(project);
         // Get the first module that does not depend on any other modules
         ArrayList<Module> modules = getModule(sourceVirtualFile, moduleManager.getModules());
+        if(modules == null) {
+            return;
+        }
         for(Module module : modules) {
             ModifiableRootModel rootModel = ModuleRootManager.getInstance(module).getModifiableModel();
             directory = new File(Objects.requireNonNull(PathMacroUtil.getModuleDir(module.getModuleFilePath())));
@@ -131,18 +134,22 @@ public class Utils {
     /*
      * Get the relative path of the source root folder.
      */
-    private String getRelativePathOfSourceRoot(String relativePath, boolean isTestFolder) {
-        if(isTestFolder) {
-            if(relativePath.contains("test/")) {
-                return relativePath.substring(0, relativePath.indexOf("test/") + 4);
-            }
-            else {
-                return relativePath.substring(0, relativePath.indexOf("main/") + 4);
-            }
+    private String getRelativePathOfSourceRoot(String relativePath, String projectName) {
+        // If the relative path contains java, then that's the source folder.
+        if(relativePath.contains("java/")) {
+            return relativePath.substring(0, relativePath.lastIndexOf("java/") + 4);
         }
+        // Get the project name
+        String temp = relativePath.substring(relativePath.indexOf(projectName) + projectName.length());
+        // If the relative path contains the project name a second time, use that as a source folder.
+        if(temp.contains(projectName)) {
+            return relativePath.substring(0, relativePath.lastIndexOf(projectName));
+        }
+        // Otherwise return the src directory
         else {
-            return relativePath.substring(0, relativePath.indexOf("main/") + 4);
+            return relativePath.substring(0, relativePath.indexOf("src/") + 3);
         }
+
     }
     /*
      * Get the module that the virtual file is in.
@@ -151,7 +158,9 @@ public class Utils {
         ArrayList<Module> potentialModules = new ArrayList<>();
         for(Module module : modules) {
             VirtualFile moduleFile = module.getModuleFile();
-            assert moduleFile != null;
+            if(moduleFile == null) {
+                continue;
+            }
             VirtualFile moduleFileParent = moduleFile.getParent();
             // Get the src directory
             VirtualFile virtualFileParent = virtualFile.getParent();
