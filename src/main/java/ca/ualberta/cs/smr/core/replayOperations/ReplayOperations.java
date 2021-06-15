@@ -95,18 +95,24 @@ public class ReplayOperations {
             renameRefactoring.doRefactoring(refactoringUsages);
         }
         if(moveRenameClassObject.isMoveMethod()) {
+            // If the move move class refactoring involves an inner class, skip it for now
+            if(moveRenameClassObject.isMoveInner() || moveRenameClassObject.isMoveOuter()) {
+                return;
+            }
             // use the destination package to undo the move class
             String destinationPackage = moveRenameClassObject.getDestinationClassObject().getPackageName();
             PsiPackage psiPackage = JavaPsiFacade.getInstance(project).findPackage(destinationPackage);
             assert psiPackage != null;
             PsiDirectory[] psiDirectories = psiPackage.getDirectories();
             PsiDirectory psiDirectory = psiDirectories[0];
-            String path = filePath.substring(0, filePath.lastIndexOf("/"));
-            for(PsiDirectory directory : psiDirectories) {
-                String dirPath = directory.getVirtualFile().getPath();
-                if(dirPath.contains(path)) {
-                    psiDirectory = directory;
-                    break;
+            if(psiDirectories.length > 1) {
+                String path = filePath.substring(0, filePath.lastIndexOf("/"));
+                for (PsiDirectory directory : psiDirectories) {
+                    String dirPath = directory.getVirtualFile().getPath();
+                    if (dirPath.contains(path)) {
+                        psiDirectory = directory;
+                        break;
+                    }
                 }
             }
             PsiElement[] psiElements = new PsiElement[1];
@@ -124,7 +130,10 @@ public class ReplayOperations {
 
             // If the original directory is empty after moving the class, delete the directory
             if(originalDirectory.getFiles().length == 0) {
-                originalDirectory.delete();
+                if (!ApplicationManager.getApplication().isUnitTestMode()) {
+                    originalDirectory.delete();
+                }
+
             }
         }
         // Update the virtual file of the class
