@@ -110,7 +110,8 @@ public class ReplayOperations {
                 }
             }
             PsiElement[] psiElements = new PsiElement[1];
-
+            // Get the original directory before moving the class
+            PsiDirectory originalDirectory = psiClass.getContainingFile().getContainingDirectory();
             psiElements[0] = psiClass;
             MoveClassesOrPackagesProcessor moveClassProcessor = new MoveClassesOrPackagesProcessor(project, psiElements,
                     new SingleSourceRootMoveDestination(PackageWrapper
@@ -120,6 +121,11 @@ public class ReplayOperations {
 
             Application app = ApplicationManager.getApplication();
             app.invokeAndWait(moveClassProcessor);
+
+            // If the original directory is empty after moving the class, delete the directory
+            if(originalDirectory.getFiles().length == 0) {
+                originalDirectory.delete();
+            }
         }
         // Update the virtual file of the class
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
