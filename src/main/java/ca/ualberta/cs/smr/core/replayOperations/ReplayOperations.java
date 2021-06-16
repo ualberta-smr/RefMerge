@@ -144,6 +144,13 @@ public class ReplayOperations {
 
     }
 
+    /*
+     * Replay the inline method refactoring by performing an inline method refactoring.
+     */
+    public void replayInlineMethod(RefactoringObject ref) {
+
+    }
+
     public void replayExtractMethod(RefactoringObject ref) {
         ExtractMethodObject extractMethodObject = (ExtractMethodObject) ref;
         MethodSignatureObject sourceOperation = extractMethodObject.getOriginalMethodSignature();

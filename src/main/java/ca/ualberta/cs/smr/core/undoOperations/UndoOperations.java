@@ -137,6 +137,13 @@ public class UndoOperations {
     }
 
     /*
+     * Undo the inline method refactoring that was originally performed by performing an extract method refactoring.
+     */
+    public void undoInlineMethod(RefactoringObject ref) {
+
+    }
+
+    /*
      * Undo the extract method refactoring that was originally performed by performing an inline method refactoring.
      */
     public RefactoringObject undoExtractMethod(RefactoringObject ref) {

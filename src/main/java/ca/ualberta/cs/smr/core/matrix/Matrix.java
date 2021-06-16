@@ -63,17 +63,7 @@ public class Matrix {
     public ArrayList<RefactoringObject> runMatrix(ArrayList<RefactoringObject> leftRefactoringList,
                                              ArrayList<RefactoringObject> rightRefactoringList) {
         ArrayList<RefactoringObject> replayObjectList = new ArrayList<>();
-//        if(leftRefactoringList.isEmpty() && rightRefactoringList.isEmpty()) {
-//            return replayObjectList;
-//        }
-//        // If the right refactoring list is empty, return the left refactoring list
-//        else if(!leftRefactoringList.isEmpty() && rightRefactoringList.isEmpty()) {
-//            return leftRefactoringList;
-//        }
-//        // If the left refactoring list is empty, return the right refactoring list
-//        else if(leftRefactoringList.isEmpty()) {
-//            return rightRefactoringList;
-//        }
+
         for(RefactoringObject leftRefactoring : leftRefactoringList) {
             compareRefactorings(leftRefactoring, rightRefactoringList);
         }
