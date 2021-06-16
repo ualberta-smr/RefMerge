@@ -31,4 +31,23 @@ public class InlineMethodMoveRenameMethodLogicTests extends LightJavaCodeInsight
                 .inlineMethodMoveRenameMethodConflictCell(moveRenameMethodObject, inlineMethodObject);
         Assert.assertTrue(isConflicting);
     }
+
+    public void testCheckInlineMethodMoveRenameMethodDependence() {
+        List<ParameterObject> originalParameters = new ArrayList<>();
+        originalParameters.add(new ParameterObject("int", "return"));
+        originalParameters.add(new ParameterObject("int", "x"));
+        MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
+        MethodSignatureObject target = new MethodSignatureObject(originalParameters, "target");
+        MethodSignatureObject renamed = new MethodSignatureObject(originalParameters, "renamed");
+
+        // Rename Method Foo.foo -> Foo.renamed
+        MoveRenameMethodObject moveRenameMethodObject = new MoveRenameMethodObject("Foo.java", "Foo", target,
+                "Foo.java", "Foo", renamed);
+        // Inline Method Foo.foo -> Foo.target
+        InlineMethodObject inlineMethodObject = new InlineMethodObject("Foo.java", "Foo", foo,
+                "Foo.java", "Foo", target);
+        boolean isDependent = InlineMethodMoveRenameMethodCell
+                .inlineMethodMoveRenameMethodDependenceCell(moveRenameMethodObject, inlineMethodObject);
+        Assert.assertTrue(isDependent);
+    }
 }
