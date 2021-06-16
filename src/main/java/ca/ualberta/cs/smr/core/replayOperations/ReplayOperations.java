@@ -146,20 +146,19 @@ public class ReplayOperations {
         ExtractMethodObject extractMethodObject = (ExtractMethodObject) ref;
         MethodSignatureObject sourceOperation = extractMethodObject.getOriginalMethodSignature();
         MethodSignatureObject extractedOperation = extractMethodObject.getDestinationMethodSignature();
-
         String refactoringName = extractedOperation.getName();
         String initialMethodName = sourceOperation.getName();
-        String initialClassName = extractMethodObject.getDestinationClassName();
-        String filePath = extractMethodObject.getDestinationFilePath();
+        String originalClassName = extractMethodObject.getOriginalClassName();
+        String filePath = extractMethodObject.getOriginalFilePath();
         String helpId = "";
 
         Utils utils = new Utils(project);
-        PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(initialClassName, filePath);
+        PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(originalClassName, filePath);
         assert psiClass != null;
         PsiMethod psiMethod = Utils.getPsiMethod(psiClass, sourceOperation);
         assert psiMethod != null;
 
-        PsiElement[] surroundingElements = extractMethodObject.getSurroundingElements();
+        SmartPsiElementPointer[] surroundingElements = extractMethodObject.getSurroundingElements();
         PsiElement[] psiElements = getPsiElementsBetweenElements(surroundingElements);
 
 
@@ -184,7 +183,7 @@ public class ReplayOperations {
         // Check for duplicates and prepare method signature
         if(extractMethodProcessor.initParametrizedDuplicates(false)) {
             // Handle duplicate extract method calls
-            handleDuplicates(extractMethodProcessor, extractedOperation);
+            handleDuplicates(extractMethodProcessor, extractedOperation, sourceOperation.getName());
         }
 
         updateSignature(extractMethodProcessor, extractedOperation, refactoringName,
@@ -197,10 +196,17 @@ public class ReplayOperations {
      * Extracts the duplicate extract method calls. After all duplicates have been extracted, it renames the
      * parameters to match what the developers expected after the merge.
      */
-    private void handleDuplicates(ExtractMethodProcessor processor, MethodSignatureObject operation) {
+    private void handleDuplicates(ExtractMethodProcessor processor, MethodSignatureObject operation, String sourceMethodName) {
+
         final List<Match> duplicates = processor.getDuplicates();
         for (final Match match : duplicates) {
             if (!match.getMatchStart().isValid() || !match.getMatchEnd().isValid()) continue;
+            PsiElement psiElement = match.getMatchStart();
+            PsiMethod containingMethod = PsiTreeUtil.getParentOfType(psiElement, PsiMethod.class);
+            assert containingMethod != null;
+            if(!sourceMethodName.equals(containingMethod.getName())) {
+                continue;
+            }
             PsiDocumentManager.getInstance(project).commitAllDocuments();
             Runnable runnable = () -> ApplicationManager.getApplication().runWriteAction(() -> {
                 processor.processMatch(match);
@@ -242,9 +248,10 @@ public class ReplayOperations {
      * Use the new psi statement at the beginning and end of the extracted method to get all involved psi statements
      * in the refactoring.
      */
-    private PsiElement[] getPsiElementsBetweenElements(PsiElement[] surroundingElements) {
-        PsiElement firstElement = surroundingElements[0];
-        PsiElement lastElement = surroundingElements[1];
+    private PsiElement[] getPsiElementsBetweenElements(SmartPsiElementPointer[] surroundingElements) {
+        PsiElement firstElement = surroundingElements[0].getElement();
+        PsiElement lastElement = surroundingElements[1].getElement();
+        assert firstElement != null && lastElement != null;
         if(firstElement instanceof PsiJavaToken) {
             firstElement = firstElement.getNextSibling();
         }
@@ -263,8 +270,7 @@ public class ReplayOperations {
         if(lastElement instanceof PsiWhiteSpace) {
             lastElement = lastElement.getPrevSibling();
         }
-        assert firstElement != null;
-        assert lastElement != null;
+
         List<PsiElement> psiElements = PsiTreeUtil.getElementsOfRange(firstElement, lastElement);
         return psiElements.toArray(new PsiElement[0]);
     }
