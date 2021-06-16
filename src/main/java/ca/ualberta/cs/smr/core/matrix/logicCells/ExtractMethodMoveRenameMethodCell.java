@@ -24,7 +24,7 @@ public class ExtractMethodMoveRenameMethodCell {
      *  Check if a refactoring conflict exists between extract method/rename method refactorings. A refactoring conflict
      *  can occur if there is an accidental override, accidental overload, or naming conflict.
      */
-    public boolean extractMethodRenameMethodConflictCell(RefactoringObject renameMethod, RefactoringObject extractMethod) {
+    public boolean conflictCell(RefactoringObject renameMethod, RefactoringObject extractMethod) {
         // Extract Method/Rename Method override conflict
         if(checkOverrideConflict(renameMethod, extractMethod)) {
             return true;
@@ -41,8 +41,8 @@ public class ExtractMethodMoveRenameMethodCell {
     /*
      *  Check if an ordering dependence exists between extract method/rename method refactorings.
      */
-    public boolean extractMethodRenameMethodDependenceCell(RefactoringObject renameMethod, RefactoringObject extractMethod) {
-        return checkExtractMethodRenameMethodDependence(renameMethod, extractMethod);
+    public boolean dependenceCell(RefactoringObject renameMethod, RefactoringObject extractMethod) {
+        return checkDependence(renameMethod, extractMethod);
     }
 
 
@@ -133,8 +133,7 @@ public class ExtractMethodMoveRenameMethodCell {
     /*
      * Check if the method needs to be extracted before the source method is renamed
      */
-    public static boolean checkExtractMethodRenameMethodDependence(RefactoringObject renameMethod,
-                                                                   RefactoringObject extractMethod) {
+    public static boolean checkDependence(RefactoringObject renameMethod, RefactoringObject extractMethod) {
         MoveRenameMethodObject moveRenameMethodObject = (MoveRenameMethodObject) renameMethod;
         ExtractMethodObject extractMethodObject = (ExtractMethodObject) extractMethod;
         MethodSignatureObject renameOriginalMethod = moveRenameMethodObject.getOriginalMethodSignature();
@@ -157,8 +156,7 @@ public class ExtractMethodMoveRenameMethodCell {
      * Check for extract method and rename method transitivity and combinations. If there is transitivity, update the
      * extracted method and return true. If there is a combination, update the extracted method and return false.
      */
-    public static boolean checkExtractMethodRenameMethodTransitivity(RefactoringObject renameMethod,
-                                                                     RefactoringObject extractMethod) {
+    public static boolean checkTransitivity(RefactoringObject renameMethod, RefactoringObject extractMethod) {
         boolean isTransitive = false;
         MoveRenameMethodObject moveRenameMethodObject = (MoveRenameMethodObject) renameMethod;
         String originalRenameClassName = moveRenameMethodObject.getOriginalClassName();

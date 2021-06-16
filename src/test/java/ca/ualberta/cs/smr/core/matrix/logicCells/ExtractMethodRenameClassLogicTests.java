@@ -32,10 +32,10 @@ public class ExtractMethodRenameClassLogicTests extends LightJavaCodeInsightFixt
         assert renameClassRefactorings != null;
         RefactoringObject extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(0));
         RefactoringObject renameClassObject = RefactoringObjectUtils.createRefactoringObject(renameClassRefactorings.get(0));
-        boolean isDependent = ExtractMethodMoveRenameClassCell.checkExtractMethodMoveRenameClassDependence(renameClassObject, extractMethodObject);
+        boolean isDependent = ExtractMethodMoveRenameClassCell.checkDependence(renameClassObject, extractMethodObject);
         Assert.assertFalse(isDependent);
         extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(1));
-        isDependent = ExtractMethodMoveRenameClassCell.checkExtractMethodMoveRenameClassDependence(renameClassObject, extractMethodObject);
+        isDependent = ExtractMethodMoveRenameClassCell.checkDependence(renameClassObject, extractMethodObject);
         Assert.assertTrue(isDependent);
     }
 
@@ -100,7 +100,7 @@ public class ExtractMethodRenameClassLogicTests extends LightJavaCodeInsightFixt
     private void doExtractMethodMoveRenameClassTest(RefactoringObject renameClassObject, RefactoringObject extractMethodObject,
                                                 RefactoringObject expectedRefactoring) {
 
-        ExtractMethodMoveRenameClassCell.checkExtractMethodMoveRenameClassCombination(renameClassObject, extractMethodObject);
+        ExtractMethodMoveRenameClassCell.checkCombination(renameClassObject, extractMethodObject);
 
         Assert.assertEquals(expectedRefactoring.getOriginalFilePath(), extractMethodObject.getOriginalFilePath());
         Assert.assertEquals(expectedRefactoring.getDestinationFilePath(), extractMethodObject.getDestinationFilePath());

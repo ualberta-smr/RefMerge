@@ -62,10 +62,10 @@ public class MoveRenameClassReceiverTests extends LightJavaCodeInsightFixtureTes
         Refactoring bar = refactorings.get(2);
         RefactoringObject leftRefactoring = RefactoringObjectUtils.createRefactoringObject(foo);
         RefactoringObject rightRefactoring = RefactoringObjectUtils.createRefactoringObject(foo2);
-        boolean isConflicting = MoveRenameClassMoveRenameClassCell.MoveRenameClassMoveRenameClassConflictCell(leftRefactoring, rightRefactoring);
+        boolean isConflicting = MoveRenameClassMoveRenameClassCell.conflictCell(leftRefactoring, rightRefactoring);
         Assert.assertTrue(isConflicting);
         rightRefactoring = RefactoringObjectUtils.createRefactoringObject(bar);
-        isConflicting = MoveRenameClassMoveRenameClassCell.MoveRenameClassMoveRenameClassConflictCell(leftRefactoring, rightRefactoring);
+        isConflicting = MoveRenameClassMoveRenameClassCell.conflictCell(leftRefactoring, rightRefactoring);
         Assert.assertFalse(isConflicting);
     }
 
@@ -103,7 +103,7 @@ public class MoveRenameClassReceiverTests extends LightJavaCodeInsightFixtureTes
         Refactoring rightRef = classRefs.get(0);
         RefactoringObject leftRefactoring = RefactoringObjectUtils.createRefactoringObject(leftRef);
         RefactoringObject rightRefactoring = RefactoringObjectUtils.createRefactoringObject(rightRef);
-        boolean isDependent = MoveRenameClassMoveRenameMethodCell.moveRenameClassMoveRenameMethodDependenceCell(leftRefactoring, rightRefactoring);
+        boolean isDependent = MoveRenameClassMoveRenameMethodCell.dependenceCell(leftRefactoring, rightRefactoring);
         Assert.assertTrue(isDependent);
     }
 }

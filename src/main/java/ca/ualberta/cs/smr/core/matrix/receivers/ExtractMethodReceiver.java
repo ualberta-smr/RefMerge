@@ -22,19 +22,19 @@ public class ExtractMethodReceiver extends Receiver {
         if(dispatcher.isSimplify()) {
             RefactoringObject renameMethod = dispatcher.getRefactoringObject();
             // Need to use this.refactoringObject/dispatcher.refactoringObject or set dispatcher.refactoringObject
-            this.isTransitive = ExtractMethodMoveRenameMethodCell.checkExtractMethodRenameMethodTransitivity(renameMethod,
+            this.isTransitive = ExtractMethodMoveRenameMethodCell.checkTransitivity(renameMethod,
                     this.refactoringObject);
             dispatcher.setRefactoringObject(renameMethod);
         }
         else {
             RefactoringObject dispatcherObject = dispatcher.getRefactoringObject();
             ExtractMethodMoveRenameMethodCell cell = new ExtractMethodMoveRenameMethodCell(project);
-            boolean isConflicting = cell.extractMethodRenameMethodConflictCell(dispatcherObject, this.refactoringObject);
+            boolean isConflicting = cell.conflictCell(dispatcherObject, this.refactoringObject);
             if(isConflicting) {
                 System.out.println("Extract Method/Rename Method Conflict");
             }
             else {
-                boolean isDependent = cell.extractMethodRenameMethodDependenceCell(dispatcherObject, this.refactoringObject);
+                boolean isDependent = cell.dependenceCell(dispatcherObject, this.refactoringObject);
                 // If there is dependence, the source method of the extract method refactoring was renamed. Rename the source
                 // method to represent this so we can replay the extract method properly
                 if(isDependent) {
@@ -54,13 +54,13 @@ public class ExtractMethodReceiver extends Receiver {
     public void receive(MoveRenameClassDispatcher dispatcher) {
         if(dispatcher.isSimplify()) {
             RefactoringObject renameClass = dispatcher.getRefactoringObject();
-            ExtractMethodMoveRenameClassCell.checkExtractMethodMoveRenameClassCombination(renameClass, this.refactoringObject);
+            ExtractMethodMoveRenameClassCell.checkCombination(renameClass, this.refactoringObject);
             dispatcher.setRefactoringObject(renameClass);
         }
         else {
             RefactoringObject dispatcherObject = dispatcher.getRefactoringObject();
             boolean isDependent = ExtractMethodMoveRenameClassCell
-                    .extractMethodMoveRenameClassDependenceCell(dispatcherObject, this.refactoringObject);
+                    .dependenceCell(dispatcherObject, this.refactoringObject);
             if(isDependent) {
                 this.refactoringObject.setDestinationFilePath(dispatcherObject.getDestinationFilePath());
                 ((ExtractMethodObject) this.refactoringObject)
@@ -80,7 +80,7 @@ public class ExtractMethodReceiver extends Receiver {
         }
         ExtractMethodExtractMethodCell cell = new ExtractMethodExtractMethodCell(project);
         RefactoringObject dispatcherObject = dispatcher.getRefactoringObject();
-        boolean isConflicting = cell.extractMethodExtractMethodConflictCell(dispatcherObject, this.refactoringObject);
+        boolean isConflicting = cell.conflictCell(dispatcherObject, this.refactoringObject);
         if(isConflicting) {
             System.out.println("Extract Method/Extract Method Conflict");
         }

@@ -17,7 +17,7 @@ public class MoveRenameMethodReceiver extends Receiver {
         if(dispatcher.isSimplify()) {
             RefactoringObject secondRefactoring = dispatcher.getRefactoringObject();
             MoveRenameMethodMoveRenameMethodCell cell = new MoveRenameMethodMoveRenameMethodCell(project);
-            this.isTransitive = cell.checkMoveRenameMethodMoveRenameMethodTransitivity(this.refactoringObject, secondRefactoring);
+            this.isTransitive = cell.checkTransitivity(this.refactoringObject, secondRefactoring);
             dispatcher.setRefactoringObject(secondRefactoring);
         }
         // Check for rename method/rename method conflict
@@ -28,7 +28,7 @@ public class MoveRenameMethodReceiver extends Receiver {
             System.out.println("Rename Method/Rename Method conflict: " + isConflicting);
             // They cannot be both conflicting and dependent
             if(!isConflicting) {
-                boolean isDependent = cell.checkMoveRenameMethodMoveRenameMethodDependence(dispatcherRefactoring, this.refactoringObject);
+                boolean isDependent = cell.checkDependence(dispatcherRefactoring, this.refactoringObject);
                 if(isDependent) {
                     // If the dispatcher refactoring is the rename method operation
                     if(((MoveRenameMethodObject) dispatcherRefactoring).isRenameMethod()) {

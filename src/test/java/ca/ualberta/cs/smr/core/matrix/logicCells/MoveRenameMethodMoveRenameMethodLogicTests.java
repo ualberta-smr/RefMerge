@@ -214,13 +214,13 @@ public class MoveRenameMethodMoveRenameMethodLogicTests extends LightJavaCodeIns
         moveRenameMethodObject.setType(RefactoringType.MOVE_OPERATION);
         MoveRenameMethodMoveRenameMethodCell cell = new MoveRenameMethodMoveRenameMethodCell(getProject());
         // A.foo -> A.bar / A.foo -> B.foo
-        boolean isDependent = cell.checkMoveRenameMethodMoveRenameMethodDependence(renameMethodObject, moveMethodObject);
+        boolean isDependent = cell.checkDependence(renameMethodObject, moveMethodObject);
         Assert.assertTrue(isDependent);
         // A.foo -> B.foo / A.foo -> C.foo
-        isDependent = cell.checkMoveRenameMethodMoveRenameMethodDependence(moveMethodObject, moveMethodObject2);
+        isDependent = cell.checkDependence(moveMethodObject, moveMethodObject2);
         Assert.assertFalse(isDependent);
         // A.foo -> B.foo / A.foo -> B.bar
-        isDependent = cell.checkMoveRenameMethodMoveRenameMethodDependence(moveMethodObject, moveRenameMethodObject);
+        isDependent = cell.checkDependence(moveMethodObject, moveRenameMethodObject);
         Assert.assertFalse(isDependent);
     }
 
@@ -288,7 +288,7 @@ public class MoveRenameMethodMoveRenameMethodLogicTests extends LightJavaCodeIns
     private void doRenameMethodRenameMethodTest(RefactoringObject firstRefactoring, RefactoringObject secondRefactoring,
                                                 RefactoringObject expectedRefactoring, boolean expectedTransitivity) {
         MoveRenameMethodMoveRenameMethodCell cell = new MoveRenameMethodMoveRenameMethodCell(null);
-        boolean isTransitive = cell.checkMoveRenameMethodMoveRenameMethodTransitivity(firstRefactoring, secondRefactoring);
+        boolean isTransitive = cell.checkTransitivity(firstRefactoring, secondRefactoring);
         if(expectedTransitivity) {
             Assert.assertTrue(isTransitive);
         }
