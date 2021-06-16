@@ -23,6 +23,8 @@ public class RefactoringObjectUtils {
                 return new MoveRenameMethodObject(refactoring);
             case EXTRACT_OPERATION:
                 return new ExtractMethodObject(refactoring);
+            case INLINE_OPERATION:
+                return new InlineMethodObject(refactoring);
 
         }
         return null;
