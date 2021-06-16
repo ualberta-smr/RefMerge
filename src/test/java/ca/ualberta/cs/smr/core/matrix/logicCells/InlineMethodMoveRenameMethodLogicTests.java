@@ -1,7 +1,6 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.InlineMethodObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameClassObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameMethodObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ParameterObject;
@@ -28,7 +27,7 @@ public class InlineMethodMoveRenameMethodLogicTests extends LightJavaCodeInsight
         InlineMethodObject inlineMethodObject = new InlineMethodObject("Foo.java", "Foo", foo,
                 "Foo.java", "Foo", target);
         boolean isConflicting = InlineMethodMoveRenameMethodCell
-                .inlineMethodMoveRenameMethodConflictCell(moveRenameMethodObject, inlineMethodObject);
+                .conflictCell(moveRenameMethodObject, inlineMethodObject);
         Assert.assertTrue(isConflicting);
     }
 
@@ -47,7 +46,7 @@ public class InlineMethodMoveRenameMethodLogicTests extends LightJavaCodeInsight
         InlineMethodObject inlineMethodObject = new InlineMethodObject("Foo.java", "Foo", foo,
                 "Foo.java", "Foo", target);
         boolean isDependent = InlineMethodMoveRenameMethodCell
-                .inlineMethodMoveRenameMethodDependenceCell(moveRenameMethodObject, inlineMethodObject);
+                .dependenceCell(moveRenameMethodObject, inlineMethodObject);
         Assert.assertTrue(isDependent);
     }
 }

@@ -14,8 +14,8 @@ public class MoveRenameClassMoveRenameClassCell {
      *  Check if a conflict exists between move+rename class/move+rename class refactorings. The conflict that can exist is a
      *  naming conflict.
      */
-    public static boolean MoveRenameClassMoveRenameClassConflictCell(RefactoringObject firstRefactoring, RefactoringObject secondRefactoring) {
-        if(checkClassNamingConflict(firstRefactoring, secondRefactoring)) {
+    public static boolean conflictCell(RefactoringObject firstRefactoring, RefactoringObject secondRefactoring) {
+        if(checkConflict(firstRefactoring, secondRefactoring)) {
             System.out.println("Naming conflict");
             return true;
         }
@@ -26,8 +26,7 @@ public class MoveRenameClassMoveRenameClassCell {
      * If two classes are moved or renamed to the same class or one class is refactored to two different destinations, then there is a
      * class naming conflict.
      */
-    public static boolean checkClassNamingConflict(RefactoringObject dispatcherRefactoringObject,
-                                                   RefactoringObject receiverRefactoringObject) {
+    public static boolean checkConflict(RefactoringObject dispatcherRefactoringObject, RefactoringObject receiverRefactoringObject) {
         MoveRenameClassObject dispatcherClassRefactoring = (MoveRenameClassObject) dispatcherRefactoringObject;
         MoveRenameClassObject receiverClassRefactoring = (MoveRenameClassObject) receiverRefactoringObject;
         ClassObject dispatcherOriginalClass = dispatcherClassRefactoring.getOriginalClassObject();
@@ -53,8 +52,7 @@ public class MoveRenameClassMoveRenameClassCell {
     /*
      * Check for dependence between move+rename class refactorings where one is move method and the other is rename method.
      */
-    public static boolean checkMoveRenameClassMoveRenameClassDependence(RefactoringObject dispatcherRefactoringObject,
-                                                                        RefactoringObject receiverRefactoringObject) {
+    public static boolean checkDependence(RefactoringObject dispatcherRefactoringObject, RefactoringObject receiverRefactoringObject) {
         MoveRenameClassObject dispatcherClassRefactoring = (MoveRenameClassObject) dispatcherRefactoringObject;
         MoveRenameClassObject receiverClassRefactoring = (MoveRenameClassObject) receiverRefactoringObject;
 
@@ -81,8 +79,7 @@ public class MoveRenameClassMoveRenameClassCell {
      * Checks for transitivity between the first and second move+rename class refactorings. If there is transitivity, the
      * first move+rename class refactoring is updated.
      */
-    public static boolean checkMoveRenameClassMoveRenameClassTransitivity(RefactoringObject firstRefactoring,
-                                                                          RefactoringObject secondRefactoring) {
+    public static boolean checkTransitivity(RefactoringObject firstRefactoring, RefactoringObject secondRefactoring) {
         boolean isTransitive = false;
         MoveRenameClassObject firstObject = (MoveRenameClassObject) firstRefactoring;
         MoveRenameClassObject secondObject = (MoveRenameClassObject) secondRefactoring;

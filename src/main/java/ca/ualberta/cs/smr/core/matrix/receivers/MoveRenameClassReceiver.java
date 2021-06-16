@@ -19,13 +19,11 @@ public class MoveRenameClassReceiver extends Receiver {
     public void receive(MoveRenameMethodDispatcher dispatcher) {
         RefactoringObject methodRefactoring = dispatcher.getRefactoringObject();
         if(dispatcher.isSimplify()) {
-            MoveRenameClassMoveRenameMethodCell
-                    .checkMoveRenameClassMoveRenameMethodCombination(methodRefactoring, this.refactoringObject);
+            MoveRenameClassMoveRenameMethodCell.checkCombination(methodRefactoring, this.refactoringObject);
             dispatcher.setRefactoringObject(methodRefactoring);
         }
         else {
-            boolean isDependent = MoveRenameClassMoveRenameMethodCell
-                    .moveRenameClassMoveRenameMethodDependenceCell(methodRefactoring, this.refactoringObject);
+            boolean isDependent = MoveRenameClassMoveRenameMethodCell.dependenceCell(methodRefactoring, this.refactoringObject);
             // If the rename method happens in the rename class, update the renamed method's class name
             if(isDependent) {
                 methodRefactoring.setDestinationFilePath(refactoringObject.getDestinationFilePath());
@@ -44,13 +42,13 @@ public class MoveRenameClassReceiver extends Receiver {
         RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
         if(dispatcher.isSimplify()) {
             this.isTransitive = MoveRenameClassMoveRenameClassCell
-                    .checkMoveRenameClassMoveRenameClassTransitivity(this.refactoringObject, dispatcherRefactoring);
+                    .checkTransitivity(this.refactoringObject, dispatcherRefactoring);
             dispatcher.setRefactoringObject(dispatcherRefactoring);
 
         }
         else {
             boolean isConflicting = MoveRenameClassMoveRenameClassCell
-                    .MoveRenameClassMoveRenameClassConflictCell(dispatcherRefactoring, this.refactoringObject);
+                    .conflictCell(dispatcherRefactoring, this.refactoringObject);
             if(isConflicting) {
                 this.refactoringObject.setReplayFlag(false);
                 dispatcherRefactoring.setReplayFlag(false);
@@ -58,7 +56,7 @@ public class MoveRenameClassReceiver extends Receiver {
             }
             else {
                 boolean isDependent = MoveRenameClassMoveRenameClassCell
-                        .checkMoveRenameClassMoveRenameClassDependence(dispatcherRefactoring, this.refactoringObject);
+                        .checkDependence(dispatcherRefactoring, this.refactoringObject);
                 if(isDependent) {
                     // If the dispatcher refactoring is the rename class refactoring
                     if(((MoveRenameClassObject) dispatcherRefactoring).isMoveMethod()) {

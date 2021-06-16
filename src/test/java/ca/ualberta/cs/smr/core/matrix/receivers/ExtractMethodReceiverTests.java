@@ -23,7 +23,7 @@ public class ExtractMethodReceiverTests extends LightJavaCodeInsightFixtureTestC
         RefactoringObject extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(1));
         RefactoringObject renameClassObject = RefactoringObjectUtils.createRefactoringObject(classRenameRefactorings.get(0));
 
-        boolean isDependent = ExtractMethodMoveRenameClassCell.extractMethodMoveRenameClassDependenceCell(renameClassObject, extractMethodObject);
+        boolean isDependent = ExtractMethodMoveRenameClassCell.dependenceCell(renameClassObject, extractMethodObject);
         Assert.assertTrue(isDependent);
     }
 

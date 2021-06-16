@@ -119,11 +119,11 @@ public class ExtractMethodRenameMethodLogicTests extends LightJavaCodeInsightFix
         assert renameMethodRefactorings != null;
         RefactoringObject extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(0));
         RefactoringObject renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(1));
-        boolean isDependent = ExtractMethodMoveRenameMethodCell.checkExtractMethodRenameMethodDependence(renameMethodObject,
+        boolean isDependent = ExtractMethodMoveRenameMethodCell.checkDependence(renameMethodObject,
                 extractMethodObject);
         Assert.assertTrue(isDependent);
         renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(2));
-        isDependent = ExtractMethodMoveRenameMethodCell.checkExtractMethodRenameMethodDependence(renameMethodObject, extractMethodObject);
+        isDependent = ExtractMethodMoveRenameMethodCell.checkDependence(renameMethodObject, extractMethodObject);
         Assert.assertFalse(isDependent);
     }
 
@@ -169,7 +169,7 @@ public class ExtractMethodRenameMethodLogicTests extends LightJavaCodeInsightFix
     private void doExtractMethodRenameMethodTest(RefactoringObject renameMethodObject, RefactoringObject extractMethodObject,
                                                RefactoringObject expectedRefactoring, boolean expectedTransitivity) {
 
-        boolean isTransitive = ExtractMethodMoveRenameMethodCell.checkExtractMethodRenameMethodTransitivity(renameMethodObject,
+        boolean isTransitive = ExtractMethodMoveRenameMethodCell.checkTransitivity(renameMethodObject,
                 extractMethodObject);
 
         if(expectedTransitivity) {

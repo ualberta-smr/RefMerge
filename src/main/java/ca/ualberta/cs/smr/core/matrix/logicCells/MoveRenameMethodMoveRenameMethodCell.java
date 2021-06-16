@@ -170,8 +170,7 @@ public class MoveRenameMethodMoveRenameMethodCell {
     /*
      * Check for dependence between rename method and move method operations specifically.
      */
-    public boolean checkMoveRenameMethodMoveRenameMethodDependence(RefactoringObject dispatcherRefactoring,
-                                                                   RefactoringObject receiverRefactoring) {
+    public boolean checkDependence(RefactoringObject dispatcherRefactoring, RefactoringObject receiverRefactoring) {
         MoveRenameMethodObject dispatcherObject = (MoveRenameMethodObject) dispatcherRefactoring;
         MoveRenameMethodObject receiverObject = (MoveRenameMethodObject) receiverRefactoring;
 
@@ -196,8 +195,7 @@ public class MoveRenameMethodMoveRenameMethodCell {
     /*
      * Check if the second refactoring is a transitive refactoring of the first refactoring.
      */
-    public boolean checkMoveRenameMethodMoveRenameMethodTransitivity(RefactoringObject firstRefactoring,
-                                                                     RefactoringObject secondRefactoring) {
+    public boolean checkTransitivity(RefactoringObject firstRefactoring, RefactoringObject secondRefactoring) {
         boolean isTransitive = false;
         MoveRenameMethodObject firstObject = (MoveRenameMethodObject) firstRefactoring;
         MoveRenameMethodObject secondObject = (MoveRenameMethodObject) secondRefactoring;

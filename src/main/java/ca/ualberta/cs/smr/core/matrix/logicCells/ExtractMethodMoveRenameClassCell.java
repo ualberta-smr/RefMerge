@@ -12,14 +12,14 @@ public class ExtractMethodMoveRenameClassCell {
     /*
      *  Check if an ordering dependence exists between extract method/move+rename class refactorings.
      */
-    public static boolean extractMethodMoveRenameClassDependenceCell(RefactoringObject renameClass, RefactoringObject extractMethod) {
-        return checkExtractMethodMoveRenameClassDependence(renameClass, extractMethod);
+    public static boolean dependenceCell(RefactoringObject renameClass, RefactoringObject extractMethod) {
+        return checkDependence(renameClass, extractMethod);
     }
 
     /*
      * Check if the move+rename class and the extract method refactorings are related
      */
-    public static boolean checkExtractMethodMoveRenameClassDependence(RefactoringObject renameClass, RefactoringObject extractMethod) {
+    public static boolean checkDependence(RefactoringObject renameClass, RefactoringObject extractMethod) {
         MoveRenameClassObject moveRenameClassObject = (MoveRenameClassObject) renameClass;
         ExtractMethodObject extractMethodObject = (ExtractMethodObject) extractMethod;
         String renameOriginalClassName = moveRenameClassObject.getOriginalClassObject().getClassName();
@@ -34,8 +34,7 @@ public class ExtractMethodMoveRenameClassCell {
      * Check if the extract method and  class refactorings can be combined. If there is a combination, update
      * the extract method refactoring.
      */
-    public static void checkExtractMethodMoveRenameClassCombination(RefactoringObject renameClass,
-                                                                    RefactoringObject extractMethod) {
+    public static void checkCombination(RefactoringObject renameClass, RefactoringObject extractMethod) {
         MoveRenameClassObject moveRenameClassObject = (MoveRenameClassObject) renameClass;
         String originalClassClass = moveRenameClassObject.getOriginalClassObject().getClassName();
         String destinationClassClass = moveRenameClassObject.getDestinationClassObject().getClassName();

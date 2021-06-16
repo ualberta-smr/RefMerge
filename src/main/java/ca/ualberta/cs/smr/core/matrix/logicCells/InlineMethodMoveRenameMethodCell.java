@@ -10,7 +10,7 @@ public class InlineMethodMoveRenameMethodCell {
     /*
      * Check if inline method and move+rename method refactorings conflict between branches.
      */
-    public static boolean inlineMethodMoveRenameMethodConflictCell(RefactoringObject moveRenameMethod, RefactoringObject inlineMethod) {
+    public static boolean conflictCell(RefactoringObject moveRenameMethod, RefactoringObject inlineMethod) {
         MoveRenameMethodObject moveRenameMethodObject = (MoveRenameMethodObject) moveRenameMethod;
         InlineMethodObject inlineMethodObject = (InlineMethodObject) inlineMethod;
 
@@ -29,7 +29,7 @@ public class InlineMethodMoveRenameMethodCell {
     /*
      * Check if inline method and move+rename method refactorings have dependence between branches.
      */
-    public static boolean inlineMethodMoveRenameMethodDependenceCell(RefactoringObject moveRenameMethod, RefactoringObject inlineMethod) {
+    public static boolean dependenceCell(RefactoringObject moveRenameMethod, RefactoringObject inlineMethod) {
         MoveRenameMethodObject moveRenameMethodObject = (MoveRenameMethodObject) moveRenameMethod;
         InlineMethodObject inlineMethodObject = (InlineMethodObject) inlineMethod;
 

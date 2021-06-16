@@ -12,15 +12,14 @@ public class MoveRenameClassMoveRenameMethodCell {
     /*
      *  Check if an ordering dependence exists between move+rename class and rename method refactorings.
      */
-    public static boolean moveRenameClassMoveRenameMethodDependenceCell(RefactoringObject methodObject, RefactoringObject classObject) {
-        return checkMoveRenameMethodMoveRenameClassDependence(methodObject, classObject);
+    public static boolean dependenceCell(RefactoringObject methodObject, RefactoringObject classObject) {
+        return checkDependence(methodObject, classObject);
     }
 
     /*
      * Check if the move+rename class needs to be performed before the rename method.
      */
-    public static boolean checkMoveRenameMethodMoveRenameClassDependence(RefactoringObject methodRefactoringObject,
-                                                                         RefactoringObject classRefactoringObject) {
+    public static boolean checkDependence(RefactoringObject methodRefactoringObject, RefactoringObject classRefactoringObject) {
         String classOriginalClassName = ((MoveRenameClassObject) classRefactoringObject).getOriginalClassObject().getClassName();
         String methodOriginalClassName = ((MoveRenameMethodObject) methodRefactoringObject).getOriginalClassName();
         return classOriginalClassName.equals(methodOriginalClassName);
@@ -30,8 +29,7 @@ public class MoveRenameClassMoveRenameMethodCell {
      * Check if the move+rename class and move+rename method refactorings can be simplified. If they can, update the move+rename method
      * refactoring class details.
      */
-    public static void checkMoveRenameClassMoveRenameMethodCombination(RefactoringObject renameMethod,
-                                                                       RefactoringObject renameClass) {
+    public static void checkCombination(RefactoringObject renameMethod, RefactoringObject renameClass) {
         MoveRenameMethodObject methodObject = (MoveRenameMethodObject) renameMethod;
         String originalMethodClass = methodObject.getOriginalClassName();
         String destinationMethodClass = methodObject.getDestinationClassName();

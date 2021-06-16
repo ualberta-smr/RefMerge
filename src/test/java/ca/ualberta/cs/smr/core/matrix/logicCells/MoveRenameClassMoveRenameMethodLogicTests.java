@@ -31,7 +31,7 @@ public class MoveRenameClassMoveRenameMethodLogicTests extends LightJavaCodeInsi
         Refactoring classRef = classRefs.get(0);
         RefactoringObject methodRefactoringObject = RefactoringObjectUtils.createRefactoringObject(methodRef);
         RefactoringObject classRefactoringObject = RefactoringObjectUtils.createRefactoringObject(classRef);
-        boolean isDependent = MoveRenameClassMoveRenameMethodCell.checkMoveRenameMethodMoveRenameClassDependence(methodRefactoringObject,
+        boolean isDependent = MoveRenameClassMoveRenameMethodCell.checkDependence(methodRefactoringObject,
                 classRefactoringObject);
         Assert.assertTrue(isDependent);
     }
@@ -112,7 +112,7 @@ public class MoveRenameClassMoveRenameMethodLogicTests extends LightJavaCodeInsi
 
     private void doRenameClassRenameMethodTest(RefactoringObject renameMethodObject, RefactoringObject renameClassObject,
                                                RefactoringObject expectedRefactoring) {
-        MoveRenameClassMoveRenameMethodCell.checkMoveRenameClassMoveRenameMethodCombination(renameMethodObject, renameClassObject);
+        MoveRenameClassMoveRenameMethodCell.checkCombination(renameMethodObject, renameClassObject);
 
         Assert.assertEquals(expectedRefactoring.getOriginalFilePath(), renameMethodObject.getOriginalFilePath());
         Assert.assertEquals(expectedRefactoring.getDestinationFilePath(), renameMethodObject.getDestinationFilePath());

@@ -31,15 +31,15 @@ public class MoveRenameClassMoveRenameClassLogicTests extends LightJavaCodeInsig
                 "C.java", "C", "destination2");
         moveRenameClass.setType(RefactoringType.MOVE_RENAME_CLASS);
 
-        boolean isConflicting = MoveRenameClassMoveRenameClassCell.checkClassNamingConflict(leftRenameClass, rightRenameClass);
+        boolean isConflicting = MoveRenameClassMoveRenameClassCell.checkConflict(leftRenameClass, rightRenameClass);
         Assert.assertTrue(isConflicting);
-        isConflicting = MoveRenameClassMoveRenameClassCell.checkClassNamingConflict(leftRenameClass, moveRenameClass);
+        isConflicting = MoveRenameClassMoveRenameClassCell.checkConflict(leftRenameClass, moveRenameClass);
         Assert.assertTrue(isConflicting);
-        isConflicting = MoveRenameClassMoveRenameClassCell.checkClassNamingConflict(moveClass, moveRenameClass);
+        isConflicting = MoveRenameClassMoveRenameClassCell.checkConflict(moveClass, moveRenameClass);
         Assert.assertTrue(isConflicting);
-        isConflicting = MoveRenameClassMoveRenameClassCell.checkClassNamingConflict(moveClass, leftRenameClass);
+        isConflicting = MoveRenameClassMoveRenameClassCell.checkConflict(moveClass, leftRenameClass);
         Assert.assertFalse(isConflicting);
-        isConflicting = MoveRenameClassMoveRenameClassCell.checkClassNamingConflict(moveClass, moveClass);
+        isConflicting = MoveRenameClassMoveRenameClassCell.checkConflict(moveClass, moveClass);
         Assert.assertFalse(isConflicting);
 
     }
@@ -58,11 +58,11 @@ public class MoveRenameClassMoveRenameClassLogicTests extends LightJavaCodeInsig
                 "C.java", "C", "destination2");
         moveRenameClass.setType(RefactoringType.MOVE_RENAME_CLASS);
 
-        boolean isDependent = MoveRenameClassMoveRenameClassCell.checkMoveRenameClassMoveRenameClassDependence(renameClass, moveClass);
+        boolean isDependent = MoveRenameClassMoveRenameClassCell.checkDependence(renameClass, moveClass);
         Assert.assertTrue(isDependent);
-        isDependent = MoveRenameClassMoveRenameClassCell.checkMoveRenameClassMoveRenameClassDependence(moveClass, renameClass);
+        isDependent = MoveRenameClassMoveRenameClassCell.checkDependence(moveClass, renameClass);
         Assert.assertTrue(isDependent);
-        isDependent = MoveRenameClassMoveRenameClassCell.checkMoveRenameClassMoveRenameClassDependence(moveRenameClass, moveClass);
+        isDependent = MoveRenameClassMoveRenameClassCell.checkDependence(moveRenameClass, moveClass);
         Assert.assertFalse(isDependent);
     }
 
@@ -127,7 +127,7 @@ public class MoveRenameClassMoveRenameClassLogicTests extends LightJavaCodeInsig
 
     private void doMoveRenameClassRenameClassTest(RefactoringObject firstRefactoring, RefactoringObject secondRefactoring,
                                                   RefactoringObject expectedRefactoring, boolean expectedTransitivity) {
-        boolean isTransitive = MoveRenameClassMoveRenameClassCell.checkMoveRenameClassMoveRenameClassTransitivity(firstRefactoring,
+        boolean isTransitive = MoveRenameClassMoveRenameClassCell.checkTransitivity(firstRefactoring,
                 secondRefactoring);
         if(expectedTransitivity) {
             Assert.assertTrue(isTransitive);
