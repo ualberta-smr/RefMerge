@@ -74,6 +74,10 @@ public class ExtractMethodReceiver extends Receiver {
      */
     @Override
     public void receive(ExtractMethodDispatcher dispatcher) {
+        // There is no transitivity between extract method/extract method
+        if(dispatcher.isSimplify()) {
+            return;
+        }
         ExtractMethodExtractMethodCell cell = new ExtractMethodExtractMethodCell(project);
         RefactoringObject dispatcherObject = dispatcher.getRefactoringObject();
         boolean isConflicting = cell.extractMethodExtractMethodConflictCell(dispatcherObject, this.refactoringObject);
