@@ -43,7 +43,7 @@ public class UndoOperations {
         String originalMethodName = original.getName();
         String originalClassName = moveRenameMethodObject.getOriginalClassName();
         String destinationClassName = moveRenameMethodObject.getDestinationClassName();
-        // get the PSI class using the qualified class name
+        // get the PSI class using original the qualified class name
         String filePath = moveRenameMethodObject.getDestinationFilePath();
         Utils utils = new Utils(project);
         utils.addSourceRoot(filePath);
@@ -166,7 +166,11 @@ public class UndoOperations {
         // Get the statements that surround the method invocation
         PsiElement[] surroundingElements = getSurroundingElements(psiMethod, extractedMethod, methodInvocation);
         extractMethodObject.setThrownExceptionInfo(thrownExceptionInfo);
-        extractMethodObject.setSurroundingElements(surroundingElements);
+        SmartPsiElementPointer[] surroundingPointers = new SmartPsiElementPointer[2];
+        surroundingPointers[0] = SmartPointerManager.createPointer(surroundingElements[0]);
+        surroundingPointers[1] = SmartPointerManager.createPointer(surroundingElements[1]);
+        extractMethodObject.setSurroundingElements(surroundingPointers);
+
 
         PsiJavaCodeReferenceElement referenceElement = Utils.getPsiReferenceExpressionsForExtractMethod(extractedMethod, project);
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
@@ -189,7 +193,6 @@ public class UndoOperations {
         PsiElement[] surroundingElements = new PsiElement[4];
         PsiCodeBlock psiCodeBlock = psiMethod.getBody();
         assert psiCodeBlock != null;
-        String methodInvocationString = Utils.formatText(methodInvocation.actualString());
 
         // Get the correct PSI reference
         Query<PsiReference> psiReferences = ReferencesSearch.search(extractedMethod);
@@ -208,6 +211,7 @@ public class UndoOperations {
             }
         }
         PsiElement psiParent = PsiTreeUtil.getParentOfType(psiElement, PsiDeclarationStatement.class, PsiExpressionStatement.class);
+        assert psiParent != null;
         PsiElement prevSibling = psiParent.getPrevSibling();
         if(prevSibling instanceof PsiWhiteSpace) {
             prevSibling = prevSibling.getPrevSibling();

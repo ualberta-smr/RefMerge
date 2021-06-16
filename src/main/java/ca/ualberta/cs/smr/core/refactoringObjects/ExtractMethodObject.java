@@ -1,6 +1,6 @@
 package ca.ualberta.cs.smr.core.refactoringObjects;
 
-import com.intellij.psi.PsiElement;
+import com.intellij.psi.SmartPsiElementPointer;
 import com.intellij.refactoring.changeSignature.ThrownExceptionInfo;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.decomposition.AbstractCodeFragment;
@@ -29,7 +29,7 @@ public class ExtractMethodObject implements RefactoringObject {
     private List<OperationInvocation> methodInvocations;
     private Set<AbstractCodeFragment> extractedCodeFragments;
     private Set<Replacement> replacements;
-    private PsiElement[] surroundingElements;
+    private SmartPsiElementPointer[] surroundingElements;
     private ThrownExceptionInfo[] thrownExceptionInfo;
     private boolean isReplay;
 
@@ -136,11 +136,11 @@ public class ExtractMethodObject implements RefactoringObject {
         return this.extractedCodeFragments;
     }
 
-    public void setSurroundingElements(PsiElement[] surroundingElements) {
+    public void setSurroundingElements(SmartPsiElementPointer[] surroundingElements) {
         this.surroundingElements = surroundingElements;
     }
 
-    public PsiElement[] getSurroundingElements() {
+    public SmartPsiElementPointer[] getSurroundingElements() {
         return this.surroundingElements;
     }
 

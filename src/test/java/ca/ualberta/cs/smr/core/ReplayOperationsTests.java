@@ -166,7 +166,7 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         moveClass.setType(RefactoringType.MOVE_CLASS);
         ReplayOperations replayOperations = new ReplayOperations(project);
         replayOperations.replayMoveRenameClass(moveClass);
-        Assert.assertEquals(destinationPackage, ((PsiJavaFile)psiFiles[0]).getPackageName());
+        Assert.assertEquals(destinationPackage, ((PsiJavaFile)psiFiles[1]).getPackageName());
 
     }
 

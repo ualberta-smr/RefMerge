@@ -63,30 +63,30 @@ public class Matrix {
     public ArrayList<RefactoringObject> runMatrix(ArrayList<RefactoringObject> leftRefactoringList,
                                              ArrayList<RefactoringObject> rightRefactoringList) {
         ArrayList<RefactoringObject> replayObjectList = new ArrayList<>();
-        if(leftRefactoringList.isEmpty() && rightRefactoringList.isEmpty()) {
-            return replayObjectList;
-        }
-        // If the right refactoring list is empty, return the left refactoring list
-        else if(!leftRefactoringList.isEmpty() && rightRefactoringList.isEmpty()) {
-            return leftRefactoringList;
-        }
-        // If the left refactoring list is empty, return the right refactoring list
-        else if(leftRefactoringList.isEmpty()) {
-            return rightRefactoringList;
-        }
+//        if(leftRefactoringList.isEmpty() && rightRefactoringList.isEmpty()) {
+//            return replayObjectList;
+//        }
+//        // If the right refactoring list is empty, return the left refactoring list
+//        else if(!leftRefactoringList.isEmpty() && rightRefactoringList.isEmpty()) {
+//            return leftRefactoringList;
+//        }
+//        // If the left refactoring list is empty, return the right refactoring list
+//        else if(leftRefactoringList.isEmpty()) {
+//            return rightRefactoringList;
+//        }
         for(RefactoringObject leftRefactoring : leftRefactoringList) {
             compareRefactorings(leftRefactoring, rightRefactoringList);
         }
 
         for(RefactoringObject rightRefactoring : rightRefactoringList) {
             if(rightRefactoring.isReplay()) {
-                RefactoringObjectUtils.insertRefactoringObject(rightRefactoring, replayObjectList);
+                RefactoringObjectUtils.insertRefactoringObject(rightRefactoring, replayObjectList, true);
             }
         }
 
         for(RefactoringObject leftRefactoring : leftRefactoringList) {
             if(leftRefactoring.isReplay()) {
-                RefactoringObjectUtils.insertRefactoringObject(leftRefactoring, replayObjectList);
+                RefactoringObjectUtils.insertRefactoringObject(leftRefactoring, replayObjectList, true);
             }
         }
         return replayObjectList;
@@ -138,7 +138,7 @@ public class Matrix {
 
         // If the refactoring is not transitive, add it to the simplified refactoring list
         if(transitiveCount == 0) {
-            RefactoringObjectUtils.insertRefactoringObject(newRefactoring, simplifiedRefactorings);
+            RefactoringObjectUtils.insertRefactoringObject(newRefactoring, simplifiedRefactorings, false);
         }
     }
 
