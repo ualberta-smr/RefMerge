@@ -47,8 +47,8 @@ public class RefMerge extends AnAction {
         List<GitRepository> repos = repoManager.getRepositories();
         GitRepository repo = repos.get(0);
         String mergeCommit = "efd3ce4f8fa";
-        String rightCommit = "38602965d";
-        String leftCommit = "2462eb2c79";
+        String rightCommit = "465bf95ded8";
+        String leftCommit = "69055f281be";
 
 
         refMerge(mergeCommit, rightCommit, leftCommit, project, repo);
@@ -147,6 +147,9 @@ public class RefMerge extends AnAction {
                     refactoringObject = undo.undoExtractMethod(refactoringObject);
                     int index = refactoringObjects.indexOf(refactoringObject);
                     refactoringObjects.set(index, refactoringObject);
+                case INLINE_OPERATION:
+                    undo.undoInlineMethod(refactoringObject);
+                    break;
 
             }
 
@@ -177,6 +180,9 @@ public class RefMerge extends AnAction {
                         break;
                     case EXTRACT_OPERATION:
                         replay.replayExtractMethod(refactoringObject);
+                    case INLINE_OPERATION:
+                        replay.replayInlineMethod(refactoringObject);
+                        break;
                 }
 
             }

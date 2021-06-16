@@ -1,6 +1,7 @@
 package ca.ualberta.cs.smr.core.matrix.receivers;
 
 import ca.ualberta.cs.smr.core.matrix.dispatcher.ExtractMethodDispatcher;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.InlineMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameClassDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
@@ -53,5 +54,11 @@ public class Receiver {
         // This is empty because subclasses will override this to dispatch to the correct logic cell.
     }
 
+    /*
+     * Any method that overrides this will dispatch to a logic cell containing an inline method refactoring.
+     */
+    public void receive(InlineMethodDispatcher dispatcher) {
+        // This is empty because subclasses will override this to dispatch to the correct logic cell.
+    }
 
 }
