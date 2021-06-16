@@ -1,6 +1,8 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
+import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ParameterObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;

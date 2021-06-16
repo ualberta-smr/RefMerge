@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.core.refactoringObjects;
+package ca.ualberta.cs.smr.core.refactoringObjects.typeObjects;
 
 /*
  * Contains the type and the name of a parameter

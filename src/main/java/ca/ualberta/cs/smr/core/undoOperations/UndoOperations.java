@@ -1,6 +1,7 @@
 package ca.ualberta.cs.smr.core.undoOperations;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
+import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;

@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core.refactoringObjects;
 
+import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.diff.MoveOperationRefactoring;
 import gr.uom.java.xmi.diff.RenameOperationRefactoring;

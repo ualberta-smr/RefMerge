@@ -1,6 +1,6 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
-import ca.ualberta.cs.smr.core.refactoringObjects.ClassObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ClassObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameClassObject;
 
