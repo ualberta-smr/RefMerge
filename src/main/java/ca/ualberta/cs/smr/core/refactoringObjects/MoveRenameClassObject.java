@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core.refactoringObjects;
 
+import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ClassObject;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.diff.MoveAndRenameClassRefactoring;
 import gr.uom.java.xmi.diff.MoveClassRefactoring;

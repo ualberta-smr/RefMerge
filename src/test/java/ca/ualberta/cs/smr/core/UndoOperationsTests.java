@@ -1,6 +1,8 @@
 package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
+import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ParameterObject;
 import ca.ualberta.cs.smr.core.undoOperations.UndoOperations;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
@@ -152,19 +154,18 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         Project project = myFixture.getProject();
         String testDir = "renameTestData/classRenameTestData/";
         String testDataRenamed = testDir + "renamed/";
-        String testResult = testDir + "expectedUndoResults/";
         String testFile = "ClassRenameTestData.java";
-        PsiFile[] psiFiles = myFixture.configureByFiles(testDataRenamed + testFile, testResult + testFile);
+        PsiFile[] psiFiles = myFixture.configureByFiles(testDataRenamed + testFile);
         String destinationPackage = "renameTestData.classRenameTestData";
         String originalPackage = "renameTestData";
-        System.out.println(psiFiles[1].getText());
-        Assert.assertNotEquals(originalPackage, ((PsiJavaFile)psiFiles[1]).getPackageName());
+        System.out.println(psiFiles[0].getText());
+        Assert.assertNotEquals(originalPackage, ((PsiJavaFile)psiFiles[0]).getPackageName());
         MoveRenameClassObject moveClass = new MoveRenameClassObject("ClassRenameTestData.java", "ClassRenameTestData", originalPackage,
                 "ClassRenameTestData.java", "ClassRenameTestData", destinationPackage);
         moveClass.setType(RefactoringType.MOVE_CLASS);
         UndoOperations undo = new UndoOperations(project);
         undo.undoMoveRenameClass(moveClass);
-        Assert.assertEquals(originalPackage, ((PsiJavaFile)psiFiles[1]).getPackageName());
+        Assert.assertEquals(originalPackage, ((PsiJavaFile)psiFiles[0]).getPackageName());
 
     }
 

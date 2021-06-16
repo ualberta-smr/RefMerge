@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.core.refactoringObjects;
 
+import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import com.intellij.psi.SmartPsiElementPointer;
 import com.intellij.refactoring.changeSignature.ThrownExceptionInfo;
 import gr.uom.java.xmi.UMLOperation;

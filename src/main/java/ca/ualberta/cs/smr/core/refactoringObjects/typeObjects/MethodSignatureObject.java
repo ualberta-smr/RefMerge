@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.core.refactoringObjects;
+package ca.ualberta.cs.smr.core.refactoringObjects.typeObjects;
 
 import gr.uom.java.xmi.UMLParameter;
 

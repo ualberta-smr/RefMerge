@@ -1,6 +1,8 @@
 package ca.ualberta.cs.smr.core.matrix;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
+import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ParameterObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.RefactoringDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameClassDispatcher;
