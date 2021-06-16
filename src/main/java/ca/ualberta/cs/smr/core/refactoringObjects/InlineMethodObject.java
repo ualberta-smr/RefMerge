@@ -25,6 +25,19 @@ public class InlineMethodObject implements RefactoringObject {
     private List<OperationInvocation> invocations;
     private boolean isReplay;
 
+
+    public InlineMethodObject(String originalFilePath, String originalClassName, MethodSignatureObject originalMethodSignature,
+                               String destinationFilePath, String destinationClassName, MethodSignatureObject destinationMethodSignature) {
+        this.refactoringType = RefactoringType.EXTRACT_OPERATION;
+        this.originalFilePath = originalFilePath;
+        this.originalClassName = originalClassName;
+        this.originalMethodSignature = originalMethodSignature;
+        this.destinationFilePath = destinationFilePath;
+        this.destinationClassName = destinationClassName;
+        this.destinationMethodSignature = destinationMethodSignature;
+        this.isReplay = true;
+    }
+
     public InlineMethodObject(Refactoring refactoring) {
         InlineOperationRefactoring operation = (InlineOperationRefactoring) refactoring;
         UMLOperation originalOperation = operation.getInlinedOperation();

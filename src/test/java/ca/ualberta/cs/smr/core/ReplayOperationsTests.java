@@ -157,18 +157,17 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         Project project = myFixture.getProject();
         String testDir = "renameTestData/classRenameTestData/";
         String testDataRenamed = testDir + "renamed/";
-        String testResult = testDir + "expectedUndoResults/";
         String testFile = "ClassRenameTestData.java";
-        PsiFile[] psiFiles = myFixture.configureByFiles(testDataRenamed + testFile, testResult + testFile);
+        PsiFile[] psiFiles = myFixture.configureByFiles(testDataRenamed + testFile);
         String originalPackage = "renameTestData.classRenameTestData";
         String destinationPackage = "renameTestData";
-        Assert.assertNotEquals(destinationPackage, ((PsiJavaFile)psiFiles[1]).getPackageName());
+        Assert.assertNotEquals(destinationPackage, ((PsiJavaFile)psiFiles[0]).getPackageName());
         MoveRenameClassObject moveClass = new MoveRenameClassObject("ClassRenameTestData.java", "ClassRenameTestData", originalPackage,
                 "ClassRenameTestData.java", "ClassRenameTestData", destinationPackage);
         moveClass.setType(RefactoringType.MOVE_CLASS);
         ReplayOperations replayOperations = new ReplayOperations(project);
         replayOperations.replayMoveRenameClass(moveClass);
-        Assert.assertEquals(destinationPackage, ((PsiJavaFile)psiFiles[1]).getPackageName());
+        Assert.assertEquals(destinationPackage, ((PsiJavaFile)psiFiles[0]).getPackageName());
 
     }
 
