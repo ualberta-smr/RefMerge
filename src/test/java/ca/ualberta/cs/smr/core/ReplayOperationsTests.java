@@ -3,8 +3,10 @@ package ca.ualberta.cs.smr.core;
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ParameterObject;
-import ca.ualberta.cs.smr.core.replayOperations.ReplayOperations;
-import ca.ualberta.cs.smr.core.undoOperations.UndoOperations;
+import ca.ualberta.cs.smr.core.replayOperations.ReplayExtractMethod;
+import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameClass;
+import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameMethod;
+import ca.ualberta.cs.smr.core.undoOperations.UndoExtractMethod;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
@@ -52,9 +54,9 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
-        ReplayOperations replay = new ReplayOperations(project);
+        ReplayMoveRenameMethod replayMoveRenameMethod = new ReplayMoveRenameMethod(project);
         RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
-        replay.replayMoveRenameMethod(refactoringObject);
+        replayMoveRenameMethod.replayMoveRenameMethod(refactoringObject);
 
 
         list1 = TestUtils.getMethodNames(oldMethods);
@@ -108,10 +110,10 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         moveRenameObject.setType(RefactoringType.MOVE_OPERATION);
         moveRenameObject.setType(RefactoringType.RENAME_METHOD);
 
-        ReplayOperations replayOperations = new ReplayOperations(project);
-        replayOperations.replayMoveRenameMethod(foobarObject);
-        replayOperations.replayMoveRenameMethod(fooObject);
-        replayOperations.replayMoveRenameMethod(moveRenameObject);
+        ReplayMoveRenameMethod replayMoveRenameMethod = new ReplayMoveRenameMethod(project);
+        replayMoveRenameMethod.replayMoveRenameMethod(foobarObject);
+        replayMoveRenameMethod.replayMoveRenameMethod(fooObject);
+        replayMoveRenameMethod.replayMoveRenameMethod(moveRenameObject);
 
 
         LightJavaCodeInsightFixtureTestCase.assertEquals(psiFiles[2].getText(), psiFiles[0].getText());
@@ -142,9 +144,9 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
-        ReplayOperations replay = new ReplayOperations(project);
+        ReplayMoveRenameClass replayMoveRenameClass = new ReplayMoveRenameClass(project);
         RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
-        replay.replayMoveRenameClass(refactoringObject);
+        replayMoveRenameClass.replayMoveRenameClass(refactoringObject);
 
         list1 = TestUtils.getClassNames(oldClasses);
         list2 = TestUtils.getClassNames(newClasses);
@@ -165,8 +167,8 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         MoveRenameClassObject moveClass = new MoveRenameClassObject("ClassRenameTestData.java", "ClassRenameTestData", originalPackage,
                 "ClassRenameTestData.java", "ClassRenameTestData", destinationPackage);
         moveClass.setType(RefactoringType.MOVE_CLASS);
-        ReplayOperations replayOperations = new ReplayOperations(project);
-        replayOperations.replayMoveRenameClass(moveClass);
+        ReplayMoveRenameClass replayMoveRenameClass = new ReplayMoveRenameClass(project);
+        replayMoveRenameClass.replayMoveRenameClass(moveClass);
         Assert.assertEquals(destinationPackage, ((PsiJavaFile)psiFiles[0]).getPackageName());
 
     }
@@ -188,15 +190,15 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         assert refactorings != null;
         Refactoring firstRef = refactorings.get(0);
         RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(firstRef);
-        UndoOperations undoOperations = new UndoOperations(project);
-        refactoringObject = undoOperations.undoExtractMethod(refactoringObject);
+        UndoExtractMethod undoExtractMethod = new UndoExtractMethod(project);
+        refactoringObject = undoExtractMethod.undoExtractMethod(refactoringObject);
         Refactoring secondRef = refactorings.get(1);
         RefactoringObject secondRefactoringObject = RefactoringObjectUtils.createRefactoringObject(secondRef);
-        secondRefactoringObject = undoOperations.undoExtractMethod(secondRefactoringObject);
+        secondRefactoringObject = undoExtractMethod.undoExtractMethod(secondRefactoringObject);
 
-        ReplayOperations replayOperations = new ReplayOperations(project);
-        replayOperations.replayExtractMethod(secondRefactoringObject);
-        replayOperations.replayExtractMethod(refactoringObject);
+        ReplayExtractMethod replayExtractMethod = new ReplayExtractMethod(project);
+        replayExtractMethod.replayExtractMethod(secondRefactoringObject);
+        replayExtractMethod.replayExtractMethod(refactoringObject);
 
         PsiFile file1 = files[0];
         PsiFile file2 = files[1];

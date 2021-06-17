@@ -3,7 +3,9 @@ package ca.ualberta.cs.smr.core;
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ParameterObject;
-import ca.ualberta.cs.smr.core.undoOperations.UndoOperations;
+import ca.ualberta.cs.smr.core.undoOperations.UndoExtractMethod;
+import ca.ualberta.cs.smr.core.undoOperations.UndoMoveRenameClass;
+import ca.ualberta.cs.smr.core.undoOperations.UndoMoveRenameMethod;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
@@ -50,7 +52,7 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
-        UndoOperations undo = new UndoOperations(project);
+        UndoMoveRenameMethod undo = new UndoMoveRenameMethod(project);
         RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
         undo.undoMoveRenameMethod(refactoringObject);
 
@@ -106,7 +108,7 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         moveRenameObject.setType(RefactoringType.MOVE_OPERATION);
         moveRenameObject.setType(RefactoringType.RENAME_METHOD);
 
-        UndoOperations undo = new UndoOperations(project);
+        UndoMoveRenameMethod undo = new UndoMoveRenameMethod(project);
         undo.undoMoveRenameMethod(fooObject);
         undo.undoMoveRenameMethod(moveRenameObject);
         undo.undoMoveRenameMethod(foobarObject);
@@ -140,7 +142,7 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
         RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
-        UndoOperations undo = new UndoOperations(project);
+        UndoMoveRenameClass undo = new UndoMoveRenameClass(project);
         undo.undoMoveRenameClass(refactoringObject);
 
         list1 = TestUtils.getClassNames(oldClasses);
@@ -162,7 +164,7 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         MoveRenameClassObject moveClass = new MoveRenameClassObject("ClassRenameTestData.java", "ClassRenameTestData", originalPackage,
                 "ClassRenameTestData.java", "ClassRenameTestData", destinationPackage);
         moveClass.setType(RefactoringType.MOVE_CLASS);
-        UndoOperations undo = new UndoOperations(project);
+        UndoMoveRenameClass undo = new UndoMoveRenameClass(project);
         undo.undoMoveRenameClass(moveClass);
         Assert.assertEquals(originalPackage, ((PsiJavaFile)psiFiles[0]).getPackageName());
 
@@ -185,7 +187,7 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
         RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
-        UndoOperations undoOperations = new UndoOperations(project);
+        UndoExtractMethod undoOperations = new UndoExtractMethod(project);
         undoOperations.undoExtractMethod(refactoringObject);
         ref = refactorings.get(1);
         refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
