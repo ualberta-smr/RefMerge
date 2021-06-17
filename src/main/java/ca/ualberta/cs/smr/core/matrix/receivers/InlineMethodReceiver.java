@@ -4,9 +4,10 @@ import ca.ualberta.cs.smr.core.matrix.dispatcher.ExtractMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.InlineMethodDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameClassDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameMethodDispatcher;
+import ca.ualberta.cs.smr.core.matrix.logicCells.InlineMethodMoveRenameClassCell;
 import ca.ualberta.cs.smr.core.matrix.logicCells.InlineMethodMoveRenameMethodCell;
-import ca.ualberta.cs.smr.core.matrix.logicCells.MoveRenameMethodMoveRenameMethodCell;
 import ca.ualberta.cs.smr.core.refactoringObjects.InlineMethodObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameClassObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameMethodObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 
@@ -47,7 +48,21 @@ public class InlineMethodReceiver extends Receiver {
      */
     @Override
     public void receive(MoveRenameClassDispatcher dispatcher) {
-
+        RefactoringObject moveRenameClass = dispatcher.getRefactoringObject();
+        // Check if the inline method and move+rename class refactorings can be combined
+        if(dispatcher.isSimplify()) {
+            InlineMethodMoveRenameClassCell.checkCombination(moveRenameClass, this.refactoringObject);
+            dispatcher.setRefactoringObject(moveRenameClass);
+        }
+        // Check for dependence between branches
+        else {
+            boolean isDependent = InlineMethodMoveRenameClassCell.checkDependence(moveRenameClass, this.refactoringObject);
+            if(isDependent) {
+                this.refactoringObject.setDestinationFilePath(moveRenameClass.getDestinationFilePath());
+                ((InlineMethodObject) this.refactoringObject)
+                        .setDestinationClassName(((MoveRenameClassObject) moveRenameClass).getDestinationClassObject().getClassName());
+            }
+        }
     }
 
     /*
@@ -55,7 +70,7 @@ public class InlineMethodReceiver extends Receiver {
      */
     @Override
     public void receive(ExtractMethodDispatcher dispatcher) {
-
+        // Placeholder for if inline method/extract method can result in conflicts/dependence
     }
 
     /*
@@ -63,6 +78,6 @@ public class InlineMethodReceiver extends Receiver {
      */
     @Override
     public void receive(InlineMethodDispatcher dispatcher) {
-
+        // Placeholder for if inline method/inline method can result in conflicts/dependence
     }
 }

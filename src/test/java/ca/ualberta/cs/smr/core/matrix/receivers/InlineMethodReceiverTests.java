@@ -1,7 +1,10 @@
 package ca.ualberta.cs.smr.core.matrix.receivers;
 
+import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameClassDispatcher;
 import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameMethodDispatcher;
+import ca.ualberta.cs.smr.core.matrix.logicCells.InlineMethodMoveRenameClassCell;
 import ca.ualberta.cs.smr.core.refactoringObjects.InlineMethodObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameClassObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameMethodObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ParameterObject;
@@ -52,6 +55,40 @@ public class InlineMethodReceiverTests extends LightJavaCodeInsightFixtureTestCa
         receiver.set(inlineMethodObject);
         dispatcher.dispatch(receiver);
         Assert.assertTrue(receiver.isConflicting);
+    }
 
+    public void testMoveRenameClassReceiver() {
+        List<ParameterObject> originalParameters = new ArrayList<>();
+        originalParameters.add(new ParameterObject("int", "return"));
+        originalParameters.add(new ParameterObject("int", "x"));
+        MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
+        MethodSignatureObject target = new MethodSignatureObject(originalParameters, "target");
+
+        // Rename Class Foo -> Bar
+        MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("Foo.java", "Foo", "package",
+                "Bar.java", "Bar", "package");
+        // Inline Method Foo.foo -> Foo.target
+        InlineMethodObject inlineMethodObjectBefore = new InlineMethodObject("Foo.java", "Foo", foo,
+                "Foo.java", "Foo", target);
+        // Inline Method Bar.foo -> Bar.target
+        InlineMethodObject inlineMethodObjectAfter = new InlineMethodObject("Bar.java", "Bar", foo,
+                "Bar.java", "Bar", target);
+        MoveRenameClassDispatcher dispatcher = new MoveRenameClassDispatcher();
+        dispatcher.set(moveRenameClassObject, getProject(), true);
+        InlineMethodReceiver receiver = new InlineMethodReceiver();
+        receiver.set(inlineMethodObjectBefore, getProject());
+        dispatcher.dispatch(receiver);
+        receiver.set(inlineMethodObjectAfter, getProject());
+        dispatcher.dispatch(receiver);
+        Assert.assertEquals(inlineMethodObjectAfter.getOriginalClassName(), inlineMethodObjectBefore.getOriginalClassName());
+        Assert.assertEquals(inlineMethodObjectAfter.getDestinationClassName(), inlineMethodObjectBefore.getDestinationClassName());
+        // Inline Method Foo.foo -> Foo.target
+        inlineMethodObjectBefore = new InlineMethodObject("Foo.java", "Foo", foo,
+                "Foo.java", "Foo", target);
+        dispatcher.set(moveRenameClassObject, getProject(), false);
+        receiver.set(inlineMethodObjectBefore, getProject());
+        dispatcher.dispatch(receiver);
+        Assert.assertEquals(inlineMethodObjectAfter.getOriginalClassName(), inlineMethodObjectBefore.getOriginalClassName());
+        Assert.assertEquals(inlineMethodObjectAfter.getDestinationClassName(), inlineMethodObjectBefore.getDestinationClassName());
     }
 }
