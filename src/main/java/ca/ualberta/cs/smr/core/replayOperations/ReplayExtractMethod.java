@@ -1,10 +1,10 @@
 package ca.ualberta.cs.smr.core.replayOperations;
 
-import ca.ualberta.cs.smr.core.refactoringObjects.*;
+import ca.ualberta.cs.smr.core.refactoringObjects.ExtractMethodObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ParameterObject;
 import ca.ualberta.cs.smr.utils.Utils;
-import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
@@ -13,142 +13,29 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.refactoring.*;
+import com.intellij.refactoring.JavaRefactoringFactory;
+import com.intellij.refactoring.RefactoringFactory;
+import com.intellij.refactoring.RenameRefactoring;
 import com.intellij.refactoring.changeSignature.ChangeSignatureProcessor;
 import com.intellij.refactoring.changeSignature.ParameterInfoImpl;
 import com.intellij.refactoring.changeSignature.ThrownExceptionInfo;
 import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
 import com.intellij.refactoring.extractMethod.ExtractMethodProcessor;
 import com.intellij.refactoring.extractMethod.PrepareFailedException;
-import com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesProcessor;
-import com.intellij.refactoring.move.moveClassesOrPackages.SingleSourceRootMoveDestination;
 import com.intellij.refactoring.util.duplicates.Match;
 import com.intellij.usageView.UsageInfo;
 import gr.uom.java.xmi.decomposition.replacement.Replacement;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
-
-public class ReplayOperations {
+public class ReplayExtractMethod {
 
     Project project;
 
-    public ReplayOperations(Project proj) {
-        this.project = proj;
-    }
-
-    /*
-     * replayRenameMethod performs the rename method refactoring.
-     */
-    public void replayMoveRenameMethod(RefactoringObject ref) {
-        MoveRenameMethodObject moveRenameMethodObject = (MoveRenameMethodObject) ref;
-        MethodSignatureObject original = moveRenameMethodObject.getOriginalMethodSignature();
-        MethodSignatureObject renamed = moveRenameMethodObject.getDestinationMethodSignature();
-        String destinationMethodName = renamed.getName();
-        String originalClassName = moveRenameMethodObject.getOriginalClassName();
-        String destinationClassName = moveRenameMethodObject.getDestinationClassName();
-        String filePath = moveRenameMethodObject.getOriginalFilePath();
-        Utils utils = new Utils(project);
-        PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(originalClassName, filePath);
-        assert psiClass != null;
-        PsiMethod psiMethod = Utils.getPsiMethod(psiClass, original);
-        assert psiMethod != null;
-        if(moveRenameMethodObject.isRenameMethod()) {
-            RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
-            RenameRefactoring renameRefactoring = factory.createRename(psiMethod, destinationMethodName, true, true);
-            UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
-            renameRefactoring.doRefactoring(refactoringUsages);
-        }
-        if(moveRenameMethodObject.isMoveMethod()) {
-            JavaRefactoringFactory refactoringFactory = JavaRefactoringFactory.getInstance(project);
-            String visibility = original.getVisibility();
-            PsiMember[] psiMembers = new PsiMember[1];
-            psiMembers[0] = psiMethod;
-            MoveMembersRefactoring moveMethodRefactoring = refactoringFactory.createMoveMembers(psiMembers,
-                    destinationClassName, visibility);
-            UsageInfo[] refactoringUsages = moveMethodRefactoring.findUsages();
-            moveMethodRefactoring.doRefactoring(refactoringUsages);
-        }
-        // Update the virtual file containing the refactoring
-        VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
-        vFile.refresh(false, true);
-    }
-
-
-    public void replayMoveRenameClass(RefactoringObject ref) {
-        MoveRenameClassObject moveRenameClassObject = (MoveRenameClassObject) ref;
-        String srcQualifiedClass = moveRenameClassObject.getOriginalClassObject().getClassName();
-        String destQualifiedClass = moveRenameClassObject.getDestinationClassObject().getClassName();
-        String destClassName = destQualifiedClass.substring(destQualifiedClass.lastIndexOf(".") + 1);
-        Utils utils = new Utils(project);
-        String filePath = moveRenameClassObject.getOriginalFilePath();
-        PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(srcQualifiedClass, filePath);
-        if(psiClass == null) {
-            return;
-        }
-
-        if(moveRenameClassObject.isRenameMethod()) {
-            RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
-            RenameRefactoring renameRefactoring = factory.createRename(psiClass, destClassName, true, true);
-            UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
-            renameRefactoring.doRefactoring(refactoringUsages);
-        }
-        if(moveRenameClassObject.isMoveMethod()) {
-            // If the move move class refactoring involves an inner class, skip it for now
-            if(moveRenameClassObject.isMoveInner() || moveRenameClassObject.isMoveOuter()) {
-                return;
-            }
-            // use the destination package to undo the move class
-            String destinationPackage = moveRenameClassObject.getDestinationClassObject().getPackageName();
-            PsiPackage psiPackage = JavaPsiFacade.getInstance(project).findPackage(destinationPackage);
-            assert psiPackage != null;
-            PsiDirectory[] psiDirectories = psiPackage.getDirectories();
-            PsiDirectory psiDirectory = psiDirectories[0];
-            if(psiDirectories.length > 1) {
-                String path = filePath.substring(0, filePath.lastIndexOf("/"));
-                for (PsiDirectory directory : psiDirectories) {
-                    String dirPath = directory.getVirtualFile().getPath();
-                    if (dirPath.contains(path)) {
-                        psiDirectory = directory;
-                        break;
-                    }
-                }
-            }
-            PsiElement[] psiElements = new PsiElement[1];
-            // Get the original directory before moving the class
-            PsiDirectory originalDirectory = psiClass.getContainingFile().getContainingDirectory();
-            psiElements[0] = psiClass;
-            MoveClassesOrPackagesProcessor moveClassProcessor = new MoveClassesOrPackagesProcessor(project, psiElements,
-                    new SingleSourceRootMoveDestination(PackageWrapper
-                            .create(Objects.requireNonNull(JavaDirectoryService.getInstance()
-                                    .getPackage(psiDirectory))), psiDirectory),
-                    true, true, null);
-
-            Application app = ApplicationManager.getApplication();
-            app.invokeAndWait(moveClassProcessor);
-
-            // If the original directory is empty after moving the class, delete the directory
-            if(originalDirectory.getFiles().length == 0) {
-                if (!ApplicationManager.getApplication().isUnitTestMode()) {
-                    originalDirectory.delete();
-                }
-
-            }
-        }
-        // Update the virtual file of the class
-        VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
-        vFile.refresh(false, true);
-
-    }
-
-    /*
-     * Replay the inline method refactoring by performing an inline method refactoring.
-     */
-    public void replayInlineMethod(RefactoringObject ref) {
-
+    public ReplayExtractMethod(Project project) {
+        this.project = project;
     }
 
     public void replayExtractMethod(RefactoringObject ref) {
@@ -365,5 +252,4 @@ public class ReplayOperations {
             renameRefactoring.doRefactoring(refactoringUsages);
         }
     }
-
 }

@@ -1,8 +1,14 @@
 package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.core.matrix.Matrix;
-import ca.ualberta.cs.smr.core.replayOperations.ReplayOperations;
-import ca.ualberta.cs.smr.core.undoOperations.UndoOperations;
+import ca.ualberta.cs.smr.core.replayOperations.ReplayExtractMethod;
+import ca.ualberta.cs.smr.core.replayOperations.ReplayInlineMethod;
+import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameClass;
+import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameMethod;
+import ca.ualberta.cs.smr.core.undoOperations.UndoExtractMethod;
+import ca.ualberta.cs.smr.core.undoOperations.UndoInlineMethod;
+import ca.ualberta.cs.smr.core.undoOperations.UndoMoveRenameClass;
+import ca.ualberta.cs.smr.core.undoOperations.UndoMoveRenameMethod;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.utils.Utils;
@@ -127,7 +133,6 @@ public class RefMerge extends AnAction {
      * undoRefactorings takes a list of refactorings and performs the inverse for each one.
      */
     public ArrayList<RefactoringObject> undoRefactorings(ArrayList<RefactoringObject> refactoringObjects) {
-        UndoOperations undo = new UndoOperations(project);
         // Iterate through the list of refactorings and undo each one
         for(RefactoringObject refactoringObject : refactoringObjects) {
             switch (refactoringObject.getRefactoringType()) {
@@ -135,20 +140,24 @@ public class RefMerge extends AnAction {
                 case MOVE_CLASS:
                 case MOVE_RENAME_CLASS:
                     // Undo the rename class refactoring. This is commented out because of the prompt issue
-                    undo.undoMoveRenameClass(refactoringObject);
+                    UndoMoveRenameClass undoMoveRenameClass = new UndoMoveRenameClass(project);
+                    undoMoveRenameClass.undoMoveRenameClass(refactoringObject);
                     break;
                 case RENAME_METHOD:
                 case MOVE_OPERATION:
                 case MOVE_AND_RENAME_OPERATION:
                     // Undo the rename method refactoring
-                    undo.undoMoveRenameMethod(refactoringObject);
+                    UndoMoveRenameMethod undoMoveRenameMethod = new UndoMoveRenameMethod(project);
+                    undoMoveRenameMethod.undoMoveRenameMethod(refactoringObject);
                     break;
                 case EXTRACT_OPERATION:
-                    refactoringObject = undo.undoExtractMethod(refactoringObject);
+                    UndoExtractMethod undoExtractMethod = new UndoExtractMethod(project);
+                    refactoringObject = undoExtractMethod.undoExtractMethod(refactoringObject);
                     int index = refactoringObjects.indexOf(refactoringObject);
                     refactoringObjects.set(index, refactoringObject);
                 case INLINE_OPERATION:
-                    undo.undoInlineMethod(refactoringObject);
+                    UndoInlineMethod undoInlineMethod = new UndoInlineMethod(project);
+                    undoInlineMethod.undoInlineMethod(refactoringObject);
                     break;
 
             }
@@ -164,24 +173,27 @@ public class RefMerge extends AnAction {
      */
     public void replayRefactorings(ArrayList<RefactoringObject> refactoringObjects) {
         try {
-            ReplayOperations replay = new ReplayOperations(project);
             for(RefactoringObject refactoringObject : refactoringObjects) {
                 switch (refactoringObject.getRefactoringType()) {
                     case RENAME_CLASS:
                     case MOVE_CLASS:
                     case MOVE_RENAME_CLASS:
-                        replay.replayMoveRenameClass(refactoringObject);
+                        ReplayMoveRenameClass replayMoveRenameClass = new ReplayMoveRenameClass(project);
+                        replayMoveRenameClass.replayMoveRenameClass(refactoringObject);
                         break;
                     case RENAME_METHOD:
                     case MOVE_OPERATION:
                     case MOVE_AND_RENAME_OPERATION:
                         // Perform the rename method refactoring
-                        replay.replayMoveRenameMethod(refactoringObject);
+                        ReplayMoveRenameMethod replayMoveRenameMethod = new ReplayMoveRenameMethod(project);
+                        replayMoveRenameMethod.replayMoveRenameMethod(refactoringObject);
                         break;
                     case EXTRACT_OPERATION:
-                        replay.replayExtractMethod(refactoringObject);
+                        ReplayExtractMethod replayExtractMethod = new ReplayExtractMethod(project);
+                        replayExtractMethod.replayExtractMethod(refactoringObject);
                     case INLINE_OPERATION:
-                        replay.replayInlineMethod(refactoringObject);
+                        ReplayInlineMethod replayInlineMethod = new ReplayInlineMethod(project);
+                        replayInlineMethod.replayInlineMethod(refactoringObject);
                         break;
                 }
 
