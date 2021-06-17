@@ -44,8 +44,8 @@ public class InlineMethodMoveRenameClassTests extends LightJavaCodeInsightFixtur
         InlineMethodObject inlineMethodObjectBefore = new InlineMethodObject("Foo.java", "Foo", foo,
                 "Foo.java", "Foo", target);
         // Inline Method Bar.foo -> Bar.target
-        InlineMethodObject inlineMethodObjectAfter = new InlineMethodObject("Foo.java", "Foo", foo,
-                "Foo.java", "Foo", target);
+        InlineMethodObject inlineMethodObjectAfter = new InlineMethodObject("Bar.java", "Bar", foo,
+                "Bar.java", "Bar", target);
         InlineMethodMoveRenameClassCell.checkCombination(moveRenameClassObject, inlineMethodObjectBefore);
         InlineMethodMoveRenameClassCell.checkCombination(moveRenameClassObject, inlineMethodObjectAfter);
         Assert.assertEquals(inlineMethodObjectAfter.getOriginalClassName(), inlineMethodObjectBefore.getOriginalClassName());
