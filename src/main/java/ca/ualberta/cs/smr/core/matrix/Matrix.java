@@ -1,13 +1,7 @@
 package ca.ualberta.cs.smr.core.matrix;
 
-import ca.ualberta.cs.smr.core.matrix.dispatcher.ExtractMethodDispatcher;
-import ca.ualberta.cs.smr.core.matrix.dispatcher.RefactoringDispatcher;
-import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameClassDispatcher;
-import ca.ualberta.cs.smr.core.matrix.dispatcher.MoveRenameMethodDispatcher;
-import ca.ualberta.cs.smr.core.matrix.receivers.ExtractMethodReceiver;
-import ca.ualberta.cs.smr.core.matrix.receivers.Receiver;
-import ca.ualberta.cs.smr.core.matrix.receivers.MoveRenameClassReceiver;
-import ca.ualberta.cs.smr.core.matrix.receivers.MoveRenameMethodReceiver;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.*;
+import ca.ualberta.cs.smr.core.matrix.receivers.*;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
@@ -36,6 +30,7 @@ public class Matrix {
        put(RefactoringType.MOVE_CLASS, new MoveRenameClassDispatcher());
        put(RefactoringType.MOVE_RENAME_CLASS, new MoveRenameClassDispatcher());
        put(RefactoringType.EXTRACT_OPERATION, new ExtractMethodDispatcher());
+       put(RefactoringType.INLINE_OPERATION, new InlineMethodDispatcher());
     }};
 
     /*
@@ -51,6 +46,7 @@ public class Matrix {
         put(RefactoringType.MOVE_CLASS, new MoveRenameClassReceiver());
         put(RefactoringType.MOVE_RENAME_CLASS, new MoveRenameClassReceiver());
         put(RefactoringType.EXTRACT_OPERATION, new ExtractMethodReceiver());
+        put(RefactoringType.INLINE_OPERATION, new InlineMethodReceiver());
     }};
 
     public Matrix(Project project) {
@@ -191,6 +187,7 @@ public class Matrix {
         vector.add(RefactoringType.MOVE_CLASS);
         vector.add(RefactoringType.MOVE_RENAME_CLASS);
         vector.add(RefactoringType.EXTRACT_OPERATION);
+        vector.add(RefactoringType.INLINE_OPERATION);
 
         Enumeration<RefactoringType> enumeration = vector.elements();
         int value = 0;

@@ -17,20 +17,28 @@ public class Receiver {
     Project project;
     RefactoringObject refactoringObject;
     boolean isTransitive;
+    boolean isConflicting;
 
     public void set(RefactoringObject refactoringObject,  Project project) {
         this.refactoringObject = refactoringObject;
         this.project = project;
+        this.isConflicting = false;
+        this.isTransitive = false;
     }
 
     public void set(RefactoringObject refactoringObject) {
         this.refactoringObject = refactoringObject;
         this.project = null;
         this.isTransitive = false;
+        this.isConflicting = false;
     }
 
     public boolean hasTransitivity() {
         return isTransitive;
+    }
+
+    public boolean isConflicting() {
+        return isConflicting;
     }
 
     /*
