@@ -45,4 +45,27 @@ public class InlineMethodMoveRenameMethodCell {
         return true;
     }
 
+    /*
+     * Check if inline method and move+rename method refactorings have transitivity on the same branch.
+     */
+    public static boolean checkCombination(RefactoringObject moveRenameMethod, RefactoringObject inlineMethod) {
+        MoveRenameMethodObject moveRenameMethodObject = (MoveRenameMethodObject) moveRenameMethod;
+        InlineMethodObject inlineMethodObject = (InlineMethodObject) inlineMethod;
+
+        MethodSignatureObject moveRenameOriginalMethod = moveRenameMethodObject.getOriginalMethodSignature();
+        MethodSignatureObject inlineDestinationMethod = ((InlineMethodObject) inlineMethod).getDestinationMethodSignature();
+        String moveRenameOriginalClass = moveRenameMethodObject.getOriginalClassName();
+        String inlineDestinationClass = inlineMethodObject.getDestinationClassName();
+
+        // If the target method for the inline method refactoring is moved/renamed, update the target method to the
+        // destination method for the move+rename method refactoring
+        if(!moveRenameOriginalMethod.equalsSignature(inlineDestinationMethod) || !moveRenameOriginalClass.equals(inlineDestinationClass)) {
+            return false;
+        }
+        inlineMethod.setDestinationFilePath(moveRenameMethod.getDestinationFilePath());
+        ((InlineMethodObject) inlineMethod).setDestinationClassName(moveRenameMethodObject.getDestinationClassName());
+        ((InlineMethodObject) inlineMethod).setDestinationMethodSignature(moveRenameMethodObject.getDestinationMethodSignature());
+        return true;
+    }
+
 }
