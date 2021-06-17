@@ -29,4 +29,26 @@ public class InlineMethodMoveRenameClassTests extends LightJavaCodeInsightFixtur
                 .checkDependence(moveRenameClassObject, inlineMethodObject);
         Assert.assertTrue(isDependent);
     }
+
+    public void testCheckInlineMethodMoveRenameClassCombination() {
+        List<ParameterObject> originalParameters = new ArrayList<>();
+        originalParameters.add(new ParameterObject("int", "return"));
+        originalParameters.add(new ParameterObject("int", "x"));
+        MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
+        MethodSignatureObject target = new MethodSignatureObject(originalParameters, "target");
+
+        // Rename Class Foo -> Bar
+        MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("Foo.java", "Foo", "package",
+                "Bar.java", "Bar", "package");
+        // Inline Method Foo.foo -> Foo.target
+        InlineMethodObject inlineMethodObjectBefore = new InlineMethodObject("Foo.java", "Foo", foo,
+                "Foo.java", "Foo", target);
+        // Inline Method Bar.foo -> Bar.target
+        InlineMethodObject inlineMethodObjectAfter = new InlineMethodObject("Foo.java", "Foo", foo,
+                "Foo.java", "Foo", target);
+        InlineMethodMoveRenameClassCell.checkCombination(moveRenameClassObject, inlineMethodObjectBefore);
+        InlineMethodMoveRenameClassCell.checkCombination(moveRenameClassObject, inlineMethodObjectAfter);
+        Assert.assertEquals(inlineMethodObjectAfter.getOriginalClassName(), inlineMethodObjectBefore.getOriginalClassName());
+        Assert.assertEquals(inlineMethodObjectAfter.getDestinationClassName(), inlineMethodObjectBefore.getDestinationClassName());
+    }
 }
