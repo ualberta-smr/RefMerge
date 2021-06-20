@@ -6,7 +6,7 @@ import com.intellij.refactoring.changeSignature.ThrownExceptionInfo;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.decomposition.AbstractCodeFragment;
 import gr.uom.java.xmi.decomposition.OperationInvocation;
-import gr.uom.java.xmi.decomposition.replacement.Replacement;
+import gr.uom.java.xmi.diff.CodeRange;
 import gr.uom.java.xmi.diff.ExtractOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
@@ -28,8 +28,9 @@ public class ExtractMethodObject implements RefactoringObject {
     private MethodSignatureObject originalMethodSignature;
     private MethodSignatureObject destinationMethodSignature;
     private List<OperationInvocation> methodInvocations;
+    private Set<AbstractCodeFragment> sourceCodeFragments;
     private Set<AbstractCodeFragment> extractedCodeFragments;
-    private Set<Replacement> replacements;
+    private CodeRange codeRange;
     private SmartPsiElementPointer[] surroundingElements;
     private ThrownExceptionInfo[] thrownExceptionInfo;
     private boolean isReplay;
@@ -66,8 +67,9 @@ public class ExtractMethodObject implements RefactoringObject {
         this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(), destinationOperation.getParameters(),
                 destinationOperation.isConstructor(), destinationOperation.getVisibility(), destinationOperation.isStatic());
         this.methodInvocations = extractOperationRefactoring.getExtractedOperationInvocations();
-        this.extractedCodeFragments = extractOperationRefactoring.getExtractedCodeFragmentsFromSourceOperation();
-        this.replacements = extractOperationRefactoring.getReplacements();
+        this.sourceCodeFragments = extractOperationRefactoring.getExtractedCodeFragmentsFromSourceOperation();
+        this.extractedCodeFragments = extractOperationRefactoring.getExtractedCodeFragmentsToExtractedOperation();
+        this.codeRange = extractOperationRefactoring.getExtractedCodeRangeFromSourceOperation();
         this.surroundingElements = null;
         this.thrownExceptionInfo = null;
         this.isReplay = true;
@@ -137,16 +139,20 @@ public class ExtractMethodObject implements RefactoringObject {
         return this.extractedCodeFragments;
     }
 
+    public Set<AbstractCodeFragment> getSourceCodeFragments() {
+        return this.sourceCodeFragments;
+    }
+
+    public CodeRange getCodeRange() {
+        return this.codeRange;
+    }
+
     public void setSurroundingElements(SmartPsiElementPointer[] surroundingElements) {
         this.surroundingElements = surroundingElements;
     }
 
     public SmartPsiElementPointer[] getSurroundingElements() {
         return this.surroundingElements;
-    }
-
-    public Set<Replacement> getReplacements() {
-        return this.replacements;
     }
 
     public void setThrownExceptionInfo(ThrownExceptionInfo[] thrownExceptionInfo) {

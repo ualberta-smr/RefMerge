@@ -24,9 +24,10 @@ import com.intellij.refactoring.extractMethod.ExtractMethodProcessor;
 import com.intellij.refactoring.extractMethod.PrepareFailedException;
 import com.intellij.refactoring.util.duplicates.Match;
 import com.intellij.usageView.UsageInfo;
-import gr.uom.java.xmi.decomposition.replacement.Replacement;
+import gr.uom.java.xmi.decomposition.AbstractCodeFragment;
+import gr.uom.java.xmi.diff.CodeRange;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -55,13 +56,12 @@ public class ReplayExtractMethod {
         assert psiMethod != null;
 
         SmartPsiElementPointer[] surroundingElements = extractMethodObject.getSurroundingElements();
-        PsiElement[] psiElements = getPsiElementsBetweenElements(surroundingElements);
+        Set<AbstractCodeFragment> sourceFragments = extractMethodObject.getSourceCodeFragments();
+        Set<AbstractCodeFragment> extractedFragments = extractMethodObject.getExtractedCodeFragments();
+        CodeRange codeRange = extractMethodObject.getCodeRange();
+        PsiElement[] psiElements =
+                getPsiElementsBetweenElements(surroundingElements, sourceFragments, extractedFragments, codeRange, psiMethod);
 
-
-        if(psiElements.length == 0) {
-            Set<Replacement> replacements = extractMethodObject.getReplacements();
-            psiElements = useReplacements(replacements, psiMethod);
-        }
         PsiType forcedReturnType = getPsiReturnType(extractedOperation, psiMethod);
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
         ExtractMethodProcessor extractMethodProcessor = new ExtractMethodProcessor(project, editor, psiElements,
@@ -141,56 +141,90 @@ public class ReplayExtractMethod {
     }
 
     /*
-     * Use the new psi statement at the beginning and end of the extracted method to get all involved psi statements
-     * in the refactoring.
+     * Use the psi elements that are not replaced by inlining the method at the beginning and end of the extracted method
+     *  to get all involved psi statements in the refactoring. If the psi element is null, then use the first and last
+     *  extracted fragments to find the psi elements.
      */
-    private PsiElement[] getPsiElementsBetweenElements(SmartPsiElementPointer[] surroundingElements) {
+    private PsiElement[] getPsiElementsBetweenElements(SmartPsiElementPointer[] surroundingElements,
+                                                       Set<AbstractCodeFragment> sourceFragments,
+                                                       Set<AbstractCodeFragment> extractedFragments,
+                                                       CodeRange codeRange, PsiMethod psiMethod) {
         PsiElement firstElement = surroundingElements[0].getElement();
         PsiElement lastElement = surroundingElements[1].getElement();
-        assert firstElement != null && lastElement != null;
-        if(firstElement instanceof PsiJavaToken) {
-            firstElement = firstElement.getNextSibling();
+        // If the first element was invalidated
+        if(firstElement == null) {
+            AbstractCodeFragment extractedFragment = extractedFragments.iterator().next();
+            AbstractCodeFragment sourceFragment = sourceFragments.iterator().next();
+            firstElement = getPsiElementFromCodeFragment(sourceFragment, extractedFragment, psiMethod);
         }
+        // Otherwise, use the first PSI element to get the first PSI element of the inlined method
         else {
             firstElement = firstElement.getNextSibling();
+            if (firstElement instanceof PsiWhiteSpace) {
+                firstElement = firstElement.getNextSibling();
+            }
         }
-        if(firstElement instanceof PsiWhiteSpace) {
-            firstElement = firstElement.getNextSibling();
-        }
-        if(lastElement instanceof PsiJavaToken) {
-            lastElement = lastElement.getPrevSibling();
+        // If the last element wsa invalidated
+        if(lastElement == null) {
+            AbstractCodeFragment extractedFragment = null;
+            for (AbstractCodeFragment extractedCodeFragment : extractedFragments) {
+                extractedFragment = extractedCodeFragment;
+            }
+            AbstractCodeFragment sourceFragment = null;
+            for (AbstractCodeFragment sourceCodeFragment : sourceFragments) {
+                sourceFragment = sourceCodeFragment;
+            }
+
+            assert sourceFragment != null;
+            assert extractedFragment != null;
+            lastElement = getPsiElementFromCodeFragment(sourceFragment,  extractedFragment, psiMethod);
         }
         else {
             lastElement = lastElement.getPrevSibling();
-        }
-        if(lastElement instanceof PsiWhiteSpace) {
-            lastElement = lastElement.getPrevSibling();
+            if (lastElement instanceof PsiWhiteSpace) {
+                lastElement = lastElement.getPrevSibling();
+            }
         }
 
+        // If an element is still null and the range is 1, then use the same element for both.
+        if(firstElement == null) {
+            int range = codeRange.getEndLine() - codeRange.getStartLine();
+            if(range == 0) {
+                firstElement = lastElement;
+            }
+        }
+        else if(lastElement == null) {
+            int range = codeRange.getEndLine() - codeRange.getStartLine();
+            if(range == 0) {
+                lastElement = firstElement;
+            }
+        }
+
+        assert firstElement != null;
+        assert lastElement != null;
         List<PsiElement> psiElements = PsiTreeUtil.getElementsOfRange(firstElement, lastElement);
         return psiElements.toArray(new PsiElement[0]);
     }
 
-
-    private PsiElement[] useReplacements(Set<Replacement> replacements, PsiMethod psiMethod) {
-        ArrayList<PsiElement> psiElements = new ArrayList<>();
-        PsiCodeBlock psiCodeBlock = psiMethod.getBody();
-        assert psiCodeBlock != null;
-        PsiStatement[] psiStatements = psiCodeBlock.getStatements();
-        for(Replacement replacement : replacements) {
-            String after = replacement.getAfter();
-            after = Utils.formatText(after);
-            for(PsiStatement psiStatement : psiStatements) {
-                String psiStatementText = Utils.formatText(psiStatement.getText());
-                if(psiStatementText.equals(after)) {
-                    psiElements.add(psiStatement);
+    private PsiElement getPsiElementFromCodeFragment(final AbstractCodeFragment sourceFragment,
+                                                     final AbstractCodeFragment extractedFragment,
+                                                     PsiMethod psiMethod) {
+        final PsiElement[] psiElement = new PsiElement[1];
+        final String sourceText = Utils.formatText(sourceFragment.getString());
+        final String extractedText = Utils.formatText(extractedFragment.getString());
+        psiMethod.accept(new PsiRecursiveElementWalkingVisitor() {
+            @Override
+            public void visitElement(@NotNull PsiElement element) {
+                super.visitElement(element);
+                String elementsText = Utils.formatText(element.getText());
+                if(sourceText.equals(elementsText) || extractedText.equals(elementsText)) {
+                    psiElement[0] = element;
+                    System.out.println(element.getText());
                 }
             }
-        }
-        return psiElements.toArray(new PsiElement[0]);
+        });
+        return psiElement[0];
     }
-
-
 
     /*
      * Gets the return type of the extracted method.
