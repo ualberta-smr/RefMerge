@@ -46,7 +46,7 @@ public class UndoMoveRenameClass {
             renameRefactoring.doRefactoring(refactoringUsages);
         }
         if(moveRenameClassObject.isMoveMethod()) {
-            // If the move class refactoring is inner to inner or inner to outer
+            // If the move class refactoring is inner to inner or outer to inner
             if(moveRenameClassObject.isMoveInner()) {
                 // If the inner to outer move class happens in the same file
                 if(moveRenameClassObject.isSameFile()) {
@@ -54,7 +54,7 @@ public class UndoMoveRenameClass {
                     moveClassOuterInFile(psiClass);
                 }
             }
-            // If the move class refactoring is outer to inner, skip for now
+            // If the move class refactoring is inner to outer
             else if(moveRenameClassObject.isMoveOuter()) {
                 // If the outer to inner move class happens in the same file
                 if(moveRenameClassObject.isSameFile()) {

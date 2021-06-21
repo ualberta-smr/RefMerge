@@ -207,7 +207,6 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         UndoMoveRenameClass undo = new UndoMoveRenameClass(project);
         undo.undoMoveRenameClass(moveClass);
         Assert.assertEquals(destinationPackage, ((PsiJavaFile)psiFiles[0]).getPackageName());
-        System.out.println(psiFiles[0].getText());
     }
 
 
