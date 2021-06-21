@@ -21,6 +21,7 @@ public class MoveRenameMethodObject implements RefactoringObject {
     private String originalClassName;
     private String destinationClassName;
     private MethodSignatureObject destinationMethodSignature;
+    private int startOffset;
     private boolean isRenameMethod;
     private boolean isMoveMethod;
     private boolean isReplay;
@@ -59,6 +60,7 @@ public class MoveRenameMethodObject implements RefactoringObject {
             MoveOperationRefactoring moveOperationRefactoring = (MoveOperationRefactoring) refactoring;
             originalOperation = moveOperationRefactoring.getOriginalOperation();
             destinationOperation = moveOperationRefactoring.getMovedOperation();
+            this.startOffset = originalOperation.getLocationInfo().getStartOffset();
         }
         this.originalFilePath = originalOperation.getLocationInfo().getFilePath();
         this.destinationFilePath = destinationOperation.getLocationInfo().getFilePath();
@@ -73,6 +75,7 @@ public class MoveRenameMethodObject implements RefactoringObject {
         this.refactoringType = refactoring.getRefactoringType();
         setType(refactoringType);
         this.isReplay = true;
+
     }
 
     public RefactoringType getRefactoringType() {
@@ -129,6 +132,10 @@ public class MoveRenameMethodObject implements RefactoringObject {
 
     public void setDestinationMethodSignature(MethodSignatureObject destinationMethodSignature) {
         this.destinationMethodSignature = destinationMethodSignature;
+    }
+
+    public int getStartOffset() {
+        return this.startOffset;
     }
 
     public void setType(RefactoringType refactoringType) {
