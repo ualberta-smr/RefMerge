@@ -7,6 +7,7 @@ import ca.ualberta.cs.smr.core.replayOperations.ReplayExtractMethod;
 import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameClass;
 import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameMethod;
 import ca.ualberta.cs.smr.core.undoOperations.UndoExtractMethod;
+import ca.ualberta.cs.smr.core.undoOperations.UndoMoveRenameClass;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
@@ -171,6 +172,45 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         replayMoveRenameClass.replayMoveRenameClass(moveClass);
         Assert.assertEquals(destinationPackage, ((PsiJavaFile)psiFiles[0]).getPackageName());
 
+    }
+
+    public void testReplayMoveOuterToInnerClassInSameFile() {
+        Project project = myFixture.getProject();
+        String testDir = "moveRenameClass/";
+        String testData = testDir + "after/";
+        String testFile = "InnerClassTest.java";
+        PsiFile[] psiFiles = myFixture.configureByFiles(testData + testFile);
+        String destinationPackage = "moveRenameClass.Class1";
+        String originalPackage = "moveRenameClass";
+        MoveRenameClassObject moveClass = new MoveRenameClassObject("InnerClassTest.java",
+                "moveRenameClass.Class2", originalPackage,
+                "InnerClassTest.java", "moveRenameClass.Class1.Class2", destinationPackage);
+        moveClass.setType(RefactoringType.MOVE_CLASS);
+        moveClass.setSameFile();
+        moveClass.setOuterToInner();
+        ReplayMoveRenameClass replay = new ReplayMoveRenameClass(project);
+        replay.replayMoveRenameClass(moveClass);
+        Assert.assertEquals(originalPackage, ((PsiJavaFile)psiFiles[0]).getPackageName());
+
+    }
+
+    public void testReplayMoveInnerToOuterClassInSameFile() {
+        Project project = myFixture.getProject();
+        String testDir = "moveRenameClass/";
+        String testData = testDir + "before/";
+        String testFile = "InnerClassTest.java";
+        PsiFile[] psiFiles = myFixture.configureByFiles(testData + testFile);
+        String destinationPackage = "moveRenameClass";
+        String originalPackage = "moveRenameClass.Class1";
+        MoveRenameClassObject moveClass = new MoveRenameClassObject("InnerClassTest.java",
+                "moveRenameClass.Class1.Class2", originalPackage,
+                "InnerClassTest.java", "moveRenameClassClass2", destinationPackage);
+        moveClass.setType(RefactoringType.MOVE_CLASS);
+        moveClass.setSameFile();
+        moveClass.setInnerToOuter();
+        ReplayMoveRenameClass replay = new ReplayMoveRenameClass(project);
+        replay.replayMoveRenameClass(moveClass);
+        Assert.assertEquals(destinationPackage, ((PsiJavaFile)psiFiles[0]).getPackageName());
     }
 
     public void testReplayMultipleExtractMethodNewLine() {
