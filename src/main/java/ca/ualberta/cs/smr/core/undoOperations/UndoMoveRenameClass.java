@@ -5,6 +5,7 @@ import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
@@ -36,7 +37,7 @@ public class UndoMoveRenameClass {
         utils.addSourceRoot(filePath);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(destQualifiedClass, filePath);
         assert psiClass != null;
-
+        VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         if(moveRenameClassObject.isRenameMethod()) {
             RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
             RenameRefactoring renameRefactoring = factory.createRename(psiClass, srcClassName, true, true);
@@ -44,8 +45,16 @@ public class UndoMoveRenameClass {
             renameRefactoring.doRefactoring(refactoringUsages);
         }
         if(moveRenameClassObject.isMoveMethod()) {
-            // If the move move class refactoring involves an inner class, skip it for now
-            if(moveRenameClassObject.isMoveInner() || moveRenameClassObject.isMoveOuter()) {
+            // If the move class refactoring is inner to inner or inner to outer
+            if(moveRenameClassObject.isMoveInner()) {
+                // If the inner to outer move class happens in the same file
+                if(moveRenameClassObject.isSameFile()) {
+                    vFile = psiClass.getContainingFile().getVirtualFile();
+                    moveClassOuterInFile(psiClass);
+                }
+            }
+            // If the move class refactoring is outer to inner, skip for now
+            else if(moveRenameClassObject.isMoveOuter()) {
                 return;
             }
             // Otherwise if the move class moves a top level class from one package to another
@@ -76,9 +85,21 @@ public class UndoMoveRenameClass {
             }
         }
         // Update the virtual file of the class
-        VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);
 
+    }
+
+    /*
+     * Move the inner class out of the class in the same file.
+     */
+    private void moveClassOuterInFile(PsiClass psiClass) {
+        PsiFile psiFile = psiClass.getContainingFile();
+        PsiClass outerClass = psiClass.getContainingClass();
+        final PsiClass newClass = PsiElementFactory.getInstance(project).createClassFromText(psiClass.getText(), psiFile);
+        WriteCommandAction.runWriteCommandAction(project, () -> {
+            psiFile.addAfter(newClass, outerClass);
+            psiClass.delete();
+        });
     }
 
 }

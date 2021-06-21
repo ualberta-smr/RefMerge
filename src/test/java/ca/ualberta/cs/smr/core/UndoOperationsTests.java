@@ -170,6 +170,27 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
 
     }
 
+    public void testUndoMoveInnerClassInSameFile() {
+        Project project = myFixture.getProject();
+        String testDir = "moveRenameClass/";
+        String testData = testDir + "before/";
+        String testFile = "InnerClassTest.java";
+        PsiFile[] psiFiles = myFixture.configureByFiles(testData + testFile);
+        String destinationPackage = "moveRenameClass.Class1";
+        String originalPackage = "moveRenameClass";
+        MoveRenameClassObject moveClass = new MoveRenameClassObject("InnerClassTest.java",
+                "moveRenameClass.Class2", originalPackage,
+                "InnerClassTest.java", "moveRenameClass.Class1.Class2", destinationPackage);
+        moveClass.setType(RefactoringType.MOVE_CLASS);
+        moveClass.setSameFile();
+        moveClass.setOuterToInner();
+        UndoMoveRenameClass undo = new UndoMoveRenameClass(project);
+        undo.undoMoveRenameClass(moveClass);
+        Assert.assertEquals(originalPackage, ((PsiJavaFile)psiFiles[0]).getPackageName());
+
+    }
+
+
     public void testUndoMultipleExtractMethod() {
         Project project = myFixture.getProject();
         String basePath = System.getProperty("user.dir");

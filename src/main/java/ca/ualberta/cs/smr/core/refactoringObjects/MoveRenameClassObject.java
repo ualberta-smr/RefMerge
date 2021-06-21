@@ -23,6 +23,7 @@ public class MoveRenameClassObject implements RefactoringObject {
     private boolean isReplay;
     private boolean isRenameMethod;
     private boolean isMoveMethod;
+    private boolean isSameFile;
     private boolean isMoveInner;
     private boolean isMoveOuter;
 
@@ -75,6 +76,10 @@ public class MoveRenameClassObject implements RefactoringObject {
                 new ClassObject(destinationClass.getName(), destinationClass.getPackageName());
         this.isMoveInner = false;
         this.isMoveOuter = false;
+        // If the original and destination file path are the same, then the outer/inner class refactoring was performed
+        // in the same file.
+        this.isSameFile = originalFilePath.equals(destinationFilePath);
+
         // If the move/move+class refactoring is moving a top level or inner class to an inner class
         if((originalClass.isTopLevel() && !destinationClass.isTopLevel())
                 || (!originalClass.isTopLevel() && !destinationClass.isTopLevel())) {
@@ -141,6 +146,18 @@ public class MoveRenameClassObject implements RefactoringObject {
             this.isRenameMethod = true;
             this.isMoveMethod = true;
         }
+    }
+
+    public void setOuterToInner() {
+        this.isMoveInner = true;
+    }
+
+    public void setSameFile() {
+        this.isSameFile = true;
+    }
+
+    public boolean isSameFile() {
+        return isSameFile;
     }
 
     public boolean isMoveInner() {
