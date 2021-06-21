@@ -3,6 +3,7 @@ package ca.ualberta.cs.smr.core.undoOperations;
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.utils.Utils;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -49,6 +50,9 @@ public class UndoMoveRenameMethod {
         // If the operation was moved, undo the move method by performing a move method refactoring to move it to the
         // original class
         if(moveRenameMethodObject.isMoveMethod()) {
+            // Get the method before the moved method so it can be moved to the correct location
+            moveRenameMethodObject.setMethodAbove(getAboveMethodBeforeMove(psiClass, psiMethod));
+
             JavaRefactoringFactory refactoringFactory = JavaRefactoringFactory.getInstance(project);
             String visibility = original.getVisibility();
             PsiMember[] psiMembers = new PsiMember[1];
@@ -67,15 +71,37 @@ public class UndoMoveRenameMethod {
     }
 
     /*
+     * Get the method signature before the method that's moved so we can move it back to the same spot.
+     */
+
+    private String getAboveMethodBeforeMove(PsiClass psiClass, PsiMethod psiMethod) {
+        String signatureString = null;
+        PsiMethod[] psiMethods = psiClass.getMethods();
+        for(int i = 0; i < psiMethods.length; i++) {
+
+            PsiMethod otherMethod = psiMethods[i];
+            if(psiMethod.getSignature(PsiSubstitutor.UNKNOWN).equals(otherMethod.getSignature(PsiSubstitutor.UNKNOWN))) {
+                if(i == 0) {
+                    break;
+                }
+                signatureString = psiMethods[i-1].getSignature(PsiSubstitutor.UNKNOWN).toString();
+                break;
+            }
+        }
+        return signatureString;
+    }
+
+    /*
      * Move the method to the correct location within the class using the text offset detected by RefMiner.
      */
     private void moveMethodToOriginalLocation(PsiClass psiClass, PsiMethod psiMethod,  int startOffset) {
-        // Get all of the methods inside of the class.
-        PsiMethod[] psiMethods = psiClass.getMethods();
 
-        if(!psiClass.isValid() || !psiMethod.isValid()) {
+        if (ApplicationManager.getApplication().isUnitTestMode()) {
             return;
         }
+
+        // Get all of the methods inside of the class.
+        PsiMethod[] psiMethods = psiClass.getMethods();
 
         // Get the physical copy of the PSI method so we can delete it
         for(PsiMethod method : psiMethods) {
@@ -116,15 +142,6 @@ public class UndoMoveRenameMethod {
             psiClass.addAfter(newMethod, finalPsiMethodBefore);
             finalPsiMethod.delete();
         });
-        psiMethods = psiClass.getMethods();
-        for(PsiMethod m : psiMethods) {
-            System.out.println(m.getName());
-        }
-
-        psiMethods = psiClass.getMethods();
-        for(PsiMethod m : psiMethods) {
-            System.out.println(m.getName());
-        }
     }
 
 }

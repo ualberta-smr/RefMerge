@@ -4,11 +4,11 @@ import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameMethodObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.utils.Utils;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiMember;
-import com.intellij.psi.PsiMethod;
+import com.intellij.psi.*;
 import com.intellij.refactoring.JavaRefactoringFactory;
 import com.intellij.refactoring.MoveMembersRefactoring;
 import com.intellij.refactoring.RefactoringFactory;
@@ -54,9 +54,68 @@ public class ReplayMoveRenameMethod {
                     destinationClassName, visibility);
             UsageInfo[] refactoringUsages = moveMethodRefactoring.findUsages();
             moveMethodRefactoring.doRefactoring(refactoringUsages);
+            psiClass = moveMethodRefactoring.getTargetClass();
+            moveMethodToOriginallyMovedLocation(psiClass, psiMethod, moveRenameMethodObject.getMethodAbove());
         }
         // Update the virtual file containing the refactoring
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);
     }
+
+    /*
+     * Move the method to the correct location within the class using the method signature of the above method.
+     */
+    private void moveMethodToOriginallyMovedLocation(PsiClass psiClass, PsiMethod psiMethod,  String aboveSignature) {
+
+        if (ApplicationManager.getApplication().isUnitTestMode()) {
+            return;
+        }
+
+        // Get all of the methods inside of the class.
+        PsiMethod[] psiMethods = psiClass.getMethods();
+
+        // Get the physical copy of the PSI method so we can delete it
+        for(PsiMethod method : psiMethods) {
+            if(method.getSignature(PsiSubstitutor.UNKNOWN).equals(psiMethod.getSignature(PsiSubstitutor.UNKNOWN))) {
+                psiMethod = method;
+                break;
+            }
+        }
+
+        // Create the new PSI method
+        final PsiMethod newMethod = PsiElementFactory.getInstance(project).createMethodFromText(psiMethod.getText(), psiClass);
+        PsiMethod finalPsiMethod = psiMethod;
+        // If the method is the first method in the class
+        if(aboveSignature == null) {
+            PsiMethod psiMethodAfter = null;
+            for(PsiMethod otherMethod : psiMethods) {
+                if(!otherMethod.isConstructor()) {
+                    psiMethodAfter = otherMethod;
+                    break;
+                }
+            }
+            PsiMethod finalPsiMethodAfter = psiMethodAfter;
+            WriteCommandAction.runWriteCommandAction(project, () -> {
+                psiClass.addBefore(newMethod, finalPsiMethodAfter);
+                finalPsiMethod.delete();
+            });
+            return;
+        }
+
+        PsiMethod psiMethodBefore = null;
+        // Find which method comes before the moved method
+        for(PsiMethod otherMethod : psiMethods) {
+            if(otherMethod.getSignature(PsiSubstitutor.UNKNOWN).toString().equals(aboveSignature)) {
+                psiMethodBefore = otherMethod;
+                break;
+            }
+        }
+        PsiMethod finalPsiMethodBefore = psiMethodBefore;
+        WriteCommandAction.runWriteCommandAction(project, () -> {
+            psiClass.addAfter(newMethod, finalPsiMethodBefore);
+            finalPsiMethod.delete();
+        });
+    }
+
+
 }

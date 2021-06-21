@@ -22,6 +22,7 @@ public class MoveRenameMethodObject implements RefactoringObject {
     private String destinationClassName;
     private MethodSignatureObject destinationMethodSignature;
     private int startOffset;
+    private String methodAbove;
     private boolean isRenameMethod;
     private boolean isMoveMethod;
     private boolean isReplay;
@@ -149,6 +150,14 @@ public class MoveRenameMethodObject implements RefactoringObject {
             this.isRenameMethod = true;
             this.isMoveMethod = true;
         }
+    }
+
+    public void setMethodAbove(String methodAbove) {
+        this.methodAbove = methodAbove;
+    }
+
+    public String getMethodAbove() {
+        return this.methodAbove;
     }
 
     public boolean isRenameMethod() {
