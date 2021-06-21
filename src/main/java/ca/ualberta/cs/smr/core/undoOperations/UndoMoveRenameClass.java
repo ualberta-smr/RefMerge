@@ -9,6 +9,7 @@ import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.*;
 import com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesProcessor;
 import com.intellij.refactoring.move.moveClassesOrPackages.SingleSourceRootMoveDestination;
@@ -55,7 +56,11 @@ public class UndoMoveRenameClass {
             }
             // If the move class refactoring is outer to inner, skip for now
             else if(moveRenameClassObject.isMoveOuter()) {
-                return;
+                // If the outer to inner move class happens in the same file
+                if(moveRenameClassObject.isSameFile()) {
+                    vFile = psiClass.getContainingFile().getVirtualFile();
+                    moveClassInnerInFile(psiClass);
+                }
             }
             // Otherwise if the move class moves a top level class from one package to another
             else {
@@ -101,5 +106,20 @@ public class UndoMoveRenameClass {
             psiClass.delete();
         });
     }
+
+    /*
+     * Move the outer class in the class into the public class in the same file.
+     */
+    private void moveClassInnerInFile(PsiClass psiClass) {
+        PsiFile psiFile = psiClass.getContainingFile();
+        PsiClass[] psiClasses = PsiTreeUtil.getChildrenOfType(psiFile, PsiClass.class);
+        PsiClass outerClass = psiClasses[0];
+        final PsiClass newClass = PsiElementFactory.getInstance(project).createClassFromText(psiClass.getText(), psiFile);
+        WriteCommandAction.runWriteCommandAction(project, () -> {
+            outerClass.addAfter(newClass, null);
+            psiClass.delete();
+        });
+    }
+
 
 }

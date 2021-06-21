@@ -66,6 +66,7 @@ public class MoveRenameClassObject implements RefactoringObject {
             MoveAndRenameClassRefactoring moveAndRenameClassRefactoring = (MoveAndRenameClassRefactoring) refactoring;
             originalClass = moveAndRenameClassRefactoring.getOriginalClass();
             destinationClass = moveAndRenameClassRefactoring.getRenamedClass();
+
         }
         this.refactoringType = refactoring.getRefactoringType();
         this.originalFilePath = originalClass.getLocationInfo().getFilePath();
@@ -146,6 +147,10 @@ public class MoveRenameClassObject implements RefactoringObject {
             this.isRenameMethod = true;
             this.isMoveMethod = true;
         }
+    }
+
+    public void setInnerToOuter() {
+        this.isMoveOuter = true;
     }
 
     public void setOuterToInner() {
