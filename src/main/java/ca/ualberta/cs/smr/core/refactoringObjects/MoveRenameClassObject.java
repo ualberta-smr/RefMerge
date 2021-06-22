@@ -20,6 +20,7 @@ public class MoveRenameClassObject implements RefactoringObject {
     private String destinationFilePath;
     private ClassObject originalClassObject;
     private ClassObject destinationClassObject;
+    private int startOffset;
     private boolean isReplay;
     private boolean isRenameMethod;
     private boolean isMoveMethod;
@@ -85,10 +86,12 @@ public class MoveRenameClassObject implements RefactoringObject {
         if((originalClass.isTopLevel() && !destinationClass.isTopLevel())
                 || (!originalClass.isTopLevel() && !destinationClass.isTopLevel())) {
             this.isMoveInner = true;
+            this.startOffset = originalClass.getLocationInfo().getStartOffset();
         }
         // If an inner class is being refactored to a top level class
         else if(!originalClass.isTopLevel() && destinationClass.isTopLevel()) {
             this.isMoveOuter = true;
+            this.startOffset = originalClass.getLocationInfo().getStartOffset();
         }
         this.isMoveMethod = false;
         this.isRenameMethod = false;
@@ -134,6 +137,10 @@ public class MoveRenameClassObject implements RefactoringObject {
 
     public ClassObject getDestinationClassObject() {
         return destinationClassObject;
+    }
+
+    public int getStartOffset() {
+        return startOffset;
     }
 
     public void setType(RefactoringType refactoringType) {
