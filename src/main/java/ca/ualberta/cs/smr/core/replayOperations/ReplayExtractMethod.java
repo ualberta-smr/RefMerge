@@ -219,7 +219,6 @@ public class ReplayExtractMethod {
                 String elementsText = Utils.formatText(element.getText());
                 if(sourceText.equals(elementsText) || extractedText.equals(elementsText)) {
                     psiElement[0] = element;
-                    System.out.println(element.getText());
                 }
             }
         });
