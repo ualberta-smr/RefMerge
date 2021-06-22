@@ -7,7 +7,6 @@ import ca.ualberta.cs.smr.core.replayOperations.ReplayExtractMethod;
 import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameClass;
 import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameMethod;
 import ca.ualberta.cs.smr.core.undoOperations.UndoExtractMethod;
-import ca.ualberta.cs.smr.core.undoOperations.UndoMoveRenameClass;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
