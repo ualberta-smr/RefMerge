@@ -44,6 +44,9 @@ public class MoveRenameClassObject implements RefactoringObject {
         this.isMoveMethod = false;
         this.isRenameMethod = false;
         this.isReplay = true;
+        this.isSameFile = false;
+        this.isMoveOuter = false;
+        this.isMoveInner = false;
     }
 
     /*

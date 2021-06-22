@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.refactoring.*;
+import com.intellij.refactoring.move.moveClassesOrPackages.MoveClassToInnerProcessor;
 import com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesProcessor;
 import com.intellij.refactoring.move.moveClassesOrPackages.SingleSourceRootMoveDestination;
 import com.intellij.usageView.UsageInfo;
@@ -45,20 +46,32 @@ public class UndoMoveRenameClass {
             renameRefactoring.doRefactoring(refactoringUsages);
         }
         if(moveRenameClassObject.isMoveMethod()) {
-            // If the move class refactoring is inner to inner or outer to inner
+            // If the move class refactoring is outer to inner
             if(moveRenameClassObject.isMoveInner()) {
-                // If the inner to outer move class happens in the same file
+                // If the outer to inner move class happens in the same file
                 if(moveRenameClassObject.isSameFile()) {
                     vFile = psiClass.getContainingFile().getVirtualFile();
                     moveClassOuterInFile(psiClass, srcClassName, moveRenameClassObject.getStartOffset());
                 }
+                // Otherwise if the outer class is moved inner in a different file
             }
             // If the move class refactoring is inner to outer
             else if(moveRenameClassObject.isMoveOuter()) {
-                // If the outer to inner move class happens in the same file
+                // If the inner to outer move class happens in the same file
                 if(moveRenameClassObject.isSameFile()) {
                     vFile = psiClass.getContainingFile().getVirtualFile();
                     moveClassInnerInFile(psiClass, srcClassName);
+                }
+                // Otherwise if the inner to outer move class happens in different files
+                else {
+                    PsiClass[] psiClasses = new PsiClass[1];
+                    psiClasses[0] = psiClass;
+                    String originalPackage = moveRenameClassObject.getOriginalClassObject().getPackageName();
+                    String originalTopClass = originalPackage.substring(originalPackage.lastIndexOf(".") + 1);
+                    PsiClass targetClass = utils.getPsiClassByFilePath(filePath, originalTopClass);
+                    MoveClassToInnerProcessor processor = new MoveClassToInnerProcessor(project, psiClasses, targetClass,
+                            true, false, null);
+                    ApplicationManager.getApplication().invokeAndWait(processor);
                 }
             }
             // Otherwise if the move class moves a top level class from one package to another
