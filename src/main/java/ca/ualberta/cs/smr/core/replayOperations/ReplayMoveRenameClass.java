@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.*;
+import com.intellij.refactoring.move.moveClassesOrPackages.MoveClassToInnerProcessor;
 import com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesProcessor;
 import com.intellij.refactoring.move.moveClassesOrPackages.SingleSourceRootMoveDestination;
 import com.intellij.refactoring.move.moveInner.MoveInnerProcessor;
@@ -52,6 +53,17 @@ public class ReplayMoveRenameClass {
                     vFile = psiClass.getContainingFile().getVirtualFile();
                     // Move the class back into the file
                     moveClassInnerInFile(psiClass, destClassName);
+                }
+                else {
+                    PsiClass[] psiClasses = new PsiClass[1];
+                    psiClasses[0] = psiClass;
+                    String destinationPackage = moveRenameClassObject.getDestinationClassObject().getPackageName();
+                    String destinationTopClass = destinationPackage.substring(destinationPackage.lastIndexOf(".") + 1);
+                    filePath = moveRenameClassObject.getDestinationFilePath();
+                    PsiClass targetClass = utils.getPsiClassByFilePath(filePath, destinationTopClass);
+                    MoveClassToInnerProcessor processor = new MoveClassToInnerProcessor(project, psiClasses, targetClass,
+                            true, false, null);
+                    ApplicationManager.getApplication().invokeAndWait(processor);
                 }
             }
             // If the move class refactoring is inner to outer

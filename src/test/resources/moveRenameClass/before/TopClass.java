@@ -1,5 +1,5 @@
 package moveRenameClass.before;
 
-public class TopClass {
+public class Class1 {
 
 }
