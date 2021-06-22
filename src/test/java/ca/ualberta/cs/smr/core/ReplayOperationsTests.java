@@ -7,7 +7,6 @@ import ca.ualberta.cs.smr.core.replayOperations.ReplayExtractMethod;
 import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameClass;
 import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameMethod;
 import ca.ualberta.cs.smr.core.undoOperations.UndoExtractMethod;
-import ca.ualberta.cs.smr.core.undoOperations.UndoMoveRenameClass;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
@@ -171,6 +170,35 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
 
     }
 
+    public void testReplayMoveOuterToInnerClassBetweenFiles() {
+        Project project = myFixture.getProject();
+        String testDir = "moveRenameClass/";
+        String testDataBefore = testDir + "before/";
+        String testDataAfter = testDir + "after/";
+        String testFile = "TopClass.java";
+        myFixture.configureByFiles(testDataBefore + testFile, testDataAfter + "TopClass.java");
+        String originalPackage = "moveRenameClass.after";
+        String destinationPackage = "moveRenameClass.before.Class1";
+        MoveRenameClassObject moveClass = new MoveRenameClassObject("TopClass.java",
+                "moveRenameClass.after.Class2", originalPackage,
+                "TopClass.java", "moveRenameClass.before.Class1.Class2", destinationPackage);
+        moveClass.setType(RefactoringType.MOVE_CLASS);
+        moveClass.setOuterToInner();
+        ReplayMoveRenameClass replay = new ReplayMoveRenameClass(project);
+        replay.replayMoveRenameClass(moveClass);
+        PsiPackage psiPackage = JavaPsiFacade.getInstance(project).findPackage(originalPackage);
+        assert psiPackage != null;
+        PsiClass[] psiClasses = psiPackage.getClasses();
+        Assert.assertEquals(0, psiClasses.length);
+        psiPackage = JavaPsiFacade.getInstance(project).findPackage("moveRenameClass.before");
+        assert psiPackage != null;
+        psiClasses = psiPackage.getClasses();
+        Assert.assertEquals(1, psiClasses.length);
+        PsiClass[] innerClasses = psiClasses[0].getInnerClasses();
+        Assert.assertEquals(1, innerClasses.length);
+        Assert.assertEquals("moveRenameClass.before.Class1.Class2", innerClasses[0].getQualifiedName());
+    }
+
     public void testReplayMoveOuterToInnerClassInSameFile() {
         Project project = myFixture.getProject();
         String testDir = "moveRenameClass/";
@@ -196,12 +224,12 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         String testDir = "moveRenameClass/";
         String testDataBefore = testDir + "before/";
         String testDataAfter = testDir + "after/";
-        String testFile = "InnerClassTest.java";
-        PsiFile[] psiFiles = myFixture.configureByFiles(testDataBefore + testFile, testDataAfter + "Empty.java");
-        String originalPackage = "moveRenameClass.Class1";
+        String testFile = "TopClass.java";
+        PsiFile[] psiFiles = myFixture.configureByFiles(testDataBefore + testFile, testDataAfter + "TopClass.java");
+        String originalPackage = "moveRenameClass.before.Class1";
         String destinationPackage = "moveRenameClass.after";
         MoveRenameClassObject moveClass = new MoveRenameClassObject("InnerClassTest.java",
-                "moveRenameClass.Class1.Class2", originalPackage,
+                "moveRenameClass.beforeClass1.Class2", originalPackage,
                 "Empty.java", "moveRenameClass.after.Class2", destinationPackage);
         moveClass.setType(RefactoringType.MOVE_CLASS);
         moveClass.setInnerToOuter();
@@ -210,6 +238,7 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         PsiClass topClass = ((PsiJavaFile) psiFiles[0]).getClasses()[0];
         Assert.assertEquals(0, topClass.getInnerClasses().length);
         PsiPackage psiPackage = JavaPsiFacade.getInstance(project).findPackage(destinationPackage);
+        assert psiPackage != null;
         PsiClass[] psiClasses = psiPackage.getClasses();
         Assert.assertEquals(1, psiClasses.length);
         Assert.assertEquals("moveRenameClass.after.Class2", psiClasses[0].getQualifiedName());

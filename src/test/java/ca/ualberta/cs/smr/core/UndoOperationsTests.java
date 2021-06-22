@@ -223,10 +223,10 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         String testDataAfter = testDir + "after/";
         String testFile = "TopClass.java";
         PsiFile[] psiFiles = myFixture.configureByFiles(testDataAfter + testFile, testDataBefore + testFile);
-        String originalPackage = "moveRenameClass.before.TopClass";
+        String originalPackage = "moveRenameClass.before.Class1";
         String destinationPackage = "moveRenameClass.after";
         MoveRenameClassObject moveClass = new MoveRenameClassObject("TopClass.java",
-                "moveRenameClass.before.TopClass.Class2", originalPackage,
+                "moveRenameClass.before.Class1.Class2", originalPackage,
                 "TopClass.java", "moveRenameClass.after.Class2", destinationPackage);
         moveClass.setType(RefactoringType.MOVE_CLASS);
         moveClass.setInnerToOuter();
