@@ -7,6 +7,7 @@ import ca.ualberta.cs.smr.core.replayOperations.ReplayExtractMethod;
 import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameClass;
 import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameMethod;
 import ca.ualberta.cs.smr.core.undoOperations.UndoExtractMethod;
+import ca.ualberta.cs.smr.core.undoOperations.UndoMoveRenameClass;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
@@ -261,6 +262,27 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         ReplayMoveRenameClass replay = new ReplayMoveRenameClass(project);
         replay.replayMoveRenameClass(moveClass);
         Assert.assertEquals(destinationPackage, ((PsiJavaFile)psiFiles[0]).getPackageName());
+    }
+
+    public void testReplayMoveInnerToInnerClass() {
+        Project project = myFixture.getProject();
+        String testDir = "moveRenameClass/";
+        String testDataBefore = testDir + "before/";
+        String testDataAfter = testDir + "after/";
+        PsiFile[] psiFiles = myFixture.configureByFiles(testDataAfter + "Class3.java", testDataBefore + "TopClass.java");
+        String originalPackage = "moveRenameClass.after.Class3";
+        String destinationPackage = "moveRenameClass.Class1";
+        MoveRenameClassObject moveClass = new MoveRenameClassObject("Class3.java",
+                "moveRenameClass.after.Class3.Class2", originalPackage,
+                "TopClass.java", "moveRenameClass.before.Class1.Class2", destinationPackage);
+        moveClass.setType(RefactoringType.MOVE_CLASS);
+        moveClass.setInnerToInner();
+        ReplayMoveRenameClass replay = new ReplayMoveRenameClass(project);
+        replay.replayMoveRenameClass(moveClass);
+        PsiClass topClass = ((PsiJavaFile) psiFiles[1]).getClasses()[0];
+        Assert.assertEquals(1, topClass.getInnerClasses().length);
+        topClass = ((PsiJavaFile) psiFiles[0]).getClasses()[0];
+        Assert.assertEquals(0, topClass.getInnerClasses().length);
     }
 
     public void testReplayMultipleExtractMethodNewLine() {
