@@ -26,6 +26,7 @@ public class MoveRenameClassObject implements RefactoringObject {
     private boolean isMoveMethod;
     private boolean isSameFile;
     private boolean isMoveInner;
+    private boolean isMoveInnerToInner;
     private boolean isMoveOuter;
 
 
@@ -47,6 +48,7 @@ public class MoveRenameClassObject implements RefactoringObject {
         this.isSameFile = false;
         this.isMoveOuter = false;
         this.isMoveInner = false;
+        this.isMoveInnerToInner = false;
     }
 
     /*
@@ -86,13 +88,15 @@ public class MoveRenameClassObject implements RefactoringObject {
         this.isSameFile = originalFilePath.equals(destinationFilePath);
 
         // If the move/move+class refactoring is moving a top level or inner class to an inner class
-        if((originalClass.isTopLevel() && !destinationClass.isTopLevel())
-                || (!originalClass.isTopLevel() && !destinationClass.isTopLevel())) {
+        if(!originalClass.isTopLevel() && !destinationClass.isTopLevel()) {
+            this.isMoveInnerToInner = true;
+            this.startOffset = originalClass.getLocationInfo().getStartOffset();
+        } else if (originalClass.isTopLevel() && !destinationClass.isTopLevel()) {
             this.isMoveInner = true;
             this.startOffset = originalClass.getLocationInfo().getStartOffset();
         }
         // If an inner class is being refactored to a top level class
-        else if(!originalClass.isTopLevel() && destinationClass.isTopLevel()) {
+        else if (!originalClass.isTopLevel() && destinationClass.isTopLevel()) {
             this.isMoveOuter = true;
             this.startOffset = originalClass.getLocationInfo().getStartOffset();
         }
@@ -167,6 +171,10 @@ public class MoveRenameClassObject implements RefactoringObject {
         this.isMoveInner = true;
     }
 
+    public void setInnerToInner() {
+        this.isMoveInnerToInner = true;
+    }
+
     public void setSameFile() {
         this.isSameFile = true;
     }
@@ -177,6 +185,10 @@ public class MoveRenameClassObject implements RefactoringObject {
 
     public boolean isMoveInner() {
         return isMoveInner;
+    }
+
+    public boolean isMoveInnerToInner() {
+        return isMoveInnerToInner;
     }
 
     public boolean isMoveOuter() {

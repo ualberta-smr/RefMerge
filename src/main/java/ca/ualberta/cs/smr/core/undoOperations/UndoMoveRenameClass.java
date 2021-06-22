@@ -96,6 +96,17 @@ public class UndoMoveRenameClass {
                     ApplicationManager.getApplication().invokeAndWait(processor);
                 }
             }
+            // Move the inner class to another class
+            else if(moveRenameClassObject.isMoveInnerToInner()) {
+                filePath = moveRenameClassObject.getOriginalFilePath();
+                String originalPackage = moveRenameClassObject.getOriginalClassObject().getPackageName();
+                String containingClass = originalPackage.substring(originalPackage.lastIndexOf(".") + 1);
+                PsiClass targetContainer = utils.getPsiClassByFilePath(filePath, containingClass);
+                MoveInnerProcessor processor = new MoveInnerProcessor(project, null);
+                processor.setup(psiClass, srcClassName, false,
+                        null, true, false, targetContainer);
+                ApplicationManager.getApplication().invokeAndWait(processor);
+            }
             // Otherwise if the move class moves a top level class from one package to another
             else {
                 // use the original package to undo the move class
