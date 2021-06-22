@@ -51,7 +51,7 @@ public class UndoMoveRenameClass {
                 // If the inner to outer move class happens in the same file
                 if(moveRenameClassObject.isSameFile()) {
                     vFile = psiClass.getContainingFile().getVirtualFile();
-                    moveClassOuterInFile(psiClass);
+                    moveClassOuterInFile(psiClass, srcClassName);
                 }
             }
             // If the move class refactoring is inner to outer
@@ -59,7 +59,7 @@ public class UndoMoveRenameClass {
                 // If the outer to inner move class happens in the same file
                 if(moveRenameClassObject.isSameFile()) {
                     vFile = psiClass.getContainingFile().getVirtualFile();
-                    moveClassInnerInFile(psiClass);
+                    moveClassInnerInFile(psiClass, srcClassName);
                 }
             }
             // Otherwise if the move class moves a top level class from one package to another
@@ -97,28 +97,33 @@ public class UndoMoveRenameClass {
     /*
      * Move the inner class out of the class in the same file.
      */
-    private void moveClassOuterInFile(PsiClass psiClass) {
+    private void moveClassOuterInFile(PsiClass psiClass, String originalClassName) {
         PsiFile psiFile = psiClass.getContainingFile();
         PsiClass outerClass = psiClass.getContainingClass();
         final PsiClass newClass = PsiElementFactory.getInstance(project).createClassFromText(psiClass.getText(), psiFile);
         WriteCommandAction.runWriteCommandAction(project, () -> {
-            psiFile.addAfter(newClass, outerClass);
+            PsiClass finalClass = (PsiClass) psiFile.addAfter(newClass, outerClass);
+            finalClass.setName(originalClassName);
             psiClass.delete();
         });
+        PsiClass[] psiClasses = ((PsiJavaFile) psiFile).getClasses();
+
     }
 
     /*
      * Move the outer class in the class into the public class in the same file.
      */
-    private void moveClassInnerInFile(PsiClass psiClass) {
+    private void moveClassInnerInFile(PsiClass psiClass, String originalClassName) {
         PsiFile psiFile = psiClass.getContainingFile();
         PsiClass[] psiClasses = PsiTreeUtil.getChildrenOfType(psiFile, PsiClass.class);
         PsiClass outerClass = psiClasses[0];
         final PsiClass newClass = PsiElementFactory.getInstance(project).createClassFromText(psiClass.getText(), psiFile);
         WriteCommandAction.runWriteCommandAction(project, () -> {
-            outerClass.addAfter(newClass, null);
+            PsiClass finalClass = (PsiClass) outerClass.addAfter(newClass, null);
+            finalClass.setName(originalClassName);
             psiClass.delete();
         });
+
     }
 
 

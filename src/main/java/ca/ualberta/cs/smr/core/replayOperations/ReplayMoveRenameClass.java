@@ -53,7 +53,7 @@ public class ReplayMoveRenameClass {
                 if(moveRenameClassObject.isSameFile()) {
                     vFile = psiClass.getContainingFile().getVirtualFile();
                     // Move the class back into the file
-                    moveClassInnerInFile(psiClass);
+                    moveClassInnerInFile(psiClass, destClassName);
                 }
             }
             // If the move class refactoring is inner to outer
@@ -61,7 +61,7 @@ public class ReplayMoveRenameClass {
                 // If the outer to inner move class happens in the same file
                 if(moveRenameClassObject.isSameFile()) {
                     vFile = psiClass.getContainingFile().getVirtualFile();
-                    moveClassOuterInFile(psiClass);
+                    moveClassOuterInFile(psiClass, destClassName);
                 }
             }
             // use the destination package to undo the move class if the class is outer to outer
@@ -111,27 +111,31 @@ public class ReplayMoveRenameClass {
     /*
      * Move the inner class out of the class in the same file.
      */
-    private void moveClassOuterInFile(PsiClass psiClass) {
+    private void moveClassOuterInFile(PsiClass psiClass, String destinationClassName) {
         PsiFile psiFile = psiClass.getContainingFile();
         PsiClass outerClass = psiClass.getContainingClass();
         final PsiClass newClass = PsiElementFactory.getInstance(project).createClassFromText(psiClass.getText(), psiFile);
         WriteCommandAction.runWriteCommandAction(project, () -> {
-            psiFile.addAfter(newClass, outerClass);
+            PsiClass finalClass =  (PsiClass) psiFile.addAfter(newClass, outerClass);
+            finalClass.setName(destinationClassName);
             psiClass.delete();
         });
+
     }
 
     /*
      * Move the outer class in the class into the public class in the same file.
      */
-    private void moveClassInnerInFile(PsiClass psiClass) {
+    private void moveClassInnerInFile(PsiClass psiClass, String destinationClassName) {
         PsiFile psiFile = psiClass.getContainingFile();
         PsiClass[] psiClasses = PsiTreeUtil.getChildrenOfType(psiFile, PsiClass.class);
         PsiClass outerClass = psiClasses[0];
         final PsiClass newClass = PsiElementFactory.getInstance(project).createClassFromText(psiClass.getText(), psiFile);
         WriteCommandAction.runWriteCommandAction(project, () -> {
-            outerClass.addAfter(newClass, null);
+            PsiClass finalClass = (PsiClass) outerClass.addAfter(newClass, null);
+            finalClass.setName(destinationClassName);
             psiClass.delete();
         });
+
     }
 }
