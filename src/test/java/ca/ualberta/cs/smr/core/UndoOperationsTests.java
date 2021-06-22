@@ -4,6 +4,7 @@ import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ParameterObject;
 import ca.ualberta.cs.smr.core.undoOperations.UndoExtractMethod;
+import ca.ualberta.cs.smr.core.undoOperations.UndoInlineMethod;
 import ca.ualberta.cs.smr.core.undoOperations.UndoMoveRenameClass;
 import ca.ualberta.cs.smr.core.undoOperations.UndoMoveRenameMethod;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
@@ -299,6 +300,37 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         ref = refactorings.get(1);
         refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
         undoOperations.undoExtractMethod(refactoringObject);
+
+        PsiFile file1 = files[0];
+        PsiFile file2 = files[1];
+        String content1 = file1.getText();
+        String content2 = file2.getText();
+        LightJavaCodeInsightFixtureTestCase.assertEquals(content1, content2);
+
+    }
+
+    public void testUndoInlineMethod() {
+        Project project = myFixture.getProject();
+        String basePath = System.getProperty("user.dir");
+        String testDir = "/extractTestData/extractMethod/";
+        String resultsTestData = testDir + "expectedReplayResults/";
+        String refactoredTestData = testDir + "original/";
+        String testFile = "Main.java";
+        String resultFile = "ReplayResults.java";
+        PsiFile[] files = myFixture.configureByFiles(refactoredTestData + testFile, resultsTestData + resultFile);
+        testDir = basePath + "/" + getTestDataPath() + testDir;
+        String originalTestData = testDir + "refactored/";
+        refactoredTestData = testDir + "original/";
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("INLINE_OPERATION",
+                originalTestData, refactoredTestData);
+        assert refactorings != null;
+        Refactoring ref = refactorings.get(1);
+        RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
+        UndoInlineMethod undoOperations = new UndoInlineMethod(project);
+        undoOperations.undoInlineMethod(refactoringObject);
+        ref = refactorings.get(0);
+        refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
+        undoOperations.undoInlineMethod(refactoringObject);
 
         PsiFile file1 = files[0];
         PsiFile file2 = files[1];
