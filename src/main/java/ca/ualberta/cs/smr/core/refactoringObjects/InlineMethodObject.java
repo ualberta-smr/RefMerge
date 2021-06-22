@@ -2,12 +2,14 @@ package ca.ualberta.cs.smr.core.refactoringObjects;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import gr.uom.java.xmi.UMLOperation;
+import gr.uom.java.xmi.decomposition.AbstractCodeFragment;
 import gr.uom.java.xmi.decomposition.OperationInvocation;
 import gr.uom.java.xmi.diff.InlineOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
 import java.util.List;
+import java.util.Set;
 
 /*
  * Represents an inline method refactoring operation. Contains the necessary information for logic checks and performing the
@@ -15,7 +17,7 @@ import java.util.List;
  */
 public class InlineMethodObject implements RefactoringObject {
 
-    private RefactoringType refactoringType;
+    private final RefactoringType refactoringType;
     private String originalFilePath;
     private String destinationFilePath;
     private String originalClassName;
@@ -23,6 +25,7 @@ public class InlineMethodObject implements RefactoringObject {
     private MethodSignatureObject originalMethodSignature;
     private MethodSignatureObject destinationMethodSignature;
     private List<OperationInvocation> invocations;
+    private Set<AbstractCodeFragment> inlinedCodeFragments;
     private boolean isReplay;
 
 
@@ -52,6 +55,7 @@ public class InlineMethodObject implements RefactoringObject {
         this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(), destinationOperation.getParameters(),
                 destinationOperation.isConstructor(), destinationOperation.getVisibility(), destinationOperation.isStatic());
         this.invocations = operation.getInlinedOperationInvocations();
+        this.inlinedCodeFragments = operation.getInlinedCodeFragments();
         this.isReplay = true;
     }
 
@@ -117,6 +121,10 @@ public class InlineMethodObject implements RefactoringObject {
 
     public void setDestinationMethodSignature(MethodSignatureObject destinationMethodSignature) {
         this.destinationMethodSignature = destinationMethodSignature;
+    }
+
+    public Set<AbstractCodeFragment> getInlinedCodeFragments() {
+        return this.inlinedCodeFragments;
     }
 
     public List<OperationInvocation> getMethodInvocations() {
