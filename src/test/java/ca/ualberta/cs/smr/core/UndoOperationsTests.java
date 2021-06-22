@@ -170,6 +170,33 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
 
     }
 
+    public void testUndoMoveOuterToInnerClassBetweenFiles() {
+        Project project = myFixture.getProject();
+        String testDir = "moveRenameClass/";
+        String testDataBefore = testDir + "before/";
+        String testDataAfter = testDir + "after/";
+        String testFile = "InnerClassTest.java";
+        myFixture.configureByFiles(testDataBefore + testFile, testDataAfter + "Empty.java");
+        String originalPackage = "moveRenameClass.after";
+        String destinationPackage = "moveRenameClass";
+        MoveRenameClassObject moveClass = new MoveRenameClassObject("Empty.java",
+                "moveRenameClass.after.Class2", originalPackage,
+                "InnerClassTest.java", "moveRenameClass.Class1.Class2", destinationPackage);
+        moveClass.setType(RefactoringType.MOVE_CLASS);
+        moveClass.setOuterToInner();
+        UndoMoveRenameClass undo = new UndoMoveRenameClass(project);
+        undo.undoMoveRenameClass(moveClass);
+        PsiPackage psiPackage = JavaPsiFacade.getInstance(project).findPackage(originalPackage);
+        assert psiPackage != null;
+        PsiClass[] psiClasses = psiPackage.getClasses();
+        Assert.assertEquals(1, psiClasses.length);
+        Assert.assertEquals("moveRenameClass.after.Class2", psiClasses[0].getQualifiedName());
+        psiPackage = JavaPsiFacade.getInstance(project).findPackage(destinationPackage);
+        assert psiPackage != null;
+        psiClasses = psiPackage.getClasses();
+        Assert.assertEquals(0, psiClasses.length);
+    }
+
     public void testUndoMoveOuterToInnerClassInSameFile() {
         Project project = myFixture.getProject();
         String testDir = "moveRenameClass/";

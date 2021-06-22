@@ -13,6 +13,7 @@ import com.intellij.refactoring.*;
 import com.intellij.refactoring.move.moveClassesOrPackages.MoveClassToInnerProcessor;
 import com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesProcessor;
 import com.intellij.refactoring.move.moveClassesOrPackages.SingleSourceRootMoveDestination;
+import com.intellij.refactoring.move.moveInner.MoveInnerProcessor;
 import com.intellij.usageView.UsageInfo;
 
 import java.util.Objects;
@@ -54,6 +55,27 @@ public class UndoMoveRenameClass {
                     moveClassOuterInFile(psiClass, srcClassName, moveRenameClassObject.getStartOffset());
                 }
                 // Otherwise if the outer class is moved inner in a different file
+                else {
+                    String originalPackage = moveRenameClassObject.getOriginalClassObject().getPackageName();
+                    PsiPackage psiPackage = JavaPsiFacade.getInstance(project).findPackage(originalPackage);
+                    assert psiPackage != null;
+                    PsiDirectory[] psiDirectories = psiPackage.getDirectories();
+                    PsiDirectory targetContainer = psiDirectories[0];
+                    if (psiDirectories.length > 1) {
+                        String path = filePath.substring(0, filePath.lastIndexOf("/"));
+                        for (PsiDirectory directory : psiDirectories) {
+                            String dirPath = directory.getVirtualFile().getPath();
+                            if (dirPath.contains(path)) {
+                                targetContainer = directory;
+                                break;
+                            }
+                        }
+                    }
+                    MoveInnerProcessor processor = new MoveInnerProcessor(project, null);
+                    processor.setup(psiClass, srcClassName, true,
+                            null, true, false, targetContainer);
+                    ApplicationManager.getApplication().invokeAndWait(processor);
+                }
             }
             // If the move class refactoring is inner to outer
             else if(moveRenameClassObject.isMoveOuter()) {
