@@ -8,14 +8,17 @@ import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
 import com.intellij.refactoring.extractMethod.ExtractMethodProcessor;
 import com.intellij.refactoring.extractMethod.PrepareFailedException;
+import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.decomposition.AbstractCodeFragment;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -68,6 +71,14 @@ public class UndoInlineMethod {
         extractMethodProcessor.setDataFromInputVariables();
         ExtractMethodHandler.extractMethod(project, extractMethodProcessor);
 
+        // The method signature could change if code was added/deleted after inlining it
+        PsiMethod extractedMethod = extractMethodProcessor.getExtractedMethod();
+        updateMethodSignature(ref, extractedMethod);
+
+
+        VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
+        vFile.refresh(false, true);
+
     }
 
 
@@ -99,6 +110,9 @@ public class UndoInlineMethod {
         return psiElements.toArray(new PsiElement[0]);
     }
 
+    /*
+     * Use the code fragment to get the PSI element inside of the method
+     */
     private PsiElement getPsiElementFromCodeFragment(final AbstractCodeFragment inlinedFragment,
                                                      PsiMethod psiMethod) {
         final PsiElement[] psiElement = new PsiElement[1];
@@ -117,5 +131,27 @@ public class UndoInlineMethod {
             }
         });
         return psiElement[0];
+    }
+
+    /*
+     * Update the stored original method signature to match the extracted method.
+     */
+    private void updateMethodSignature(RefactoringObject refactoringObject, PsiMethod psiMethod) {
+        PsiParameterList psiParameterList = psiMethod.getParameterList();
+        PsiParameter[] psiParameters = psiParameterList.getParameters();
+        List<ParameterObject> parameterObjects = new ArrayList<>();
+        ParameterObject returnParameter = ((InlineMethodObject) refactoringObject).getOriginalMethodSignature().getReturnParameter();
+        parameterObjects.add(returnParameter);
+        for(PsiParameter psiParameter : psiParameters) {
+            String parameterType = psiParameter.getText();
+            String parameterName = psiParameter.getName();
+            ParameterObject parameterObject = new ParameterObject(parameterType, parameterName);
+            parameterObjects.add(parameterObject);
+        }
+        String methodName = psiMethod.getName();
+        MethodSignatureObject methodSignature = new MethodSignatureObject(parameterObjects, methodName);
+        ((InlineMethodObject) refactoringObject).setOriginalMethodSignature(methodSignature);
+
+
     }
 }
