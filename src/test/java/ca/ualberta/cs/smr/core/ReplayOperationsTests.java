@@ -4,6 +4,7 @@ import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ParameterObject;
 import ca.ualberta.cs.smr.core.replayOperations.ReplayExtractMethod;
+import ca.ualberta.cs.smr.core.replayOperations.ReplayInlineMethod;
 import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameClass;
 import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameMethod;
 import ca.ualberta.cs.smr.core.undoOperations.UndoExtractMethod;
@@ -316,6 +317,37 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         String content1 = file1.getText();
         String content2 = file2.getText();
         LightJavaCodeInsightFixtureTestCase.assertEquals(content2, content1);
+
+    }
+
+    public void testReplayInlineMethod() {
+        Project project = myFixture.getProject();
+        String basePath = System.getProperty("user.dir");
+        String testDir = "/extractTestData/extractMethod/";
+        String resultsTestData = testDir + "expectedUndoResults/";
+        String refactoredTestData = testDir + "refactored/";
+        String testFile = "Main.java";
+        String resultFile = "Results.java";
+        PsiFile[] files = myFixture.configureByFiles(refactoredTestData + testFile, resultsTestData + resultFile);
+        testDir = basePath + "/" + getTestDataPath() + testDir;
+        String originalTestData = testDir + "refactored/";
+        refactoredTestData = testDir + "original/";
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("INLINE_OPERATION",
+                originalTestData, refactoredTestData);
+        assert refactorings != null;
+        Refactoring ref = refactorings.get(1);
+        RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
+        ReplayInlineMethod replayOperations = new ReplayInlineMethod(project);
+        replayOperations.replayInlineMethod(refactoringObject);
+        ref = refactorings.get(0);
+        refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
+        replayOperations.replayInlineMethod(refactoringObject);
+
+        PsiFile file1 = files[0];
+        PsiFile file2 = files[1];
+        String content1 = file1.getText();
+        String content2 = file2.getText();
+        LightJavaCodeInsightFixtureTestCase.assertEquals(content1, content2);
 
     }
 }
