@@ -26,6 +26,7 @@ public class InlineMethodObject implements RefactoringObject {
     private MethodSignatureObject destinationMethodSignature;
     private List<OperationInvocation> invocations;
     private Set<AbstractCodeFragment> inlinedCodeFragments;
+    private int startOffset;
     private boolean isReplay;
 
 
@@ -56,6 +57,7 @@ public class InlineMethodObject implements RefactoringObject {
                 destinationOperation.isConstructor(), destinationOperation.getVisibility(), destinationOperation.isStatic());
         this.invocations = operation.getInlinedOperationInvocations();
         this.inlinedCodeFragments = operation.getInlinedCodeFragments();
+        this.startOffset = originalOperation.getLocationInfo().getStartOffset();
         this.isReplay = true;
     }
 
@@ -129,6 +131,10 @@ public class InlineMethodObject implements RefactoringObject {
 
     public List<OperationInvocation> getMethodInvocations() {
         return this.invocations;
+    }
+
+    public int getStartOffset() {
+        return startOffset;
     }
 
     @Override

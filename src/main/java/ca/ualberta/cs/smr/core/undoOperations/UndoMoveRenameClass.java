@@ -82,7 +82,7 @@ public class UndoMoveRenameClass {
                 // If the inner to outer move class happens in the same file
                 if(moveRenameClassObject.isSameFile()) {
                     vFile = psiClass.getContainingFile().getVirtualFile();
-                    moveClassInnerInFile(psiClass, srcClassName);
+                    moveClassInnerInFile(psiClass, srcClassName, moveRenameClassObject.getStartOffset());
                 }
                 // Otherwise if the inner to outer move class happens in different files
                 else {
@@ -167,13 +167,23 @@ public class UndoMoveRenameClass {
     /*
      * Move the outer class in the class into a class in the same file.
      */
-    private void moveClassInnerInFile(PsiClass psiClass, String originalClassName) {
+    private void moveClassInnerInFile(PsiClass psiClass, String originalClassName, int startOffset) {
         PsiFile psiFile = psiClass.getContainingFile();
         PsiClass[] psiClasses = ((PsiJavaFile) psiFile).getClasses();
         PsiClass outerClass = psiClasses[0];
+        psiClasses = outerClass.getInnerClasses();
+        PsiClass previousClass = null;
+        for(PsiClass candidateClass : psiClasses) {
+            int candidateOffset = candidateClass.getTextOffset();
+            if(candidateOffset > startOffset) {
+                break;
+            }
+            previousClass = candidateClass;
+        }
         final PsiClass newClass = PsiElementFactory.getInstance(project).createClassFromText(psiClass.getText(), psiFile);
+        PsiClass finalPreviousClass = previousClass;
         WriteCommandAction.runWriteCommandAction(project, () -> {
-            PsiClass finalClass = (PsiClass) outerClass.addAfter(newClass, null);
+            PsiClass finalClass = (PsiClass) outerClass.addAfter(newClass, finalPreviousClass);
             finalClass.setName(originalClassName);
             psiClass.delete();
         });

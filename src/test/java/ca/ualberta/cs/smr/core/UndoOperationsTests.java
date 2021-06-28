@@ -324,11 +324,11 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("INLINE_OPERATION",
                 originalTestData, refactoredTestData);
         assert refactorings != null;
-        Refactoring ref = refactorings.get(1);
+        Refactoring ref = refactorings.get(0);
         RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
         UndoInlineMethod undoOperations = new UndoInlineMethod(project);
         undoOperations.undoInlineMethod(refactoringObject);
-        ref = refactorings.get(0);
+        ref = refactorings.get(1);
         refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
         undoOperations.undoInlineMethod(refactoringObject);
 
