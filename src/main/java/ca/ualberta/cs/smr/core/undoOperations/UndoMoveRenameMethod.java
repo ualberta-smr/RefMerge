@@ -114,8 +114,8 @@ public class UndoMoveRenameMethod {
         // Find which method comes before the moved method
         for(PsiMethod otherMethod : psiMethods) {
             int otherMethodStartOffset = otherMethod.getTextOffset();
-            int otherMethodEndOffset = otherMethod.getTextLength() + otherMethodStartOffset;
-            if(otherMethodEndOffset < startOffset) {
+            otherMethodStartOffset = otherMethodStartOffset - (psiMethod.getTextRange().getEndOffset() - psiMethod.getTextOffset());
+            if(otherMethodStartOffset < startOffset) {
                 psiMethodBefore = otherMethod;
             }
         }
