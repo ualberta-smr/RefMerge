@@ -1,13 +1,10 @@
 package ca.ualberta.cs.smr.core.refactoringObjects;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
-import com.intellij.psi.SmartPsiElementPointer;
-import com.intellij.refactoring.changeSignature.ThrownExceptionInfo;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.decomposition.AbstractCodeFragment;
 import gr.uom.java.xmi.decomposition.OperationInvocation;
-import gr.uom.java.xmi.diff.CodeRange;
-import gr.uom.java.xmi.diff.ExtractOperationRefactoring;
+import gr.uom.java.xmi.diff.InlineOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
@@ -15,10 +12,10 @@ import java.util.List;
 import java.util.Set;
 
 /*
- * Represents an extract method refactoring. Contains the necessary information for logic checks and performing the
+ * Represents an inline method refactoring operation. Contains the necessary information for logic checks and performing the
  * refactoring using the IntelliJ refactoring engine.
  */
-public class ExtractMethodObject implements RefactoringObject {
+public class InlineMethodObject implements RefactoringObject {
 
     private final RefactoringType refactoringType;
     private String originalFilePath;
@@ -27,19 +24,14 @@ public class ExtractMethodObject implements RefactoringObject {
     private String destinationClassName;
     private MethodSignatureObject originalMethodSignature;
     private MethodSignatureObject destinationMethodSignature;
-    private List<OperationInvocation> methodInvocations;
-    private Set<AbstractCodeFragment> sourceCodeFragments;
-    private Set<AbstractCodeFragment> extractedCodeFragments;
-    private CodeRange codeRange;
-    private SmartPsiElementPointer[] surroundingElements;
-    private ThrownExceptionInfo[] thrownExceptionInfo;
+    private List<OperationInvocation> invocations;
+    private Set<AbstractCodeFragment> inlinedCodeFragments;
+    private int startOffset;
     private boolean isReplay;
 
-    /*
-     * Use the provided information to create the extract method object for testing.
-     */
-    public ExtractMethodObject(String originalFilePath, String originalClassName, MethodSignatureObject originalMethodSignature,
-                              String destinationFilePath, String destinationClassName, MethodSignatureObject destinationMethodSignature) {
+
+    public InlineMethodObject(String originalFilePath, String originalClassName, MethodSignatureObject originalMethodSignature,
+                               String destinationFilePath, String destinationClassName, MethodSignatureObject destinationMethodSignature) {
         this.refactoringType = RefactoringType.EXTRACT_OPERATION;
         this.originalFilePath = originalFilePath;
         this.originalClassName = originalClassName;
@@ -50,14 +42,11 @@ public class ExtractMethodObject implements RefactoringObject {
         this.isReplay = true;
     }
 
-    /*
-     * Creates the extract method object and takes the information that we need from the RefMiner refactoring object.
-     */
-    public ExtractMethodObject(Refactoring refactoring) {
-        ExtractOperationRefactoring extractOperationRefactoring = (ExtractOperationRefactoring) refactoring;
-        UMLOperation originalOperation = extractOperationRefactoring.getSourceOperationBeforeExtraction();
-        UMLOperation destinationOperation = extractOperationRefactoring.getExtractedOperation();
-        this.refactoringType = refactoring.getRefactoringType();
+    public InlineMethodObject(Refactoring refactoring) {
+        InlineOperationRefactoring operation = (InlineOperationRefactoring) refactoring;
+        UMLOperation originalOperation = operation.getInlinedOperation();
+        UMLOperation destinationOperation = operation.getTargetOperationAfterInline();
+        this.refactoringType = operation.getRefactoringType();
         this.originalFilePath = originalOperation.getLocationInfo().getFilePath();
         this.destinationFilePath = destinationOperation.getLocationInfo().getFilePath();
         this.originalClassName = originalOperation.getClassName();
@@ -66,35 +55,40 @@ public class ExtractMethodObject implements RefactoringObject {
                 originalOperation.isConstructor(), originalOperation.getVisibility(), originalOperation.isStatic());
         this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(), destinationOperation.getParameters(),
                 destinationOperation.isConstructor(), destinationOperation.getVisibility(), destinationOperation.isStatic());
-        this.methodInvocations = extractOperationRefactoring.getExtractedOperationInvocations();
-        this.sourceCodeFragments = extractOperationRefactoring.getExtractedCodeFragmentsFromSourceOperation();
-        this.extractedCodeFragments = extractOperationRefactoring.getExtractedCodeFragmentsToExtractedOperation();
-        this.codeRange = extractOperationRefactoring.getExtractedCodeRangeFromSourceOperation();
-        this.surroundingElements = null;
-        this.thrownExceptionInfo = null;
+        this.invocations = operation.getInlinedOperationInvocations();
+        this.inlinedCodeFragments = operation.getInlinedCodeFragments();
+        this.startOffset = originalOperation.getLocationInfo().getStartOffset();
         this.isReplay = true;
     }
 
+
+
+    @Override
     public RefactoringType getRefactoringType() {
         return this.refactoringType;
     }
 
+    @Override
     public RefactoringOrder getRefactoringOrder() {
-        return RefactoringOrder.EXTRACT_METHOD;
+        return RefactoringOrder.INLINE_METHOD;
     }
 
+    @Override
     public void setOriginalFilePath(String originalFilePath) {
         this.originalFilePath = originalFilePath;
     }
 
+    @Override
     public String getOriginalFilePath() {
-        return this.originalFilePath;
+        return originalFilePath;
     }
 
+    @Override
     public void setDestinationFilePath(String destinationFilePath) {
         this.destinationFilePath = destinationFilePath;
     }
 
+    @Override
     public String getDestinationFilePath() {
         return this.destinationFilePath;
     }
@@ -131,44 +125,25 @@ public class ExtractMethodObject implements RefactoringObject {
         this.destinationMethodSignature = destinationMethodSignature;
     }
 
+    public Set<AbstractCodeFragment> getInlinedCodeFragments() {
+        return this.inlinedCodeFragments;
+    }
+
     public List<OperationInvocation> getMethodInvocations() {
-        return this.methodInvocations;
+        return this.invocations;
     }
 
-    public Set<AbstractCodeFragment> getExtractedCodeFragments() {
-        return this.extractedCodeFragments;
+    public int getStartOffset() {
+        return startOffset;
     }
 
-    public Set<AbstractCodeFragment> getSourceCodeFragments() {
-        return this.sourceCodeFragments;
-    }
-
-    public CodeRange getCodeRange() {
-        return this.codeRange;
-    }
-
-    public void setSurroundingElements(SmartPsiElementPointer[] surroundingElements) {
-        this.surroundingElements = surroundingElements;
-    }
-
-    public SmartPsiElementPointer[] getSurroundingElements() {
-        return this.surroundingElements;
-    }
-
-    public void setThrownExceptionInfo(ThrownExceptionInfo[] thrownExceptionInfo) {
-        this.thrownExceptionInfo = thrownExceptionInfo;
-    }
-
-    public ThrownExceptionInfo[] getThrownExceptionInfo() {
-        return this.thrownExceptionInfo;
-    }
-
+    @Override
     public void setReplayFlag(boolean isReplay) {
         this.isReplay = isReplay;
     }
 
+    @Override
     public boolean isReplay() {
         return isReplay;
     }
-
 }

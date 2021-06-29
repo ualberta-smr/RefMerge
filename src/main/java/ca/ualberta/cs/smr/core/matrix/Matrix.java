@@ -1,13 +1,7 @@
 package ca.ualberta.cs.smr.core.matrix;
 
-import ca.ualberta.cs.smr.core.matrix.dispatcher.ExtractMethodDispatcher;
-import ca.ualberta.cs.smr.core.matrix.dispatcher.RefactoringDispatcher;
-import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameClassDispatcher;
-import ca.ualberta.cs.smr.core.matrix.dispatcher.RenameMethodDispatcher;
-import ca.ualberta.cs.smr.core.matrix.receivers.ExtractMethodReceiver;
-import ca.ualberta.cs.smr.core.matrix.receivers.Receiver;
-import ca.ualberta.cs.smr.core.matrix.receivers.RenameClassReceiver;
-import ca.ualberta.cs.smr.core.matrix.receivers.RenameMethodReceiver;
+import ca.ualberta.cs.smr.core.matrix.dispatcher.*;
+import ca.ualberta.cs.smr.core.matrix.receivers.*;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
@@ -29,9 +23,14 @@ public class Matrix {
      */
     static final HashMap<RefactoringType, RefactoringDispatcher> dispatcherMap =
                                                     new HashMap<RefactoringType, RefactoringDispatcher>() {{
-       put(RefactoringType.RENAME_METHOD, new RenameMethodDispatcher());
-       put(RefactoringType.RENAME_CLASS, new RenameClassDispatcher());
+       put(RefactoringType.RENAME_METHOD, new MoveRenameMethodDispatcher());
+       put(RefactoringType.MOVE_OPERATION, new MoveRenameMethodDispatcher());
+       put(RefactoringType.MOVE_AND_RENAME_OPERATION, new MoveRenameMethodDispatcher());
+       put(RefactoringType.RENAME_CLASS, new MoveRenameClassDispatcher());
+       put(RefactoringType.MOVE_CLASS, new MoveRenameClassDispatcher());
+       put(RefactoringType.MOVE_RENAME_CLASS, new MoveRenameClassDispatcher());
        put(RefactoringType.EXTRACT_OPERATION, new ExtractMethodDispatcher());
+       put(RefactoringType.INLINE_OPERATION, new InlineMethodDispatcher());
     }};
 
     /*
@@ -40,9 +39,14 @@ public class Matrix {
      */
     static final HashMap<RefactoringType, Receiver> receiverMap =
                                                     new HashMap<RefactoringType, Receiver>() {{
-        put(RefactoringType.RENAME_METHOD, new RenameMethodReceiver());
-        put(RefactoringType.RENAME_CLASS, new RenameClassReceiver());
+        put(RefactoringType.RENAME_METHOD, new MoveRenameMethodReceiver());
+        put(RefactoringType.MOVE_OPERATION, new MoveRenameMethodReceiver());
+        put(RefactoringType.MOVE_AND_RENAME_OPERATION, new MoveRenameMethodReceiver());
+        put(RefactoringType.RENAME_CLASS, new MoveRenameClassReceiver());
+        put(RefactoringType.MOVE_CLASS, new MoveRenameClassReceiver());
+        put(RefactoringType.MOVE_RENAME_CLASS, new MoveRenameClassReceiver());
         put(RefactoringType.EXTRACT_OPERATION, new ExtractMethodReceiver());
+        put(RefactoringType.INLINE_OPERATION, new InlineMethodReceiver());
     }};
 
     public Matrix(Project project) {
@@ -54,25 +58,24 @@ public class Matrix {
      */
     public ArrayList<RefactoringObject> runMatrix(ArrayList<RefactoringObject> leftRefactoringList,
                                              ArrayList<RefactoringObject> rightRefactoringList) {
-        if(leftRefactoringList.isEmpty() && rightRefactoringList.isEmpty()) {
-            return new ArrayList<>();
-        }
-        // If the right refactoring list is empty, return the left refactoring list
-        else if(!leftRefactoringList.isEmpty() && rightRefactoringList.isEmpty()) {
-            return leftRefactoringList;
-        }
-        // If the left refactoring list is empty, return the right refactoring list
-        else if(leftRefactoringList.isEmpty()) {
-            return rightRefactoringList;
-        }
+        ArrayList<RefactoringObject> replayObjectList = new ArrayList<>();
+
         for(RefactoringObject leftRefactoring : leftRefactoringList) {
             compareRefactorings(leftRefactoring, rightRefactoringList);
         }
-        // Insert each refactoring in the left refactoring list into the right to combine them
-        for(RefactoringObject leftRefactoring : leftRefactoringList) {
-            RefactoringObjectUtils.insertRefactoringObject(leftRefactoring, rightRefactoringList);
+
+        for(RefactoringObject rightRefactoring : rightRefactoringList) {
+            if(rightRefactoring.isReplay()) {
+                RefactoringObjectUtils.insertRefactoringObject(rightRefactoring, replayObjectList, true);
+            }
         }
-        return rightRefactoringList;
+
+        for(RefactoringObject leftRefactoring : leftRefactoringList) {
+            if(leftRefactoring.isReplay()) {
+                RefactoringObjectUtils.insertRefactoringObject(leftRefactoring, replayObjectList, true);
+            }
+        }
+        return replayObjectList;
     }
 
     /*
@@ -121,7 +124,7 @@ public class Matrix {
 
         // If the refactoring is not transitive, add it to the simplified refactoring list
         if(transitiveCount == 0) {
-            RefactoringObjectUtils.insertRefactoringObject(newRefactoring, simplifiedRefactorings);
+            RefactoringObjectUtils.insertRefactoringObject(newRefactoring, simplifiedRefactorings, false);
         }
     }
 
@@ -178,8 +181,13 @@ public class Matrix {
     protected int getRefactoringValue(RefactoringType refactoringType) {
         Vector<RefactoringType> vector = new Vector<>();
         vector.add(RefactoringType.RENAME_METHOD);
+        vector.add(RefactoringType.MOVE_OPERATION);
+        vector.add(RefactoringType.MOVE_AND_RENAME_OPERATION);
         vector.add(RefactoringType.RENAME_CLASS);
+        vector.add(RefactoringType.MOVE_CLASS);
+        vector.add(RefactoringType.MOVE_RENAME_CLASS);
         vector.add(RefactoringType.EXTRACT_OPERATION);
+        vector.add(RefactoringType.INLINE_OPERATION);
 
         Enumeration<RefactoringType> enumeration = vector.elements();
         int value = 0;

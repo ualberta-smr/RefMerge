@@ -1,7 +1,7 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.ExtractMethodObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.MethodSignatureObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.project.Project;
@@ -25,7 +25,7 @@ public class ExtractMethodExtractMethodCell {
      *  Check if a refactoring conflict exists between extract method/rename method refactorings. A refactoring conflict
      *  can occur if there is an overlapping fragments, accidental override, accidental overload, or naming conflict.
      */
-    public boolean extractMethodExtractMethodConflictCell(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
+    public boolean conflictCell(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
         // Extract Method/Extract Method overlapping fragments conflict
         if(checkOverlappingFragmentsConflict(dispatcherObject, receiverObject)) {
             return true;

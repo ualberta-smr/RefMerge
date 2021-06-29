@@ -1,7 +1,7 @@
 package ca.ualberta.cs.smr.utils;
 
-import ca.ualberta.cs.smr.core.refactoringObjects.MethodSignatureObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.ParameterObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ParameterObject;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.module.Module;
@@ -27,6 +27,7 @@ import org.jetbrains.jps.model.serialization.PathMacroUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -100,64 +101,80 @@ public class Utils {
 
         String projectPath = project.getBasePath();
         String relativePath = projectPath + "/" + filePath;
-        relativePath = getRelativePathOfSourceRoot(relativePath, isTestFolder);
+        relativePath = getRelativePathOfSourceRoot(relativePath, project.getName());
         File directory = new File(relativePath);
         VirtualFile sourceVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(directory);
         assert sourceVirtualFile != null;
         ModuleManager moduleManager = ModuleManager.getInstance(project);
         // Get the first module that does not depend on any other modules
-        Module module = getModule(sourceVirtualFile, moduleManager.getModules());
-        assert module != null;
-        ModifiableRootModel rootModel = ModuleRootManager.getInstance(module).getModifiableModel();
-        directory = new File(Objects.requireNonNull(PathMacroUtil.getModuleDir(module.getModuleFilePath())));
-        VirtualFile moduleVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(directory);
-        ContentEntry contentEntry = getContentEntry(moduleVirtualFile, rootModel);
-        assert contentEntry != null;
-        if(checkIfSourceFolderExists(sourceVirtualFile, contentEntry)) {
+        ArrayList<Module> modules = getModule(sourceVirtualFile, moduleManager.getModules());
+        if(modules == null) {
             return;
         }
-        contentEntry.addSourceFolder(sourceVirtualFile, isTestFolder);
-        WriteAction.run(rootModel::commit);
-        Utils.dumbServiceHandler(project);
+        for(Module module : modules) {
+            ModifiableRootModel rootModel = ModuleRootManager.getInstance(module).getModifiableModel();
+            directory = new File(Objects.requireNonNull(PathMacroUtil.getModuleDir(module.getModuleFilePath())));
+            VirtualFile moduleVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(directory);
+            ContentEntry contentEntry = getContentEntry(moduleVirtualFile, rootModel);
+            if(contentEntry == null) {
+                continue;
+            }
+            if (checkIfSourceFolderExists(sourceVirtualFile, contentEntry)) {
+                return;
+            }
+            else {
+                contentEntry.addSourceFolder(sourceVirtualFile, isTestFolder);
+                WriteAction.run(rootModel::commit);
+                Utils.dumbServiceHandler(project);
+                break;
+            }
+        }
     }
 
     /*
      * Get the relative path of the source root folder.
      */
-    private String getRelativePathOfSourceRoot(String relativePath, boolean isTestFolder) {
-        if(isTestFolder) {
-            if(relativePath.contains("test/")) {
-                return relativePath.substring(0, relativePath.indexOf("test/") + 4);
-            }
-            else {
-                return relativePath.substring(0, relativePath.indexOf("main/") + 4);
-            }
+    private String getRelativePathOfSourceRoot(String relativePath, String projectName) {
+        // If the relative path contains java, then that's the source folder.
+        if(relativePath.contains("java/")) {
+            return relativePath.substring(0, relativePath.lastIndexOf("java/") + 4);
         }
+        // Get the project name
+        String temp = relativePath.substring(relativePath.indexOf(projectName) + projectName.length());
+        // If the relative path contains the project name a second time, use that as a source folder.
+        if(temp.contains(projectName)) {
+            return relativePath.substring(0, relativePath.lastIndexOf(projectName));
+        }
+        // Otherwise return the src directory
         else {
-            return relativePath.substring(0, relativePath.indexOf("main/") + 4);
+            return relativePath.substring(0, relativePath.indexOf("src/") + 3);
         }
+
     }
     /*
      * Get the module that the virtual file is in.
      */
-    private Module getModule(VirtualFile virtualFile, Module[] modules) {
-
+    private ArrayList<Module> getModule(VirtualFile virtualFile, Module[] modules) {
+        ArrayList<Module> potentialModules = new ArrayList<>();
         for(Module module : modules) {
             VirtualFile moduleFile = module.getModuleFile();
-            assert moduleFile != null;
+            if(moduleFile == null) {
+                continue;
+            }
             VirtualFile moduleFileParent = moduleFile.getParent();
             // Get the src directory
             VirtualFile virtualFileParent = virtualFile.getParent();
             // If the src directory and .iml file are in the same module
             if(moduleFileParent.equals(virtualFileParent.getParent())) {
-                return module;
+                potentialModules.add(module);
             }
         }
         // If we could not find the module, there's probably only one module file in ./idea
-        if(modules.length > 0) {
-            return modules[0];
+        if(modules.length > 0 && potentialModules.size() == 0) {
+            potentialModules.add(modules[0]);
+            return potentialModules;
         }
-        return null;
+        return potentialModules;
     }
 
     /*
@@ -255,6 +272,10 @@ public class Utils {
             // If the parameter has the final modifier, remove it for comparison with UML parameter.
             if(psiParameter.hasModifierProperty(PsiModifier.FINAL)) {
                 psiType = psiType.substring(psiType.indexOf("final ") + 6);
+            }
+            // Replace int... with int[] for comparison with RefMiner object
+            if(psiType.contains("...")) {
+                psiType = psiType.replace("...", "[]");
             }
             if(!umlType.equals(psiType)) {
                 return false;

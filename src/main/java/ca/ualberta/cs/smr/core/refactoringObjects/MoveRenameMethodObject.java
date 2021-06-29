@@ -1,63 +1,68 @@
 package ca.ualberta.cs.smr.core.refactoringObjects;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
-import com.intellij.psi.SmartPsiElementPointer;
-import com.intellij.refactoring.changeSignature.ThrownExceptionInfo;
 import gr.uom.java.xmi.UMLOperation;
-import gr.uom.java.xmi.decomposition.AbstractCodeFragment;
-import gr.uom.java.xmi.decomposition.OperationInvocation;
-import gr.uom.java.xmi.diff.CodeRange;
-import gr.uom.java.xmi.diff.ExtractOperationRefactoring;
+import gr.uom.java.xmi.diff.MoveOperationRefactoring;
+import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
-import java.util.List;
-import java.util.Set;
 
 /*
- * Represents an extract method refactoring. Contains the necessary information for logic checks and performing the
+ * Represents a rename method refactoring. Contains the necessary information for logic checks and performing the
  * refactoring using the IntelliJ refactoring engine.
  */
-public class ExtractMethodObject implements RefactoringObject {
+public class MoveRenameMethodObject implements RefactoringObject {
 
     private final RefactoringType refactoringType;
     private String originalFilePath;
     private String destinationFilePath;
+    private MethodSignatureObject originalMethodSignature;
     private String originalClassName;
     private String destinationClassName;
-    private MethodSignatureObject originalMethodSignature;
     private MethodSignatureObject destinationMethodSignature;
-    private List<OperationInvocation> methodInvocations;
-    private Set<AbstractCodeFragment> sourceCodeFragments;
-    private Set<AbstractCodeFragment> extractedCodeFragments;
-    private CodeRange codeRange;
-    private SmartPsiElementPointer[] surroundingElements;
-    private ThrownExceptionInfo[] thrownExceptionInfo;
+    private int startOffset;
+    private String methodAbove;
+    private boolean isRenameMethod;
+    private boolean isMoveMethod;
     private boolean isReplay;
 
     /*
-     * Use the provided information to create the extract method object for testing.
+     * Use the provided information to create the rename method object for testing.
      */
-    public ExtractMethodObject(String originalFilePath, String originalClassName, MethodSignatureObject originalMethodSignature,
-                              String destinationFilePath, String destinationClassName, MethodSignatureObject destinationMethodSignature) {
-        this.refactoringType = RefactoringType.EXTRACT_OPERATION;
+    public MoveRenameMethodObject(String originalFilePath, String originalClassName, MethodSignatureObject originalMethodSignature,
+                                  String destinationFilePath, String destinationClassName, MethodSignatureObject destinationMethodSignature) {
+        this.refactoringType = RefactoringType.RENAME_METHOD;
         this.originalFilePath = originalFilePath;
         this.originalClassName = originalClassName;
         this.originalMethodSignature = originalMethodSignature;
         this.destinationFilePath = destinationFilePath;
         this.destinationClassName = destinationClassName;
         this.destinationMethodSignature = destinationMethodSignature;
+        this.isMoveMethod = false;
+        this.isRenameMethod = false;
         this.isReplay = true;
+
     }
 
     /*
-     * Creates the extract method object and takes the information that we need from the RefMiner refactoring object.
+     * Creates the rename method object and takes the information that we need from the RefMiner refactoring object.
      */
-    public ExtractMethodObject(Refactoring refactoring) {
-        ExtractOperationRefactoring extractOperationRefactoring = (ExtractOperationRefactoring) refactoring;
-        UMLOperation originalOperation = extractOperationRefactoring.getSourceOperationBeforeExtraction();
-        UMLOperation destinationOperation = extractOperationRefactoring.getExtractedOperation();
-        this.refactoringType = refactoring.getRefactoringType();
+    public MoveRenameMethodObject(Refactoring refactoring) {
+        UMLOperation originalOperation;
+        UMLOperation destinationOperation;
+        if(refactoring instanceof RenameOperationRefactoring) {
+            RenameOperationRefactoring renameOperationRefactoring = (RenameOperationRefactoring) refactoring;
+            originalOperation = renameOperationRefactoring.getOriginalOperation();
+            destinationOperation = renameOperationRefactoring.getRenamedOperation();
+        }
+        // Both move and rename+move cases
+        else {
+            MoveOperationRefactoring moveOperationRefactoring = (MoveOperationRefactoring) refactoring;
+            originalOperation = moveOperationRefactoring.getOriginalOperation();
+            destinationOperation = moveOperationRefactoring.getMovedOperation();
+            this.startOffset = originalOperation.getLocationInfo().getStartOffset();
+        }
         this.originalFilePath = originalOperation.getLocationInfo().getFilePath();
         this.destinationFilePath = destinationOperation.getLocationInfo().getFilePath();
         this.originalClassName = originalOperation.getClassName();
@@ -65,14 +70,13 @@ public class ExtractMethodObject implements RefactoringObject {
         this.originalMethodSignature = new MethodSignatureObject(originalOperation.getName(), originalOperation.getParameters(),
                 originalOperation.isConstructor(), originalOperation.getVisibility(), originalOperation.isStatic());
         this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(), destinationOperation.getParameters(),
-                destinationOperation.isConstructor(), destinationOperation.getVisibility(), destinationOperation.isStatic());
-        this.methodInvocations = extractOperationRefactoring.getExtractedOperationInvocations();
-        this.sourceCodeFragments = extractOperationRefactoring.getExtractedCodeFragmentsFromSourceOperation();
-        this.extractedCodeFragments = extractOperationRefactoring.getExtractedCodeFragmentsToExtractedOperation();
-        this.codeRange = extractOperationRefactoring.getExtractedCodeRangeFromSourceOperation();
-        this.surroundingElements = null;
-        this.thrownExceptionInfo = null;
+                originalOperation.isConstructor(), originalOperation.getVisibility(), originalOperation.isStatic());
+        this.isMoveMethod = false;
+        this.isRenameMethod = false;
+        this.refactoringType = refactoring.getRefactoringType();
+        setType(refactoringType);
         this.isReplay = true;
+
     }
 
     public RefactoringType getRefactoringType() {
@@ -80,7 +84,7 @@ public class ExtractMethodObject implements RefactoringObject {
     }
 
     public RefactoringOrder getRefactoringOrder() {
-        return RefactoringOrder.EXTRACT_METHOD;
+        return RefactoringOrder.MOVE_RENAME_METHOD;
     }
 
     public void setOriginalFilePath(String originalFilePath) {
@@ -131,36 +135,37 @@ public class ExtractMethodObject implements RefactoringObject {
         this.destinationMethodSignature = destinationMethodSignature;
     }
 
-    public List<OperationInvocation> getMethodInvocations() {
-        return this.methodInvocations;
+    public int getStartOffset() {
+        return this.startOffset;
     }
 
-    public Set<AbstractCodeFragment> getExtractedCodeFragments() {
-        return this.extractedCodeFragments;
+    public void setType(RefactoringType refactoringType) {
+        if(refactoringType.equals(RefactoringType.RENAME_METHOD)) {
+            this.isRenameMethod = true;
+        }
+        else if(refactoringType.equals(RefactoringType.MOVE_OPERATION)) {
+            this.isMoveMethod = true;
+        }
+        else {
+            this.isRenameMethod = true;
+            this.isMoveMethod = true;
+        }
     }
 
-    public Set<AbstractCodeFragment> getSourceCodeFragments() {
-        return this.sourceCodeFragments;
+    public void setMethodAbove(String methodAbove) {
+        this.methodAbove = methodAbove;
     }
 
-    public CodeRange getCodeRange() {
-        return this.codeRange;
+    public String getMethodAbove() {
+        return this.methodAbove;
     }
 
-    public void setSurroundingElements(SmartPsiElementPointer[] surroundingElements) {
-        this.surroundingElements = surroundingElements;
+    public boolean isRenameMethod() {
+        return isRenameMethod;
     }
 
-    public SmartPsiElementPointer[] getSurroundingElements() {
-        return this.surroundingElements;
-    }
-
-    public void setThrownExceptionInfo(ThrownExceptionInfo[] thrownExceptionInfo) {
-        this.thrownExceptionInfo = thrownExceptionInfo;
-    }
-
-    public ThrownExceptionInfo[] getThrownExceptionInfo() {
-        return this.thrownExceptionInfo;
+    public boolean isMoveMethod() {
+        return isMoveMethod;
     }
 
     public void setReplayFlag(boolean isReplay) {
@@ -170,5 +175,4 @@ public class ExtractMethodObject implements RefactoringObject {
     public boolean isReplay() {
         return isReplay;
     }
-
 }
