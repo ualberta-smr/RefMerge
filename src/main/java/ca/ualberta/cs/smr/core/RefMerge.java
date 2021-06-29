@@ -51,8 +51,8 @@ public class RefMerge extends AnAction {
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         List<GitRepository> repos = repoManager.getRepositories();
         GitRepository repo = repos.get(0);
-        String rightCommit = "ac99afcef";
-        String leftCommit = "67e36f41b";
+        String rightCommit = "287b1a4275";
+        String leftCommit = "e93bac43b8";
 
 
         refMerge(rightCommit, leftCommit, project, repo);

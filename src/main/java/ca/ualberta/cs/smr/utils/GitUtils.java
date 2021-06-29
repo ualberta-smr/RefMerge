@@ -115,7 +115,7 @@ public class GitUtils {
                     e.printStackTrace();
                 }
                 assert num != null;
-                this.baseCommit = num.getRev();
+                this.baseCommit = num.getShortRev();
             }
 
             public String getBaseCommit() {
