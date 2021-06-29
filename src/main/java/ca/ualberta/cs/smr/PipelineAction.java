@@ -1,6 +1,7 @@
 package ca.ualberta.cs.smr;
 
 import ca.ualberta.cs.smr.utils.GitUtils;
+import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
@@ -37,39 +38,48 @@ public class PipelineAction extends AnAction {
         GitRepository repo = repos.get(0);
        System.out.println(repo);
         try {
-            eval.runAnalysis(repo);
+            eval.runEvaluation(repo);
         } catch(Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    private void runAnalysis(GitRepository repo) throws IOException, GitAPIException, VcsException {
+    /*
+     * Use the given git repository to evaluate IntelliMerge, RefMerge, and Git.
+     */
+    private void runEvaluation(GitRepository repo) throws IOException, GitAPIException, VcsException {
         Project project = ProjectManager.getInstance().getOpenProjects()[0];
         String clonedDest = project.getBasePath();
+        assert clonedDest != null;
         File repoDir = new File(clonedDest);
         GitUtils git = new GitUtils(repo, project);
-        // get merge commits from project
+        String mergeCommit = "e34f03bd0c7c805789bdb9da427db7334e61cedc";
+        git.checkout(mergeCommit);
+        Utils.reparsePsiFiles(project);
+        Utils.dumbServiceHandler(project);
+        // Save the manually merged version
+        Utils.saveContent(project, "manualMerge");
         List<GitCommit> mergeCommits = git.getMergeCommits();
-        for(GitCommit mergeCommit : mergeCommits) {
-            // Run refMerge on projects
-            runRefMerge(project, repo, mergeCommit);
-            // Run git merge on projects
-            // Run IntelliMerge on projects
+        Utils.reparsePsiFiles(project);
+        Utils.dumbServiceHandler(project);
+        for(GitCommit gitCommit : mergeCommits) {
+            String commitHash = gitCommit.getId().toString();
+            if(commitHash.equals(mergeCommit)) {
+                List<Hash> parents = gitCommit.getParents();
+                String leftParent = parents.get(0).toShortString();
+                String rightParent = parents.get(1).toShortString();
+                String baseCommit = git.getBaseCommit(leftParent, rightParent);
+                runRefMerge(project, repo, leftParent, rightParent);
+            }
         }
+
+
+
     }
 
-    private void runRefMerge(Project project, GitRepository repo, GitCommit mergeCommit) throws VcsException, IOException {
+    private void runRefMerge(Project project, GitRepository repo, String leftParent, String rightParent) {
         RefMerge refMerging = new RefMerge();
-        GitUtils git = new GitUtils(repo, project);
-        // Get parent commits
-        List<Hash> parents = mergeCommit.getParents();
-        String merge = mergeCommit.getId().toString();
-        String leftParent = parents.get(0).toString();
-        String rightParent = parents.get(1).toString();
-        // Get base commit
-        String base = git.getBaseCommit(leftParent, rightParent);
-        refMerging.refMerge(merge, leftParent, rightParent, base, project, repo);
-
+        refMerging.refMerge(leftParent, rightParent, project, repo);
     }
 
 

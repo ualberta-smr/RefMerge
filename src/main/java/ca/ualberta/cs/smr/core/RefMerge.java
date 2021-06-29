@@ -47,8 +47,7 @@ public class RefMerge extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        this.project = ProjectManager.getInstance().getOpenProjects()[0];
-        Project project = this.project;
+        Project project = ProjectManager.getInstance().getOpenProjects()[0];
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         List<GitRepository> repos = repoManager.getRepositories();
         GitRepository repo = repos.get(0);
@@ -63,8 +62,8 @@ public class RefMerge extends AnAction {
     /*
      * Gets the directory of the project that's being merged, then it calls the function that performs the merge.
      */
-    public void refMerge(String rightCommit, String leftCommit, Project project,
-                         GitRepository repo) {
+    public void refMerge(String rightCommit, String leftCommit, Project project, GitRepository repo) {
+        this.project = project;
         Utils.clearTemp();
         File dir = new File(Objects.requireNonNull(project.getBasePath()));
         try {

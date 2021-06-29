@@ -138,12 +138,34 @@ public class GitUtils {
     /*
      * Get the merge commits of a project for evaluation.
      */
-    public List<GitCommit> getMergeCommits() throws VcsException {
-        // get list of commits
+    public List<GitCommit> getMergeCommits() {
         VirtualFile root = repo.getRoot();
-        List<GitCommit> commits = GitHistoryUtils.history(project, root);
-        List<GitCommit> mergeCommits = new ArrayList<>();
+        class MergeCommitsThread extends Thread {
+            List<GitCommit> commits;
+            @Override
+            public void run() {
+                try {
+                    this.commits = GitHistoryUtils.history(project, root);
+                } catch (VcsException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            public List<GitCommit> getCommits() {
+                return this.commits;
+            }
+        }
+        MergeCommitsThread thread = new MergeCommitsThread();
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        List<GitCommit> commits = thread.getCommits();
+        // get list of commits
         System.out.println(commits.size());
+        List<GitCommit> mergeCommits = new ArrayList<>();
         for(GitCommit commit : commits) {
             // check if each commit is a merge commit
             if(commit.getParents().size() == 2) {
