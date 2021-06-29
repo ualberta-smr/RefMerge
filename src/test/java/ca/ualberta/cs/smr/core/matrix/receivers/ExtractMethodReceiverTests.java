@@ -1,6 +1,6 @@
 package ca.ualberta.cs.smr.core.matrix.receivers;
 
-import ca.ualberta.cs.smr.core.matrix.logicCells.ExtractMethodRenameClassCell;
+import ca.ualberta.cs.smr.core.matrix.logicCells.ExtractMethodMoveRenameClassCell;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
@@ -23,7 +23,7 @@ public class ExtractMethodReceiverTests extends LightJavaCodeInsightFixtureTestC
         RefactoringObject extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(1));
         RefactoringObject renameClassObject = RefactoringObjectUtils.createRefactoringObject(classRenameRefactorings.get(0));
 
-        boolean isDependent = ExtractMethodRenameClassCell.extractMethodRenameClassDependenceCell(renameClassObject, extractMethodObject);
+        boolean isDependent = ExtractMethodMoveRenameClassCell.dependenceCell(renameClassObject, extractMethodObject);
         Assert.assertTrue(isDependent);
     }
 

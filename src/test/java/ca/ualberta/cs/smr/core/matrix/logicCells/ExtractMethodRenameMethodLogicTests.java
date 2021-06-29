@@ -1,6 +1,8 @@
 package ca.ualberta.cs.smr.core.matrix.logicCells;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
+import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
+import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ParameterObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
@@ -36,7 +38,7 @@ public class ExtractMethodRenameMethodLogicTests extends LightJavaCodeInsightFix
         assert renameMethodRefactorings != null;
         RefactoringObject extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(0));
         RefactoringObject renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(0));
-        ExtractMethodRenameMethodCell cell = new ExtractMethodRenameMethodCell(project);
+        ExtractMethodMoveRenameMethodCell cell = new ExtractMethodMoveRenameMethodCell(project);
         boolean isDependent = cell.checkOverrideConflict(renameMethodObject, extractMethodObject);
         Assert.assertFalse(isDependent);
         renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(2));
@@ -74,7 +76,7 @@ public class ExtractMethodRenameMethodLogicTests extends LightJavaCodeInsightFix
         assert renameMethodRefactorings != null;
         RefactoringObject extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(0));
         RefactoringObject renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(0));
-        ExtractMethodRenameMethodCell cell = new ExtractMethodRenameMethodCell(project);
+        ExtractMethodMoveRenameMethodCell cell = new ExtractMethodMoveRenameMethodCell(project);
         boolean isConflicting = cell.checkOverloadConflict(renameMethodObject, extractMethodObject);
         Assert.assertFalse(isConflicting);
         renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(2));
@@ -96,7 +98,7 @@ public class ExtractMethodRenameMethodLogicTests extends LightJavaCodeInsightFix
         assert renameMethodRefactorings != null;
         RefactoringObject extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(2));
         RefactoringObject renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(4));
-        ExtractMethodRenameMethodCell cell = new ExtractMethodRenameMethodCell(project);
+        ExtractMethodMoveRenameMethodCell cell = new ExtractMethodMoveRenameMethodCell(project);
         boolean isDependent = cell.checkMethodNamingConflict(renameMethodObject, extractMethodObject);
         Assert.assertTrue(isDependent);
         renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(3));
@@ -117,11 +119,11 @@ public class ExtractMethodRenameMethodLogicTests extends LightJavaCodeInsightFix
         assert renameMethodRefactorings != null;
         RefactoringObject extractMethodObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(0));
         RefactoringObject renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(1));
-        boolean isDependent = ExtractMethodRenameMethodCell.checkExtractMethodRenameMethodDependence(renameMethodObject,
+        boolean isDependent = ExtractMethodMoveRenameMethodCell.checkDependence(renameMethodObject,
                 extractMethodObject);
         Assert.assertTrue(isDependent);
         renameMethodObject = RefactoringObjectUtils.createRefactoringObject(renameMethodRefactorings.get(2));
-        isDependent = ExtractMethodRenameMethodCell.checkExtractMethodRenameMethodDependence(renameMethodObject, extractMethodObject);
+        isDependent = ExtractMethodMoveRenameMethodCell.checkDependence(renameMethodObject, extractMethodObject);
         Assert.assertFalse(isDependent);
     }
 
@@ -136,12 +138,12 @@ public class ExtractMethodRenameMethodLogicTests extends LightJavaCodeInsightFix
         ExtractMethodObject extractMethodObject = new ExtractMethodObject("A.java", "A", foo,
                 "A.java", "A", efoo);
         // Rename method A.efoo -> A.ebar
-        RenameMethodObject renameMethodObject = new RenameMethodObject("A.java", "A",
+        MoveRenameMethodObject moveRenameMethodObject = new MoveRenameMethodObject("A.java", "A",
                 efoo, "A.java", "A", ebar);
         // Extract method A.ebar from A.foo
         ExtractMethodObject expectedRefactoring = new ExtractMethodObject("A.java", "A", foo,
                 "A.java", "A", ebar);
-        doExtractMethodRenameMethodTest(renameMethodObject, extractMethodObject, expectedRefactoring, true);
+        doExtractMethodRenameMethodTest(moveRenameMethodObject, extractMethodObject, expectedRefactoring, true);
     }
 
     public void testCheckExtractMethodRenameMethodCombination() {
@@ -155,19 +157,19 @@ public class ExtractMethodRenameMethodLogicTests extends LightJavaCodeInsightFix
         ExtractMethodObject extractMethodObject = new ExtractMethodObject("A.java", "A", bar,
                 "A.java", "A", ebar);
         // Rename method A.foo -> A.bar
-        RenameMethodObject renameMethodObject = new RenameMethodObject("A.java", "A", foo,
+        MoveRenameMethodObject moveRenameMethodObject = new MoveRenameMethodObject("A.java", "A", foo,
                 "A.java", "A", bar);
         // Extract method A.ebar from A.foo
         ExtractMethodObject expectedRefactoring = new ExtractMethodObject("A.java", "A", foo,
                 "A.java", "A", ebar);
-        doExtractMethodRenameMethodTest(renameMethodObject, extractMethodObject, expectedRefactoring, false);
+        doExtractMethodRenameMethodTest(moveRenameMethodObject, extractMethodObject, expectedRefactoring, false);
     }
 
 
     private void doExtractMethodRenameMethodTest(RefactoringObject renameMethodObject, RefactoringObject extractMethodObject,
                                                RefactoringObject expectedRefactoring, boolean expectedTransitivity) {
 
-        boolean isTransitive = ExtractMethodRenameMethodCell.checkExtractMethodRenameMethodTransitivity(renameMethodObject,
+        boolean isTransitive = ExtractMethodMoveRenameMethodCell.checkTransitivity(renameMethodObject,
                 extractMethodObject);
 
         if(expectedTransitivity) {

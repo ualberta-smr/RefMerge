@@ -47,8 +47,8 @@ public class RefMergeTests extends LightJavaCodeInsightFixtureTestCase {
         List<RefactoringObject> methodRefactorings = GetDataForTests.getRefactoringObjects("RENAME_METHOD", originalPath, refactoredPath);
         assert classRefactorings != null && methodRefactorings != null;
         ArrayList<RefactoringObject> refactorings = new ArrayList<>();
-        refactorings.addAll(methodRefactorings);
         refactorings.addAll(classRefactorings);
+        refactorings.addAll(methodRefactorings);
         RefMerge refMerge = new RefMerge();
         refMerge.project = project;
         refMerge.undoRefactorings(refactorings);

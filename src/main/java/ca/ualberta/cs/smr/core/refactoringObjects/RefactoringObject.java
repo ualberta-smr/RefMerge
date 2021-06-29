@@ -19,4 +19,8 @@ public interface RefactoringObject {
 
     String getDestinationFilePath();
 
+    void setReplayFlag(boolean isReplay);
+
+    boolean isReplay();
+
 }
