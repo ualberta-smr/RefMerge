@@ -153,6 +153,7 @@ public class RefMerge extends AnAction {
                     refactoringObject = undoExtractMethod.undoExtractMethod(refactoringObject);
                     int index = refactoringObjects.indexOf(refactoringObject);
                     refactoringObjects.set(index, refactoringObject);
+                    break;
                 case INLINE_OPERATION:
                     UndoInlineMethod undoInlineMethod = new UndoInlineMethod(project);
                     undoInlineMethod.undoInlineMethod(refactoringObject);
