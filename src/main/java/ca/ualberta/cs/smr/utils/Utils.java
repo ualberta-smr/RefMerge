@@ -54,12 +54,13 @@ public class Utils {
     /*
      * Save the content of one directory to another
      */
-    public static void saveContent(Project project, String dir) {
+    public static String saveContent(Project project, String dir) {
         // Save project to temporary directory
         String path = System.getProperty("user.home") + "/temp/" + dir;
         File file = new File(path);
         file.mkdirs();
         runSystemCommand("cp", "-r", project.getBasePath(), path);
+        return path;
     }
 
     /*
