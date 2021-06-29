@@ -103,29 +103,27 @@ public class UndoExtractMethod {
             }
         }
         PsiElement psiParent = PsiTreeUtil.getParentOfType(psiElement, PsiDeclarationStatement.class, PsiExpressionStatement.class);
-        assert psiParent != null;
-        PsiElement prevSibling = psiParent.getPrevSibling();
+        PsiElement prevSibling;
+        PsiElement nextSibling;
+        if(psiParent == null) {
+            psiParent = PsiTreeUtil.getParentOfType(psiElement, PsiMethodCallExpression.class);
+            PsiElement candidateElement = psiParent.getParent();
+            if(candidateElement instanceof PsiReturnStatement) {
+                psiParent = candidateElement;
+            }
+        }
+        prevSibling = psiParent.getPrevSibling();
+        nextSibling = psiParent.getNextSibling();
         if(prevSibling instanceof PsiWhiteSpace) {
             prevSibling = prevSibling.getPrevSibling();
         }
         // Handle when previous sibling is the start of the code block
-        if(prevSibling instanceof PsiJavaToken) {
-            surroundingElements[0] = prevSibling;
-        }
-        else {
-            surroundingElements[0] = prevSibling;
-        }
-        PsiElement nextSibling = psiParent.getNextSibling();
+        surroundingElements[0] = prevSibling;
         if(nextSibling instanceof PsiWhiteSpace) {
             nextSibling = nextSibling.getNextSibling();
         }
         // Handle case when next sibling is the end of the code block
-        if(nextSibling instanceof PsiJavaToken) {
-            surroundingElements[1] = nextSibling;
-        }
-        else {
-            surroundingElements[1] = nextSibling;
-        }
+        surroundingElements[1] = nextSibling;
         return surroundingElements;
 
     }
