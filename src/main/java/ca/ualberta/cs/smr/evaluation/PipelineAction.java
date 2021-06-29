@@ -2,6 +2,7 @@ package ca.ualberta.cs.smr.evaluation;
 
 import ca.ualberta.cs.smr.utils.GitUtils;
 import ca.ualberta.cs.smr.utils.Utils;
+import com.google.common.base.Stopwatch;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
@@ -17,6 +18,7 @@ import ca.ualberta.cs.smr.core.RefMerge;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class PipelineAction extends AnAction {
 
@@ -68,8 +70,11 @@ public class PipelineAction extends AnAction {
                 String leftParent = parents.get(0).toShortString();
                 String rightParent = parents.get(1).toShortString();
                 String baseCommit = git.getBaseCommit(leftParent, rightParent);
-                runRefMerge(project, repo, leftParent, rightParent);
-                runIntelliMerge(git, mergeCommit, leftParent, rightParent, baseCommit, repo.getPresentableUrl());
+                long refMergeRuntime = runRefMerge(project, repo, leftParent, rightParent);
+                long intelliMergeRuntime = runIntelliMerge(git, mergeCommit, leftParent, rightParent,
+                                                            baseCommit, repo.getPresentableUrl());
+                System.out.println("Elapsed RefMerge runtime = " + refMergeRuntime);
+                System.out.println("Elapsed IntelliMerge runtime = " + intelliMergeRuntime);
 
             }
         }
@@ -79,17 +84,22 @@ public class PipelineAction extends AnAction {
     }
 
     /*
-     * Merge the left and right parent using RefMerge
+     * Merge the left and right parent using RefMerge. Return how long it takes for RefMerge to finish
      */
-    private void runRefMerge(Project project, GitRepository repo, String leftParent, String rightParent) {
+    private long runRefMerge(Project project, GitRepository repo, String leftParent, String rightParent) {
         RefMerge refMerging = new RefMerge();
+        Stopwatch stopwatch = Stopwatch.createStarted();
         refMerging.refMerge(leftParent, rightParent, project, repo);
+        long time = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+        Utils.saveContent(project, "refMergeResults");
+        return time;
     }
 
     /*
-     * Merge the directories in the order <left> <base> <right> with IntelliMerge
+     * Merge the directories in the order <left> <base> <right> with IntelliMerge. Return how long it takes for IntelliMerge
+     * to finish.
      */
-    private void runIntelliMerge(GitUtils git, String mergeCommit, String leftParent, String rightParent, String baseCommit,
+    private long runIntelliMerge(GitUtils git, String mergeCommit, String leftParent, String rightParent, String baseCommit,
                                  String url ) {
         git.checkout(leftParent);
         List<String> directories = new ArrayList<>();
@@ -103,11 +113,13 @@ public class PipelineAction extends AnAction {
         String outputPath = System.getProperty("user.home") + "/temp/intelliMergeResults";
         APIClient apiClient = new APIClient(project.getName(), path + "/temp", url, outputPath + "/temp", outputPath, true);
         try {
+            Stopwatch stopwatch = Stopwatch.createStarted();
             apiClient.processDirectory(path, outputPath);
+            return stopwatch.elapsed(TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             e.printStackTrace();
+            return -1;
         }
-
     }
 
 
