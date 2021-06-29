@@ -36,7 +36,10 @@ public class ReplayMoveRenameMethod {
         String filePath = moveRenameMethodObject.getOriginalFilePath();
         Utils utils = new Utils(project);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(originalClassName, filePath);
-        assert psiClass != null;
+        // If we fail to find the PSI class, do not try to replay
+        if(psiClass == null) {
+            return;
+        }
         PsiMethod psiMethod = Utils.getPsiMethod(psiClass, original);
         assert psiMethod != null;
         if(moveRenameMethodObject.isRenameMethod()) {
