@@ -25,7 +25,7 @@ public class UndoMoveRenameMethod {
     public void undoMoveRenameMethod(RefactoringObject ref) {
         MoveRenameMethodObject moveRenameMethodObject = (MoveRenameMethodObject) ref;
         MethodSignatureObject original = moveRenameMethodObject.getOriginalMethodSignature();
-        MethodSignatureObject renamed = moveRenameMethodObject.getDestinationMethodSignature();
+        MethodSignatureObject refactored = moveRenameMethodObject.getDestinationMethodSignature();
         String originalMethodName = original.getName();
         String originalClassName = moveRenameMethodObject.getOriginalClassName();
         String destinationClassName = moveRenameMethodObject.getDestinationClassName();
@@ -33,14 +33,25 @@ public class UndoMoveRenameMethod {
         String filePath = moveRenameMethodObject.getDestinationFilePath();
         Utils utils = new Utils(project);
         utils.addSourceRoot(filePath);
-        PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(destinationClassName, filePath);
-        assert psiClass != null;
+        PsiClass psiClass;
+        if(moveRenameMethodObject.isMoveMethod()) {
+            psiClass = utils.getPsiClassFromClassAndFileNames(destinationClassName, filePath);
+        }
+        else {
+            psiClass = utils.getPsiClassFromClassAndFileNames(originalClassName, filePath);
+        }
+        // If we cannot find the PSI class, do not try to invert the refactoring
+        if(psiClass == null) {
+            return;
+        }
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
-        PsiMethod psiMethod = Utils.getPsiMethod(psiClass, renamed);
-        assert psiMethod != null;
+        PsiMethod psiMethod = Utils.getPsiMethod(psiClass, refactored);
+        if(psiMethod == null) {
+            return;
+        }
 
-        // If the operation was renamed, undo the method rename by performing a rename method refactoring to rename it
-        // to the original name
+        // If the operation was refactored, undo the method refactoring by performing a method refactoring to change it
+        // to the original operation
         if(moveRenameMethodObject.isRenameMethod()) {
             RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
             RenameRefactoring renameRefactoring = factory.createRename(psiMethod, originalMethodName, true, true);

@@ -273,6 +273,10 @@ public class Utils {
             if(psiParameter.hasModifierProperty(PsiModifier.FINAL)) {
                 psiType = psiType.substring(psiType.indexOf("final ") + 6);
             }
+            // Replace int... with int[] for comparison with RefMiner object
+            if(psiType.contains("...")) {
+                psiType = psiType.replace("...", "[]");
+            }
             if(!umlType.equals(psiType)) {
                 return false;
             }

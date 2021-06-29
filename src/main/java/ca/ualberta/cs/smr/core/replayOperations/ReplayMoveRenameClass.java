@@ -140,7 +140,7 @@ public class ReplayMoveRenameClass {
                 // If the original directory is empty after moving the class, delete the directory
                 if (originalDirectory.getFiles().length == 0) {
                     if (!ApplicationManager.getApplication().isUnitTestMode()) {
-                        originalDirectory.delete();
+                        WriteCommandAction.runWriteCommandAction(project, originalDirectory::delete);
                     }
 
                 }
