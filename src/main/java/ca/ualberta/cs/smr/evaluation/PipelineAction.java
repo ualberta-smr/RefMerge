@@ -7,7 +7,6 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
 import com.intellij.vcs.log.Hash;
-import edu.pku.intellimerge.client.APIClient;
 import git4idea.GitCommit;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
@@ -88,11 +87,11 @@ public class PipelineAction extends AnAction {
      */
     private long runRefMerge(Project project, GitRepository repo, String leftParent, String rightParent) {
         RefMerge refMerging = new RefMerge();
-        Stopwatch stopwatch = Stopwatch.createStarted();
+        long time = System.currentTimeMillis();
         refMerging.refMerge(leftParent, rightParent, project, repo);
-        long time = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+        long time2 = System.currentTimeMillis();
         Utils.saveContent(project, "refMergeResults");
-        return time;
+        return time2 - time;
     }
 
     /*
@@ -111,15 +110,11 @@ public class PipelineAction extends AnAction {
         git.checkout(rightParent);
         directories.add(Utils.saveContent(project, "intelliMerge/theirs"));
         String outputPath = System.getProperty("user.home") + "/temp/intelliMergeResults";
-        APIClient apiClient = new APIClient(project.getName(), path + "/temp", url, outputPath + "/temp", outputPath, true);
-        try {
-            Stopwatch stopwatch = Stopwatch.createStarted();
-            apiClient.processDirectory(path, outputPath);
-            return stopwatch.elapsed(TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return -1;
-        }
+        long time = System.currentTimeMillis();
+        Utils.runSystemCommand("java", "-jar", "lib/IntelliMerge-1.0.7-all.jar", "-d", directories.get(0),
+                directories.get(1), directories.get(2), "-o", outputPath);
+        long time2 = System.currentTimeMillis();
+        return time2 - time;
     }
 
 

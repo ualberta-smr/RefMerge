@@ -25,7 +25,7 @@
                 description="RunRefMerge will run RefMerge, merging the parent commits while considering the refactoring semantics" >
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
-        <action id="ca.ualberta.cs.smr.PipelineAction" class="ca.ualberta.cs.smr.PipelineAction" text="RunEvaluationPipeline"
+        <action id="ca.ualberta.cs.smr.PipelineAction" class="ca.ualberta.cs.smr.evaluation.PipelineAction" text="RunEvaluationPipeline"
                 description="Will run evaluation pipeline" >
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
