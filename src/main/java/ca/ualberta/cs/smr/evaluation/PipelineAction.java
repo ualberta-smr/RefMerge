@@ -2,11 +2,11 @@ package ca.ualberta.cs.smr.evaluation;
 
 import ca.ualberta.cs.smr.utils.GitUtils;
 import ca.ualberta.cs.smr.utils.Utils;
-import com.google.common.base.Stopwatch;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
 import com.intellij.vcs.log.Hash;
+//import edu.pku.intellimerge.client.APIClient;
 import git4idea.GitCommit;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
@@ -17,7 +17,6 @@ import ca.ualberta.cs.smr.core.RefMerge;
 
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 public class PipelineAction extends AnAction {
 
@@ -51,8 +50,9 @@ public class PipelineAction extends AnAction {
         assert clonedDest != null;
         File repoDir = new File(clonedDest);
         GitUtils git = new GitUtils(repo, project);
-//        String mergeCommit = "e34f03bd0c7c805789bdb9da427db7334e61cedc";
-        String mergeCommit = "588def5f5d92ba1e4ec5929dcaed4150a925a90b";
+//        String mergeCommit = "e34f03bd0c7c805789bdb9da427db7334e61cedc"; // deeplearning4j
+//        String mergeCommit = "588def5f5d92ba1e4ec5929dcaed4150a925a90b"; //undertow
+        String mergeCommit = "07559b47674594fdf40f2855f83b492f67f9093c";
         git.checkout(mergeCommit);
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
@@ -70,10 +70,10 @@ public class PipelineAction extends AnAction {
                 String rightParent = parents.get(1).toShortString();
                 String baseCommit = git.getBaseCommit(leftParent, rightParent);
                 long refMergeRuntime = runRefMerge(project, repo, leftParent, rightParent);
-                long intelliMergeRuntime = runIntelliMerge(git, mergeCommit, leftParent, rightParent,
-                                                            baseCommit, repo.getPresentableUrl());
+//                long intelliMergeRuntime = runIntelliMerge(git, mergeCommit, leftParent, rightParent,
+//                                                            baseCommit, repo.getPresentableUrl());
                 System.out.println("Elapsed RefMerge runtime = " + refMergeRuntime);
-                System.out.println("Elapsed IntelliMerge runtime = " + intelliMergeRuntime);
+//                System.out.println("Elapsed IntelliMerge runtime = " + intelliMergeRuntime);
 
             }
         }
@@ -98,24 +98,30 @@ public class PipelineAction extends AnAction {
      * Merge the directories in the order <left> <base> <right> with IntelliMerge. Return how long it takes for IntelliMerge
      * to finish.
      */
-    private long runIntelliMerge(GitUtils git, String mergeCommit, String leftParent, String rightParent, String baseCommit,
-                                 String url ) {
-        git.checkout(leftParent);
-        List<String> directories = new ArrayList<>();
-        git.checkout(mergeCommit);
-        String path = System.getProperty("user.home") + "/temp/intelliMerge";
-        directories.add(Utils.saveContent(project, "intelliMerge/ours"));
-        git.checkout(baseCommit);
-        directories.add(Utils.saveContent(project, "intelliMerge/base"));
-        git.checkout(rightParent);
-        directories.add(Utils.saveContent(project, "intelliMerge/theirs"));
-        String outputPath = System.getProperty("user.home") + "/temp/intelliMergeResults";
-        long time = System.currentTimeMillis();
-        Utils.runSystemCommand("java", "-jar", "lib/IntelliMerge-1.0.7-all.jar", "-d", directories.get(0),
-                directories.get(1), directories.get(2), "-o", outputPath);
-        long time2 = System.currentTimeMillis();
-        return time2 - time;
-    }
+//    private long runIntelliMerge(GitUtils git, String mergeCommit, String leftParent, String rightParent, String baseCommit,
+//                                 String url ) {
+//        git.checkout(leftParent);
+//        List<String> directories = new ArrayList<>();
+//        git.checkout(mergeCommit);
+//        String path = System.getProperty("user.home") + "/temp/" + project.getName();
+//        Utils.saveContent(project, project.getName() + "/ours/");
+//        git.checkout(baseCommit);
+//        Utils.saveContent(project, project.getName() + "/base/");
+//        git.checkout(rightParent);
+//        Utils.saveContent(project, project.getName() + "/theirs/");
+//        String outputPath = System.getProperty("user.home") + "/temp/intelliMergeResults";
+//        APIClient apiClient = new APIClient(project.getName(), path + "/temp", url, outputPath + "/temp", outputPath, true);
+//        try {
+//            long time = System.currentTimeMillis();
+//            apiClient.processDirectory(path, outputPath);
+//            long time2 = System.currentTimeMillis();
+//            return time2 - time;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        return -1;
+//    }
 
 
 
