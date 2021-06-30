@@ -164,7 +164,6 @@ public class GitUtils {
         }
         List<GitCommit> commits = thread.getCommits();
         // get list of commits
-        System.out.println(commits.size());
         List<GitCommit> mergeCommits = new ArrayList<>();
         for(GitCommit commit : commits) {
             // check if each commit is a merge commit

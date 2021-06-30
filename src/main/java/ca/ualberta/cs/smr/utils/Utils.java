@@ -59,7 +59,7 @@ public class Utils {
         String path = System.getProperty("user.home") + "/temp/" + dir;
         File file = new File(path);
         file.mkdirs();
-        runSystemCommand("cp", "-r", project.getBasePath(), path);
+        runSystemCommand("cp", "-r", project.getBasePath() + "/.", path);
         return path;
     }
 
