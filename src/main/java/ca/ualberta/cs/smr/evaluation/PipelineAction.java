@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.evaluation;
 
+import ca.ualberta.cs.smr.utils.EvaluationUtils;
 import ca.ualberta.cs.smr.utils.GitUtils;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -9,6 +10,7 @@ import com.intellij.vcs.log.Hash;
 import git4idea.GitCommit;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -64,11 +66,16 @@ public class PipelineAction extends AnAction {
         String rightParent = parents.get(0).toShortString();
         String leftParent = parents.get(1).toShortString();
         String baseCommit = git.getBaseCommit(leftParent, rightParent);
+        // Merge the merge scenario with the three tools and record the runtime
         long refMergeRuntime = runRefMerge(project, repo, leftParent, rightParent);
+        String path = Utils.saveContent(project, "refMergeResults");
         // Run IntelliMerge
         // Run GitMerge
         System.out.println("Elapsed RefMerge runtime = " + refMergeRuntime);
 
+        // Get the conflict blocks from each of the merged results as well as the number of conflict blocks
+        Pair<Integer, String> refMergeConflicts = EvaluationUtils.extractMergeConflicts(path);
+        System.out.println("Elapsed RefMerge runtime = " + refMergeRuntime);
     }
 
     /*
@@ -79,7 +86,6 @@ public class PipelineAction extends AnAction {
         long time = System.currentTimeMillis();
         refMerging.refMerge(leftParent, rightParent, project, repo);
         long time2 = System.currentTimeMillis();
-        Utils.saveContent(project, "refMergeResults");
         return time2 - time;
     }
 
