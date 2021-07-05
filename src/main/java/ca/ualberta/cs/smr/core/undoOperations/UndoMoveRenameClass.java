@@ -105,7 +105,14 @@ public class UndoMoveRenameClass {
                 MoveInnerProcessor processor = new MoveInnerProcessor(project, null);
                 processor.setup(psiClass, srcClassName, false,
                         null, true, false, targetContainer);
-                ApplicationManager.getApplication().invokeAndWait(processor);
+                try {
+                    ApplicationManager.getApplication().invokeAndWait(processor);
+                }
+                catch(NullPointerException e) {
+                    System.out.println(destQualifiedClass);
+                    e.printStackTrace();
+                    return;
+                }
             }
             // Otherwise if the move class moves a top level class from one package to another
             else {
