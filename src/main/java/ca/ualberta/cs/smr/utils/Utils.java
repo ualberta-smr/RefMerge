@@ -52,7 +52,7 @@ public class Utils {
     }
 
     /*
-     * Save the content of one directory to another
+     * Save the content of one directory to another. Return the path
      */
     public static String saveContent(Project project, String dir) {
         // Save project to temporary directory
