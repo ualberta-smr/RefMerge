@@ -56,24 +56,18 @@ public class PipelineAction extends AnAction {
         Utils.dumbServiceHandler(project);
         // Save the manually merged version
         Utils.saveContent(project, "manualMerge");
-        List<GitCommit> mergeCommits = git.getMergeCommits();
+        GitCommit targetCommit = git.getTargetMergeCommit(mergeCommit);
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
-        for(GitCommit gitCommit : mergeCommits) {
-            String commitHash = gitCommit.getId().toString();
-            if(commitHash.equals(mergeCommit)) {
-                // Perform the merge with the three tools.
-                List<Hash> parents = gitCommit.getParents();
-                String rightParent = parents.get(0).toShortString();
-                String leftParent = parents.get(1).toShortString();
-                String baseCommit = git.getBaseCommit(leftParent, rightParent);
-                long refMergeRuntime = runRefMerge(project, repo, leftParent, rightParent);
-                System.out.println("Elapsed RefMerge runtime = " + refMergeRuntime);
-
-            }
-        }
-
-
+        // Perform the merge with the three tools.
+        List<Hash> parents = targetCommit.getParents();
+        String rightParent = parents.get(0).toShortString();
+        String leftParent = parents.get(1).toShortString();
+        String baseCommit = git.getBaseCommit(leftParent, rightParent);
+        long refMergeRuntime = runRefMerge(project, repo, leftParent, rightParent);
+        // Run IntelliMerge
+        // Run GitMerge
+        System.out.println("Elapsed RefMerge runtime = " + refMergeRuntime);
 
     }
 

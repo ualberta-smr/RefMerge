@@ -175,6 +175,21 @@ public class GitUtils {
         return mergeCommits;
     }
 
+    /*
+     * Get the target merge commit that we are evaluating the tools on.
+     */
+    public GitCommit getTargetMergeCommit(String targetCommit) {
+        GitCommit mergeCommit = null;
+        List<GitCommit> mergeCommits = this.getMergeCommits();
+        for(GitCommit gitCommit : mergeCommits) {
+            String commitHash = gitCommit.getId().toString();
+            if (commitHash.equals(targetCommit)) {
+                mergeCommit = gitCommit;
+            }
+        }
+        return mergeCommit;
+    }
+
 }
 
 class DoGitCommit implements Runnable {
