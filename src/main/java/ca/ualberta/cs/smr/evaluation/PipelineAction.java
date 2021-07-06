@@ -51,8 +51,8 @@ public class PipelineAction extends AnAction {
         File repoDir = new File(clonedDest);
         GitUtils git = new GitUtils(repo, project);
 //        String mergeCommit = "e34f03bd0c7c805789bdb9da427db7334e61cedc"; // deeplearning4j
-        String mergeCommit = "588def5f5d92ba1e4ec5929dcaed4150a925a90b"; //undertow
-//        String mergeCommit = "07559b47674594fdf40f2855f83b492f67f9093c"; //error-prone
+//        String mergeCommit = "588def5f5d92ba1e4ec5929dcaed4150a925a90b"; //undertow
+        String mergeCommit = "07559b47674594fdf40f2855f83b492f67f9093c"; //error-prone
         git.checkout(mergeCommit);
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);

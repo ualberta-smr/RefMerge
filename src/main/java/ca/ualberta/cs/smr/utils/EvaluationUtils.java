@@ -1,16 +1,29 @@
 package ca.ualberta.cs.smr.utils;
 
+import ca.ualberta.cs.smr.evaluation.model.ConflictBlock;
 import ca.ualberta.cs.smr.evaluation.model.SourceFile;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /*
  * Contains the methods necessary to get the metrics for the evaluation.
  */
 public class EvaluationUtils {
+
+    public static final String CONFLICT_LEFT_BEGIN = "<<<<<<<";
+    public static final String CONFLICT_RIGHT_BEGIN = "=======";
+    public static final String CONFLICT_RIGHT_END = ">>>>>>>";
+
 
     /*
      * Get the number of merge conflicts as well as each conflict block.
@@ -20,7 +33,16 @@ public class EvaluationUtils {
         File dir = new File(directory);
         ArrayList<SourceFile> mergedFiles = getJavaSourceFiles(directory, temp, dir);
         Integer totalConflicts = 0;
-
+        for(SourceFile file : mergedFiles) {
+            List<ConflictBlock> conflictBlocks = extractConflictBlocks(file.getAbsolutePath());
+            for(ConflictBlock conflictBlock : conflictBlocks) {
+                System.out.println(file.getAbsolutePath());
+                System.out.println(conflictBlock.getStartLine());
+                System.out.println(conflictBlock.getEndLine());
+                System.out.println(conflictBlock.getLeft());
+                System.out.println(conflictBlock.getRight());
+            }
+        }
         return Pair.of(totalConflicts, null);
     }
 
@@ -56,5 +78,74 @@ public class EvaluationUtils {
     private static boolean isJavaFile(File file) {
         return file.getName().toLowerCase().contains(".java");
     }
+
+    /*
+     * Extract the individual merge conflicts from the file and record their information.
+     */
+    private static List<ConflictBlock> extractConflictBlocks(String path) {
+        String leftConflictingContent = "";
+        String rightConflictingContent = "";
+        boolean isConflictOpen = false;
+        boolean isLeftContent = false;
+        int lineCounter = 0;
+        int startLOC = 0;
+        int endLOC = 0;
+
+        List<ConflictBlock> mergeConflicts = new ArrayList<>();
+        List<String> lines = readFileToLines(path);
+        Iterator<String> iterator = lines.iterator();
+        while (iterator.hasNext()) {
+            String line = iterator.next();
+            lineCounter++;
+            if (line.contains(CONFLICT_LEFT_BEGIN)) {
+                isConflictOpen = true;
+                isLeftContent = true;
+                startLOC = lineCounter;
+            } else if (line.contains(CONFLICT_RIGHT_BEGIN)) {
+                isLeftContent = false;
+            } else if (line.contains(CONFLICT_RIGHT_END)) {
+                endLOC = lineCounter;
+                ConflictBlock mergeConflict =
+                        new ConflictBlock(leftConflictingContent, rightConflictingContent, startLOC, endLOC);
+                mergeConflicts.add(mergeConflict);
+                // reset the flags
+                isConflictOpen = false;
+                isLeftContent = false;
+                leftConflictingContent = "";
+                rightConflictingContent = "";
+            } else {
+                if (isConflictOpen) {
+                    if (isLeftContent) {
+                        leftConflictingContent += line + "\n";
+                    } else {
+                        rightConflictingContent += line + "\n";
+                    }
+                }
+            }
+        }
+        return mergeConflicts;
+
+    }
+
+    /*
+     * Read the content of a given file with the file encoding 'UTF-8' as a list of lines.
+     */
+    public static List<String> readFileToLines(String path) {
+        List<String> lines = new ArrayList<>();
+        File file = new File(path);
+        if (file.exists()) {
+            String fileEncoding = "UTF-8";
+            try (BufferedReader reader =
+                         Files.newBufferedReader(Paths.get(path), Charset.forName(fileEncoding))) {
+                lines = reader.lines().collect(Collectors.toList());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println(path + " does not exist!");
+        }
+        return lines;
+    }
+
 
 }
