@@ -26,7 +26,6 @@ import com.intellij.usageView.UsageInfo;
 import org.jetbrains.jps.model.serialization.PathMacroUtil;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -44,9 +43,11 @@ public class Utils {
     public static void runSystemCommand(String... commands) {
         try {
             ProcessBuilder pb = new ProcessBuilder(commands);
+            pb.redirectOutput(new File(System.getProperty("user.home") + "/temp/IntelliMergeOutput"));
+            pb.redirectError(new File(System.getProperty("user.home") + "/temp/Error"));
             Process p = pb.start();
             p.waitFor();
-        } catch (IOException | InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
