@@ -16,7 +16,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import ca.ualberta.cs.smr.core.RefMerge;
 
-import java.io.File;
 import java.util.*;
 
 public class PipelineAction extends AnAction {
@@ -48,11 +47,10 @@ public class PipelineAction extends AnAction {
     private void runEvaluation(GitRepository repo) {
         String clonedDest = this.project.getBasePath();
         assert clonedDest != null;
-        File repoDir = new File(clonedDest);
         GitUtils git = new GitUtils(repo, project);
 //        String mergeCommit = "e34f03bd0c7c805789bdb9da427db7334e61cedc"; // deeplearning4j
-//        String mergeCommit = "588def5f5d92ba1e4ec5929dcaed4150a925a90b"; //undertow
-        String mergeCommit = "07559b47674594fdf40f2855f83b492f67f9093c"; //error-prone
+        String mergeCommit = "588def5f5d92ba1e4ec5929dcaed4150a925a90b"; //undertow
+//        String mergeCommit = "07559b47674594fdf40f2855f83b492f67f9093c"; //error-prone
         git.checkout(mergeCommit);
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
@@ -68,14 +66,18 @@ public class PipelineAction extends AnAction {
         String baseCommit = git.getBaseCommit(leftParent, rightParent);
         // Merge the merge scenario with the three tools and record the runtime
         long refMergeRuntime = runRefMerge(project, repo, leftParent, rightParent);
-        String path = Utils.saveContent(project, "refMergeResults");
-        // Run IntelliMerge
+        String refMergePath = Utils.saveContent(project, "refMergeResults");
         // Run GitMerge
-        System.out.println("Elapsed RefMerge runtime = " + refMergeRuntime);
+        long gitMergeRuntime = runGitMerge(project, repo, leftParent, rightParent);
+        String gitMergePath = Utils.saveContent(project, "gitMergeResults");
+        // Run IntelliMerge
+        long intelliMergeRuntime = runIntelliMerge(project, repo, leftParent, baseCommit, rightParent);
 
         // Get the conflict blocks from each of the merged results as well as the number of conflict blocks
-        Pair<Integer, String> refMergeConflicts = EvaluationUtils.extractMergeConflicts(path);
+        Pair<Integer, String> refMergeConflicts = EvaluationUtils.extractMergeConflicts(refMergePath);
         System.out.println("Elapsed RefMerge runtime = " + refMergeRuntime);
+        System.out.println("Elapsed Git merge runtime = " + gitMergeRuntime);
+        System.out.println("Elapsed IntelliMerge runtime = " + intelliMergeRuntime);
     }
 
     /*
@@ -89,7 +91,37 @@ public class PipelineAction extends AnAction {
         return time2 - time;
     }
 
+    /*
+     * Merge the left and right parent using Git. Return how long it takes for Git to finish
+     */
+    private long runGitMerge(Project project, GitRepository repo, String leftParent, String rightParent) {
+        GitUtils gitUtils = new GitUtils(repo, project);
+        gitUtils.checkout(leftParent);
+        long time = System.currentTimeMillis();
+        Utils.runSystemCommand("git", "merge", rightParent);
+        long time2 = System.currentTimeMillis();
+        return time2 - time;
+    }
 
-
+    /*
+     * Merge the left and right parent using IntelliMerge via command line. Return how long it takes for IntelliMerge
+     * to finish
+     */
+    private long runIntelliMerge(Project project, GitRepository repo, String leftParent, String baseCommit, String rightParent) {
+        GitUtils gitUtils = new GitUtils(repo, project);
+        gitUtils.checkout(leftParent);
+        String leftPath = Utils.saveContent(project, "intelliMerge/ours");
+        gitUtils.checkout(baseCommit);
+        String basePath = Utils.saveContent(project, "intelliMerge/base");
+        gitUtils.checkout(rightParent);
+        String rightPath = Utils.saveContent(project, "intelliMerge/theirs");
+        long time = System.currentTimeMillis();
+        String jarFile =  System.getProperty("user.home") + "/temp/IntelliMerge-1.0.7-all.jar";
+        String output = System.getProperty("user.home") + "/temp/intelliMergeResults";
+        System.out.println(jarFile);
+        Utils.runSystemCommand("java", "-jar", jarFile, "-d", leftPath, basePath, rightPath, "-o", output);
+        long time2 = System.currentTimeMillis();
+        return time2 - time;
+    }
 
 }
