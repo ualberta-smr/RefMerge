@@ -84,6 +84,12 @@ public class PipelineAction extends AnAction {
         Pair<Integer, List<ConflictingFile>> gitMergeConflicts = EvaluationUtils.extractMergeConflicts(gitMergePath);
         Pair<Integer, List<ConflictingFile>> intelliMergeConflicts = EvaluationUtils.extractMergeConflicts(intelliMergePath);
 
+        // Format all java files in each directory
+        EvaluationUtils.formatAllJavaFiles(manuallyMergedPath);
+        EvaluationUtils.formatAllJavaFiles(refMergePath);
+        EvaluationUtils.formatAllJavaFiles(intelliMergePath);
+        EvaluationUtils.formatAllJavaFiles(gitMergePath);
+
         // Get manually merged java files
         File manuallyMergedDir = new File(manuallyMergedPath);
         ArrayList<SourceFile> manuallyMergedFiles = EvaluationUtils

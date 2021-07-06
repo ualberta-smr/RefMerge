@@ -4,6 +4,8 @@ import ca.ualberta.cs.smr.evaluation.model.ComparisonResult;
 import ca.ualberta.cs.smr.evaluation.model.ConflictBlock;
 import ca.ualberta.cs.smr.evaluation.model.ConflictingFile;
 import ca.ualberta.cs.smr.evaluation.model.SourceFile;
+import com.google.googlejavaformat.java.Formatter;
+import com.google.googlejavaformat.java.FormatterException;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.BufferedReader;
@@ -229,7 +231,8 @@ public class EvaluationUtils {
             // Get the number of manually merged lines of code
             int manualLOC = readFileToLines(manualAbsolutePath).size();
             // get the number of auto-merged lines of code
-            int autoMergedLOC = computeFileLOC(mergedAbsolutePath);
+            int autoMergedLOC = readFileToLines(mergedAbsolutePath).size();
+//            int autoMergedLOC = computeFileLOC(mergedAbsolutePath);
             System.out.println("Manual LOC for " + manualAbsolutePath + ": " + manualLOC);
             System.out.println("Auto-merged LOC for " + mergedAbsolutePath + ": " + autoMergedLOC);
         }
@@ -244,6 +247,46 @@ public class EvaluationUtils {
         List<String> lines =
                 readFileToLines(path).stream().filter(line -> line.trim().length() > 0).collect(Collectors.toList());
         return lines.size();
+    }
+
+    /*
+     * Format all java files with google-java-formatter in a directory
+     */
+    public static void formatAllJavaFiles(String dir) {
+        File file = new File(dir);
+        if (file.exists()) {
+            File[] files = file.listFiles();
+            for (File f : files) {
+                if (f.isDirectory()) {
+                    formatAllJavaFiles(f.getAbsolutePath());
+                } else if (f.isFile() && isJavaFile(f)) {
+                    String code = readFileToString(f);
+                    try {
+                        // Format with google-java-formatter
+                        String reformattedCode = new Formatter().formatSource(code);
+                        // Write the formatted string into the original file
+                        writeContent(f.getAbsolutePath(), reformattedCode);
+                    } catch (FormatterException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
+    /*
+     * Read the given file to a string
+     */
+    public static String readFileToString(File file) {
+        String content = "";
+        String fileEncoding = "UTF-8";
+        try (BufferedReader reader = Files
+                .newBufferedReader(Paths.get(file.getAbsolutePath()), Charset.forName(fileEncoding))) {
+            content = reader.lines().collect(Collectors.joining("\n"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return content;
     }
 
 
