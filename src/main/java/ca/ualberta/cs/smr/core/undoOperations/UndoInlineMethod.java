@@ -15,6 +15,8 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
 import com.intellij.refactoring.extractMethod.ExtractMethodProcessor;
 import com.intellij.refactoring.extractMethod.PrepareFailedException;
+import com.intellij.usages.UsageView;
+import com.intellij.usages.UsageViewManager;
 import gr.uom.java.xmi.decomposition.AbstractCodeFragment;
 import org.jetbrains.annotations.NotNull;
 
@@ -75,6 +77,12 @@ public class UndoInlineMethod {
         PsiMethod extractedMethod = extractMethodProcessor.getExtractedMethod();
         updateMethodSignature(ref, extractedMethod);
         moveMethodWithinOriginalClass(psiClass, extractedMethod, inlineMethodObject.getStartOffset());
+
+        UsageViewManager viewManager = UsageViewManager.getInstance(project);
+        UsageView usageView = viewManager.getSelectedUsageView();
+        if(usageView != null) {
+            usageView.close();
+        }
 
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);

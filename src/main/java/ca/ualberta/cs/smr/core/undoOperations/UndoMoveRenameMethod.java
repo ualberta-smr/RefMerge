@@ -10,6 +10,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.refactoring.*;
 import com.intellij.usageView.UsageInfo;
+import com.intellij.usages.UsageView;
+import com.intellij.usages.UsageViewManager;
 
 public class UndoMoveRenameMethod {
 
@@ -73,9 +75,19 @@ public class UndoMoveRenameMethod {
             UsageInfo[] refactoringUsages = moveMethodRefactoring.findUsages();
             moveMethodRefactoring.doRefactoring(refactoringUsages);
             psiClass = moveMethodRefactoring.getTargetClass();
+            if(psiClass == null) {
+                return;
+            }
             // If the method was not moved to the correct location within the class, move it to the correct location
             moveMethodToOriginalLocation(psiClass, psiMethod,  moveRenameMethodObject.getStartOffset());
         }
+
+        UsageViewManager viewManager = UsageViewManager.getInstance(project);
+        UsageView usageView = viewManager.getSelectedUsageView();
+        if(usageView != null) {
+            usageView.close();
+        }
+
         // Update the virtual file that contains the refactoring
         vFile.refresh(false, true);
 

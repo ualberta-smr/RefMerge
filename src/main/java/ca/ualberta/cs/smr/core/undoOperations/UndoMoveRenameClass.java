@@ -5,6 +5,7 @@ import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -15,6 +16,8 @@ import com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackages
 import com.intellij.refactoring.move.moveClassesOrPackages.SingleSourceRootMoveDestination;
 import com.intellij.refactoring.move.moveInner.MoveInnerProcessor;
 import com.intellij.usageView.UsageInfo;
+import com.intellij.usages.UsageView;
+import com.intellij.usages.UsageViewManager;
 
 import java.util.Objects;
 
@@ -93,7 +96,7 @@ public class UndoMoveRenameClass {
                     PsiClass targetClass = utils.getPsiClassByFilePath(filePath, originalTopClass);
                     MoveClassToInnerProcessor processor = new MoveClassToInnerProcessor(project, psiClasses, targetClass,
                             true, false, null);
-                    ApplicationManager.getApplication().invokeAndWait(processor);
+                    ApplicationManager.getApplication().invokeAndWait(processor, ModalityState.current());
                 }
             }
             // Move the inner class to another class
@@ -106,7 +109,7 @@ public class UndoMoveRenameClass {
                 processor.setup(psiClass, srcClassName, false,
                         null, true, false, targetContainer);
                 try {
-                    ApplicationManager.getApplication().invokeAndWait(processor);
+                    ApplicationManager.getApplication().invokeAndWait(processor, ModalityState.current());
                 }
                 catch(NullPointerException e) {
                     System.out.println(destQualifiedClass);
@@ -125,7 +128,7 @@ public class UndoMoveRenameClass {
                     PsiElement[] psiElements = new PsiElement[1];
                     psiElements[0] = psiClass;
                     MoveClassesOrPackagesProcessor moveClassProcessor = new MoveClassesOrPackagesProcessor(project, psiElements,
-                            moveDestination, true, true, null);
+                            moveDestination, true, false, null);
                     Application app = ApplicationManager.getApplication();
                     app.invokeAndWait(moveClassProcessor);
                 } else {
@@ -135,12 +138,20 @@ public class UndoMoveRenameClass {
                     MoveClassesOrPackagesProcessor moveClassProcessor = new MoveClassesOrPackagesProcessor(project, psiElements,
                             new SingleSourceRootMoveDestination(PackageWrapper
                                     .create(Objects.requireNonNull(JavaDirectoryService.getInstance().getPackage(dir))), dir),
-                            true, true, null);
+                            true, false, null);
                     Application app = ApplicationManager.getApplication();
-                    app.invokeAndWait(moveClassProcessor);
+                    app.invokeAndWait(moveClassProcessor, ModalityState.current());
+
                 }
             }
         }
+
+        UsageViewManager viewManager = UsageViewManager.getInstance(project);
+        UsageView usageView = viewManager.getSelectedUsageView();
+        if(usageView != null) {
+            usageView.close();
+        }
+
         // Update the virtual file of the class
         vFile.refresh(false, true);
 
