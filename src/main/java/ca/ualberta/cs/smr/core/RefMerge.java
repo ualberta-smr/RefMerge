@@ -84,7 +84,7 @@ public class RefMerge extends AnAction {
      * left commit, but it uses the current directory instead of saving it to a new one. After it's undone all the
      * refactorings, the merge function is called and it replays the refactorings.
      */
-    private void doMerge(String rightCommit, String leftCommit, GitRepository repo){
+    private void doMerge(String leftCommit, String rightCommit, GitRepository repo){
 
         GitUtils gitUtils = new GitUtils(repo, project);
         String baseCommit = gitUtils.getBaseCommit(leftCommit, rightCommit);
