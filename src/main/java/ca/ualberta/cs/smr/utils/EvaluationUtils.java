@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.utils;
 
+import ca.ualberta.cs.smr.evaluation.model.ComparisonResult;
 import ca.ualberta.cs.smr.evaluation.model.ConflictBlock;
 import ca.ualberta.cs.smr.evaluation.model.ConflictingFile;
 import ca.ualberta.cs.smr.evaluation.model.SourceFile;
@@ -63,7 +64,7 @@ public class EvaluationUtils {
     /*
      * Get the merged java files from the directory.
      */
-    private static ArrayList<SourceFile> getJavaSourceFiles(String path, ArrayList<SourceFile> javaSourceFiles, File root) {
+    public static ArrayList<SourceFile> getJavaSourceFiles(String path, ArrayList<SourceFile> javaSourceFiles, File root) {
         File file = new File(path);
         if (file.exists()) {
             File[] files = file.listFiles();
@@ -202,7 +203,48 @@ public class EvaluationUtils {
         }
     }
 
+    /*
+     * Compare the auto-merged result of the provided tool with the manually merged result to determine the precision
+     * and recall.
+     */
+    public static ComparisonResult compareAutoMerged(String mergedDir, List<SourceFile> manuallyMergedFiles) {
 
+        int numberOfMergedFiles = manuallyMergedFiles.size();
+        int numberOfDiffFiles = 0;
+        Double autoMergePrecision = 0.0;
+        Double autoMergeRecall = 0.0;
+        Integer totalAutoMergedLOC = 0;
+        Integer totalManualMergedLOC = 0;
+        Integer totalSameLOCMerged = 0;
+        Integer totalSameLOCManual = 0;
+
+        // For each manually merged Java file, find the diff of the corresponding auto-merged file
+        for (SourceFile manuallyMergedFile : manuallyMergedFiles) {
+            String manualAbsolutePath = manuallyMergedFile.getAbsolutePath();
+            String manualRelativePath = manuallyMergedFile.getRelativePath();
+            String mergedAbsolutePath = mergedDir + "/" + manualRelativePath;
+            double filePrecision = 0.0;
+            double fileRecall = 0.0;
+
+            // Get the number of manually merged lines of code
+            int manualLOC = readFileToLines(manualAbsolutePath).size();
+            // get the number of auto-merged lines of code
+            int autoMergedLOC = computeFileLOC(mergedAbsolutePath);
+            System.out.println("Manual LOC for " + manualAbsolutePath + ": " + manualLOC);
+            System.out.println("Auto-merged LOC for " + mergedAbsolutePath + ": " + autoMergedLOC);
+        }
+
+            return null;
+    }
+
+    /*
+     * Calculate the number of lines of code in the given file.
+     */
+    public static int computeFileLOC(String path) {
+        List<String> lines =
+                readFileToLines(path).stream().filter(line -> line.trim().length() > 0).collect(Collectors.toList());
+        return lines.size();
+    }
 
 
 }

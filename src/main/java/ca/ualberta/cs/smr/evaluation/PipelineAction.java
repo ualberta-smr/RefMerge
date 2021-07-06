@@ -1,6 +1,8 @@
 package ca.ualberta.cs.smr.evaluation;
 
+import ca.ualberta.cs.smr.evaluation.model.ComparisonResult;
 import ca.ualberta.cs.smr.evaluation.model.ConflictingFile;
+import ca.ualberta.cs.smr.evaluation.model.SourceFile;
 import ca.ualberta.cs.smr.utils.EvaluationUtils;
 import ca.ualberta.cs.smr.utils.GitUtils;
 import ca.ualberta.cs.smr.utils.Utils;
@@ -17,6 +19,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import ca.ualberta.cs.smr.core.RefMerge;
 
+import java.io.File;
 import java.util.*;
 
 public class PipelineAction extends AnAction {
@@ -57,7 +60,7 @@ public class PipelineAction extends AnAction {
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
         // Save the manually merged version
-        Utils.saveContent(project, "manualMerge");
+        String manuallyMergedPath = Utils.saveContent(project, "manualMerge");
         GitCommit targetCommit = git.getTargetMergeCommit(mergeCommit);
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
@@ -75,10 +78,19 @@ public class PipelineAction extends AnAction {
         // Run IntelliMerge
         String intelliMergePath = System.getProperty("user.home") + "/temp/intelliMergeResults";
         long intelliMergeRuntime = runIntelliMerge(project, repo, leftParent, baseCommit, rightParent, intelliMergePath);
+
         // Get the conflict blocks from each of the merged results as well as the number of conflict blocks
         Pair<Integer, List<ConflictingFile>> refMergeConflicts = EvaluationUtils.extractMergeConflicts(refMergePath);
         Pair<Integer, List<ConflictingFile>> gitMergeConflicts = EvaluationUtils.extractMergeConflicts(gitMergePath);
         Pair<Integer, List<ConflictingFile>> intelliMergeConflicts = EvaluationUtils.extractMergeConflicts(intelliMergePath);
+
+        // Get manually merged java files
+        File manuallyMergedDir = new File(manuallyMergedPath);
+        ArrayList<SourceFile> manuallyMergedFiles = EvaluationUtils
+                .getJavaSourceFiles(manuallyMergedPath, new ArrayList<>(), manuallyMergedDir);
+
+        // Compare tools with manually merged code
+        ComparisonResult refMergeVsManual = EvaluationUtils.compareAutoMerged(refMergePath, manuallyMergedFiles);
         System.out.println("Elapsed RefMerge runtime = " + refMergeRuntime);
         System.out.println("Elapsed Git merge runtime = " + gitMergeRuntime);
         System.out.println("Elapsed IntelliMerge runtime = " + intelliMergeRuntime);
