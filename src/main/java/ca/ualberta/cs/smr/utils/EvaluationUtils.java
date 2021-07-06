@@ -1,6 +1,7 @@
 package ca.ualberta.cs.smr.utils;
 
 import ca.ualberta.cs.smr.evaluation.model.ConflictBlock;
+import ca.ualberta.cs.smr.evaluation.model.ConflictingFile;
 import ca.ualberta.cs.smr.evaluation.model.SourceFile;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -26,24 +27,35 @@ public class EvaluationUtils {
 
 
     /*
-     * Get the number of merge conflicts as well as each conflict block.
+     * Get the number of merge conflicts as well as each conflicting file.
      */
-    public static Pair<Integer, String> extractMergeConflicts(String directory) {
+    public static Pair<Integer, List<ConflictingFile>> extractMergeConflicts(String directory) {
         ArrayList<SourceFile> temp = new ArrayList<>();
         File dir = new File(directory);
         ArrayList<SourceFile> mergedFiles = getJavaSourceFiles(directory, temp, dir);
+        List<ConflictingFile> conflictingFiles = new ArrayList<>();
         Integer totalConflicts = 0;
         for(SourceFile file : mergedFiles) {
+            int conflictingLOC = 0;
             List<ConflictBlock> conflictBlocks = extractConflictBlocks(file.getAbsolutePath());
+            // Get the total number of conflict blocks in the file
+            totalConflicts += conflictBlocks.size();
             for(ConflictBlock conflictBlock : conflictBlocks) {
+                conflictingLOC += conflictBlock.getEndLine() - conflictBlock.getStartLine();
                 System.out.println(file.getAbsolutePath());
                 System.out.println(conflictBlock.getStartLine());
                 System.out.println(conflictBlock.getEndLine());
                 System.out.println(conflictBlock.getLeft());
                 System.out.println(conflictBlock.getRight());
             }
+            // If the file is conflicting
+            if(conflictBlocks.size() > 0) {
+                ConflictingFile conflictingFile = new ConflictingFile(file.getAbsolutePath(), conflictBlocks.size(), conflictingLOC);
+                conflictingFiles.add(conflictingFile);
+            }
         }
-        return Pair.of(totalConflicts, null);
+
+        return Pair.of(totalConflicts, conflictingFiles);
     }
 
     /*

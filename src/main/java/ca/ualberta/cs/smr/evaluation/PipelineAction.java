@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.evaluation;
 
+import ca.ualberta.cs.smr.evaluation.model.ConflictingFile;
 import ca.ualberta.cs.smr.utils.EvaluationUtils;
 import ca.ualberta.cs.smr.utils.GitUtils;
 import ca.ualberta.cs.smr.utils.Utils;
@@ -49,8 +50,9 @@ public class PipelineAction extends AnAction {
         assert clonedDest != null;
         GitUtils git = new GitUtils(repo, project);
 //        String mergeCommit = "e34f03bd0c7c805789bdb9da427db7334e61cedc"; // deeplearning4j
-        String mergeCommit = "588def5f5d92ba1e4ec5929dcaed4150a925a90b"; //undertow
+//        String mergeCommit = "588def5f5d92ba1e4ec5929dcaed4150a925a90b"; //undertow
 //        String mergeCommit = "07559b47674594fdf40f2855f83b492f67f9093c"; //error-prone
+        String mergeCommit = "0e97a336019b2590a5a486cd4d0249a60db36eb7"; //error-prone 2
         git.checkout(mergeCommit);
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
@@ -71,13 +73,18 @@ public class PipelineAction extends AnAction {
         long gitMergeRuntime = runGitMerge(project, repo, leftParent, rightParent);
         String gitMergePath = Utils.saveContent(project, "gitMergeResults");
         // Run IntelliMerge
-        long intelliMergeRuntime = runIntelliMerge(project, repo, leftParent, baseCommit, rightParent);
-
+        String intelliMergePath = System.getProperty("user.home") + "/temp/intelliMergeResults";
+        long intelliMergeRuntime = runIntelliMerge(project, repo, leftParent, baseCommit, rightParent, intelliMergePath);
         // Get the conflict blocks from each of the merged results as well as the number of conflict blocks
-        Pair<Integer, String> refMergeConflicts = EvaluationUtils.extractMergeConflicts(refMergePath);
+        Pair<Integer, List<ConflictingFile>> refMergeConflicts = EvaluationUtils.extractMergeConflicts(refMergePath);
+        Pair<Integer, List<ConflictingFile>> gitMergeConflicts = EvaluationUtils.extractMergeConflicts(gitMergePath);
+        Pair<Integer, List<ConflictingFile>> intelliMergeConflicts = EvaluationUtils.extractMergeConflicts(intelliMergePath);
         System.out.println("Elapsed RefMerge runtime = " + refMergeRuntime);
         System.out.println("Elapsed Git merge runtime = " + gitMergeRuntime);
         System.out.println("Elapsed IntelliMerge runtime = " + intelliMergeRuntime);
+        System.out.println("Total RefMerge Conflicts: " + refMergeConflicts.getLeft());
+        System.out.println("Total Git Merge Conflicts: " + gitMergeConflicts.getLeft());
+        System.out.println("Total IntelliMerge Conflicts: " + intelliMergeConflicts.getLeft());
     }
 
     /*
@@ -85,9 +92,11 @@ public class PipelineAction extends AnAction {
      */
     private long runRefMerge(Project project, GitRepository repo, String leftParent, String rightParent) {
         RefMerge refMerging = new RefMerge();
+        System.out.println("Starting RefMerge");
         long time = System.currentTimeMillis();
         refMerging.refMerge(leftParent, rightParent, project, repo);
         long time2 = System.currentTimeMillis();
+        System.out.println("RefMerge is done");
         return time2 - time;
     }
 
@@ -98,7 +107,7 @@ public class PipelineAction extends AnAction {
         GitUtils gitUtils = new GitUtils(repo, project);
         gitUtils.checkout(leftParent);
         long time = System.currentTimeMillis();
-        Utils.runSystemCommand("git", "merge", rightParent);
+        gitUtils.merge(rightParent);
         long time2 = System.currentTimeMillis();
         return time2 - time;
     }
@@ -107,7 +116,8 @@ public class PipelineAction extends AnAction {
      * Merge the left and right parent using IntelliMerge via command line. Return how long it takes for IntelliMerge
      * to finish
      */
-    private long runIntelliMerge(Project project, GitRepository repo, String leftParent, String baseCommit, String rightParent) {
+    private long runIntelliMerge(Project project, GitRepository repo, String leftParent, String baseCommit,
+                                 String rightParent, String output) {
         GitUtils gitUtils = new GitUtils(repo, project);
         gitUtils.checkout(leftParent);
         String leftPath = Utils.saveContent(project, "intelliMerge/ours");
@@ -115,12 +125,17 @@ public class PipelineAction extends AnAction {
         String basePath = Utils.saveContent(project, "intelliMerge/base");
         gitUtils.checkout(rightParent);
         String rightPath = Utils.saveContent(project, "intelliMerge/theirs");
-        long time = System.currentTimeMillis();
         String jarFile =  System.getProperty("user.home") + "/temp/IntelliMerge-1.0.7-all.jar";
-        String output = System.getProperty("user.home") + "/temp/intelliMergeResults";
-        System.out.println(jarFile);
-        Utils.runSystemCommand("java", "-jar", jarFile, "-d", leftPath, basePath, rightPath, "-o", output);
+        System.out.println("Starting IntelliMerge");
+        long time = System.currentTimeMillis();
+        try {
+            Utils.runSystemCommand("java", "-jar", jarFile, "-d", leftPath, basePath, rightPath, "-o", output);
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
         long time2 = System.currentTimeMillis();
+        System.out.println("IntelliMerge is done");
         return time2 - time;
     }
 
