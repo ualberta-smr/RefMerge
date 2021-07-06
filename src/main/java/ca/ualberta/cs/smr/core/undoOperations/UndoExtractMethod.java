@@ -16,6 +16,8 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.changeSignature.JavaThrownExceptionInfo;
 import com.intellij.refactoring.changeSignature.ThrownExceptionInfo;
 import com.intellij.refactoring.inline.InlineMethodProcessor;
+import com.intellij.usages.UsageView;
+import com.intellij.usages.UsageViewManager;
 import com.intellij.util.Query;
 import gr.uom.java.xmi.decomposition.OperationInvocation;
 
@@ -73,6 +75,12 @@ public class UndoExtractMethod {
 
         Application app = ApplicationManager.getApplication();
         app.invokeAndWait(inlineMethodProcessor);
+
+        UsageViewManager viewManager = UsageViewManager.getInstance(project);
+        UsageView usageView = viewManager.getSelectedUsageView();
+        if(usageView != null) {
+            usageView.close();
+        }
 
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);
