@@ -6,7 +6,9 @@ import ca.ualberta.cs.smr.evaluation.model.SourceFile;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,7 +36,7 @@ public class EvaluationUtils {
         File dir = new File(directory);
         ArrayList<SourceFile> mergedFiles = getJavaSourceFiles(directory, temp, dir);
         List<ConflictingFile> conflictingFiles = new ArrayList<>();
-        Integer totalConflicts = 0;
+        int totalConflicts = 0;
         for(SourceFile file : mergedFiles) {
             int conflictingLOC = 0;
             List<ConflictBlock> conflictBlocks = extractConflictBlocks(file.getAbsolutePath());
@@ -95,9 +97,9 @@ public class EvaluationUtils {
      * Extract the individual merge conflicts from the file and record their information.
      */
     private static List<ConflictBlock> extractConflictBlocks(String path) {
-        String leftConflictingContent = "";
-        String rightConflictingContent = "";
-        boolean isConflictOpen = false;
+        StringBuilder leftConflictingContent = new StringBuilder();
+        StringBuilder rightConflictingContent = new StringBuilder();
+        boolean inConflictBlock = false;
         boolean isLeftContent = false;
         int lineCounter = 0;
         int startLOC = 0;
@@ -110,31 +112,40 @@ public class EvaluationUtils {
             String line = iterator.next();
             lineCounter++;
             if (line.contains(CONFLICT_LEFT_BEGIN)) {
-                isConflictOpen = true;
+                inConflictBlock = true;
                 isLeftContent = true;
                 startLOC = lineCounter;
+                iterator.remove();
             } else if (line.contains(CONFLICT_RIGHT_BEGIN)) {
                 isLeftContent = false;
+                iterator.remove();
             } else if (line.contains(CONFLICT_RIGHT_END)) {
                 endLOC = lineCounter;
                 ConflictBlock mergeConflict =
-                        new ConflictBlock(leftConflictingContent, rightConflictingContent, startLOC, endLOC);
+                        new ConflictBlock(leftConflictingContent.toString(), rightConflictingContent.toString(), startLOC, endLOC);
                 mergeConflicts.add(mergeConflict);
                 // reset the flags
-                isConflictOpen = false;
+                inConflictBlock = false;
                 isLeftContent = false;
-                leftConflictingContent = "";
-                rightConflictingContent = "";
+                leftConflictingContent = new StringBuilder();
+                rightConflictingContent = new StringBuilder();
+                iterator.remove();
             } else {
-                if (isConflictOpen) {
+                if (inConflictBlock) {
                     if (isLeftContent) {
-                        leftConflictingContent += line + "\n";
+                        leftConflictingContent.append(line).append("\n");
                     } else {
-                        rightConflictingContent += line + "\n";
+                        rightConflictingContent.append(line).append("\n");
                     }
+                    iterator.remove();
                 }
             }
         }
+        // If there are merge conflicts, remove them for precision and recall calculations
+        if (mergeConflicts.size() > 0) {
+            writeLinesToFile(path, lines);
+        }
+
         return mergeConflicts;
 
     }
@@ -158,6 +169,40 @@ public class EvaluationUtils {
         }
         return lines;
     }
+
+    /*
+     * Combine the lines into one content string so we can write it to the file.
+     */
+    public static void writeLinesToFile(String path, List<String> lines) {
+        String content =
+                lines.stream().filter(line -> line.length() > 0).collect(Collectors.joining("\n"));
+        writeContent(path, content);
+    }
+
+    /*
+     * Write the
+     */
+    public static void writeContent(String filePath, String content) {
+        try {
+            File file = new File(filePath);
+            if (file.exists()) {
+                file.delete();
+            }
+            if (!file.exists()) {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            }
+            FileWriter fileWriter = new FileWriter(filePath, false);
+            BufferedWriter writer = new BufferedWriter(fileWriter);
+            writer.write(content);
+            writer.flush();
+            writer.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
 
 }
