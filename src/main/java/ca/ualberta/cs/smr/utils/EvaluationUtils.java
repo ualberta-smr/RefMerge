@@ -299,7 +299,8 @@ public class EvaluationUtils {
         System.out.println("Number of different Files: " + numberOfDiffFiles);
         System.out.println("Precision: " + autoMergePrecision);
         System.out.println("Recall: " + autoMergeRecall);
-            return null;
+        return new ComparisonResult(totalAutoMergedLOC, totalManualMergedLOC, totalSameLOCMerged,
+                totalSameLOCManual, autoMergePrecision, autoMergeRecall);
     }
 
     /*
