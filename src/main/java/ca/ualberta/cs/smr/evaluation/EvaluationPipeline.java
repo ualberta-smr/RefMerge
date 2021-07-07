@@ -22,7 +22,6 @@ import java.io.File;
 import java.util.*;
 
 public class EvaluationPipeline implements ApplicationStarter {
-
     private Project project;
 
     @Override
@@ -54,6 +53,10 @@ public class EvaluationPipeline implements ApplicationStarter {
      * Use the given git repository to evaluate IntelliMerge, RefMerge, and Git.
      */
     private void runEvaluation(GitRepository repo) {
+        Utils.clearTemp("manualMerge");
+        Utils.clearTemp("refMergeResults");
+        Utils.clearTemp("intelliMergeResults");
+        Utils.clearTemp("gitMergeResults");
         String clonedDest = this.project.getBasePath();
         assert clonedDest != null;
         GitUtils git = new GitUtils(repo, project);
@@ -110,6 +113,11 @@ public class EvaluationPipeline implements ApplicationStarter {
         System.out.println("Total RefMerge Conflicts: " + refMergeConflicts.getLeft());
         System.out.println("Total Git Merge Conflicts: " + gitMergeConflicts.getLeft());
 //        System.out.println("Total IntelliMerge Conflicts: " + intelliMergeConflicts.getLeft());
+
+        System.out.println("RefMerge Statistics:\n#Different Files: " + refMergeVsManual.getTotalDiffFiles() + "\nPrecision: " +
+                refMergeVsManual.getPrecision() + "\nRecall: " + refMergeVsManual.getRecall());
+        System.out.println("Git Statistics:\n#Different Files: " + gitVsManual.getTotalDiffFiles() + "\nPrecision: " +
+                gitVsManual.getPrecision() + "\nRecall: " + gitVsManual.getRecall());
     }
 
     /*

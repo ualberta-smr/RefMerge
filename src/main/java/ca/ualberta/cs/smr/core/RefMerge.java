@@ -64,7 +64,6 @@ public class RefMerge extends AnAction {
      */
     public void refMerge(String rightCommit, String leftCommit, Project project, GitRepository repo) {
         this.project = project;
-        Utils.clearTemp();
         File dir = new File(Objects.requireNonNull(project.getBasePath()));
         try {
             git = Git.open(dir);
@@ -90,11 +89,6 @@ public class RefMerge extends AnAction {
         String baseCommit = gitUtils.getBaseCommit(leftCommit, rightCommit);
         ArrayList<RefactoringObject> rightRefs = getAndSimplifyRefactorings(rightCommit, baseCommit);
         ArrayList<RefactoringObject> leftRefs = getAndSimplifyRefactorings(leftCommit, baseCommit);
-
-        // Checkout base commit and store it in temp/base
-        gitUtils.checkout(baseCommit);
-        Utils.dumbServiceHandler(project);
-        Utils.saveContent(project, "base");
 
         gitUtils.checkout(rightCommit);
         // Update the PSI classes after the commit

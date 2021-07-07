@@ -295,12 +295,8 @@ public class EvaluationUtils {
         // The manually merged LOC should not be 0
         autoMergeRecall = totalSameLOCManual / totalManualMergedLOC.doubleValue();
 
-        System.out.println("Number of Merged Files: " + numberOfMergedFiles);
-        System.out.println("Number of different Files: " + numberOfDiffFiles);
-        System.out.println("Precision: " + autoMergePrecision);
-        System.out.println("Recall: " + autoMergeRecall);
-        return new ComparisonResult(totalAutoMergedLOC, totalManualMergedLOC, totalSameLOCMerged,
-                totalSameLOCManual, autoMergePrecision, autoMergeRecall);
+        return new ComparisonResult(numberOfDiffFiles, totalAutoMergedLOC, totalManualMergedLOC,
+                totalSameLOCMerged, totalSameLOCManual, autoMergePrecision, autoMergeRecall);
     }
 
     /*

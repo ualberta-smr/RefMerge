@@ -67,14 +67,10 @@ public class Utils {
     /*
      * Remove the temp files
      */
-    public static void clearTemp() {
-        String path = System.getProperty("user.home") + "/temp/right";
+    public static void clearTemp(String dir) {
+        String path = System.getProperty("user.home") + "/temp/" + dir;
         File file = new File(path);
         file.mkdirs();
-        runSystemCommand("rm", "-rf", path);
-        path = System.getProperty("user.home") + "/temp/left";
-        runSystemCommand("rm", "-rf", path);
-        path = System.getProperty("user.home") + "/temp/base";
         runSystemCommand("rm", "-rf", path);
     }
 
