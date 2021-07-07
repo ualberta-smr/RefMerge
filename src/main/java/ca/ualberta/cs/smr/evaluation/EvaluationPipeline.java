@@ -1,8 +1,9 @@
 package ca.ualberta.cs.smr.evaluation;
 
-import ca.ualberta.cs.smr.evaluation.model.ComparisonResult;
-import ca.ualberta.cs.smr.evaluation.model.ConflictingFile;
-import ca.ualberta.cs.smr.evaluation.model.SourceFile;
+import ca.ualberta.cs.smr.evaluation.database.ComparisonResult;
+import ca.ualberta.cs.smr.evaluation.database.ConflictingFile;
+import ca.ualberta.cs.smr.evaluation.database.DatabaseUtils;
+import ca.ualberta.cs.smr.evaluation.database.SourceFile;
 import ca.ualberta.cs.smr.utils.EvaluationUtils;
 import ca.ualberta.cs.smr.utils.GitUtils;
 import ca.ualberta.cs.smr.utils.Utils;
@@ -32,6 +33,7 @@ public class EvaluationPipeline implements ApplicationStarter {
     @Override
     public void main(@NotNull List<String> args) {
         try {
+            DatabaseUtils.createDatabase();
             String path = System.getProperty("user.home") + args.get(1);
             File pathToProject = new File(path);
             System.out.println(pathToProject);

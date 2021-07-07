@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.evaluation.model;
+package ca.ualberta.cs.smr.evaluation.database;
 
 public class ConflictingFile {
     private String filePath;

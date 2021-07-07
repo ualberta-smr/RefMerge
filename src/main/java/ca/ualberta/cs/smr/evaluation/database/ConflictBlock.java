@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.evaluation.model;
+package ca.ualberta.cs.smr.evaluation.database;
 
 /*
  * Stores information about the conflict block.

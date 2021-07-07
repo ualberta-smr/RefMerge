@@ -1,6 +1,6 @@
 package ca.ualberta.cs.smr.utils;
 
-import ca.ualberta.cs.smr.evaluation.model.*;
+import ca.ualberta.cs.smr.evaluation.database.*;
 import com.google.googlejavaformat.java.Formatter;
 import com.google.googlejavaformat.java.FormatterException;
 import com.intellij.openapi.project.Project;
