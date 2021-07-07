@@ -51,13 +51,13 @@ patchPluginXml {
       <em>most HTML tags may be used</em>"""
 }
 
-runIde {
-    jvmArgs '-Xmx2048M'
-}
 
 
 tasks {
-
-//    runIde.jvmArgs '-Djava.awt.headless=true'
+    runIde {
+        runIde.jvmArgs '-Djava.awt.headless=true'
+        runIde.argsString("evaluation /Projects/temp/error-prone")
+        //runIde.argsString("/Projects/temp/error-prone")
+    }
 }
 
