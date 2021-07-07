@@ -1,17 +1,18 @@
 package ca.ualberta.cs.smr.utils;
 
-import ca.ualberta.cs.smr.evaluation.model.ComparisonResult;
-import ca.ualberta.cs.smr.evaluation.model.ConflictBlock;
-import ca.ualberta.cs.smr.evaluation.model.ConflictingFile;
-import ca.ualberta.cs.smr.evaluation.model.SourceFile;
+import ca.ualberta.cs.smr.evaluation.model.*;
 import com.google.googlejavaformat.java.Formatter;
 import com.google.googlejavaformat.java.FormatterException;
+import com.intellij.openapi.project.Project;
+import git4idea.repo.GitRepository;
+import io.reflectoring.diffparser.api.DiffParser;
+import io.reflectoring.diffparser.api.UnifiedDiffParser;
+import io.reflectoring.diffparser.api.model.Diff;
+import io.reflectoring.diffparser.api.model.Hunk;
+import io.reflectoring.diffparser.api.model.Line;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -209,8 +210,9 @@ public class EvaluationUtils {
      * Compare the auto-merged result of the provided tool with the manually merged result to determine the precision
      * and recall.
      */
-    public static ComparisonResult compareAutoMerged(String mergedDir, List<SourceFile> manuallyMergedFiles) {
-
+    public static ComparisonResult compareAutoMerged(String mergedDir, List<SourceFile> manuallyMergedFiles,
+                                                     Project project, GitRepository repo) {
+        GitUtils gitUtils = new GitUtils(repo, project);
         int numberOfMergedFiles = manuallyMergedFiles.size();
         int numberOfDiffFiles = 0;
         Double autoMergePrecision = 0.0;
@@ -232,21 +234,72 @@ public class EvaluationUtils {
             int manualLOC = readFileToLines(manualAbsolutePath).size();
             // get the number of auto-merged lines of code
             int autoMergedLOC = readFileToLines(mergedAbsolutePath).size();
-//            int autoMergedLOC = computeFileLOC(mergedAbsolutePath);
-            System.out.println("Manual LOC for " + manualAbsolutePath + ": " + manualLOC);
-            System.out.println("Auto-merged LOC for " + mergedAbsolutePath + ": " + autoMergedLOC);
+
+            totalManualMergedLOC += manualLOC;
+            totalAutoMergedLOC += autoMergedLOC;
+
+            int manualDiffLOC= 0;
+            int mergedDiffLOC = 0;
+            String diffOutput = gitUtils.diff(project.getBasePath(), manualAbsolutePath, mergedAbsolutePath);
+            DiffParser parser = new UnifiedDiffParser();
+            List<Diff> diffs = parser.parse(new ByteArrayInputStream(diffOutput.getBytes()));
+            for(Diff diff : diffs) {
+                List<Hunk> hunks = diff.getHunks();
+                // If the files differ, add to the number of different files
+                numberOfDiffFiles += hunks.size() > 0 ? 1 : 0;
+                for(Hunk hunk : hunks) {
+                    int manualStartLine = hunk.getFromFileRange().getLineStart();
+                    int mergedStartLine = hunk.getToFileRange().getLineStart();
+                    String manualContent = getHunkContent(hunk, Line.LineType.FROM);
+                    String mergedContent = getHunkContent(hunk, Line.LineType.TO);
+                    int manualHunkLOC = manualContent.length() > 0 ? hunk.getFromFileRange().getLineCount() : 0;
+                    int mergedHunkLOC = mergedContent.length() > 0 ? hunk.getToFileRange().getLineCount() : 0;
+                    manualDiffLOC += manualHunkLOC;
+                    mergedDiffLOC += mergedHunkLOC;
+                }
+            }
+            // If there are no autoMergedLOC, then there are no LOC that are the same. Additionally, if the diff is
+            // greater than the autoMergedLOC, then there are no lines that are the same
+            int sameLOCManual = 0;
+            int sameLOCMerged = 0;
+            if(autoMergedLOC > 0 && autoMergedLOC > manualDiffLOC) {
+                sameLOCManual = autoMergedLOC - manualDiffLOC;
+            }
+            if(autoMergedLOC > 0 && autoMergedLOC > mergedDiffLOC) {
+                sameLOCMerged = autoMergedLOC - mergedDiffLOC;
+            }
+            totalSameLOCMerged += sameLOCMerged;
+            totalSameLOCManual += sameLOCManual;
+
+            if (autoMergedLOC > 0) {
+                filePrecision = sameLOCMerged / (double) autoMergedLOC;
+            } else {
+                filePrecision = 1.0;
+            }
+            if (manualLOC > 0) {
+                fileRecall = sameLOCManual / (double) manualLOC;
+            } else {
+                fileRecall = 1.0;
+            }
+            FileDetails fileDetails = new FileDetails(manualRelativePath, autoMergedLOC, manualLOC, sameLOCMerged, sameLOCManual,
+                    filePrecision, fileRecall);
         }
+        if(totalAutoMergedLOC > 0) {
+            autoMergePrecision = totalSameLOCMerged / totalAutoMergedLOC.doubleValue();
+        }
+        // If there are no auto-merged LOC but there are manually merged LOC, it is an empty merge. Do this to avoid
+        // dividing by 0
+        else if(totalManualMergedLOC > 0) {
+            autoMergePrecision = 0.0;
+        }
+        // The manually merged LOC should not be 0
+        autoMergeRecall = totalSameLOCManual / totalManualMergedLOC.doubleValue();
 
+        System.out.println("Number of Merged Files: " + numberOfMergedFiles);
+        System.out.println("Number of different Files: " + numberOfDiffFiles);
+        System.out.println("Precision: " + autoMergePrecision);
+        System.out.println("Recall: " + autoMergeRecall);
             return null;
-    }
-
-    /*
-     * Calculate the number of lines of code in the given file.
-     */
-    public static int computeFileLOC(String path) {
-        List<String> lines =
-                readFileToLines(path).stream().filter(line -> line.trim().length() > 0).collect(Collectors.toList());
-        return lines.size();
     }
 
     /*
@@ -288,6 +341,18 @@ public class EvaluationUtils {
         }
         return content;
     }
+
+    /*
+     * Get the corresponding content from the hunk
+     */
+    private static String getHunkContent(
+            Hunk hunk, Line.LineType lineType) {
+        String content = hunk.getLines().stream().filter(line -> line.getLineType().equals(lineType)).map(Line::getContent)
+                        .collect(Collectors.joining("\n"));
+
+        return content.trim();
+    }
+
 
 
 }

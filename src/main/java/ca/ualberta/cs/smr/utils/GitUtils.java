@@ -13,6 +13,10 @@ import git4idea.history.GitHistoryUtils;
 import git4idea.repo.GitRepository;
 import git4idea.reset.GitResetMode;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -188,6 +192,31 @@ public class GitUtils {
             }
         }
         return mergeCommit;
+    }
+
+    public String diff(String dir, String path1, String path2) {
+        StringBuilder builder = new StringBuilder();
+        try {
+            String commands = "git diff --ignore-cr-at-eol --ignore-all-space --ignore-blank-lines --ignore-space-change " +
+                    "--no-index -U0 " + path1 + " " + path2;
+            Runtime rt = Runtime.getRuntime();
+            Process proc = rt.exec(commands, null, new File(dir));
+            BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+            BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+            String s;
+            while ((s = stdInput.readLine()) != null) {
+                builder.append(s);
+                builder.append("\n");
+            }
+            while ((s = stdError.readLine()) != null) {
+                builder.append(s);
+                builder.append("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return builder.toString();
+
     }
 
 }
