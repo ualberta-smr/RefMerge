@@ -6,9 +6,9 @@ import ca.ualberta.cs.smr.evaluation.model.SourceFile;
 import ca.ualberta.cs.smr.utils.EvaluationUtils;
 import ca.ualberta.cs.smr.utils.GitUtils;
 import ca.ualberta.cs.smr.utils.Utils;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 
+import com.intellij.ide.impl.ProjectUtil;
+import com.intellij.openapi.application.ApplicationStarter;
 import com.intellij.vcs.log.Hash;
 import git4idea.GitCommit;
 import git4idea.repo.GitRepository;
@@ -16,33 +16,38 @@ import git4idea.repo.GitRepositoryManager;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import ca.ualberta.cs.smr.core.RefMerge;
 
 import java.io.File;
 import java.util.*;
 
-public class PipelineAction extends AnAction {
+public class EvaluationPipeline implements ApplicationStarter {
 
     private Project project;
 
     @Override
-    public void update(AnActionEvent e) {
-        // Using the event, evaluate the context, and enable or disable the action.
+    public String getCommandName() {
+        return "evaluation";
     }
 
     @Override
-    public void actionPerformed(@NotNull AnActionEvent e) {
-        this.project = ProjectManager.getInstance().getOpenProjects()[0];
-        GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
-        List<GitRepository> repos = repoManager.getRepositories();
-        GitRepository repo = repos.get(0);
-        System.out.println(repo);
+    public void main(@NotNull List<String> args) {
         try {
+            String path = System.getProperty("user.home") + args.get(1);
+            File pathToProject = new File(path);
+            System.out.println(pathToProject);
+            this.project = ProjectUtil.openOrImport(pathToProject.toPath(), null, false);
+            GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
+            List<GitRepository> repos = repoManager.getRepositories();
+            GitRepository repo = repos.get(0);
+            System.out.println(repo);
             runEvaluation(repo);
-        } catch(Exception ex) {
-            ex.printStackTrace();
+        } catch(Throwable e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
         }
+        System.exit(0);
     }
 
     /*
@@ -77,17 +82,17 @@ public class PipelineAction extends AnAction {
         String gitMergePath = Utils.saveContent(project, "gitMergeResults");
         // Run IntelliMerge
         String intelliMergePath = System.getProperty("user.home") + "/temp/intelliMergeResults";
-        long intelliMergeRuntime = runIntelliMerge(project, repo, leftParent, baseCommit, rightParent, intelliMergePath);
+ //       long intelliMergeRuntime = runIntelliMerge(project, repo, leftParent, baseCommit, rightParent, intelliMergePath);
 
         // Get the conflict blocks from each of the merged results as well as the number of conflict blocks
         Pair<Integer, List<ConflictingFile>> refMergeConflicts = EvaluationUtils.extractMergeConflicts(refMergePath);
         Pair<Integer, List<ConflictingFile>> gitMergeConflicts = EvaluationUtils.extractMergeConflicts(gitMergePath);
-        Pair<Integer, List<ConflictingFile>> intelliMergeConflicts = EvaluationUtils.extractMergeConflicts(intelliMergePath);
+//        Pair<Integer, List<ConflictingFile>> intelliMergeConflicts = EvaluationUtils.extractMergeConflicts(intelliMergePath);
 
         // Format all java files in each directory
         EvaluationUtils.formatAllJavaFiles(manuallyMergedPath);
         EvaluationUtils.formatAllJavaFiles(refMergePath);
-        EvaluationUtils.formatAllJavaFiles(intelliMergePath);
+//        EvaluationUtils.formatAllJavaFiles(intelliMergePath);
         EvaluationUtils.formatAllJavaFiles(gitMergePath);
 
         // Get manually merged java files
@@ -96,13 +101,15 @@ public class PipelineAction extends AnAction {
                 .getJavaSourceFiles(manuallyMergedPath, new ArrayList<>(), manuallyMergedDir);
 
         // Compare tools with manually merged code
-        ComparisonResult refMergeVsManual = EvaluationUtils.compareAutoMerged(refMergePath, manuallyMergedFiles);
+        ComparisonResult refMergeVsManual = EvaluationUtils.compareAutoMerged(refMergePath, manuallyMergedFiles, project, repo);
+        ComparisonResult gitVsManual = EvaluationUtils.compareAutoMerged(gitMergePath, manuallyMergedFiles, project, repo);
+
         System.out.println("Elapsed RefMerge runtime = " + refMergeRuntime);
         System.out.println("Elapsed Git merge runtime = " + gitMergeRuntime);
-        System.out.println("Elapsed IntelliMerge runtime = " + intelliMergeRuntime);
+//        System.out.println("Elapsed IntelliMerge runtime = " + intelliMergeRuntime);
         System.out.println("Total RefMerge Conflicts: " + refMergeConflicts.getLeft());
         System.out.println("Total Git Merge Conflicts: " + gitMergeConflicts.getLeft());
-        System.out.println("Total IntelliMerge Conflicts: " + intelliMergeConflicts.getLeft());
+//        System.out.println("Total IntelliMerge Conflicts: " + intelliMergeConflicts.getLeft());
     }
 
     /*
