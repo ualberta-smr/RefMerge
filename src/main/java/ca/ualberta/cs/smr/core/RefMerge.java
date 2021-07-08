@@ -184,6 +184,7 @@ public class RefMerge extends AnAction {
                     case EXTRACT_OPERATION:
                         ReplayExtractMethod replayExtractMethod = new ReplayExtractMethod(project);
                         replayExtractMethod.replayExtractMethod(refactoringObject);
+                        break;
                     case INLINE_OPERATION:
                         ReplayInlineMethod replayInlineMethod = new ReplayInlineMethod(project);
                         replayInlineMethod.replayInlineMethod(refactoringObject);
