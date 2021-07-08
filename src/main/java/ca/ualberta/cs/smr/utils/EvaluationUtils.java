@@ -1,6 +1,6 @@
 package ca.ualberta.cs.smr.utils;
 
-import ca.ualberta.cs.smr.evaluation.database.*;
+import ca.ualberta.cs.smr.evaluation.data.*;
 import com.google.googlejavaformat.java.Formatter;
 import com.google.googlejavaformat.java.FormatterException;
 import com.intellij.openapi.project.Project;
@@ -210,12 +210,12 @@ public class EvaluationUtils {
         GitUtils gitUtils = new GitUtils(repo, project);
         int numberOfMergedFiles = manuallyMergedFiles.size();
         int numberOfDiffFiles = 0;
-        Double autoMergePrecision = 0.0;
-        Double autoMergeRecall = 0.0;
-        Integer totalAutoMergedLOC = 0;
-        Integer totalManualMergedLOC = 0;
-        Integer totalSameLOCMerged = 0;
-        Integer totalSameLOCManual = 0;
+        double autoMergePrecision = 0.0;
+        double autoMergeRecall = 0.0;
+        int totalAutoMergedLOC = 0;
+        int totalManualMergedLOC = 0;
+        int totalSameLOCMerged = 0;
+        int totalSameLOCManual = 0;
 
         // For each manually merged Java file, find the diff of the corresponding auto-merged file
         for (SourceFile manuallyMergedFile : manuallyMergedFiles) {
@@ -280,7 +280,7 @@ public class EvaluationUtils {
                     filePrecision, fileRecall);
         }
         if(totalAutoMergedLOC > 0) {
-            autoMergePrecision = totalSameLOCMerged / totalAutoMergedLOC.doubleValue();
+            autoMergePrecision = totalSameLOCMerged / (double) totalAutoMergedLOC;
         }
         // If there are no auto-merged LOC but there are manually merged LOC, it is an empty merge. Do this to avoid
         // dividing by 0
@@ -288,7 +288,7 @@ public class EvaluationUtils {
             autoMergePrecision = 0.0;
         }
         // The manually merged LOC should not be 0
-        autoMergeRecall = totalSameLOCManual / totalManualMergedLOC.doubleValue();
+        autoMergeRecall = totalSameLOCManual / (double) totalManualMergedLOC;
 
         return new ComparisonResult(numberOfDiffFiles, totalAutoMergedLOC, totalManualMergedLOC,
                 totalSameLOCMerged, totalSameLOCManual, autoMergePrecision, autoMergeRecall);

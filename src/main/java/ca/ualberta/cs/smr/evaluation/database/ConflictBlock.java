@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.evaluation.database;
 
+import ca.ualberta.cs.smr.evaluation.data.ConflictBlockData;
 import org.javalite.activejdbc.Model;
 import org.javalite.activejdbc.annotations.Table;
 

@@ -1,5 +1,9 @@
 package ca.ualberta.cs.smr.evaluation;
 
+import ca.ualberta.cs.smr.evaluation.data.ComparisonResult;
+import ca.ualberta.cs.smr.evaluation.data.ConflictBlockData;
+import ca.ualberta.cs.smr.evaluation.data.ConflictingFileData;
+import ca.ualberta.cs.smr.evaluation.data.SourceFile;
 import ca.ualberta.cs.smr.evaluation.database.*;
 import ca.ualberta.cs.smr.utils.EvaluationUtils;
 import ca.ualberta.cs.smr.utils.GitUtils;

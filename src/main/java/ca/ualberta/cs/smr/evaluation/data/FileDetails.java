@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.evaluation.database;
+package ca.ualberta.cs.smr.evaluation.data;
 
 public class FileDetails {
     private String relativePath;

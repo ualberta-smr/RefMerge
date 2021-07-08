@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.evaluation.database;
+package ca.ualberta.cs.smr.evaluation.data;
 
 /*
  * Contains information about the java source file.
