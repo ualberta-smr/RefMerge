@@ -77,7 +77,8 @@ public class EvaluationPipeline implements ApplicationStarter {
             proj.saveIt();
         }
 
-            Utils.clearTemp("manualMerge");
+        Utils.clearTemp("manualMerge");
+        Utils.clearTemp("intelliMerge");
         Utils.clearTemp("refMergeResults");
         Utils.clearTemp("intelliMergeResults");
         Utils.clearTemp("gitMergeResults");
@@ -89,8 +90,8 @@ public class EvaluationPipeline implements ApplicationStarter {
         GitUtils git = new GitUtils(repo, project);
 //        String mergeCommit = "e34f03bd0c7c805789bdb9da427db7334e61cedc"; // deeplearning4j
 //        String mergeCommit = "588def5f5d92ba1e4ec5929dcaed4150a925a90b"; //undertow
-        String mergeCommitHash = "07559b47674594fdf40f2855f83b492f67f9093c"; //error-prone
-//        String mergeCommitHash = "0e97a336019b2590a5a486cd4d0249a60db36eb7"; //error-prone 2
+//        String mergeCommitHash = "07559b47674594fdf40f2855f83b492f67f9093c"; //error-prone
+        String mergeCommitHash = "0e97a336019b2590a5a486cd4d0249a60db36eb7"; //error-prone 2
         git.checkout(mergeCommitHash);
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
@@ -116,7 +117,7 @@ public class EvaluationPipeline implements ApplicationStarter {
         mergeCommit.saveIt();
 
         // Merge the merge scenario with the three tools and record the runtime
-        long refMergeRuntime = runRefMerge(project, repo, leftParent, rightParent);
+        Pair<Integer, Long> refMergeConflictsAndRuntime = runRefMerge(project, repo, leftParent, rightParent);
         String refMergePath = Utils.saveContent(project, "refMergeResults");
         Utils.saveContent(project, "refMergeOriginalResults");
         // Run GitMerge
@@ -151,7 +152,7 @@ public class EvaluationPipeline implements ApplicationStarter {
         ComparisonResult gitVsManual = EvaluationUtils.compareAutoMerged(gitMergePath, manuallyMergedFiles, project, repo);
         ComparisonResult intelliMergeVsManual = EvaluationUtils.compareAutoMerged(intelliMergePath, manuallyMergedFiles, project, repo);
 
-        System.out.println("Elapsed RefMerge runtime = " + refMergeRuntime);
+        System.out.println("Elapsed RefMerge runtime = " + refMergeConflictsAndRuntime);
         System.out.println("Elapsed Git merge runtime = " + gitMergeRuntime);
         System.out.println("Elapsed IntelliMerge runtime = " + intelliMergeRuntime);
         System.out.println("Total RefMerge Conflicts: " + refMergeConflicts.getLeft());
@@ -166,8 +167,10 @@ public class EvaluationPipeline implements ApplicationStarter {
                 intelliMergeVsManual.getPrecision() + "\nRecall: " + intelliMergeVsManual.getRecall());
 
         // Add RefMerge data to database
-        MergeResult refMergeResult = new MergeResult("RefMerge", refMergeConflicts.getLeft().getLeft(), refMergeConflicts.getLeft().getRight(),
-                refMergeRuntime, refMergeVsManual, mergeCommit);
+        int refactoringConflicts = refMergeConflictsAndRuntime.getLeft();
+        int totalConflicts = refactoringConflicts + refMergeConflicts.getLeft().getLeft();
+        MergeResult refMergeResult = new MergeResult("RefMerge", totalConflicts, refMergeConflicts.getLeft().getRight(),
+                refMergeConflictsAndRuntime.getRight(), refMergeVsManual, mergeCommit);
         refMergeResult.saveIt();
         // Add conflicting files to database
         List<Pair<ConflictingFileData, List<ConflictBlockData>>> refMergeConflictingFiles = refMergeConflicts.getRight();
@@ -220,19 +223,20 @@ public class EvaluationPipeline implements ApplicationStarter {
     /*
      * Merge the left and right parent using RefMerge. Return how long it takes for RefMerge to finish
      */
-    private long runRefMerge(Project project, GitRepository repo, String leftParent, String rightParent) {
+    private Pair<Integer, Long> runRefMerge(Project project, GitRepository repo, String leftParent, String rightParent) {
         RefMerge refMerging = new RefMerge();
         System.out.println("Starting RefMerge");
         long time = System.currentTimeMillis();
+        int conflicts = 0;
         try {
-            refMerging.refMerge(leftParent, rightParent, project, repo);
+            conflicts = refMerging.refMerge(leftParent, rightParent, project, repo);
         }
         catch(AssertionError e) {
             e.printStackTrace();
         }
         long time2 = System.currentTimeMillis();
         System.out.println("RefMerge is done");
-        return time2 - time;
+        return Pair.of(conflicts, time2 - time);
     }
 
     /*

@@ -18,6 +18,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -62,7 +63,7 @@ public class RefMerge extends AnAction {
     /*
      * Gets the directory of the project that's being merged, then it calls the function that performs the merge.
      */
-    public void refMerge(String rightCommit, String leftCommit, Project project, GitRepository repo) {
+    public int refMerge(String rightCommit, String leftCommit, Project project, GitRepository repo) {
         this.project = project;
         File dir = new File(Objects.requireNonNull(project.getBasePath()));
         try {
@@ -71,7 +72,7 @@ public class RefMerge extends AnAction {
             ioException.printStackTrace();
         }
 
-        doMerge(rightCommit, leftCommit, repo);
+        return doMerge(rightCommit, leftCommit, repo);
 
     }
 
@@ -83,7 +84,7 @@ public class RefMerge extends AnAction {
      * left commit, but it uses the current directory instead of saving it to a new one. After it's undone all the
      * refactorings, the merge function is called and it replays the refactorings.
      */
-    private void doMerge(String leftCommit, String rightCommit, GitRepository repo){
+    private int doMerge(String leftCommit, String rightCommit, GitRepository repo){
 
         GitUtils gitUtils = new GitUtils(repo, project);
         String baseCommit = gitUtils.getBaseCommit(leftCommit, rightCommit);
@@ -112,12 +113,13 @@ public class RefMerge extends AnAction {
 
         // Check if any of the refactorings are conflicting or have ordering dependencies
         Matrix matrix = new Matrix(project);
-        ArrayList<RefactoringObject> mergedRefactoringList = matrix.runMatrix(leftRefs, rightRefs);
+        Pair<Integer, ArrayList<RefactoringObject>> pair = matrix.runMatrix(leftRefs, rightRefs);
 
         // Combine the lists so we can perform all the refactorings on the merged project
         // Replay all of the refactorings
-        replayRefactorings(mergedRefactoringList);
+        replayRefactorings(pair.getRight());
 
+        return pair.getLeft();
 
     }
 
