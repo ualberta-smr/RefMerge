@@ -13,4 +13,9 @@ public class MergeCommit extends Model {
         set("commit_hash", commitHash, "project_id", project.getId(), "is_conflicting", isConflicting, "parent_1", parent1,
                 "parent_2", parent2, "timestamp", timestamp);
     }
+
+    public int getProjectId() {
+        return getInteger("project_id");
+    }
+
 }

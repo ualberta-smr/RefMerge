@@ -149,13 +149,17 @@ public class EvaluationPipeline implements ApplicationStarter {
                 gitVsManual.getPrecision() + "\nRecall: " + gitVsManual.getRecall());
 
 
-
-
         // Add RefMerge data to database
+        MergeResult refMergeResult = new MergeResult("RefMerge", refMergeVsManual.getTotalDiffFiles(),
+                refMergeVsManual.getPrecision(), refMergeVsManual.getRecall(), refMergeRuntime, mergeCommit);
+        refMergeResult.saveIt();
             // Add conflicting files to database
             // Add conflict blocks to database
 
         // Add IntelliMerge data to database
+        MergeResult gitMergeResult = new MergeResult("Git", gitVsManual.getTotalDiffFiles(), gitVsManual.getPrecision(),
+                gitVsManual.getRecall(), gitMergeRuntime, mergeCommit);
+        gitMergeResult.saveIt();
             // Add conflicting files to database
             // Add conflict blocks to database
 
