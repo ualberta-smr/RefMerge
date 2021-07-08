@@ -81,6 +81,8 @@ public class EvaluationPipeline implements ApplicationStarter {
         Utils.clearTemp("refMergeResults");
         Utils.clearTemp("intelliMergeResults");
         Utils.clearTemp("gitMergeResults");
+        Utils.clearTemp("refMergeOriginalResults");
+        Utils.clearTemp("gitMergeOriginalResults");
         String clonedDest = this.project.getBasePath();
         assert clonedDest != null;
         GitUtils git = new GitUtils(repo, project);
@@ -113,9 +115,11 @@ public class EvaluationPipeline implements ApplicationStarter {
         // Merge the merge scenario with the three tools and record the runtime
         long refMergeRuntime = runRefMerge(project, repo, leftParent, rightParent);
         String refMergePath = Utils.saveContent(project, "refMergeResults");
+        Utils.saveContent(project, "refMergeOriginalResults");
         // Run GitMerge
         long gitMergeRuntime = runGitMerge(project, repo, leftParent, rightParent);
         String gitMergePath = Utils.saveContent(project, "gitMergeResults");
+        Utils.saveContent(project, "gitMergeOriginalResults");
         // Run IntelliMerge
         String intelliMergePath = System.getProperty("user.home") + "/temp/intelliMergeResults";
  //       long intelliMergeRuntime = runIntelliMerge(project, repo, leftParent, baseCommit, rightParent, intelliMergePath);
