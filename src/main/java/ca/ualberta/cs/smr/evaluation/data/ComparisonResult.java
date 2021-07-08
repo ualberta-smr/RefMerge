@@ -3,10 +3,10 @@ package ca.ualberta.cs.smr.evaluation.data;
 public class ComparisonResult {
 
     private final int totalDiffFiles;
-    private int totalAutoMergedLOC;
-    private int totalManualMergedLOC;
-    private int totalSameLOCMerged;
-    private int totalSameLOCManual;
+    private final int totalAutoMergedLOC;
+    private final int totalManualMergedLOC;
+    private final int totalSameLOCMerged;
+    private final int totalSameLOCManual;
     private final double precision;
     private final double recall;
 
@@ -32,5 +32,21 @@ public class ComparisonResult {
 
     public double getRecall() {
         return recall;
+    }
+
+    public int getTotalAutoMergedLOC() {
+        return totalAutoMergedLOC;
+    }
+
+    public int getTotalManualMergedLOC() {
+        return totalManualMergedLOC;
+    }
+
+    public int getTotalSameLOCMerged() {
+        return totalSameLOCMerged;
+    }
+
+    public int getTotalSameLOCManual() {
+        return totalSameLOCManual;
     }
 }

@@ -122,19 +122,20 @@ public class EvaluationPipeline implements ApplicationStarter {
         Utils.saveContent(project, "gitMergeOriginalResults");
         // Run IntelliMerge
         String intelliMergePath = System.getProperty("user.home") + "/temp/intelliMergeResults";
- //       long intelliMergeRuntime = runIntelliMerge(project, repo, leftParent, baseCommit, rightParent, intelliMergePath);
+        long intelliMergeRuntime = runIntelliMerge(project, repo, leftParent, baseCommit, rightParent, intelliMergePath);
 
         // Get the conflict blocks from each of the merged results as well as the number of conflict blocks
         Pair<Integer, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> refMergeConflicts =
                 EvaluationUtils.extractMergeConflicts(refMergePath);
         Pair<Integer, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> gitMergeConflicts =
                 EvaluationUtils.extractMergeConflicts(gitMergePath);
-//        Pair<Integer, List<ConflictingFile>> intelliMergeConflicts = EvaluationUtils.extractMergeConflicts(intelliMergePath);
+        Pair<Integer, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> intelliMergeConflicts =
+                EvaluationUtils.extractMergeConflicts(intelliMergePath);
 
         // Format all java files in each directory
         EvaluationUtils.formatAllJavaFiles(manuallyMergedPath);
         EvaluationUtils.formatAllJavaFiles(refMergePath);
-//        EvaluationUtils.formatAllJavaFiles(intelliMergePath);
+        EvaluationUtils.formatAllJavaFiles(intelliMergePath);
         EvaluationUtils.formatAllJavaFiles(gitMergePath);
 
         // Get manually merged java files
@@ -145,23 +146,25 @@ public class EvaluationPipeline implements ApplicationStarter {
         // Compare tools with manually merged code
         ComparisonResult refMergeVsManual = EvaluationUtils.compareAutoMerged(refMergePath, manuallyMergedFiles, project, repo);
         ComparisonResult gitVsManual = EvaluationUtils.compareAutoMerged(gitMergePath, manuallyMergedFiles, project, repo);
+        ComparisonResult intelliMergeVsManual = EvaluationUtils.compareAutoMerged(intelliMergePath, manuallyMergedFiles, project, repo);
 
         System.out.println("Elapsed RefMerge runtime = " + refMergeRuntime);
         System.out.println("Elapsed Git merge runtime = " + gitMergeRuntime);
-//        System.out.println("Elapsed IntelliMerge runtime = " + intelliMergeRuntime);
+        System.out.println("Elapsed IntelliMerge runtime = " + intelliMergeRuntime);
         System.out.println("Total RefMerge Conflicts: " + refMergeConflicts.getLeft());
         System.out.println("Total Git Merge Conflicts: " + gitMergeConflicts.getLeft());
-//        System.out.println("Total IntelliMerge Conflicts: " + intelliMergeConflicts.getLeft());
+        System.out.println("Total IntelliMerge Conflicts: " + intelliMergeConflicts.getLeft());
 
         System.out.println("RefMerge Statistics:\n#Different Files: " + refMergeVsManual.getTotalDiffFiles() + "\nPrecision: " +
                 refMergeVsManual.getPrecision() + "\nRecall: " + refMergeVsManual.getRecall());
         System.out.println("Git Statistics:\n#Different Files: " + gitVsManual.getTotalDiffFiles() + "\nPrecision: " +
                 gitVsManual.getPrecision() + "\nRecall: " + gitVsManual.getRecall());
-
+        System.out.println("IntelliMerge Statistics:\n#Different Files: " + intelliMergeVsManual.getTotalDiffFiles() + "\nPrecision: " +
+                intelliMergeVsManual.getPrecision() + "\nRecall: " + intelliMergeVsManual.getRecall());
 
         // Add RefMerge data to database
-        MergeResult refMergeResult = new MergeResult("RefMerge", refMergeConflicts.getLeft(), refMergeVsManual.getTotalDiffFiles(),
-                refMergeVsManual.getPrecision(), refMergeVsManual.getRecall(), refMergeRuntime, mergeCommit);
+        MergeResult refMergeResult = new MergeResult("RefMerge", refMergeConflicts.getLeft(), refMergeRuntime,
+                refMergeVsManual, mergeCommit);
         refMergeResult.saveIt();
         // Add conflicting files to database
         List<Pair<ConflictingFileData, List<ConflictBlockData>>> refMergeConflictingFiles = refMergeConflicts.getRight();
@@ -176,8 +179,7 @@ public class EvaluationPipeline implements ApplicationStarter {
         }
 
         // Add Git data to database
-        MergeResult gitMergeResult = new MergeResult("Git", gitMergeConflicts.getLeft(), gitVsManual.getTotalDiffFiles(),
-                gitVsManual.getPrecision(), gitVsManual.getRecall(), gitMergeRuntime, mergeCommit);
+        MergeResult gitMergeResult = new MergeResult("Git", gitMergeConflicts.getLeft(), gitMergeRuntime, gitVsManual, mergeCommit);
         gitMergeResult.saveIt();
             // Add conflicting files to database
         List<Pair<ConflictingFileData, List<ConflictBlockData>>> gitMergeConflictingFiles = gitMergeConflicts.getRight();
@@ -193,8 +195,21 @@ public class EvaluationPipeline implements ApplicationStarter {
 
 
         // Add IntelliMerge data to database
-            // Add conflicting files to database
-            // Add conflict blocks to database
+        MergeResult intelliMergeResult = new MergeResult("IntelliMerge", intelliMergeConflicts.getLeft(),
+                intelliMergeRuntime, intelliMergeVsManual, mergeCommit);
+        intelliMergeResult.saveIt();
+        // Add conflicting files to database
+        List<Pair<ConflictingFileData, List<ConflictBlockData>>> intelliMergeConflictingFiles = intelliMergeConflicts.getRight();
+        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : intelliMergeConflictingFiles) {
+            ConflictingFile conflictingFile = new ConflictingFile(intelliMergeResult, pair.getLeft());
+            conflictingFile.saveIt();
+            // Add each conflict block for the conflicting file
+            for(ConflictBlockData conflictBlockData : pair.getRight()) {
+                ConflictBlock conflictBlock = new ConflictBlock(conflictingFile, conflictBlockData);
+                conflictBlock.saveIt();
+            }
+        }
+
 
     }
 
