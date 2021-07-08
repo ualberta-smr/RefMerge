@@ -117,8 +117,8 @@ public class EvaluationPipeline implements ApplicationStarter {
  //       long intelliMergeRuntime = runIntelliMerge(project, repo, leftParent, baseCommit, rightParent, intelliMergePath);
 
         // Get the conflict blocks from each of the merged results as well as the number of conflict blocks
-        Pair<Integer, List<ConflictingFile>> refMergeConflicts = EvaluationUtils.extractMergeConflicts(refMergePath);
-        Pair<Integer, List<ConflictingFile>> gitMergeConflicts = EvaluationUtils.extractMergeConflicts(gitMergePath);
+        Pair<Integer, List<ConflictingFileData>> refMergeConflicts = EvaluationUtils.extractMergeConflicts(refMergePath);
+        Pair<Integer, List<ConflictingFileData>> gitMergeConflicts = EvaluationUtils.extractMergeConflicts(gitMergePath);
 //        Pair<Integer, List<ConflictingFile>> intelliMergeConflicts = EvaluationUtils.extractMergeConflicts(intelliMergePath);
 
         // Format all java files in each directory
@@ -150,17 +150,28 @@ public class EvaluationPipeline implements ApplicationStarter {
 
 
         // Add RefMerge data to database
-        MergeResult refMergeResult = new MergeResult("RefMerge", refMergeVsManual.getTotalDiffFiles(),
+        MergeResult refMergeResult = new MergeResult("RefMerge", refMergeConflicts.getLeft(), refMergeVsManual.getTotalDiffFiles(),
                 refMergeVsManual.getPrecision(), refMergeVsManual.getRecall(), refMergeRuntime, mergeCommit);
         refMergeResult.saveIt();
-            // Add conflicting files to database
+        // Add conflicting files to database
+        List<ConflictingFileData> refMergeConflictingFiles = refMergeConflicts.getRight();
+        for(ConflictingFileData conflictingFileData : refMergeConflictingFiles) {
+            ConflictingFile conflictingFile = new ConflictingFile(refMergeResult, conflictingFileData);
+            conflictingFile.saveIt();
+        }
+
             // Add conflict blocks to database
 
         // Add IntelliMerge data to database
-        MergeResult gitMergeResult = new MergeResult("Git", gitVsManual.getTotalDiffFiles(), gitVsManual.getPrecision(),
-                gitVsManual.getRecall(), gitMergeRuntime, mergeCommit);
+        MergeResult gitMergeResult = new MergeResult("Git", gitMergeConflicts.getLeft(), gitVsManual.getTotalDiffFiles(),
+                gitVsManual.getPrecision(), gitVsManual.getRecall(), gitMergeRuntime, mergeCommit);
         gitMergeResult.saveIt();
             // Add conflicting files to database
+        List<ConflictingFileData> gitMergeConflictingFiles = gitMergeConflicts.getRight();
+        for(ConflictingFileData conflictingFileData : gitMergeConflictingFiles) {
+            ConflictingFile conflictingFile = new ConflictingFile(gitMergeResult, conflictingFileData);
+            conflictingFile.saveIt();
+        }
             // Add conflict blocks to database
 
         // Add Git data to database
