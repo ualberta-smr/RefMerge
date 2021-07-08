@@ -1,9 +1,6 @@
 package ca.ualberta.cs.smr.evaluation;
 
-import ca.ualberta.cs.smr.evaluation.database.ComparisonResult;
-import ca.ualberta.cs.smr.evaluation.database.ConflictingFile;
-import ca.ualberta.cs.smr.evaluation.database.DatabaseUtils;
-import ca.ualberta.cs.smr.evaluation.database.SourceFile;
+import ca.ualberta.cs.smr.evaluation.database.*;
 import ca.ualberta.cs.smr.utils.EvaluationUtils;
 import ca.ualberta.cs.smr.utils.GitUtils;
 import ca.ualberta.cs.smr.utils.Utils;
@@ -86,17 +83,13 @@ public class EvaluationPipeline implements ApplicationStarter {
 //        String mergeCommit = "e34f03bd0c7c805789bdb9da427db7334e61cedc"; // deeplearning4j
 //        String mergeCommit = "588def5f5d92ba1e4ec5929dcaed4150a925a90b"; //undertow
 //        String mergeCommit = "07559b47674594fdf40f2855f83b492f67f9093c"; //error-prone
-        String mergeCommit = "0e97a336019b2590a5a486cd4d0249a60db36eb7"; //error-prone 2
-        git.checkout(mergeCommit);
+        String mergeCommitHash = "0e97a336019b2590a5a486cd4d0249a60db36eb7"; //error-prone 2
+        git.checkout(mergeCommitHash);
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
         // Save the manually merged version
         String manuallyMergedPath = Utils.saveContent(project, "manualMerge");
-        GitCommit targetCommit = git.getTargetMergeCommit(mergeCommit);
-
-        // Add merge commit to database
-
-
+        GitCommit targetCommit = git.getTargetMergeCommit(mergeCommitHash);
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
         // Perform the merge with the three tools.
@@ -104,6 +97,15 @@ public class EvaluationPipeline implements ApplicationStarter {
         String rightParent = parents.get(0).toShortString();
         String leftParent = parents.get(1).toShortString();
         String baseCommit = git.getBaseCommit(leftParent, rightParent);
+
+        GitUtils gitUtils = new GitUtils(repo, project);
+        gitUtils.checkout(leftParent);
+        boolean isConflicting = gitUtils.merge(rightParent);
+        // Add merge commit to database
+        MergeCommit mergeCommit = new MergeCommit(mergeCommitHash, isConflicting, leftParent,
+                rightParent, proj, targetCommit.getTimestamp());
+        mergeCommit.saveIt();
+
         // Merge the merge scenario with the three tools and record the runtime
         long refMergeRuntime = runRefMerge(project, repo, leftParent, rightParent);
         String refMergePath = Utils.saveContent(project, "refMergeResults");
@@ -145,6 +147,9 @@ public class EvaluationPipeline implements ApplicationStarter {
                 refMergeVsManual.getPrecision() + "\nRecall: " + refMergeVsManual.getRecall());
         System.out.println("Git Statistics:\n#Different Files: " + gitVsManual.getTotalDiffFiles() + "\nPrecision: " +
                 gitVsManual.getPrecision() + "\nRecall: " + gitVsManual.getRecall());
+
+
+
 
         // Add RefMerge data to database
             // Add conflicting files to database
