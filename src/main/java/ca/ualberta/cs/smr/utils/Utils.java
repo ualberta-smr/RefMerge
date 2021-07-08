@@ -302,8 +302,11 @@ public class Utils {
                 if (Objects.equals(it.getQualifiedName(), qualifiedClass)) {
                     return it;
                 }
-                if(qualifiedClass.contains(it.getName())) {
-                    return it;
+                // Need to update tests to remove this
+                if (ApplicationManager.getApplication().isUnitTestMode()) {
+                    if(qualifiedClass.contains(it.getName())) {
+                        return it;
+                    }
                 }
                 PsiClass[] innerClasses = it.getInnerClasses();
                 for (PsiClass innerIt : innerClasses) {

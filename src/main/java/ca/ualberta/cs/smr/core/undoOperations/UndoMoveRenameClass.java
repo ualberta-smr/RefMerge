@@ -40,8 +40,13 @@ public class UndoMoveRenameClass {
         String filePath = moveRenameClassObject.getDestinationFilePath();
         Utils utils = new Utils(project);
         utils.addSourceRoot(filePath);
+        if(destQualifiedClass.contains("CompilationUnitTreeMatcher")) {
+            System.out.println();
+        }
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(destQualifiedClass, filePath);
-        assert psiClass != null;
+        if(psiClass == null) {
+            return;
+        }
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         if(moveRenameClassObject.isRenameMethod()) {
             RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
@@ -91,8 +96,7 @@ public class UndoMoveRenameClass {
                 else {
                     PsiClass[] psiClasses = new PsiClass[1];
                     psiClasses[0] = psiClass;
-                    String originalPackage = moveRenameClassObject.getOriginalClassObject().getPackageName();
-                    String originalTopClass = originalPackage.substring(originalPackage.lastIndexOf(".") + 1);
+                    String originalTopClass = moveRenameClassObject.getOriginalClassObject().getPackageName();
                     PsiClass targetClass = utils.getPsiClassByFilePath(filePath, originalTopClass);
                     MoveClassToInnerProcessor processor = new MoveClassToInnerProcessor(project, psiClasses, targetClass,
                             true, false, null);
@@ -103,8 +107,11 @@ public class UndoMoveRenameClass {
             else if(moveRenameClassObject.isMoveInnerToInner()) {
                 filePath = moveRenameClassObject.getOriginalFilePath();
                 String originalPackage = moveRenameClassObject.getOriginalClassObject().getPackageName();
-                String containingClass = originalPackage.substring(originalPackage.lastIndexOf(".") + 1);
-                PsiClass targetContainer = utils.getPsiClassByFilePath(filePath, containingClass);
+                //String containingClass = originalPackage.substring(0, originalPackage.lastIndexOf("."));
+                PsiClass targetContainer = utils.getPsiClassByFilePath(filePath, originalPackage);
+                if(targetContainer == null) {
+                    return;
+                }
                 MoveInnerProcessor processor = new MoveInnerProcessor(project, null);
                 processor.setup(psiClass, srcClassName, false,
                         null, true, false, targetContainer);
