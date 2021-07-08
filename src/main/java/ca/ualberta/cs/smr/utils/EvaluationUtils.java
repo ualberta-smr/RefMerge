@@ -282,10 +282,9 @@ public class EvaluationUtils {
         if(totalAutoMergedLOC > 0) {
             autoMergePrecision = totalSameLOCMerged / (double) totalAutoMergedLOC;
         }
-        // If there are no auto-merged LOC but there are manually merged LOC, it is an empty merge. Do this to avoid
-        // dividing by 0
-        else if(totalManualMergedLOC > 0) {
-            autoMergePrecision = 0.0;
+        // If there are no auto-merged LOC, the precision is technically 1
+        else {
+            autoMergePrecision = 1.0;
         }
         // The manually merged LOC should not be 0
         autoMergeRecall = totalSameLOCManual / (double) totalManualMergedLOC;
