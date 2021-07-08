@@ -15,6 +15,7 @@ import git4idea.GitCommit;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import org.apache.commons.lang3.tuple.Pair;
+import org.javalite.activejdbc.Base;
 import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.project.Project;
 import ca.ualberta.cs.smr.core.RefMerge;
@@ -36,13 +37,12 @@ public class EvaluationPipeline implements ApplicationStarter {
             DatabaseUtils.createDatabase();
             String path = System.getProperty("user.home") + args.get(1);
             File pathToProject = new File(path);
-            System.out.println(pathToProject);
             this.project = ProjectUtil.openOrImport(pathToProject.toPath(), null, false);
             GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
             List<GitRepository> repos = repoManager.getRepositories();
             GitRepository repo = repos.get(0);
             System.out.println(repo);
-            runEvaluation(repo);
+            startEvaluation(repo);
         } catch(Throwable e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
@@ -51,11 +51,32 @@ public class EvaluationPipeline implements ApplicationStarter {
         System.exit(0);
     }
 
+    private void startEvaluation(GitRepository repo) {
+        try {
+            Base.open();
+            runEvaluation(repo);
+            Base.close();
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
+    }
+
     /*
      * Use the given git repository to evaluate IntelliMerge, RefMerge, and Git.
      */
     private void runEvaluation(GitRepository repo) {
-        Utils.clearTemp("manualMerge");
+        // Add project to database
+        String projectURL = repo.getPresentableUrl();
+        String projectName = projectURL.substring(projectURL.lastIndexOf('/') + 1);
+        ca.ualberta.cs.smr.evaluation.database.Project proj =
+                ca.ualberta.cs.smr.evaluation.database.Project.findFirst("url = ?", projectURL);
+        if (proj == null) {
+            proj = new ca.ualberta.cs.smr.evaluation.database.Project(projectURL, projectName);
+            proj.saveIt();
+        }
+
+            Utils.clearTemp("manualMerge");
         Utils.clearTemp("refMergeResults");
         Utils.clearTemp("intelliMergeResults");
         Utils.clearTemp("gitMergeResults");
@@ -72,6 +93,10 @@ public class EvaluationPipeline implements ApplicationStarter {
         // Save the manually merged version
         String manuallyMergedPath = Utils.saveContent(project, "manualMerge");
         GitCommit targetCommit = git.getTargetMergeCommit(mergeCommit);
+
+        // Add merge commit to database
+
+
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
         // Perform the merge with the three tools.
@@ -120,6 +145,19 @@ public class EvaluationPipeline implements ApplicationStarter {
                 refMergeVsManual.getPrecision() + "\nRecall: " + refMergeVsManual.getRecall());
         System.out.println("Git Statistics:\n#Different Files: " + gitVsManual.getTotalDiffFiles() + "\nPrecision: " +
                 gitVsManual.getPrecision() + "\nRecall: " + gitVsManual.getRecall());
+
+        // Add RefMerge data to database
+            // Add conflicting files to database
+            // Add conflict blocks to database
+
+        // Add IntelliMerge data to database
+            // Add conflicting files to database
+            // Add conflict blocks to database
+
+        // Add Git data to database
+            // Add conflicting files to database
+            // Add conflict blocks to database
+
     }
 
     /*
