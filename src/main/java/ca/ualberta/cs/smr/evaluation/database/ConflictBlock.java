@@ -1,37 +1,18 @@
 package ca.ualberta.cs.smr.evaluation.database;
 
-/*
- * Stores information about the conflict block.
- */
-public class ConflictBlock {
-    private String left;
-    private String right;
-    private int startLine;
-    private int endLine;
+import org.javalite.activejdbc.Model;
+import org.javalite.activejdbc.annotations.Table;
 
-    public ConflictBlock(String left, String right, int startLine, int endLine) {
-        this.left = left;
-        this.right = right;
-        this.startLine = startLine;
-        this.endLine = endLine;
+@Table("conflict_block")
+public class ConflictBlock extends Model {
+
+    public ConflictBlock() {}
+
+    public ConflictBlock(ConflictingFile conflictingFile, ConflictBlockData conflictBlockData) {
+        set("path", conflictingFile.getPath(), "conflicting_loc", conflictBlockData.getConflictingLOC(),
+                "start_line", conflictBlockData.getStartLine(), "end_line", conflictBlockData.getEndLine(),
+                "conflicting_file_id", conflictingFile.getId(), "merge_result_id", conflictingFile.getMergeResultId(),
+                "merge_commit_id", conflictingFile.getMergeCommitId(), "project_id", conflictingFile.getProjectId());
     }
-
-    public String getLeft() {
-        return left;
-    }
-
-    public String getRight() {
-        return right;
-    }
-
-    public int getStartLine() {
-        return startLine;
-    }
-
-    public int getEndLine() {
-        return endLine;
-    }
-
 
 }
-

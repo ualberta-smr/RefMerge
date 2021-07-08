@@ -35,29 +35,24 @@ public class EvaluationUtils {
     /*
      * Get the number of merge conflicts as well as each conflicting file.
      */
-    public static Pair<Integer, List<ConflictingFileData>> extractMergeConflicts(String directory) {
+    public static Pair<Integer, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> extractMergeConflicts(String directory) {
         ArrayList<SourceFile> temp = new ArrayList<>();
         File dir = new File(directory);
         ArrayList<SourceFile> mergedFiles = getJavaSourceFiles(directory, temp, dir);
-        List<ConflictingFileData> conflictingFiles = new ArrayList<>();
+        List<Pair<ConflictingFileData, List<ConflictBlockData>>> conflictingFiles = new ArrayList<>();
         int totalConflicts = 0;
         for(SourceFile file : mergedFiles) {
             int conflictingLOC = 0;
-            List<ConflictBlock> conflictBlocks = extractConflictBlocks(file.getAbsolutePath());
+            List<ConflictBlockData> conflictBlocks = extractConflictBlocks(file.getAbsolutePath());
             // Get the total number of conflict blocks in the file
             totalConflicts += conflictBlocks.size();
-            for(ConflictBlock conflictBlock : conflictBlocks) {
+            for(ConflictBlockData conflictBlock : conflictBlocks) {
                 conflictingLOC += conflictBlock.getEndLine() - conflictBlock.getStartLine();
-                System.out.println(file.getAbsolutePath());
-                System.out.println(conflictBlock.getStartLine());
-                System.out.println(conflictBlock.getEndLine());
-                System.out.println(conflictBlock.getLeft());
-                System.out.println(conflictBlock.getRight());
             }
             // If the file is conflicting
             if(conflictBlocks.size() > 0) {
                 ConflictingFileData conflictingFileData = new ConflictingFileData(file.getAbsolutePath(), conflictBlocks.size(), conflictingLOC);
-                conflictingFiles.add(conflictingFileData);
+                conflictingFiles.add(Pair.of(conflictingFileData, conflictBlocks));
             }
         }
 
@@ -100,7 +95,7 @@ public class EvaluationUtils {
     /*
      * Extract the individual merge conflicts from the file and record their information.
      */
-    private static List<ConflictBlock> extractConflictBlocks(String path) {
+    private static List<ConflictBlockData> extractConflictBlocks(String path) {
         StringBuilder leftConflictingContent = new StringBuilder();
         StringBuilder rightConflictingContent = new StringBuilder();
         boolean inConflictBlock = false;
@@ -109,7 +104,7 @@ public class EvaluationUtils {
         int startLOC = 0;
         int endLOC = 0;
 
-        List<ConflictBlock> mergeConflicts = new ArrayList<>();
+        List<ConflictBlockData> mergeConflicts = new ArrayList<>();
         List<String> lines = readFileToLines(path);
         Iterator<String> iterator = lines.iterator();
         while (iterator.hasNext()) {
@@ -125,8 +120,8 @@ public class EvaluationUtils {
                 iterator.remove();
             } else if (line.contains(CONFLICT_RIGHT_END)) {
                 endLOC = lineCounter;
-                ConflictBlock mergeConflict =
-                        new ConflictBlock(leftConflictingContent.toString(), rightConflictingContent.toString(), startLOC, endLOC);
+                ConflictBlockData mergeConflict =
+                        new ConflictBlockData(leftConflictingContent.toString(), rightConflictingContent.toString(), startLOC, endLOC);
                 mergeConflicts.add(mergeConflict);
                 // reset the flags
                 inConflictBlock = false;

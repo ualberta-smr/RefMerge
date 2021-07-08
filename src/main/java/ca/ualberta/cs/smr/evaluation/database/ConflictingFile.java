@@ -16,4 +16,20 @@ public class ConflictingFile extends Model {
                 "merge_commit_id", mergeResult.getMergeCommitId(),
                 "project_id", mergeResult.getProjectId());
     }
+
+    public String getPath() {
+        return getString("path");
+    }
+
+    public int getMergeResultId() {
+        return getInteger("merge_result_id");
+    }
+
+    public int getMergeCommitId() {
+        return getInteger("merge_commit_id");
+    }
+
+    public int getProjectId() {
+        return getInteger("project_id");
+    }
 }
