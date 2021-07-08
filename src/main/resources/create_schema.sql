@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS `refMerge_evaluation`.`merge_result` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `merge_tool` VARCHAR(45) NOT NULL,
   `total_conflicts` INT NOT NULL,
+  `total_conflicting_loc` INT NOT NULL,
   `total_diff_files` INT NOT NULL,
   `auto_merged_precision` DOUBLE NOT NULL,
   `auto_merged_recall` DOUBLE NOT NULL,
