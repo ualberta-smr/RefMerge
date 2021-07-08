@@ -11,9 +11,11 @@ public class MergeResult extends Model {
     public MergeResult() {
     }
 
-    public MergeResult(String mergeTool, int totalConflicts, long runtime, ComparisonResult result, MergeCommit mergeCommit) {
+    public MergeResult(String mergeTool, int totalConflicts, int totalConflictingLOC,
+                       long runtime, ComparisonResult result, MergeCommit mergeCommit) {
         set("merge_tool", mergeTool,
                 "total_conflicts", totalConflicts,
+                "total_conflicting_loc", totalConflictingLOC,
                 "total_diff_files", result.getTotalDiffFiles(),
                 "auto_merged_precision", result.getPrecision(),
                 "auto_merged_recall", result.getRecall(),

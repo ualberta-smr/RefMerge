@@ -83,13 +83,14 @@ public class EvaluationPipeline implements ApplicationStarter {
         Utils.clearTemp("gitMergeResults");
         Utils.clearTemp("refMergeOriginalResults");
         Utils.clearTemp("gitMergeOriginalResults");
+        Utils.clearTemp("intelliMergeResultsOriginal");
         String clonedDest = this.project.getBasePath();
         assert clonedDest != null;
         GitUtils git = new GitUtils(repo, project);
 //        String mergeCommit = "e34f03bd0c7c805789bdb9da427db7334e61cedc"; // deeplearning4j
 //        String mergeCommit = "588def5f5d92ba1e4ec5929dcaed4150a925a90b"; //undertow
-//        String mergeCommit = "07559b47674594fdf40f2855f83b492f67f9093c"; //error-prone
-        String mergeCommitHash = "0e97a336019b2590a5a486cd4d0249a60db36eb7"; //error-prone 2
+        String mergeCommitHash = "07559b47674594fdf40f2855f83b492f67f9093c"; //error-prone
+//        String mergeCommitHash = "0e97a336019b2590a5a486cd4d0249a60db36eb7"; //error-prone 2
         git.checkout(mergeCommitHash);
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
@@ -103,6 +104,8 @@ public class EvaluationPipeline implements ApplicationStarter {
         String rightParent = parents.get(0).toShortString();
         String leftParent = parents.get(1).toShortString();
         String baseCommit = git.getBaseCommit(leftParent, rightParent);
+
+        // Get the refactorings detected by RefMiner in the merge scenario
 
         GitUtils gitUtils = new GitUtils(repo, project);
         gitUtils.checkout(leftParent);
@@ -125,11 +128,11 @@ public class EvaluationPipeline implements ApplicationStarter {
         long intelliMergeRuntime = runIntelliMerge(project, repo, leftParent, baseCommit, rightParent, intelliMergePath);
 
         // Get the conflict blocks from each of the merged results as well as the number of conflict blocks
-        Pair<Integer, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> refMergeConflicts =
+        Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> refMergeConflicts =
                 EvaluationUtils.extractMergeConflicts(refMergePath);
-        Pair<Integer, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> gitMergeConflicts =
+        Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> gitMergeConflicts =
                 EvaluationUtils.extractMergeConflicts(gitMergePath);
-        Pair<Integer, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> intelliMergeConflicts =
+        Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> intelliMergeConflicts =
                 EvaluationUtils.extractMergeConflicts(intelliMergePath);
 
         // Format all java files in each directory
@@ -163,8 +166,8 @@ public class EvaluationPipeline implements ApplicationStarter {
                 intelliMergeVsManual.getPrecision() + "\nRecall: " + intelliMergeVsManual.getRecall());
 
         // Add RefMerge data to database
-        MergeResult refMergeResult = new MergeResult("RefMerge", refMergeConflicts.getLeft(), refMergeRuntime,
-                refMergeVsManual, mergeCommit);
+        MergeResult refMergeResult = new MergeResult("RefMerge", refMergeConflicts.getLeft().getLeft(), refMergeConflicts.getLeft().getRight(),
+                refMergeRuntime, refMergeVsManual, mergeCommit);
         refMergeResult.saveIt();
         // Add conflicting files to database
         List<Pair<ConflictingFileData, List<ConflictBlockData>>> refMergeConflictingFiles = refMergeConflicts.getRight();
@@ -179,7 +182,8 @@ public class EvaluationPipeline implements ApplicationStarter {
         }
 
         // Add Git data to database
-        MergeResult gitMergeResult = new MergeResult("Git", gitMergeConflicts.getLeft(), gitMergeRuntime, gitVsManual, mergeCommit);
+        MergeResult gitMergeResult = new MergeResult("Git", gitMergeConflicts.getLeft().getLeft(),
+                gitMergeConflicts.getLeft().getRight(), gitMergeRuntime, gitVsManual, mergeCommit);
         gitMergeResult.saveIt();
             // Add conflicting files to database
         List<Pair<ConflictingFileData, List<ConflictBlockData>>> gitMergeConflictingFiles = gitMergeConflicts.getRight();
@@ -195,8 +199,8 @@ public class EvaluationPipeline implements ApplicationStarter {
 
 
         // Add IntelliMerge data to database
-        MergeResult intelliMergeResult = new MergeResult("IntelliMerge", intelliMergeConflicts.getLeft(),
-                intelliMergeRuntime, intelliMergeVsManual, mergeCommit);
+        MergeResult intelliMergeResult = new MergeResult("IntelliMerge", intelliMergeConflicts.getLeft().getLeft(),
+                intelliMergeConflicts.getLeft().getRight(), intelliMergeRuntime, intelliMergeVsManual, mergeCommit);
         intelliMergeResult.saveIt();
         // Add conflicting files to database
         List<Pair<ConflictingFileData, List<ConflictBlockData>>> intelliMergeConflictingFiles = intelliMergeConflicts.getRight();
@@ -220,7 +224,12 @@ public class EvaluationPipeline implements ApplicationStarter {
         RefMerge refMerging = new RefMerge();
         System.out.println("Starting RefMerge");
         long time = System.currentTimeMillis();
-        refMerging.refMerge(leftParent, rightParent, project, repo);
+        try {
+            refMerging.refMerge(leftParent, rightParent, project, repo);
+        }
+        catch(AssertionError e) {
+            e.printStackTrace();
+        }
         long time2 = System.currentTimeMillis();
         System.out.println("RefMerge is done");
         return time2 - time;
@@ -261,6 +270,7 @@ public class EvaluationPipeline implements ApplicationStarter {
             e.printStackTrace();
         }
         long time2 = System.currentTimeMillis();
+        Utils.runSystemCommand("cp", "-r", output, output + "Original");
         System.out.println("IntelliMerge is done");
         return time2 - time;
     }

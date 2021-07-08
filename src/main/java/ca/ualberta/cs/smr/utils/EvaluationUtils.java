@@ -35,12 +35,13 @@ public class EvaluationUtils {
     /*
      * Get the number of merge conflicts as well as each conflicting file.
      */
-    public static Pair<Integer, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> extractMergeConflicts(String directory) {
+    public static Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> extractMergeConflicts(String directory) {
         ArrayList<SourceFile> temp = new ArrayList<>();
         File dir = new File(directory);
         ArrayList<SourceFile> mergedFiles = getJavaSourceFiles(directory, temp, dir);
         List<Pair<ConflictingFileData, List<ConflictBlockData>>> conflictingFiles = new ArrayList<>();
         int totalConflicts = 0;
+        int totalConflictingLOC = 0;
         for(SourceFile file : mergedFiles) {
             int conflictingLOC = 0;
             List<ConflictBlockData> conflictBlocks = extractConflictBlocks(file.getAbsolutePath());
@@ -54,9 +55,10 @@ public class EvaluationUtils {
                 ConflictingFileData conflictingFileData = new ConflictingFileData(file.getAbsolutePath(), conflictBlocks.size(), conflictingLOC);
                 conflictingFiles.add(Pair.of(conflictingFileData, conflictBlocks));
             }
+            totalConflictingLOC += conflictingLOC;
         }
 
-        return Pair.of(totalConflicts, conflictingFiles);
+        return Pair.of(Pair.of(totalConflicts, totalConflictingLOC), conflictingFiles);
     }
 
     /*
