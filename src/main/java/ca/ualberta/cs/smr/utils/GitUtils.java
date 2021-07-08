@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class GitUtils {
 
@@ -77,11 +78,12 @@ public class GitUtils {
         return null;
     }
 
-    public void merge(String rightCommit) {
+    public boolean merge(String rightCommit) {
+        AtomicReference<GitCommandResult> gitCommandResult = new AtomicReference<>();
         Thread thread = new Thread(() -> {
             GitLineHandler lineHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.MERGE);
             lineHandler.addParameters(rightCommit, "--no-commit");
-            Git.getInstance().runCommand(lineHandler);
+            gitCommandResult.set(Git.getInstance().runCommand(lineHandler));
         });
         thread.start();
         try {
@@ -89,6 +91,7 @@ public class GitUtils {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        return gitCommandResult.get().toString().contains("conflict");
     }
 
     /*
@@ -218,6 +221,7 @@ public class GitUtils {
         return builder.toString();
 
     }
+
 
 }
 
