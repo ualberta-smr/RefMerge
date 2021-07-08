@@ -99,8 +99,7 @@ public class ReplayMoveRenameClass {
             // Move the inner class to another class
             else if(moveRenameClassObject.isMoveInnerToInner()) {
                 filePath = moveRenameClassObject.getDestinationFilePath();
-                String destinationPackage = moveRenameClassObject.getDestinationClassObject().getPackageName();
-                String containingClass = destinationPackage.substring(destinationPackage.lastIndexOf(".") + 1);
+                String containingClass = moveRenameClassObject.getDestinationClassObject().getPackageName();
                 PsiClass targetContainer = utils.getPsiClassByFilePath(filePath, containingClass);
                 MoveInnerProcessor processor = new MoveInnerProcessor(project, null);
                 processor.setup(psiClass, destClassName, false,
