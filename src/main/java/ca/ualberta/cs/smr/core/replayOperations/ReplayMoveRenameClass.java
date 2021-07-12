@@ -110,7 +110,9 @@ public class ReplayMoveRenameClass {
             else {
                 String destinationPackage = moveRenameClassObject.getDestinationClassObject().getPackageName();
                 PsiPackage psiPackage = JavaPsiFacade.getInstance(project).findPackage(destinationPackage);
-                assert psiPackage != null;
+                if(psiPackage == null) {
+                    return;
+                }
                 PsiDirectory[] psiDirectories = psiPackage.getDirectories();
                 PsiDirectory psiDirectory = psiDirectories[0];
                 if (psiDirectories.length > 1) {

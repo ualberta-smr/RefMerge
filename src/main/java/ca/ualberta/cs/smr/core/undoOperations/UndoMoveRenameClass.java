@@ -98,6 +98,9 @@ public class UndoMoveRenameClass {
                     psiClasses[0] = psiClass;
                     String originalTopClass = moveRenameClassObject.getOriginalClassObject().getPackageName();
                     PsiClass targetClass = utils.getPsiClassByFilePath(filePath, originalTopClass);
+                    if(targetClass == null) {
+                        return;
+                    }
                     MoveClassToInnerProcessor processor = new MoveClassToInnerProcessor(project, psiClasses, targetClass,
                             true, false, null);
                     ApplicationManager.getApplication().invokeAndWait(processor, ModalityState.current());

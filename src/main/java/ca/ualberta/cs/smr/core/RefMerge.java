@@ -147,6 +147,9 @@ public class RefMerge extends AnAction {
                 case EXTRACT_OPERATION:
                     UndoExtractMethod undoExtractMethod = new UndoExtractMethod(project);
                     refactoringObject = undoExtractMethod.undoExtractMethod(refactoringObject);
+                    if(refactoringObject == null) {
+                        continue;
+                    }
                     int index = refactoringObjects.indexOf(refactoringObject);
                     refactoringObjects.set(index, refactoringObject);
                     break;
@@ -185,7 +188,12 @@ public class RefMerge extends AnAction {
                         break;
                     case EXTRACT_OPERATION:
                         ReplayExtractMethod replayExtractMethod = new ReplayExtractMethod(project);
-                        replayExtractMethod.replayExtractMethod(refactoringObject);
+                        try {
+                            replayExtractMethod.replayExtractMethod(refactoringObject);
+                        } catch (Exception e) {
+                            e.printStackTrace();;
+                            break;
+                        }
                         break;
                     case INLINE_OPERATION:
                         ReplayInlineMethod replayInlineMethod = new ReplayInlineMethod(project);

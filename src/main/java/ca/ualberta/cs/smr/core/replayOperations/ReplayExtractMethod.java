@@ -51,7 +51,9 @@ public class ReplayExtractMethod {
 
         Utils utils = new Utils(project);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(originalClassName, filePath);
-        assert psiClass != null;
+        if(psiClass == null) {
+            return;
+        }
         PsiMethod psiMethod = Utils.getPsiMethod(psiClass, sourceOperation);
         assert psiMethod != null;
 
@@ -280,6 +282,9 @@ public class ReplayExtractMethod {
             PsiParameter psiParameter = psiParameterList.getParameter(i-1);
             PsiDocumentManager.getInstance(project).commitAllDocuments();
             RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
+            if(psiParameter == null) {
+                return;
+            }
             RenameRefactoring renameRefactoring = factory.createRename(psiParameter, parameterObjectName, true, false);
             UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
             renameRefactoring.doRefactoring(refactoringUsages);

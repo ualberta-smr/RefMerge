@@ -127,11 +127,18 @@ public class UndoMoveRenameMethod {
         PsiMethod[] psiMethods = psiClass.getMethods();
 
         // Get the physical copy of the PSI method so we can delete it
-        for(PsiMethod method : psiMethods) {
-            if(method.getSignature(PsiSubstitutor.UNKNOWN).equals(psiMethod.getSignature(PsiSubstitutor.UNKNOWN))) {
-                psiMethod = method;
-                break;
+        try {
+            for (PsiMethod method : psiMethods) {
+                if (method.getSignature(PsiSubstitutor.UNKNOWN).equals(psiMethod.getSignature(PsiSubstitutor.UNKNOWN))) {
+                    psiMethod = method;
+                    break;
+                }
             }
+        }
+        catch(PsiInvalidElementAccessException e) {
+            e.printStackTrace();
+            System.out.println("Failed on " + psiMethod.getName());
+            return;
         }
         PsiMethod psiMethodBefore = null;
         // Find which method comes before the moved method
