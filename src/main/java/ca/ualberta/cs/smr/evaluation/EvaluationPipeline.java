@@ -82,8 +82,8 @@ public class EvaluationPipeline implements ApplicationStarter {
         Utils.clearTemp("refMergeResults");
         Utils.clearTemp("intelliMergeResults");
         Utils.clearTemp("gitMergeResults");
-        Utils.clearTemp("refMergeOriginalResults");
-        Utils.clearTemp("gitMergeOriginalResults");
+        Utils.clearTemp("refMergeResultsOriginal");
+        Utils.clearTemp("gitMergeResultsOriginal");
         Utils.clearTemp("intelliMergeResultsOriginal");
         String clonedDest = this.project.getBasePath();
         assert clonedDest != null;
@@ -91,7 +91,25 @@ public class EvaluationPipeline implements ApplicationStarter {
 //        String mergeCommit = "e34f03bd0c7c805789bdb9da427db7334e61cedc"; // deeplearning4j
 //        String mergeCommit = "588def5f5d92ba1e4ec5929dcaed4150a925a90b"; //undertow
 //        String mergeCommitHash = "07559b47674594fdf40f2855f83b492f67f9093c"; //error-prone
-        String mergeCommitHash = "0e97a336019b2590a5a486cd4d0249a60db36eb7"; //error-prone 2
+//        String mergeCommitHash = "0e97a336019b2590a5a486cd4d0249a60db36eb7"; //error-prone 2
+        List<String> mergeScenarios = new ArrayList<>();
+        mergeScenarios.add("07559b47674594fdf40f2855f83b492f67f9093c");
+        mergeScenarios.add("0e97a336019b2590a5a486cd4d0249a60db36eb7");
+        mergeScenarios.add("1a87c33bd18648f484133794840e94bd8d1d4a64");
+        mergeScenarios.add("f10f48c87d828881dda9912f050bccf8bb36776c");
+        mergeScenarios.add("d51253011690def06db835d5ad605ca134c94d84");
+        mergeScenarios.add("f25c38b51e0f35ea1637832e1ea6680c343203e2");
+        mergeScenarios.add("66a86d1652c383ea3921d03f49f444f1d1000765");
+
+
+        for (String mergeScenario : mergeScenarios) {
+            evaluateMergeScenario(mergeScenario, git, repo, proj);
+        }
+
+    }
+
+    private void evaluateMergeScenario(String mergeCommitHash, GitUtils git, GitRepository repo,
+                                       ca.ualberta.cs.smr.evaluation.database.Project proj) {
         git.checkout(mergeCommitHash);
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
@@ -119,14 +137,23 @@ public class EvaluationPipeline implements ApplicationStarter {
         // Merge the merge scenario with the three tools and record the runtime
         Pair<Integer, Long> refMergeConflictsAndRuntime = runRefMerge(project, repo, leftParent, rightParent);
         String refMergePath = Utils.saveContent(project, "refMergeResults");
-        Utils.saveContent(project, "refMergeOriginalResults");
         // Run GitMerge
         long gitMergeRuntime = runGitMerge(project, repo, leftParent, rightParent);
         String gitMergePath = Utils.saveContent(project, "gitMergeResults");
-        Utils.saveContent(project, "gitMergeOriginalResults");
         // Run IntelliMerge
         String intelliMergePath = System.getProperty("user.home") + "/temp/intelliMergeResults";
         long intelliMergeRuntime = runIntelliMerge(project, repo, leftParent, baseCommit, rightParent, intelliMergePath);
+
+        Utils.runSystemCommand("cp", "-r", refMergePath + "/.", refMergePath + "Original");
+        Utils.runSystemCommand("cp", "-r", gitMergePath + "/.", gitMergePath + "Original");
+        Utils.runSystemCommand("cp", "-r", intelliMergePath + "/.", intelliMergePath + "Original");
+
+        // Remove all comments from all directories
+        EvaluationUtils.removeAllComments(manuallyMergedPath);
+        EvaluationUtils.removeAllComments(refMergePath);
+        EvaluationUtils.removeAllComments(intelliMergePath);
+        EvaluationUtils.removeAllComments(gitMergePath);
+
 
         // Get the conflict blocks from each of the merged results as well as the number of conflict blocks
         Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> refMergeConflicts =
@@ -135,12 +162,6 @@ public class EvaluationPipeline implements ApplicationStarter {
                 EvaluationUtils.extractMergeConflicts(gitMergePath);
         Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> intelliMergeConflicts =
                 EvaluationUtils.extractMergeConflicts(intelliMergePath);
-
-        // Format all java files in each directory
-        EvaluationUtils.formatAllJavaFiles(manuallyMergedPath);
-        EvaluationUtils.formatAllJavaFiles(refMergePath);
-        EvaluationUtils.formatAllJavaFiles(intelliMergePath);
-        EvaluationUtils.formatAllJavaFiles(gitMergePath);
 
         // Get manually merged java files
         File manuallyMergedDir = new File(manuallyMergedPath);
@@ -274,7 +295,6 @@ public class EvaluationPipeline implements ApplicationStarter {
             e.printStackTrace();
         }
         long time2 = System.currentTimeMillis();
-        Utils.runSystemCommand("cp", "-r", output, output + "Original");
         System.out.println("IntelliMerge is done");
         return time2 - time;
     }

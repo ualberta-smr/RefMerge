@@ -1,6 +1,9 @@
 package ca.ualberta.cs.smr.utils;
 
 import ca.ualberta.cs.smr.evaluation.data.*;
+import com.commentremover.app.CommentProcessor;
+import com.commentremover.app.CommentRemover;
+import com.commentremover.exception.CommentRemoverException;
 import com.google.googlejavaformat.java.Formatter;
 import com.google.googlejavaformat.java.FormatterException;
 import com.intellij.openapi.project.Project;
@@ -259,10 +262,16 @@ public class EvaluationUtils {
             // greater than the autoMergedLOC, then there are no lines that are the same
             int sameLOCManual = 0;
             int sameLOCMerged = 0;
-            if(autoMergedLOC > 0 && autoMergedLOC > manualDiffLOC) {
+//            if(autoMergedLOC > 0 && autoMergedLOC > manualDiffLOC) {
+//                sameLOCManual = autoMergedLOC - manualDiffLOC;
+//            }
+//            if(autoMergedLOC > 0 && autoMergedLOC > mergedDiffLOC) {
+//                sameLOCMerged = autoMergedLOC - mergedDiffLOC;
+//            }
+            if(autoMergedLOC > 0) {
                 sameLOCManual = autoMergedLOC - manualDiffLOC;
             }
-            if(autoMergedLOC > 0 && autoMergedLOC > mergedDiffLOC) {
+            if(autoMergedLOC > 0) {
                 sameLOCMerged = autoMergedLOC - mergedDiffLOC;
             }
             totalSameLOCMerged += sameLOCMerged;
@@ -288,8 +297,14 @@ public class EvaluationUtils {
         else {
             autoMergePrecision = 1.0;
         }
-        // The manually merged LOC should not be 0
-        autoMergeRecall = totalSameLOCManual / (double) totalManualMergedLOC;
+//        // The manually merged LOC should not be 0
+//        autoMergeRecall = totalSameLOCManual / (double) totalManualMergedLOC;
+        if(totalAutoMergedLOC > 0) {
+            autoMergeRecall = totalSameLOCManual / (double) totalManualMergedLOC;
+        }
+        else {
+            autoMergeRecall = 1.0;
+        }
 
         return new ComparisonResult(numberOfDiffFiles, totalAutoMergedLOC, totalManualMergedLOC,
                 totalSameLOCMerged, totalSameLOCManual, autoMergePrecision, autoMergeRecall);
@@ -346,6 +361,27 @@ public class EvaluationUtils {
         return content.trim();
     }
 
+    /*
+     * Remove all comments in java files
+     */
+    public static void removeAllComments(String targetDir) {
+        try {
+            CommentRemover commentRemover =
+                    new CommentRemover.CommentRemoverBuilder()
+                            .removeJava(true)
+                            .removeTodos(true) // Remove todos
+                            .removeSingleLines(true) // Do not remove single line type comments
+                            .removeMultiLines(true) // Remove multiple type comments
+                            .preserveJavaClassHeaders(false) // Preserves class header comment
+                            .preserveCopyRightHeaders(false) // Preserves copyright comment
+                            .startExternalPath(targetDir) // Give it full path for external dir
+                            .build();
+            CommentProcessor commentProcessor = new CommentProcessor(commentRemover);
+            commentProcessor.start();
+        } catch (CommentRemoverException e) {
+            e.printStackTrace();
+        }
+    }
 
 
 }

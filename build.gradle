@@ -13,6 +13,10 @@ repositories {
     mavenCentral()
     "https://mvnrepository.com/artifact/org.jgrapht/jgrapht"
     "https://mvnrepository.com/artifact/org.mockito/mockito-core"
+    maven {
+        url "https://jitpack.io"
+    }
+
 
 
 }
@@ -26,6 +30,8 @@ dependencies {
     runtimeOnly group: 'mysql', name: 'mysql-connector-java', version: '8.0.16'
     implementation group: 'org.javalite', name: 'activejdbc', version: '2.2'
     implementation group: 'org.javalite', name: 'activejdbc-instrumentation', version: '2.2'
+    compile 'com.github.ertugrulcetin:CommentRemover:1.2'
+
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile 'org.eclipse.jdt:org.eclipse.jdt.core:3.24.0'
