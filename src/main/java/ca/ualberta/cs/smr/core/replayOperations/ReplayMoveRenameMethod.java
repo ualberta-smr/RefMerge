@@ -41,7 +41,9 @@ public class ReplayMoveRenameMethod {
             return;
         }
         PsiMethod psiMethod = Utils.getPsiMethod(psiClass, original);
-        assert psiMethod != null;
+        if(psiMethod == null) {
+            return;
+        }
         if(moveRenameMethodObject.isRenameMethod()) {
             RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
             RenameRefactoring renameRefactoring = factory.createRename(psiMethod, destinationMethodName, true, true);
