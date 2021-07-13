@@ -42,6 +42,7 @@ public class ReplayMoveRenameClass {
         }
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         if(moveRenameClassObject.isRenameMethod()) {
+
             RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
             RenameRefactoring renameRefactoring = factory.createRename(psiClass, destClassName, true, true);
             UsageInfo[] refactoringUsages = renameRefactoring.findUsages();

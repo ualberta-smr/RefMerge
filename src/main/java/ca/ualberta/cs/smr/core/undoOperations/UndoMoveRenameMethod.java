@@ -30,7 +30,8 @@ public class UndoMoveRenameMethod {
         MethodSignatureObject refactored = moveRenameMethodObject.getDestinationMethodSignature();
         String originalMethodName = original.getName();
         String originalClassName = moveRenameMethodObject.getOriginalClassName();
-        String destinationClassName = moveRenameMethodObject.getDestinationClassName();
+        // String destinationClassName = moveRenameMethodObject.getDestinationClassName();
+        String destinationClassName = moveRenameMethodObject.getOriginalDestinationClassName();
         // get the PSI class using original the qualified class name
         String filePath = moveRenameMethodObject.getDestinationFilePath();
         Utils utils = new Utils(project);
