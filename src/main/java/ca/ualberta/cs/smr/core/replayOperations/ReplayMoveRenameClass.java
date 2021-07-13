@@ -35,7 +35,9 @@ public class ReplayMoveRenameClass {
         Utils utils = new Utils(project);
         String filePath = moveRenameClassObject.getOriginalFilePath();
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(srcQualifiedClass, filePath);
+
         if(psiClass == null) {
+            System.out.println("Class Refactoring Failed");
             return;
         }
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
@@ -110,12 +112,14 @@ public class ReplayMoveRenameClass {
             else {
                 String destinationPackage = moveRenameClassObject.getDestinationClassObject().getPackageName();
                 PsiPackage psiPackage = JavaPsiFacade.getInstance(project).findPackage(destinationPackage);
+
                 if(psiPackage == null) {
                     return;
                 }
                 PsiDirectory[] psiDirectories = psiPackage.getDirectories();
                 PsiDirectory psiDirectory = psiDirectories[0];
                 if (psiDirectories.length > 1) {
+                    filePath = moveRenameClassObject.getDestinationFilePath();
                     String path = filePath.substring(0, filePath.lastIndexOf("/"));
                     for (PsiDirectory directory : psiDirectories) {
                         String dirPath = directory.getVirtualFile().getPath();
@@ -139,7 +143,7 @@ public class ReplayMoveRenameClass {
                 app.invokeAndWait(moveClassProcessor);
 
                 // If the original directory is empty after moving the class, delete the directory
-                if (originalDirectory.getFiles().length == 0) {
+                if (originalDirectory.getFiles().length == 0 && originalDirectory.getSubdirectories().length == 0) {
                     if (!ApplicationManager.getApplication().isUnitTestMode()) {
                         WriteCommandAction.runWriteCommandAction(project, originalDirectory::delete);
                     }

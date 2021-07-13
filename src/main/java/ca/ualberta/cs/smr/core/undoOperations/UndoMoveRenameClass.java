@@ -18,8 +18,10 @@ import com.intellij.refactoring.move.moveInner.MoveInnerProcessor;
 import com.intellij.usageView.UsageInfo;
 import com.intellij.usages.UsageView;
 import com.intellij.usages.UsageViewManager;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class UndoMoveRenameClass {
 
@@ -39,10 +41,9 @@ public class UndoMoveRenameClass {
         String srcClassName = srcQualifiedClass.substring(srcQualifiedClass.lastIndexOf(".") + 1);
         String filePath = moveRenameClassObject.getDestinationFilePath();
         Utils utils = new Utils(project);
+
         utils.addSourceRoot(filePath);
-        if(destQualifiedClass.contains("CompilationUnitTreeMatcher")) {
-            System.out.println();
-        }
+
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(destQualifiedClass, filePath);
         if(psiClass == null) {
             return;
@@ -97,6 +98,7 @@ public class UndoMoveRenameClass {
                     PsiClass[] psiClasses = new PsiClass[1];
                     psiClasses[0] = psiClass;
                     String originalTopClass = moveRenameClassObject.getOriginalClassObject().getPackageName();
+                    filePath = moveRenameClassObject.getOriginalFilePath();
                     PsiClass targetClass = utils.getPsiClassByFilePath(filePath, originalTopClass);
                     if(targetClass == null) {
                         return;
@@ -132,9 +134,35 @@ public class UndoMoveRenameClass {
                 // use the original package to undo the move class
                 String originalPackage = moveRenameClassObject.getOriginalClassObject().getPackageName();
                 PsiPackage psiPackage = JavaPsiFacade.getInstance(project).findPackage(originalPackage);
-                if (psiPackage == null) {
-                    MoveDestination moveDestination = JavaRefactoringFactory
-                            .getInstance(project).createSourceFolderPreservingMoveDestination(originalPackage);
+                PsiDirectory psiDirectory = null;
+                if(psiPackage != null) {
+                    filePath = moveRenameClassObject.getOriginalFilePath();
+                    if(filePath.contains("/")) {
+                        filePath = filePath.substring(0, filePath.lastIndexOf("/"));
+                    }
+                    PsiDirectory[] directories = psiPackage.getDirectories();
+                    for(PsiDirectory directory : directories) {
+                        String path = directory.getVirtualFile().getPath();
+                        if(path.contains(filePath)) {
+                            psiDirectory = directory;
+                            break;
+                        }
+                    }
+
+                }
+                if (psiDirectory == null) {
+                    // Create the target directory
+                    psiDirectory = psiClass.getContainingFile().getContainingDirectory();
+                    // Get the common package
+                    String commonPackage = getCommonPackage(psiDirectory, originalPackage);
+                    PsiDirectory parentDirectory = getParentDirectory(psiDirectory, commonPackage);
+                    String relativePackage = originalPackage.substring(commonPackage.length() + 1);
+                    PsiDirectory subDirectory = createSubdirectory(parentDirectory, relativePackage);
+
+                    MoveDestination moveDestination = new SingleSourceRootMoveDestination(PackageWrapper
+                            .create(Objects.requireNonNull(JavaDirectoryService.getInstance().getPackage(subDirectory))), subDirectory);
+
+
                     PsiElement[] psiElements = new PsiElement[1];
                     psiElements[0] = psiClass;
                     MoveClassesOrPackagesProcessor moveClassProcessor = new MoveClassesOrPackagesProcessor(project, psiElements,
@@ -142,12 +170,11 @@ public class UndoMoveRenameClass {
                     Application app = ApplicationManager.getApplication();
                     app.invokeAndWait(moveClassProcessor);
                 } else {
-                    PsiDirectory dir = psiPackage.getDirectories()[0];
                     PsiElement[] psiElements = new PsiElement[1];
                     psiElements[0] = psiClass;
                     MoveClassesOrPackagesProcessor moveClassProcessor = new MoveClassesOrPackagesProcessor(project, psiElements,
                             new SingleSourceRootMoveDestination(PackageWrapper
-                                    .create(Objects.requireNonNull(JavaDirectoryService.getInstance().getPackage(dir))), dir),
+                                    .create(Objects.requireNonNull(JavaDirectoryService.getInstance().getPackage(psiDirectory))), psiDirectory),
                             true, false, null);
                     Application app = ApplicationManager.getApplication();
                     app.invokeAndWait(moveClassProcessor, ModalityState.current());
@@ -218,5 +245,60 @@ public class UndoMoveRenameClass {
 
     }
 
+    /*
+     * Get the common package of the directory of the refactored class and the package of the original class
+     */
+    private String getCommonPackage(PsiDirectory psiDirectory, String originalPackage) {
+        String directoryPackage = psiDirectory.getPresentation().getLocationString();
+        String[] packages = new String[2];
+        packages[0] = originalPackage;
+        packages[1] = directoryPackage;
+        String commonPackage = StringUtils.getCommonPrefix(packages);
+        commonPackage = commonPackage.substring(0, commonPackage.lastIndexOf("."));
+        return commonPackage;
+    }
+
+    /*
+     * Get the PSI directory of the common package
+     */
+    private PsiDirectory getParentDirectory(PsiDirectory psiDirectory, String commonPackage) {
+        if(psiDirectory.getPresentation().getLocationString().equals(commonPackage)) {
+           return psiDirectory;
+        }
+        return getParentDirectory(psiDirectory.getParentDirectory(), commonPackage);
+    }
+
+    /*
+     * Create the specified subdirectory
+     */
+    private PsiDirectory createSubdirectory(PsiDirectory psiDirectory, String relativePath) {
+        if(!relativePath.contains(".")) {
+            PsiDirectory candidate = psiDirectory.findSubdirectory(relativePath);
+            if(candidate != null) {
+                return candidate;
+            }
+            else {
+                AtomicReference<PsiDirectory> subDirectory = new AtomicReference<>();
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    subDirectory.set(psiDirectory.createSubdirectory(relativePath));
+                });
+                return subDirectory.get();
+            }
+        }
+        String[] directories = relativePath.split("\\.");
+        String newSubDirectory = directories[0];
+        PsiDirectory candidate = psiDirectory.findSubdirectory(newSubDirectory);
+        if(candidate != null) {
+            return createSubdirectory(candidate, relativePath.substring(newSubDirectory.length() + 1));
+        }
+        else {
+            AtomicReference<PsiDirectory> subDirectory = new AtomicReference<>();
+            WriteCommandAction.runWriteCommandAction(project, () -> {
+                subDirectory.set(psiDirectory.createSubdirectory(newSubDirectory));
+            });
+
+            return createSubdirectory(subDirectory.get(), relativePath.substring(newSubDirectory.length() + 1));
+        }
+    }
 
 }
