@@ -303,7 +303,7 @@ public class EvaluationUtils {
             autoMergeRecall = totalSameLOCManual / (double) totalManualMergedLOC;
         }
         else {
-            autoMergeRecall = 1.0;
+            autoMergeRecall = 0;
         }
 
         return new ComparisonResult(numberOfDiffFiles, totalAutoMergedLOC, totalManualMergedLOC,
