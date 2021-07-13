@@ -160,7 +160,7 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         String testFile = "ClassRenameTestData.java";
         PsiFile[] psiFiles = myFixture.configureByFiles(testDataRenamed + testFile);
         String destinationPackage = "renameTestData.classRenameTestData";
-        String originalPackage = "renameTestData";
+        String originalPackage = "renameTestData.original";
         Assert.assertNotEquals(originalPackage, ((PsiJavaFile)psiFiles[0]).getPackageName());
         MoveRenameClassObject moveClass = new MoveRenameClassObject("ClassRenameTestData.java", "ClassRenameTestData", originalPackage,
                 "ClassRenameTestData.java", "ClassRenameTestData", destinationPackage);
