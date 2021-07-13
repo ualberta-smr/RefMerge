@@ -32,7 +32,7 @@ public class ReplayMoveRenameMethod {
         MethodSignatureObject renamed = moveRenameMethodObject.getDestinationMethodSignature();
         String destinationMethodName = renamed.getName();
         String originalClassName = moveRenameMethodObject.getOriginalClassName();
-        String destinationClassName = moveRenameMethodObject.getDestinationClassName();
+        String destinationClassName = moveRenameMethodObject.getOriginalDestinationClassName();
         String filePath = moveRenameMethodObject.getOriginalFilePath();
         Utils utils = new Utils(project);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(originalClassName, filePath);

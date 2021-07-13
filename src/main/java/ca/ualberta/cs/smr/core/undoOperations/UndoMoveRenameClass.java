@@ -7,6 +7,7 @@ import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
@@ -52,8 +53,11 @@ public class UndoMoveRenameClass {
         if(moveRenameClassObject.isRenameMethod()) {
             RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
             RenameRefactoring renameRefactoring = factory.createRename(psiClass, srcClassName, true, true);
+            renameRefactoring.respectAllAutomaticRenames();
+            renameRefactoring.respectEnabledAutomaticRenames();
             UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
             renameRefactoring.doRefactoring(refactoringUsages);
+            DumbService.getInstance(project).completeJustSubmittedTasks();
         }
         if(moveRenameClassObject.isMoveMethod()) {
             // If the move class refactoring is outer to inner

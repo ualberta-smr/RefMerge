@@ -20,6 +20,7 @@ public class MoveRenameMethodObject implements RefactoringObject {
     private MethodSignatureObject originalMethodSignature;
     private String originalClassName;
     private String destinationClassName;
+    private String originalDestinationClassName;
     private MethodSignatureObject destinationMethodSignature;
     private int startOffset;
     private String methodAbove;
@@ -39,6 +40,7 @@ public class MoveRenameMethodObject implements RefactoringObject {
         this.destinationFilePath = destinationFilePath;
         this.destinationClassName = destinationClassName;
         this.destinationMethodSignature = destinationMethodSignature;
+        this.originalDestinationClassName = destinationClassName;
         this.isMoveMethod = false;
         this.isRenameMethod = false;
         this.isReplay = true;
@@ -67,6 +69,7 @@ public class MoveRenameMethodObject implements RefactoringObject {
         this.destinationFilePath = destinationOperation.getLocationInfo().getFilePath();
         this.originalClassName = originalOperation.getClassName();
         this.destinationClassName = destinationOperation.getClassName();
+        this.originalDestinationClassName = destinationClassName;
         this.originalMethodSignature = new MethodSignatureObject(originalOperation.getName(), originalOperation.getParameters(),
                 originalOperation.isConstructor(), originalOperation.getVisibility(), originalOperation.isStatic());
         this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(), destinationOperation.getParameters(),
@@ -117,6 +120,14 @@ public class MoveRenameMethodObject implements RefactoringObject {
 
     public String getDestinationClassName() {
         return this.destinationClassName;
+    }
+
+    public void setOriginalDestinationClassName(String originalDestinationClassName) {
+        this.originalDestinationClassName = originalDestinationClassName;
+    }
+
+    public String getOriginalDestinationClassName() {
+        return this.originalDestinationClassName;
     }
 
     public MethodSignatureObject getOriginalMethodSignature() {
