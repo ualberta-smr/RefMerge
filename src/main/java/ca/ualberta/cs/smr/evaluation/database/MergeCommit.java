@@ -18,4 +18,12 @@ public class MergeCommit extends Model {
         return getInteger("project_id");
     }
 
+    public  boolean isDone() {
+        return getBoolean("is_done");
+    }
+
+    public void setDone() {
+        setBoolean("is_done", true);
+    }
+
 }

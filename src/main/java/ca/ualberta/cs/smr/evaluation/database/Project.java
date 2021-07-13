@@ -13,4 +13,11 @@ public class Project extends Model {
         set("url", url, "name", name);
     }
 
+    public boolean isDone() {
+        return getBoolean("is_done");
+    }
+
+    public void setDone() {
+        setBoolean("is_done", true);
+    }
 }
