@@ -137,6 +137,9 @@ public class Utils {
         if(relativePath.contains("java/")) {
             return relativePath.substring(0, relativePath.lastIndexOf("java/") + 4);
         }
+        if(relativePath.contains("resources/")) {
+            return relativePath.substring(0, relativePath.lastIndexOf("resources/") + 9);
+        }
         // Get the project name
         String temp = relativePath.substring(relativePath.indexOf(projectName) + projectName.length());
         // If the relative path contains the project name a second time, use that as a source folder.
