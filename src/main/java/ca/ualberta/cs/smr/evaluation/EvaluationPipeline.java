@@ -16,10 +16,15 @@ import git4idea.GitCommit;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import org.apache.commons.lang3.tuple.Pair;
+import org.eclipse.jgit.api.Git;
 import org.javalite.activejdbc.Base;
 import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.project.Project;
 import ca.ualberta.cs.smr.core.RefMerge;
+import org.refactoringminer.api.GitHistoryRefactoringMiner;
+import org.refactoringminer.api.Refactoring;
+import org.refactoringminer.api.RefactoringHandler;
+import org.refactoringminer.rm1.GitHistoryRefactoringMinerImpl;
 
 import java.io.File;
 import java.util.*;
@@ -75,7 +80,14 @@ public class EvaluationPipeline implements ApplicationStarter {
         if (proj == null) {
             proj = new ca.ualberta.cs.smr.evaluation.database.Project(projectURL, projectName);
             proj.saveIt();
+            evaluateProjectOnIntelliMergeDataset(proj, repo);
+        } else if(!proj.isDone()){
+            evaluateProjectOnIntelliMergeDataset(proj, repo);
+
         }
+    }
+
+    private void evaluateProjectOnIntelliMergeDataset(ca.ualberta.cs.smr.evaluation.database.Project proj, GitRepository repo) {
 
         Utils.clearTemp("manualMerge");
         Utils.clearTemp("intelliMerge");
@@ -105,6 +117,8 @@ public class EvaluationPipeline implements ApplicationStarter {
         for (String mergeScenario : mergeScenarios) {
             evaluateMergeScenario(mergeScenario, git, repo, proj);
         }
+        proj.setDone();
+        proj.saveIt();
 
     }
 
@@ -130,19 +144,43 @@ public class EvaluationPipeline implements ApplicationStarter {
         gitUtils.checkout(leftParent);
         boolean isConflicting = gitUtils.merge(rightParent);
         // Add merge commit to database
-        MergeCommit mergeCommit = new MergeCommit(mergeCommitHash, isConflicting, leftParent,
-                rightParent, proj, targetCommit.getTimestamp());
-        mergeCommit.saveIt();
+        MergeCommit mergeCommit = MergeCommit.findFirst("commit_hash = ?", mergeCommitHash);
+        if(mergeCommit == null) {
+            mergeCommit = new MergeCommit(mergeCommitHash, isConflicting, leftParent,
+                    rightParent, proj, targetCommit.getTimestamp());
+            mergeCommit.saveIt();
+        }
+        else if(mergeCommit.isDone()) {
+            return;
+        }
+        else if(!mergeCommit.isDone()) {
+            mergeCommit.delete();
+            mergeCommit = new MergeCommit(mergeCommitHash, isConflicting, leftParent,
+                    rightParent, proj, targetCommit.getTimestamp());
+            mergeCommit.saveIt();
+        }
+
+        // Get refactoring details
+        getRefactorings(baseCommit, leftParent, project.getBasePath(), mergeCommit);
+        getRefactorings(baseCommit, rightParent, project.getBasePath(), mergeCommit);
 
         // Merge the merge scenario with the three tools and record the runtime
-        Pair<Integer, Long> refMergeConflictsAndRuntime = runRefMerge(project, repo, leftParent, rightParent);
-        String refMergePath = Utils.saveContent(project, "refMergeResults");
+        Utils.reparsePsiFiles(project);
+        Utils.dumbServiceHandler(project);
         // Run GitMerge
         long gitMergeRuntime = runGitMerge(project, repo, leftParent, rightParent);
         String gitMergePath = Utils.saveContent(project, "gitMergeResults");
+        Utils.reparsePsiFiles(project);
+        Utils.dumbServiceHandler(project);
         // Run IntelliMerge
         String intelliMergePath = System.getProperty("user.home") + "/temp/intelliMergeResults";
         long intelliMergeRuntime = runIntelliMerge(project, repo, leftParent, baseCommit, rightParent, intelliMergePath);
+        // Run RefMerge
+        Pair<Integer, Long> refMergeConflictsAndRuntime = runRefMerge(project, repo, leftParent, rightParent);
+        String refMergePath = Utils.saveContent(project, "refMergeResults");
+
+
+
 
         Utils.runSystemCommand("cp", "-r", refMergePath + "/.", refMergePath + "Original");
         Utils.runSystemCommand("cp", "-r", gitMergePath + "/.", gitMergePath + "Original");
@@ -238,6 +276,8 @@ public class EvaluationPipeline implements ApplicationStarter {
             }
         }
 
+        mergeCommit.setDone();
+        mergeCommit.saveIt();
 
     }
 
@@ -266,6 +306,8 @@ public class EvaluationPipeline implements ApplicationStarter {
     private long runGitMerge(Project project, GitRepository repo, String leftParent, String rightParent) {
         GitUtils gitUtils = new GitUtils(repo, project);
         gitUtils.checkout(leftParent);
+        Utils.reparsePsiFiles(project);
+        Utils.dumbServiceHandler(project);
         long time = System.currentTimeMillis();
         gitUtils.merge(rightParent);
         long time2 = System.currentTimeMillis();
@@ -299,4 +341,36 @@ public class EvaluationPipeline implements ApplicationStarter {
         return time2 - time;
     }
 
+    /*
+     * Get each refactoring between the base commit and a parent commit for the merge scenario.
+     */
+    private void getRefactorings(String base, String parent, String path, MergeCommit mergeCommit) {
+        File pathDir = new File(path);
+        try {
+            Git git = Git.open(pathDir);
+            GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
+            miner.detectBetweenCommits(git.getRepository(), base, parent,
+                    new RefactoringHandler() {
+                        @Override
+                        public void handle(String commitId, List<Refactoring> refactorings) {
+                            for (Refactoring refactoringObject : refactorings) {
+                                String refactoringType = refactoringObject.getName();
+                                String refactoringDetail = refactoringObject.toString();
+                                if(refactoringDetail.length() > 2000) {
+                                    refactoringDetail = refactoringDetail.substring(0, 1900);
+                                }
+                                ca.ualberta.cs.smr.evaluation.database.Refactoring refactoring =
+                                        new ca.ualberta.cs.smr.evaluation.database.Refactoring(
+                                                refactoringType,
+                                                refactoringDetail,
+                                                commitId,
+                                                mergeCommit);
+                                refactoring.saveIt();
+                            }
+                        }
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
