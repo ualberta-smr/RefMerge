@@ -11,6 +11,7 @@ import ca.ualberta.cs.smr.utils.Utils;
 
 import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.openapi.application.ApplicationStarter;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.vcs.log.Hash;
 import git4idea.GitCommit;
 import git4idea.repo.GitRepository;
@@ -89,14 +90,6 @@ public class EvaluationPipeline implements ApplicationStarter {
 
     private void evaluateProjectOnIntelliMergeDataset(ca.ualberta.cs.smr.evaluation.database.Project proj, GitRepository repo) {
 
-        Utils.clearTemp("manualMerge");
-        Utils.clearTemp("intelliMerge");
-        Utils.clearTemp("refMergeResults");
-        Utils.clearTemp("intelliMergeResults");
-        Utils.clearTemp("gitMergeResults");
-        Utils.clearTemp("refMergeResultsOriginal");
-        Utils.clearTemp("gitMergeResultsOriginal");
-        Utils.clearTemp("intelliMergeResultsOriginal");
         String clonedDest = this.project.getBasePath();
         assert clonedDest != null;
         GitUtils git = new GitUtils(repo, project);
@@ -124,6 +117,15 @@ public class EvaluationPipeline implements ApplicationStarter {
 
     private void evaluateMergeScenario(String mergeCommitHash, GitUtils git, GitRepository repo,
                                        ca.ualberta.cs.smr.evaluation.database.Project proj) {
+        Utils.clearTemp("manualMerge");
+        Utils.clearTemp("intelliMerge");
+        Utils.clearTemp("refMergeResults");
+        Utils.clearTemp("intelliMergeResults");
+        Utils.clearTemp("gitMergeResults");
+        Utils.clearTemp("refMergeResultsOriginal");
+        Utils.clearTemp("gitMergeResultsOriginal");
+        Utils.clearTemp("intelliMergeResultsOriginal");
+
         git.checkout(mergeCommitHash);
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
@@ -165,20 +167,19 @@ public class EvaluationPipeline implements ApplicationStarter {
         getRefactorings(baseCommit, rightParent, project.getBasePath(), mergeCommit);
 
         // Merge the merge scenario with the three tools and record the runtime
-        Utils.reparsePsiFiles(project);
-        Utils.dumbServiceHandler(project);
+        DumbService.getInstance(project).completeJustSubmittedTasks();
         // Run GitMerge
         long gitMergeRuntime = runGitMerge(project, repo, leftParent, rightParent);
         String gitMergePath = Utils.saveContent(project, "gitMergeResults");
-        Utils.reparsePsiFiles(project);
-        Utils.dumbServiceHandler(project);
+        DumbService.getInstance(project).completeJustSubmittedTasks();
         // Run IntelliMerge
         String intelliMergePath = System.getProperty("user.home") + "/temp/intelliMergeResults";
         long intelliMergeRuntime = runIntelliMerge(project, repo, leftParent, baseCommit, rightParent, intelliMergePath);
+        DumbService.getInstance(project).completeJustSubmittedTasks();
         // Run RefMerge
         Pair<Integer, Long> refMergeConflictsAndRuntime = runRefMerge(project, repo, leftParent, rightParent);
         String refMergePath = Utils.saveContent(project, "refMergeResults");
-
+        DumbService.getInstance(project).completeJustSubmittedTasks();
 
 
 
