@@ -104,10 +104,19 @@ public class ReplayMoveRenameClass {
                 filePath = moveRenameClassObject.getDestinationFilePath();
                 String containingClass = moveRenameClassObject.getDestinationClassObject().getPackageName();
                 PsiClass targetContainer = utils.getPsiClassByFilePath(filePath, containingClass);
-                MoveInnerProcessor processor = new MoveInnerProcessor(project, null);
-                processor.setup(psiClass, destClassName, false,
-                        null, true, false, targetContainer);
-                ApplicationManager.getApplication().invokeAndWait(processor);
+                if(psiClass.getContainingClass() == null) {
+                    PsiClass[] psiClasses = new PsiClass[1];
+                    psiClasses[0] = psiClass;
+                    MoveClassToInnerProcessor processor = new MoveClassToInnerProcessor(project, psiClasses, targetContainer,
+                            true, false, null);
+                    ApplicationManager.getApplication().invokeAndWait(processor);
+                }
+                else {
+                    MoveInnerProcessor processor = new MoveInnerProcessor(project, null);
+                    processor.setup(psiClass, destClassName, false,
+                            null, true, false, targetContainer);
+                    ApplicationManager.getApplication().invokeAndWait(processor);
+                }
             }
             // use the destination package to undo the move class if the class is outer to outer
             else {
