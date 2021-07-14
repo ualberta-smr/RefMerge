@@ -170,21 +170,27 @@ public class RefMerge extends AnAction {
      * replayRefactorings takes a list of refactorings and performs each of the refactorings.
      */
     public void replayRefactorings(ArrayList<RefactoringObject> refactoringObjects) {
-        try {
             for(RefactoringObject refactoringObject : refactoringObjects) {
                 switch (refactoringObject.getRefactoringType()) {
                     case RENAME_CLASS:
                     case MOVE_CLASS:
                     case MOVE_RENAME_CLASS:
+                        try {
                         ReplayMoveRenameClass replayMoveRenameClass = new ReplayMoveRenameClass(project);
                         replayMoveRenameClass.replayMoveRenameClass(refactoringObject);
+                        } catch (Exception exception) {
+                            exception.printStackTrace();
+                        }
                         break;
                     case RENAME_METHOD:
                     case MOVE_OPERATION:
                     case MOVE_AND_RENAME_OPERATION:
-                        // Perform the rename method refactoring
+                        try {
                         ReplayMoveRenameMethod replayMoveRenameMethod = new ReplayMoveRenameMethod(project);
                         replayMoveRenameMethod.replayMoveRenameMethod(refactoringObject);
+                        } catch (Exception exception) {
+                            exception.printStackTrace();
+                        }
                         break;
                     case EXTRACT_OPERATION:
                         ReplayExtractMethod replayExtractMethod = new ReplayExtractMethod(project);
@@ -196,16 +202,17 @@ public class RefMerge extends AnAction {
                         }
                         break;
                     case INLINE_OPERATION:
+                        try {
                         ReplayInlineMethod replayInlineMethod = new ReplayInlineMethod(project);
                         replayInlineMethod.replayInlineMethod(refactoringObject);
+                        } catch (Exception exception) {
+                            exception.printStackTrace();
+                        }
                         break;
                 }
 
             }
 
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
         // Save all of the refactoring changes from memory onto disk
         FileDocumentManager.getInstance().saveAllDocuments();
     }

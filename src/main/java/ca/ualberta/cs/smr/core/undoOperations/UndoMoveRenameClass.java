@@ -159,6 +159,10 @@ public class UndoMoveRenameClass {
                     psiDirectory = psiClass.getContainingFile().getContainingDirectory();
                     // Get the common package
                     String commonPackage = getCommonPackage(psiDirectory, originalPackage);
+                    // If RefMiner does not report the full package
+                    if(commonPackage == null) {
+                        return;
+                    }
                     PsiDirectory parentDirectory = getParentDirectory(psiDirectory, commonPackage);
                     String relativePackage = originalPackage.substring(commonPackage.length() + 1);
                     PsiDirectory subDirectory = createSubdirectory(parentDirectory, relativePackage);
@@ -258,6 +262,9 @@ public class UndoMoveRenameClass {
         packages[0] = originalPackage;
         packages[1] = directoryPackage;
         String commonPackage = StringUtils.getCommonPrefix(packages);
+        if(commonPackage.length() == 0) {
+            return null;
+        }
         commonPackage = commonPackage.substring(0, commonPackage.lastIndexOf("."));
         return commonPackage;
     }

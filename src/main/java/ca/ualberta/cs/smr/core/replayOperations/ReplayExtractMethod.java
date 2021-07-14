@@ -75,6 +75,7 @@ public class ReplayExtractMethod {
             extractMethodProcessor.prepare();
         } catch (PrepareFailedException e) {
             e.printStackTrace();
+            return;
         }
         extractMethodProcessor.setDataFromInputVariables();
         ExtractMethodHandler.extractMethod(project, extractMethodProcessor);

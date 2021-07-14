@@ -318,6 +318,14 @@ public class Utils {
                     }
                 }
             }
+            for(PsiClass it : jClasses) {
+                String qName = it.getQualifiedName();
+                qName = qName.substring(qName.lastIndexOf(".") + 1);
+                String otherName = qualifiedClass.substring(qualifiedClass.lastIndexOf(".") + 1);
+                if(Objects.equals(qName, otherName)) {
+                    return it;
+                }
+            }
         }
         return null;
     }
