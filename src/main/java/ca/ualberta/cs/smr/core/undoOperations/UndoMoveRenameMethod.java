@@ -35,7 +35,7 @@ public class UndoMoveRenameMethod {
         // get the PSI class using original the qualified class name
         String filePath = moveRenameMethodObject.getDestinationFilePath();
         Utils utils = new Utils(project);
-        utils.addSourceRoot(filePath);
+        utils.addSourceRoot(filePath, destinationClassName);
         PsiClass psiClass;
         if(moveRenameMethodObject.isMoveMethod()) {
             psiClass = utils.getPsiClassFromClassAndFileNames(destinationClassName, filePath);
@@ -60,6 +60,7 @@ public class UndoMoveRenameMethod {
             RenameRefactoring renameRefactoring = factory.createRename(psiMethod, originalMethodName, true, true);
             UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
             renameRefactoring.doRefactoring(refactoringUsages);
+
         }
         // If the operation was moved, undo the move method by performing a move method refactoring to move it to the
         // original class
@@ -130,7 +131,23 @@ public class UndoMoveRenameMethod {
         // Get the physical copy of the PSI method so we can delete it
         try {
             for (PsiMethod method : psiMethods) {
-                if (method.getSignature(PsiSubstitutor.UNKNOWN).equals(psiMethod.getSignature(PsiSubstitutor.UNKNOWN))) {
+                boolean isSame = true;
+                String m1 = method.getName();
+                String m2 = psiMethod.getName();
+                if(m1.equals(m2)) {
+                    PsiParameter[] parameterList1 = method.getParameterList().getParameters();
+                    PsiParameter[] parameterList2 = psiMethod.getParameterList().getParameters();
+                    if(parameterList1.length != parameterList2.length) {
+                        continue;
+                    }
+                    for(int i = 0; i < parameterList1.length; i++) {
+                        if (!parameterList1[i].isEquivalentTo(parameterList2[i])) {
+                            isSame = false;
+                            break;
+                        }
+                    }
+                }
+                if (isSame) {
                     psiMethod = method;
                     break;
                 }

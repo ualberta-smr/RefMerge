@@ -41,7 +41,7 @@ public class UndoExtractMethod {
         String extractedOperationClassName = extractMethodObject.getOriginalClassName();
         String filePath = extractMethodObject.getOriginalFilePath();
         Utils utils = new Utils(project);
-        utils.addSourceRoot(filePath);
+        utils.addSourceRoot(filePath, extractedOperationClassName);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(extractedOperationClassName, filePath);
         if(psiClass == null) {
             return null;

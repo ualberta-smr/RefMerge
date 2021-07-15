@@ -35,7 +35,7 @@ public class ReplayInlineMethod {
         String originalMethodClassName = inlineMethodObject.getOriginalClassName();
         String filePath = inlineMethodObject.getOriginalFilePath();
         Utils utils = new Utils(project);
-        utils.addSourceRoot(filePath);
+        utils.addSourceRoot(filePath, originalMethodClassName);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(originalMethodClassName, filePath);
         assert psiClass != null;
         PsiMethod originalMethod = Utils.getPsiMethod(psiClass, originalOperation);
