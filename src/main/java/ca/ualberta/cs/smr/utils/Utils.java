@@ -90,7 +90,7 @@ public class Utils {
     /*
      * Use the file path to add the source root to the module if it is not already in the module.
      */
-    public void addSourceRoot(String filePath) {
+    public void addSourceRoot(String filePath, String filePackage) {
         // There are no modules or source roots in unit test mode
         if (ApplicationManager.getApplication().isUnitTestMode()) {
             return;
@@ -99,8 +99,16 @@ public class Utils {
 
         String projectPath = project.getBasePath();
         String relativePath = projectPath + "/" + filePath;
-        relativePath = getRelativePathOfSourceRoot(relativePath, project.getName());
-        File directory = new File(relativePath);
+        //relativePath = getRelativePathOfSourceRoot(relativePath, project.getName());
+        filePackage = filePackage.replaceAll("\\.", "/");
+        String path = "";
+        try {
+            path = relativePath.substring(0, relativePath.indexOf(filePackage));
+        }
+        catch(StringIndexOutOfBoundsException e) {
+            path = getRelativePathOfSourceRoot(relativePath, project.getName());
+        }
+        File directory = new File(path);
         VirtualFile sourceVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(directory);
         assert sourceVirtualFile != null;
         ModuleManager moduleManager = ModuleManager.getInstance(project);

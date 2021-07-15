@@ -43,7 +43,11 @@ public class UndoMoveRenameClass {
         String filePath = moveRenameClassObject.getDestinationFilePath();
         Utils utils = new Utils(project);
 
-        utils.addSourceRoot(filePath);
+        if(srcQualifiedClass.contains("DescribingMatcher")) {
+            System.out.println();
+        }
+
+        utils.addSourceRoot(filePath, destQualifiedClass);
 
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(destQualifiedClass, filePath);
         if(psiClass == null) {

@@ -55,7 +55,9 @@ public class ReplayExtractMethod {
             return;
         }
         PsiMethod psiMethod = Utils.getPsiMethod(psiClass, sourceOperation);
-        assert psiMethod != null;
+        if(psiMethod == null) {
+            return;
+        }
 
         SmartPsiElementPointer[] surroundingElements = extractMethodObject.getSurroundingElements();
         Set<AbstractCodeFragment> sourceFragments = extractMethodObject.getSourceCodeFragments();
@@ -63,6 +65,9 @@ public class ReplayExtractMethod {
         CodeRange codeRange = extractMethodObject.getCodeRange();
         PsiElement[] psiElements =
                 getPsiElementsBetweenElements(surroundingElements, sourceFragments, extractedFragments, codeRange, psiMethod);
+        if(psiElements == null) {
+            return;
+        }
 
         PsiType forcedReturnType = getPsiReturnType(extractedOperation, psiMethod);
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
@@ -203,8 +208,12 @@ public class ReplayExtractMethod {
             }
         }
 
-        assert firstElement != null;
-        assert lastElement != null;
+        if(firstElement == null) {
+            return null;
+        }
+        if(lastElement == null) {
+            return null;
+        }
         List<PsiElement> psiElements = PsiTreeUtil.getElementsOfRange(firstElement, lastElement);
         return psiElements.toArray(new PsiElement[0]);
     }

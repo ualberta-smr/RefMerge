@@ -197,7 +197,7 @@ public class RefMerge extends AnAction {
                         try {
                             replayExtractMethod.replayExtractMethod(refactoringObject);
                         } catch (Exception e) {
-                            e.printStackTrace();;
+                            e.printStackTrace();
                             break;
                         }
                         break;
