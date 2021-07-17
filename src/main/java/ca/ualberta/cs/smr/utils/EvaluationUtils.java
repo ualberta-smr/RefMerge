@@ -116,6 +116,8 @@ public class EvaluationUtils {
             String line = iterator.next();
             lineCounter++;
             if (line.contains(CONFLICT_LEFT_BEGIN)) {
+                leftConflictingContent = new StringBuilder();
+                rightConflictingContent = new StringBuilder();
                 inConflictBlock = true;
                 isLeftContent = true;
                 startLOC = lineCounter;
@@ -125,8 +127,17 @@ public class EvaluationUtils {
                 iterator.remove();
             } else if (line.contains(CONFLICT_RIGHT_END)) {
                 endLOC = lineCounter;
-                ConflictBlockData mergeConflict =
-                        new ConflictBlockData(leftConflictingContent.toString(), rightConflictingContent.toString(), startLOC, endLOC);
+                String leftContent = leftConflictingContent.toString();
+                String rightContent = rightConflictingContent.toString();
+
+                leftContent = leftContent.replaceAll(" ", "");
+                leftContent = leftContent.replaceAll("\n", "");
+                rightContent = rightContent.replaceAll(" ", "");
+                rightContent = rightContent.replaceAll("\n", "");
+                if(leftContent.length() == 0 && rightContent.length() == 0) {
+                    continue;
+                }
+                ConflictBlockData mergeConflict = new ConflictBlockData(leftContent, rightContent, startLOC, endLOC);
                 mergeConflicts.add(mergeConflict);
                 // reset the flags
                 inConflictBlock = false;
@@ -213,7 +224,6 @@ public class EvaluationUtils {
     public static ComparisonResult compareAutoMerged(String mergedDir, List<SourceFile> manuallyMergedFiles,
                                                      Project project, GitRepository repo) {
         GitUtils gitUtils = new GitUtils(repo, project);
-        int numberOfMergedFiles = manuallyMergedFiles.size();
         int numberOfDiffFiles = 0;
         double autoMergePrecision = 0.0;
         double autoMergeRecall = 0.0;
@@ -298,7 +308,6 @@ public class EvaluationUtils {
             autoMergePrecision = 1.0;
         }
 //        // The manually merged LOC should not be 0
-//        autoMergeRecall = totalSameLOCManual / (double) totalManualMergedLOC;
         if(totalAutoMergedLOC > 0) {
             autoMergeRecall = totalSameLOCManual / (double) totalManualMergedLOC;
         }
@@ -370,7 +379,7 @@ public class EvaluationUtils {
                     new CommentRemover.CommentRemoverBuilder()
                             .removeJava(true)
                             .removeTodos(true) // Remove todos
-                            .removeSingleLines(true) // Do not remove single line type comments
+                            .removeSingleLines(false) // Do not remove single line type comments
                             .removeMultiLines(true) // Remove multiple type comments
                             .preserveJavaClassHeaders(false) // Preserves class header comment
                             .preserveCopyRightHeaders(false) // Preserves copyright comment
