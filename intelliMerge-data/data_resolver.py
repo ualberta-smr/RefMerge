@@ -46,11 +46,9 @@ def record_involved(x):
                x['new_path'] == x['path'] and
                regions_intersect(x['new_start_line'], x['new_length'], x['start_line'], x['length']))
     if is_source or is_dest:
-        project_name = get_project_name(x['merge_commit_id'])
+        project_url = get_project_url(x['merge_commit_id'])
         merge_commit_hash = get_merge_commit_hash(x['merge_commit_id'])
-        print(project_name)
-        print(merge_commit_hash)
-        write_to_csv(project_name, merge_commit_hash)
+        write_to_csv(project_url, merge_commit_hash)
     return is_source or is_dest
 
 
@@ -59,13 +57,13 @@ accepted_types = ['Change Package', 'Extract And Move Method', 'Extract Interfac
                       'Move Method', 'Pull Up Attribute', 'Pull Up Method', 'Pull Up Method', 'Push Down Method',
                       'Rename Class', 'Rename Method']
 
-def write_to_csv(project_name, merge_commit_hash):
+def write_to_csv(project_url, merge_commit_hash):
     f = open('intelliMerge_data', 'r')
     lines = f.read()
     f.close()
     with open('intelliMerge_data', 'a') as open_file:
         line = []
-        line.append(project_name)
+        line.append(project_url)
         line.append(merge_commit_hash)
         entry = ";".join(line)
         found = False
@@ -87,13 +85,13 @@ def read_sql_table(table):
     df = pd.read_sql(query, get_db_connection())
     return df
 
-def get_project_name(merge_commit_id):
+def get_project_url(merge_commit_id):
     query = "SELECT * FROM merge_commit WHERE id = '{}'".format(merge_commit_id)
     df = pd.read_sql(query, get_db_connection())
     project_id = df.iloc[0]['project_id']
     query = "SELECT * FROM project WHERE id ='{}'".format(project_id)
     df = pd.read_sql(query, get_db_connection())
-    return df.iloc[0]['name']
+    return df.iloc[0]['url']
 
 def get_merge_commit_hash(merge_commit_id):
     query = "SELECT * FROM merge_commit WHERE id = '{}'".format(merge_commit_id)
