@@ -32,6 +32,9 @@ public class ExtractMethodReceiver extends Receiver {
             boolean isConflicting = cell.conflictCell(dispatcherObject, this.refactoringObject);
             if(isConflicting) {
                 System.out.println("Extract Method/Rename Method Conflict");
+                this.isConflicting = true;
+                dispatcherObject.setReplayFlag(false);
+                this.refactoringObject.setReplayFlag(false);
             }
             else {
                 boolean isDependent = cell.dependenceCell(dispatcherObject, this.refactoringObject);
@@ -83,6 +86,9 @@ public class ExtractMethodReceiver extends Receiver {
         boolean isConflicting = cell.conflictCell(dispatcherObject, this.refactoringObject);
         if(isConflicting) {
             System.out.println("Extract Method/Extract Method Conflict");
+            this.isConflicting = true;
+            dispatcherObject.setReplayFlag(false);
+            this.refactoringObject.setReplayFlag(false);
         }
     }
 }

@@ -63,18 +63,32 @@ public class ExtractMethodExtractMethodCell {
                 && !dispatcherOriginalMethod.equalsSignature(receiverOriginalMethod)) {
             return false;
         }
+        String dispatcherDestinationName = dispatcherExtractMethod.getDestinationMethodSignature().getName();
+        String receiverDestinationName = receiverExtractMethod.getDestinationMethodSignature().getName();
 
-        Set<AbstractCodeFragment> dispatcherFragments = dispatcherExtractMethod.getExtractedCodeFragments();
-        Set<AbstractCodeFragment> receiverFragments = receiverExtractMethod.getExtractedCodeFragments();
+        Set<AbstractCodeFragment> dispatcherFragments = dispatcherExtractMethod.getSourceCodeFragments();
+        Set<AbstractCodeFragment> receiverFragments = receiverExtractMethod.getSourceCodeFragments();
         // Check if a code fragment exists in both extracted methods
+        int sameFragments = 0;
         for(AbstractCodeFragment dispatcherFragment : dispatcherFragments) {
             for(AbstractCodeFragment receiverFragment : receiverFragments) {
                 // Use the text of the fragment instead of the line number because the line numbers may differ between
                 // branches.
                 if (dispatcherFragment.equalFragment(receiverFragment)) {
-                    return true;
+                    sameFragments++;
                 }
             }
+        }
+        // If the same section is extracted from both branches, then it is not conflicting
+        // unless it's extracted to two different names
+        if(dispatcherFragments.size() == receiverFragments.size() && dispatcherDestinationName.equals(receiverDestinationName)) {
+            if(sameFragments == dispatcherFragments.size()) {
+                return false;
+            }
+
+        }
+        if(sameFragments > 0) {
+            return true;
         }
         return false;
     }
@@ -147,7 +161,7 @@ public class ExtractMethodExtractMethodCell {
 
     /*
      * A naming conflict will occur between two extract method refactorings if the extracted methods exist in the same class
-     * and they have the same signature.
+     * and they have the same signature. It can also exist if the same
      */
     public boolean checkMethodNamingConflict(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
         ExtractMethodObject dispatcherExtractMethod = (ExtractMethodObject) dispatcherObject;
@@ -155,6 +169,8 @@ public class ExtractMethodExtractMethodCell {
 
         MethodSignatureObject dispatcherDestinationMethod = dispatcherExtractMethod.getDestinationMethodSignature();
         MethodSignatureObject receiverDestinationMethod = receiverExtractMethod.getDestinationMethodSignature();
+        MethodSignatureObject dispatcherOriginalMethod = dispatcherExtractMethod.getOriginalMethodSignature();
+        MethodSignatureObject receiverOriginalMethod = receiverExtractMethod.getOriginalMethodSignature();
 
         String dispatcherOriginalClassName = dispatcherExtractMethod.getOriginalClassName();
         String receiverOriginalClassName = receiverExtractMethod.getOriginalClassName();
@@ -163,7 +179,38 @@ public class ExtractMethodExtractMethodCell {
         if (!dispatcherOriginalClassName.equals(receiverOriginalClassName)) {
             return false;
         }
-        return dispatcherDestinationMethod.equalsSignature(receiverDestinationMethod);
+        if(dispatcherDestinationMethod.equalsSignature(receiverDestinationMethod) &&
+                dispatcherOriginalMethod.equalsSignature(receiverOriginalMethod)) {
+            return false;
+        }
+        else if(!dispatcherDestinationMethod.equalsSignature(receiverDestinationMethod) &&
+                dispatcherOriginalMethod.equalsSignature(receiverOriginalMethod)) {
+            return false;
+        }
+        else if(!dispatcherDestinationMethod.equalsSignature(receiverDestinationMethod) &&
+                !dispatcherOriginalMethod.equalsSignature(receiverOriginalMethod)) {
+            return false;
+        }
+        else {
+            // Double check that they are not the same destination method
+            Set<AbstractCodeFragment> dispatcherFragments = dispatcherExtractMethod.getExtractedCodeFragments();
+            Set<AbstractCodeFragment> receiverFragments = receiverExtractMethod.getExtractedCodeFragments();
+            // If the methods are the same
+            if(dispatcherFragments.size() == receiverFragments.size() &&
+                    dispatcherDestinationMethod.equalsSignature(receiverDestinationMethod)) {
+                return false;
+            }
+            for(AbstractCodeFragment dispatcherFragment : dispatcherFragments) {
+                for(AbstractCodeFragment receiverFragment : receiverFragments) {
+                    // If the methods are not the same
+                    if (!dispatcherFragment.equalFragment(receiverFragment)) {
+                        return true;
+                    }
+                }
+            }
+
+        }
+        return false;
     }
 
 

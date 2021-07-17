@@ -86,7 +86,7 @@ public class ExtractMethodExtractMethodLogicTests extends LightJavaCodeInsightFi
         RefactoringObject receiverObject = RefactoringObjectUtils.createRefactoringObject(extractMethodRefactorings.get(6));
         ExtractMethodExtractMethodCell cell = new ExtractMethodExtractMethodCell(project);
         boolean isConflicting = cell.checkMethodNamingConflict(dispatcherObject, dispatcherObject);
-        Assert.assertTrue(isConflicting);
+        Assert.assertFalse(isConflicting);
         isConflicting = cell.checkMethodNamingConflict(dispatcherObject, receiverObject);
         Assert.assertFalse(isConflicting);
 
