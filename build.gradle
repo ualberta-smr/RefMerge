@@ -61,11 +61,10 @@ patchPluginXml {
 }
 
 
-
 tasks {
     runIde {
         runIde.jvmArgs '-Djava.awt.headless=true'
-        runIde.argsString("evaluation /Projects/temp/error-prone")
+        runIde.argsString("evaluation /temp/projects")
         //runIde.argsString("/Projects/temp/error-prone")
     }
 }

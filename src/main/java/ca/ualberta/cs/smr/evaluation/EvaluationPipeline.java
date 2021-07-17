@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.evaluation;
 
+import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.evaluation.data.ComparisonResult;
 import ca.ualberta.cs.smr.evaluation.data.ConflictBlockData;
 import ca.ualberta.cs.smr.evaluation.data.ConflictingFileData;
@@ -12,12 +13,15 @@ import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.openapi.application.ApplicationStarter;
 import com.intellij.openapi.project.DumbService;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.vcs.log.Hash;
 import git4idea.GitCommit;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.javalite.activejdbc.Base;
 import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.project.Project;
@@ -27,7 +31,8 @@ import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringHandler;
 import org.refactoringminer.rm1.GitHistoryRefactoringMinerImpl;
 
-import java.io.File;
+import java.io.*;
+import java.net.URL;
 import java.util.*;
 
 public class EvaluationPipeline implements ApplicationStarter {
@@ -43,13 +48,7 @@ public class EvaluationPipeline implements ApplicationStarter {
         try {
             DatabaseUtils.createDatabase();
             String path = System.getProperty("user.home") + args.get(1);
-            File pathToProject = new File(path);
-            this.project = ProjectUtil.openOrImport(pathToProject.toPath(), null, false);
-            GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
-            List<GitRepository> repos = repoManager.getRepositories();
-            GitRepository repo = repos.get(0);
-            System.out.println(repo);
-            startEvaluation(repo);
+            startEvaluation(path);
         } catch(Throwable e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
@@ -58,10 +57,10 @@ public class EvaluationPipeline implements ApplicationStarter {
         System.exit(0);
     }
 
-    private void startEvaluation(GitRepository repo) {
+    private void startEvaluation(String path) {
         try {
             Base.open();
-            runEvaluation(repo);
+            runExperiment2(path);
             Base.close();
         } catch (Throwable e) {
             e.printStackTrace();
@@ -72,51 +71,62 @@ public class EvaluationPipeline implements ApplicationStarter {
     /*
      * Use the given git repository to evaluate IntelliMerge, RefMerge, and Git.
      */
-    private void runEvaluation(GitRepository repo) {
-        // Add project to database
-        String projectURL = repo.getPresentableUrl();
-        String projectName = projectURL.substring(projectURL.lastIndexOf('/') + 1);
-        ca.ualberta.cs.smr.evaluation.database.Project proj =
-                ca.ualberta.cs.smr.evaluation.database.Project.findFirst("url = ?", projectURL);
-        if (proj == null) {
-            proj = new ca.ualberta.cs.smr.evaluation.database.Project(projectURL, projectName);
-            proj.saveIt();
-            evaluateProjectOnIntelliMergeDataset(proj, repo);
-        } else if(!proj.isDone()){
-            evaluateProjectOnIntelliMergeDataset(proj, repo);
-
+    private void runExperiment2(String path) throws IOException, GitAPIException {
+        //Utils.clearTemp("projects");
+        URL url = EvaluationPipeline.class.getResource("/intelliMerge_data");
+        InputStream inputStream = url.openStream();
+        ArrayList<String> lines = getLinesFromInputStream(inputStream);
+        String projectUrl = "";
+        String projectName = "";
+        GitRepository repo = null;
+        ca.ualberta.cs.smr.evaluation.database.Project proj = null;
+        for(String line : lines) {
+            String[] values = line.split(";");
+            if(!values[0].contains("error-prone") && !values[0].contains("junit")) {
+                continue;
+            }
+            if(!values[0].equals(projectUrl)) {
+                if(proj != null) {
+                    if(!proj.isDone()) {
+                        proj.setDone();
+                        proj.saveIt();
+                    }
+                }
+                projectUrl = values[0];
+                proj = ca.ualberta.cs.smr.evaluation.database.Project.findFirst("url = ?", projectUrl);
+                if (proj == null) {
+                    projectName = openProject(path, projectUrl).substring(1);
+                    System.out.println("Starting " + projectName);
+                    proj = new ca.ualberta.cs.smr.evaluation.database.Project(projectUrl, projectName);
+                    proj.saveIt();
+                    GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
+                    List<GitRepository> repos = repoManager.getRepositories();
+                    if(repos.size() == 0) {
+                        // Why does this fail?
+                        // Does it load the project properly?
+                        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path + "/" + projectName + "/.git");
+                        GitRepositoryManager.getInstance(project).updateRepository(virtualFile);
+                        repo = repoManager.getRepositoryForFile(virtualFile);
+                    }
+                    else {
+                        repo = repos.get(0);
+                    }
+                }
+            }
+            evaluateMergeScenario(values[1], repo, proj);
+        }
+        if(proj != null) {
+            if(!proj.isDone()) {
+                proj.setDone();
+                proj.saveIt();
+            }
         }
     }
 
-    private void evaluateProjectOnIntelliMergeDataset(ca.ualberta.cs.smr.evaluation.database.Project proj, GitRepository repo) {
-
-        String clonedDest = this.project.getBasePath();
-        assert clonedDest != null;
-        GitUtils git = new GitUtils(repo, project);
-//        String mergeCommit = "e34f03bd0c7c805789bdb9da427db7334e61cedc"; // deeplearning4j
-//        String mergeCommit = "588def5f5d92ba1e4ec5929dcaed4150a925a90b"; //undertow
-//        String mergeCommitHash = "07559b47674594fdf40f2855f83b492f67f9093c"; //error-prone
-//        String mergeCommitHash = "0e97a336019b2590a5a486cd4d0249a60db36eb7"; //error-prone 2
-        List<String> mergeScenarios = new ArrayList<>();
-        mergeScenarios.add("07559b47674594fdf40f2855f83b492f67f9093c");
-        mergeScenarios.add("0e97a336019b2590a5a486cd4d0249a60db36eb7");
-        mergeScenarios.add("1a87c33bd18648f484133794840e94bd8d1d4a64");
-        mergeScenarios.add("f10f48c87d828881dda9912f050bccf8bb36776c");
-        mergeScenarios.add("d51253011690def06db835d5ad605ca134c94d84");
-        mergeScenarios.add("f25c38b51e0f35ea1637832e1ea6680c343203e2");
-        mergeScenarios.add("66a86d1652c383ea3921d03f49f444f1d1000765");
-
-
-        for (String mergeScenario : mergeScenarios) {
-            evaluateMergeScenario(mergeScenario, git, repo, proj);
-        }
-        proj.setDone();
-        proj.saveIt();
-
-    }
-
-    private void evaluateMergeScenario(String mergeCommitHash, GitUtils git, GitRepository repo,
+    private void evaluateMergeScenario(String mergeCommitHash, GitRepository repo,
                                        ca.ualberta.cs.smr.evaluation.database.Project proj) {
+        GitUtils git = new GitUtils(repo, project);
+
         Utils.clearTemp("manualMerge");
         Utils.clearTemp("intelliMerge");
         Utils.clearTemp("refMergeResults");
@@ -177,15 +187,22 @@ public class EvaluationPipeline implements ApplicationStarter {
         long intelliMergeRuntime = runIntelliMerge(project, repo, leftParent, baseCommit, rightParent, intelliMergePath);
         DumbService.getInstance(project).completeJustSubmittedTasks();
         // Run RefMerge
-        Pair<Integer, Long> refMergeConflictsAndRuntime = runRefMerge(project, repo, leftParent, rightParent);
+        Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, Long> refMergeConflictsAndRuntime =
+                runRefMerge(project, repo, leftParent, rightParent);
         String refMergePath = Utils.saveContent(project, "refMergeResults");
         DumbService.getInstance(project).completeJustSubmittedTasks();
 
 
-
-        Utils.runSystemCommand("cp", "-r", refMergePath + "/.", refMergePath + "Original");
-        Utils.runSystemCommand("cp", "-r", gitMergePath + "/.", gitMergePath + "Original");
-        Utils.runSystemCommand("cp", "-r", intelliMergePath + "/.", intelliMergePath + "Original");
+        String resultDir = System.getProperty("user.home") + "/temp/results/" + project.getName() + "/" + "commit" + mergeCommit.getId();
+        File refMergeResultDirectory = new File(resultDir + "/refMerge");
+        File gitResultDirectory = new File(resultDir + "/git");
+        File intelliMergeResultDirectory = new File(resultDir + "/intelliMerge");
+        refMergeResultDirectory.mkdirs();
+        gitResultDirectory.mkdirs();
+        intelliMergeResultDirectory.mkdirs();
+        Utils.runSystemCommand("cp", "-r", refMergePath + "/.", refMergeResultDirectory.getAbsolutePath());
+        Utils.runSystemCommand("cp", "-r", gitMergePath + "/.", gitResultDirectory.getAbsolutePath());
+        Utils.runSystemCommand("cp", "-r", intelliMergePath + "/.", intelliMergeResultDirectory.getAbsolutePath());
 
         // Remove all comments from all directories
         EvaluationUtils.removeAllComments(manuallyMergedPath);
@@ -227,8 +244,8 @@ public class EvaluationPipeline implements ApplicationStarter {
                 intelliMergeVsManual.getPrecision() + "\nRecall: " + intelliMergeVsManual.getRecall());
 
         // Add RefMerge data to database
-        int refactoringConflicts = refMergeConflictsAndRuntime.getLeft();
-        int totalConflicts = refactoringConflicts + refMergeConflicts.getLeft().getLeft();
+        List<Pair<RefactoringObject, RefactoringObject>> refactoringConflicts = refMergeConflictsAndRuntime.getLeft();
+        int totalConflicts = refactoringConflicts.size() + refMergeConflicts.getLeft().getLeft();
         MergeResult refMergeResult = new MergeResult("RefMerge", totalConflicts, refMergeConflicts.getLeft().getRight(),
                 refMergeConflictsAndRuntime.getRight(), refMergeVsManual, mergeCommit);
         refMergeResult.saveIt();
@@ -242,6 +259,11 @@ public class EvaluationPipeline implements ApplicationStarter {
                 ConflictBlock conflictBlock = new ConflictBlock(conflictingFile, conflictBlockData);
                 conflictBlock.saveIt();
             }
+        }
+        // Add refactoring conflict data to database
+        for(Pair<RefactoringObject, RefactoringObject> pair : refactoringConflicts) {
+            RefactoringConflict refactoringConflict = new RefactoringConflict(pair.getLeft(), pair.getRight(), refMergeResult);
+            refactoringConflict.saveIt();
         }
 
         // Add Git data to database
@@ -285,11 +307,14 @@ public class EvaluationPipeline implements ApplicationStarter {
     /*
      * Merge the left and right parent using RefMerge. Return how long it takes for RefMerge to finish
      */
-    private Pair<Integer, Long> runRefMerge(Project project, GitRepository repo, String leftParent, String rightParent) {
+    private Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, Long> runRefMerge(Project project,
+                                                                                          GitRepository repo,
+                                                                                          String leftParent,
+                                                                                          String rightParent) {
         RefMerge refMerging = new RefMerge();
         System.out.println("Starting RefMerge");
         long time = System.currentTimeMillis();
-        int conflicts = 0;
+        ArrayList<Pair<RefactoringObject, RefactoringObject>> conflicts = new ArrayList<>();
         try {
             conflicts = refMerging.refMerge(leftParent, rightParent, project, repo);
         }
@@ -340,6 +365,45 @@ public class EvaluationPipeline implements ApplicationStarter {
         long time2 = System.currentTimeMillis();
         System.out.println("IntelliMerge is done");
         return time2 - time;
+    }
+
+    /*
+     * Clone the given project and set the project.
+     */
+    private String openProject(String path, String url) {
+        String projectName = url.substring(url.lastIndexOf("/"));
+        String clonePath = path + projectName;
+//        try {
+//            Git.cloneRepository().setURI(url).setDirectory(new File(clonePath)).call();
+//        }
+//        catch(GitAPIException | JGitInternalException e) {
+//            e.printStackTrace();
+//        }
+        File pathToProject = new File(path + projectName);
+
+        try {
+            if(this.project != null) {
+                ProjectUtil.closeAndDispose(this.project);
+            }
+            this.project = ProjectUtil.openOrImport(pathToProject.toPath(), null, false);
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
+        return projectName;
+
+    }
+
+    /*
+     * Get each line from the input stream containing the IntelliMerge dataset.
+     */
+    private ArrayList<String> getLinesFromInputStream(InputStream inputStream) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        ArrayList<String> lines = new ArrayList<>();
+        while(reader.ready()) {
+            lines.add(reader.readLine());
+        }
+        return lines;
     }
 
     /*
