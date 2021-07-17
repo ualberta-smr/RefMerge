@@ -85,6 +85,30 @@ CREATE TABLE IF NOT EXISTS `refMerge_evaluation`.`merge_result` (
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
+-- -----------------------------------------------------
+-- Table `refMerge_evaluation`.`refactoring_conflict`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `refMerge_evaluation`.`refactoring_conflict` ;
+
+CREATE TABLE IF NOT EXISTS `refMerge_evaluation`.`refactoring_conflict` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `left_old_path` VARCHAR(1000) NOT NULL,
+  `right_old_path` VARCHAR(1000) NOT NULL,
+  `left_new_path` VARCHAR(1000) NOT NULL,
+  `right_new_path` VARCHAR(1000) NOT NULL,
+  `left_refactoring_type` VARCHAR(100),
+  `right_refactoring_type` VARCHAR(100),
+  `merge_result_id` INT NOT NULL,
+  `merge_commit_id` INT NOT NULL,
+  `project_id` INT NOT NULL,
+  PRIMARY KEY (`id`, `merge_result_id`, `merge_commit_id`, `project_id`),
+  INDEX `fk_refactoring_conflict_merge_result1_idx` (`merge_result_id` ASC, `merge_commit_id` ASC, `project_id` ASC),
+  CONSTRAINT `fk_refactoring_conflict_merge_result1`
+    FOREIGN KEY (`merge_result_id` , `merge_commit_id` , `project_id`)
+    REFERENCES `refMerge_evaluation`.`merge_result` (`id` , `merge_commit_id` , `project_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `refMerge_evaluation`.`conflicting_file`
