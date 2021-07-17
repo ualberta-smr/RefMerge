@@ -3,6 +3,7 @@ package ca.ualberta.cs.smr.utils;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ParameterObject;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -29,6 +30,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Utils {
     Project project;
@@ -118,19 +120,23 @@ public class Utils {
             return;
         }
         for(Module module : modules) {
-            ModifiableRootModel rootModel = ModuleRootManager.getInstance(module).getModifiableModel();
+            AtomicReference<ModifiableRootModel> rootModel = new AtomicReference<>();
+            ReadAction.run(() -> {
+                rootModel.set(ModuleRootManager.getInstance(module).getModifiableModel());
+            });
             directory = new File(Objects.requireNonNull(PathMacroUtil.getModuleDir(module.getModuleFilePath())));
             VirtualFile moduleVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(directory);
-            ContentEntry contentEntry = getContentEntry(moduleVirtualFile, rootModel);
+            ContentEntry contentEntry = getContentEntry(moduleVirtualFile, rootModel.get());
             if(contentEntry == null) {
                 continue;
             }
             if (checkIfSourceFolderExists(sourceVirtualFile, contentEntry)) {
+                WriteAction.run(rootModel.get()::dispose);
                 return;
             }
             else {
                 contentEntry.addSourceFolder(sourceVirtualFile, isTestFolder);
-                WriteAction.run(rootModel::commit);
+                WriteAction.run(rootModel.get()::commit);
                 Utils.dumbServiceHandler(project);
                 break;
             }
