@@ -211,7 +211,8 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
 
         Matrix matrix = new Matrix(project);
 
-        Pair<Integer, ArrayList<RefactoringObject>> resultingList = matrix.runMatrix(leftRefactoringList, rightRefactoringList);
+        Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, ArrayList<RefactoringObject>>
+                resultingList = matrix.runMatrix(leftRefactoringList, rightRefactoringList);
         RefactoringObject actualObject = resultingList.getRight().get(0);
 
         MethodSignatureObject actualSignature = ((MoveRenameMethodObject) actualObject).getDestinationMethodSignature();

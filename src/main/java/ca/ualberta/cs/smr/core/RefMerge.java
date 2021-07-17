@@ -63,7 +63,8 @@ public class RefMerge extends AnAction {
     /*
      * Gets the directory of the project that's being merged, then it calls the function that performs the merge.
      */
-    public int refMerge(String rightCommit, String leftCommit, Project project, GitRepository repo) {
+    public ArrayList<Pair<RefactoringObject, RefactoringObject>> refMerge(String rightCommit, String leftCommit,
+                                                                          Project project, GitRepository repo) {
         this.project = project;
         File dir = new File(Objects.requireNonNull(project.getBasePath()));
         try {
@@ -84,7 +85,7 @@ public class RefMerge extends AnAction {
      * left commit, but it uses the current directory instead of saving it to a new one. After it's undone all the
      * refactorings, the merge function is called and it replays the refactorings.
      */
-    private int doMerge(String leftCommit, String rightCommit, GitRepository repo){
+    private ArrayList<Pair<RefactoringObject, RefactoringObject>> doMerge(String leftCommit, String rightCommit, GitRepository repo){
 
         GitUtils gitUtils = new GitUtils(repo, project);
         String baseCommit = gitUtils.getBaseCommit(leftCommit, rightCommit);
@@ -113,7 +114,7 @@ public class RefMerge extends AnAction {
 
         // Check if any of the refactorings are conflicting or have ordering dependencies
         Matrix matrix = new Matrix(project);
-        Pair<Integer, ArrayList<RefactoringObject>> pair = matrix.runMatrix(leftRefs, rightRefs);
+        Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, ArrayList<RefactoringObject>> pair = matrix.runMatrix(leftRefs, rightRefs);
 
         // Combine the lists so we can perform all the refactorings on the merged project
         // Replay all of the refactorings
@@ -133,16 +134,24 @@ public class RefMerge extends AnAction {
                 case RENAME_CLASS:
                 case MOVE_CLASS:
                 case MOVE_RENAME_CLASS:
+                    try {
                     // Undo the rename class refactoring. This is commented out because of the prompt issue
                     UndoMoveRenameClass undoMoveRenameClass = new UndoMoveRenameClass(project);
                     undoMoveRenameClass.undoMoveRenameClass(refactoringObject);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case RENAME_METHOD:
                 case MOVE_OPERATION:
                 case MOVE_AND_RENAME_OPERATION:
                     // Undo the rename method refactoring
-                    UndoMoveRenameMethod undoMoveRenameMethod = new UndoMoveRenameMethod(project);
-                    undoMoveRenameMethod.undoMoveRenameMethod(refactoringObject);
+                    try {
+                        UndoMoveRenameMethod undoMoveRenameMethod = new UndoMoveRenameMethod(project);
+                        undoMoveRenameMethod.undoMoveRenameMethod(refactoringObject);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case EXTRACT_OPERATION:
                     UndoExtractMethod undoExtractMethod = new UndoExtractMethod(project);
@@ -154,8 +163,12 @@ public class RefMerge extends AnAction {
                     refactoringObjects.set(index, refactoringObject);
                     break;
                 case INLINE_OPERATION:
-                    UndoInlineMethod undoInlineMethod = new UndoInlineMethod(project);
-                    undoInlineMethod.undoInlineMethod(refactoringObject);
+                    try {
+                        UndoInlineMethod undoInlineMethod = new UndoInlineMethod(project);
+                        undoInlineMethod.undoInlineMethod(refactoringObject);
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                    }
                     break;
 
             }
@@ -198,7 +211,6 @@ public class RefMerge extends AnAction {
                             replayExtractMethod.replayExtractMethod(refactoringObject);
                         } catch (Exception e) {
                             e.printStackTrace();
-                            break;
                         }
                         break;
                     case INLINE_OPERATION:

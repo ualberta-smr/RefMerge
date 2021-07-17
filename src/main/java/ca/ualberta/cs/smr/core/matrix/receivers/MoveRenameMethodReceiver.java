@@ -25,6 +25,11 @@ public class MoveRenameMethodReceiver extends Receiver {
             RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
             MoveRenameMethodMoveRenameMethodCell cell = new MoveRenameMethodMoveRenameMethodCell(project);
             boolean isConflicting = cell.moveRenameMethodMoveRenameMethodConflictCell(dispatcherRefactoring, this.refactoringObject);
+            this.isConflicting = isConflicting;
+            if(isConflicting) {
+                dispatcherRefactoring.setReplayFlag(false);
+                this.refactoringObject.setReplayFlag(false);
+            }
             System.out.println("Rename Method/Rename Method conflict: " + isConflicting);
             // They cannot be both conflicting and dependent
             if(!isConflicting) {

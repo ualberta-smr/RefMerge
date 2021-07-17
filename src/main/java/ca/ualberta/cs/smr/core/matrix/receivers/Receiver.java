@@ -28,7 +28,6 @@ public class Receiver {
 
     public void set(RefactoringObject refactoringObject) {
         this.refactoringObject = refactoringObject;
-        this.project = null;
         this.isTransitive = false;
         this.isConflicting = false;
     }

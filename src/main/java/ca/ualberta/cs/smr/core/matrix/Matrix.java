@@ -57,13 +57,13 @@ public class Matrix {
     /*
      * Iterate through each of the left refactorings to compare against the right refactorings.
      */
-    public Pair<Integer, ArrayList<RefactoringObject>> runMatrix(ArrayList<RefactoringObject> leftRefactoringList,
+    public Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, ArrayList<RefactoringObject>> runMatrix(
+                                                            ArrayList<RefactoringObject> leftRefactoringList,
                                                                  ArrayList<RefactoringObject> rightRefactoringList) {
         ArrayList<RefactoringObject> replayObjectList = new ArrayList<>();
-
-        int totalConflicts = 0;
+        ArrayList<Pair<RefactoringObject, RefactoringObject>> conflictingPairs = new ArrayList<>();
         for(RefactoringObject leftRefactoring : leftRefactoringList) {
-            totalConflicts += compareRefactorings(leftRefactoring, rightRefactoringList);
+             conflictingPairs.addAll(compareRefactorings(leftRefactoring, rightRefactoringList));
         }
 
         for(RefactoringObject rightRefactoring : rightRefactoringList) {
@@ -78,20 +78,21 @@ public class Matrix {
             }
         }
 
-        return Pair.of(totalConflicts, replayObjectList);
+        return Pair.of(conflictingPairs, replayObjectList);
     }
 
     /*
      * This calls dispatch for each pair of refactorings to check for conflicts.
      */
-    int compareRefactorings(RefactoringObject leftRefactoring, List<RefactoringObject> rightRefactoringList) {
-        int totalConflicts = 0;
+    List<Pair<RefactoringObject, RefactoringObject>> compareRefactorings(RefactoringObject leftRefactoring,
+                                                                         List<RefactoringObject> rightRefactoringList) {
+        List<Pair<RefactoringObject, RefactoringObject>> pairs = new ArrayList<>();
         for(RefactoringObject rightRefactoring : rightRefactoringList) {
             if(dispatch(leftRefactoring, rightRefactoring)) {
-                totalConflicts++;
+                pairs.add(Pair.of(leftRefactoring, rightRefactoring));
             }
         }
-        return totalConflicts;
+        return pairs;
     }
 
     /*
@@ -177,7 +178,7 @@ public class Matrix {
     Receiver makeReceiver(RefactoringObject refactoringObject) {
         RefactoringType type = refactoringObject.getRefactoringType();
         Receiver receiver = receiverMap.get(type);
-        receiver.set(refactoringObject);
+        receiver.set(refactoringObject, project);
         return receiver;
     }
 

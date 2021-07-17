@@ -53,6 +53,7 @@ public class MoveRenameClassReceiver extends Receiver {
                 this.refactoringObject.setReplayFlag(false);
                 dispatcherRefactoring.setReplayFlag(false);
                 dispatcher.setRefactoringObject(dispatcherRefactoring);
+                this.isConflicting = true;
             }
             else {
                 boolean isDependent = MoveRenameClassMoveRenameClassCell
