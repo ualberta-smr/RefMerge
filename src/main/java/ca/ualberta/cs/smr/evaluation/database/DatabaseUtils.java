@@ -1,8 +1,6 @@
 package ca.ualberta.cs.smr.evaluation.database;
 
 import org.javalite.activejdbc.*;
-import org.javalite.activejdbc.connection_config.ConnectionJdbcSpec;
-import org.javalite.activejdbc.connection_config.ConnectionSpec;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -18,33 +16,44 @@ import static org.javalite.common.Util.blank;
  * @author  Mehran Mahmoudi
  */
 public class DatabaseUtils {
-    private static final String CREATE_SCHEMA_FILE = "/create_schema.sql";
+    private static final String CREATE_COMPARISON_SCHEMA_FILE = "/create_comparison_schema.sql";
+    private static final String CREATE_REPLICATION_SCHEMA_FILE = "/create_replication_schema.sql";
     private static final String DEFAULT_DELIMITER = ";";
     private static final String DELIMITER_KEYWORD = "DELIMITER";
     private static final String[] COMMENT_CHARS = new String[]{"--", "#", "//"};
 
 
-    public static void createDatabase() throws Exception {
+    public static void createDatabase(boolean isComparison) throws Exception {
         try {
-            Base.open();
-            Base.close();
-        } catch (InitException e) {
-            Configuration config = Registry.instance().getConfiguration();
-            ConnectionSpec spec = config.getCurrentConnectionSpec();
-            if (!(spec instanceof ConnectionJdbcSpec)) {
-                throw new DBException("Could not find configuration in a property file for environment: " +
-                        config.getEnvironment() + ". Are you sure you have a database.properties file configured?");
+            if(isComparison) {
+                Base.open("com.mysql.jdbc.Driver", "jdbc:mysql://localhost/refMerge_evaluation",
+                        "root", "password");
             }
+            else {
+                Base.open("com.mysql.jdbc.Driver", "jdbc:mysql://localhost/intelliMerge_replication",
+                        "root", "password");
+            }
+            Base.close();
 
-            ConnectionJdbcSpec jdbcSpec = (ConnectionJdbcSpec) spec;
-            DB db = new DB("create_db").open(jdbcSpec.getDriver(),
-                    jdbcSpec.getUrl().substring(0,
-                            Math.min(jdbcSpec.getUrl().indexOf("/", 13), jdbcSpec.getUrl().length())),
-                    jdbcSpec.getUser(), jdbcSpec.getPassword());
+        } catch (InitException e) {
+            DB db = new DB("create_db").open("com.mysql.jdbc.Driver", "jdbc:mysql://localhost",
+                    "root", "password");
 
-            String dbName = jdbcSpec.getUrl().substring(jdbcSpec.getUrl().indexOf("/", 13) + 1);
-            URL scriptInputStream = DatabaseUtils.class.getResource(CREATE_SCHEMA_FILE);
-            DatabaseUtils.createDatabase(scriptInputStream.openStream(), db, "refMerge_evaluation", dbName);
+            String dbName;
+            if(isComparison) {
+                dbName = "refMerge_evaluation";
+            }
+            else {
+                dbName = "intelliMerge_replication";
+            }
+            if(isComparison) {
+                URL scriptInputStream = DatabaseUtils.class.getResource(CREATE_COMPARISON_SCHEMA_FILE);
+                DatabaseUtils.createDatabase(scriptInputStream.openStream(), db, "refMerge_evaluation", dbName);
+            }
+            else {
+                URL scriptInputStream = DatabaseUtils.class.getResource(CREATE_REPLICATION_SCHEMA_FILE);
+                DatabaseUtils.createDatabase(scriptInputStream.openStream(), db, "intelliMerge_replication", dbName);
+            }
             db.close();
         }
 

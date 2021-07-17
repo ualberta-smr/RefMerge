@@ -14,6 +14,7 @@ import io.reflectoring.diffparser.api.model.Diff;
 import io.reflectoring.diffparser.api.model.Hunk;
 import io.reflectoring.diffparser.api.model.Line;
 import org.apache.commons.lang3.tuple.Pair;
+import org.eclipse.jgit.api.Git;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -392,5 +393,8 @@ public class EvaluationUtils {
         }
     }
 
+    public static void checkout(Git git, String commit) {
+        Utils.runSystemCommand("git", "checkout", commit);
+    }
 
 }
