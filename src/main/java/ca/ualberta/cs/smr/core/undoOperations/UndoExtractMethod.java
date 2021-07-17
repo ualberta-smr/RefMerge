@@ -48,7 +48,7 @@ public class UndoExtractMethod {
         }
         PsiMethod extractedMethod = Utils.getPsiMethod(psiClass, destinationMethod);
         if(extractedMethod == null) {
-            return extractMethodObject;
+            return null;
         }
 
         ThrownExceptionInfo[] thrownExceptionInfo = getThrownExceptionInfo(extractedMethod);
@@ -57,12 +57,20 @@ public class UndoExtractMethod {
         filePath = extractMethodObject.getOriginalFilePath();
         psiClass = utils.getPsiClassFromClassAndFileNames(sourceOperationClassName, filePath);
         PsiMethod psiMethod = Utils.getPsiMethod(psiClass, originalMethod);
-        assert psiMethod != null;
+        if(psiMethod == null) {
+            return null;
+        }
         // Get the first method invocation
         OperationInvocation methodInvocation = extractMethodObject.getMethodInvocations().get(0);
 
         // Get the statements that surround the method invocation
         PsiElement[] surroundingElements = getSurroundingElements(psiMethod, extractedMethod, methodInvocation);
+        if(surroundingElements == null) {
+            return null;
+        }
+        if(surroundingElements[0] == null || surroundingElements[1] == null) {
+            return null;
+        }
         extractMethodObject.setThrownExceptionInfo(thrownExceptionInfo);
         SmartPsiElementPointer[] surroundingPointers = new SmartPsiElementPointer[2];
         surroundingPointers[0] = SmartPointerManager.createPointer(surroundingElements[0]);
@@ -119,13 +127,26 @@ public class UndoExtractMethod {
         PsiElement nextSibling;
         if(psiParent == null) {
             psiParent = PsiTreeUtil.getParentOfType(psiElement, PsiMethodCallExpression.class);
+            if(psiParent == null) {
+                return null;
+            }
             PsiElement candidateElement = psiParent.getParent();
             if(candidateElement instanceof PsiReturnStatement) {
                 psiParent = candidateElement;
             }
         }
-        prevSibling = psiParent.getPrevSibling();
-        nextSibling = psiParent.getNextSibling();
+        if(psiParent.getPrevSibling() == null) {
+            prevSibling = psiParent;
+        }
+        else {
+            prevSibling = psiParent.getPrevSibling();
+        }
+        if(psiParent.getNextSibling() == null) {
+            nextSibling = psiParent;
+        }
+        else {
+            nextSibling = psiParent.getNextSibling();
+        }
         if(prevSibling instanceof PsiWhiteSpace) {
             prevSibling = prevSibling.getPrevSibling();
         }

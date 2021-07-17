@@ -39,7 +39,7 @@ public class ReplayExtractMethod {
         this.project = project;
     }
 
-    public void replayExtractMethod(RefactoringObject ref) {
+    public void replayExtractMethod(RefactoringObject ref) throws Exception {
         ExtractMethodObject extractMethodObject = (ExtractMethodObject) ref;
         MethodSignatureObject sourceOperation = extractMethodObject.getOriginalMethodSignature();
         MethodSignatureObject extractedOperation = extractMethodObject.getDestinationMethodSignature();
@@ -60,6 +60,12 @@ public class ReplayExtractMethod {
         }
 
         SmartPsiElementPointer[] surroundingElements = extractMethodObject.getSurroundingElements();
+        if(surroundingElements == null) {
+            return;
+        }
+        if(surroundingElements[0] == null || surroundingElements[1] == null) {
+            return;
+        }
         Set<AbstractCodeFragment> sourceFragments = extractMethodObject.getSourceCodeFragments();
         Set<AbstractCodeFragment> extractedFragments = extractMethodObject.getExtractedCodeFragments();
         CodeRange codeRange = extractMethodObject.getCodeRange();
@@ -156,7 +162,7 @@ public class ReplayExtractMethod {
     private PsiElement[] getPsiElementsBetweenElements(SmartPsiElementPointer[] surroundingElements,
                                                        Set<AbstractCodeFragment> sourceFragments,
                                                        Set<AbstractCodeFragment> extractedFragments,
-                                                       CodeRange codeRange, PsiMethod psiMethod) {
+                                                       CodeRange codeRange, PsiMethod psiMethod) throws Exception {
         PsiElement firstElement = surroundingElements[0].getElement();
         PsiElement lastElement = surroundingElements[1].getElement();
         // If the first element was invalidated
@@ -214,7 +220,13 @@ public class ReplayExtractMethod {
         if(lastElement == null) {
             return null;
         }
-        List<PsiElement> psiElements = PsiTreeUtil.getElementsOfRange(firstElement, lastElement);
+        List<PsiElement> psiElements;
+        try {
+            psiElements = PsiTreeUtil.getElementsOfRange(firstElement, lastElement);
+        }
+        catch(IllegalArgumentException e) {
+            return null;
+        }
         return psiElements.toArray(new PsiElement[0]);
     }
 

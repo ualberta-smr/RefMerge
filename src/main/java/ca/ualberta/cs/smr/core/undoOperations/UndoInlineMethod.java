@@ -49,9 +49,13 @@ public class UndoInlineMethod {
         // Get PSI method of target method
         Utils utils = new Utils(project);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(targetOperationClassName, filePath);
-        assert psiClass != null;
+        if(psiClass == null) {
+            return;
+        }
         PsiMethod psiMethod = Utils.getPsiMethod(psiClass, targetOperation);
-        assert psiMethod != null;
+        if(psiMethod == null) {
+            return;
+        }
 
         String extractedMethodName = originalOperation.getName();
         String targetOperationName = targetOperation.getName();
@@ -60,6 +64,9 @@ public class UndoInlineMethod {
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
         Set<AbstractCodeFragment> inlinedCodeFragments = inlineMethodObject.getInlinedCodeFragments();
         PsiElement[] psiElements = getElementsFromTargetOperationFragments(psiMethod,inlinedCodeFragments);
+        if(psiElements == null) {
+            return;
+        }
         ExtractMethodProcessor extractMethodProcessor = new ExtractMethodProcessor(project, editor, psiElements,
                 forcedReturnType, extractedMethodName, targetOperationName, helpId);
         extractMethodProcessor.setMethodName(extractedMethodName);
@@ -114,6 +121,9 @@ public class UndoInlineMethod {
         firstAndLastElements[0] = getPsiElementFromCodeFragment(firstFragment, psiMethod);
         assert lastFragment != null;
         firstAndLastElements[1] = getPsiElementFromCodeFragment(lastFragment, psiMethod);
+        if(firstAndLastElements[0] == null || firstAndLastElements[1] == null) {
+            return null;
+        }
         List<PsiElement> psiElements = PsiTreeUtil.getElementsOfRange(firstAndLastElements[0], firstAndLastElements[1]);
         return psiElements.toArray(new PsiElement[0]);
     }

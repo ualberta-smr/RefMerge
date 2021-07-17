@@ -309,8 +309,12 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         secondRefactoringObject = undoExtractMethod.undoExtractMethod(secondRefactoringObject);
 
         ReplayExtractMethod replayExtractMethod = new ReplayExtractMethod(project);
-        replayExtractMethod.replayExtractMethod(secondRefactoringObject);
-        replayExtractMethod.replayExtractMethod(refactoringObject);
+        try {
+            replayExtractMethod.replayExtractMethod(secondRefactoringObject);
+            replayExtractMethod.replayExtractMethod(refactoringObject);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
 
         PsiFile file1 = files[0];
         PsiFile file2 = files[1];
