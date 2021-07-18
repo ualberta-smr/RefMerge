@@ -252,30 +252,12 @@ public class GitUtils {
     }
 
     /*
-     * Check to see if the merge scenario is conflicting.
-     */
-    public static boolean checkForConflict(org.eclipse.jgit.api.Git git, String leftCommit, ObjectId rightCommit) throws GitAPIException {
-        CheckoutCommand checkoutCommand = git.checkout();
-        // Commands are part of the api module, which include git-like calls
-        checkoutCommand.setName(leftCommit);
-        checkoutCommand.setCreateBranch(false); // probably not needed, just to make sure
-        checkoutCommand.call(); // switch to "master" branch
-
-        MergeCommand mergeCommand = git.merge();
-        mergeCommand.setCommit(false);
-        mergeCommand.include(rightCommit);
-        MergeResult res = mergeCommand.call();
-
-        if (res.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING)){
-            return true;
-        }
-        return false;
-    }
-
-    /*
      * Reset for IntelliMerge replication
      */
     public static void gitReset(org.eclipse.jgit.api.Git git) throws GitAPIException {
+        ResetCommand reset = git.reset();
+        reset.setRef("HEAD");
+        reset.setMode(ResetCommand.ResetType.HARD);
         git.reset().setMode(ResetCommand.ResetType.HARD).call();
         String lockPath = git.getRepository().getWorkTree().getAbsolutePath() + ".git/index.lock";
         File f = new File(lockPath);

@@ -94,16 +94,10 @@ public class IntelliMergeReplication {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        ObjectId rightId = repository.resolve(rightParent.getName());
-        boolean isConflicting = false;
-        try {
-            isConflicting = GitUtils.checkForConflict(git, leftParent.getName(), rightId);
-        } catch (GitAPIException e) {
-            e.printStackTrace();
-        }
+
         MergeCommit mergeCommit = MergeCommit.findFirst("commit_hash = ?", mergeCommitHash);
         if(mergeCommit == null) {
-            mergeCommit = new MergeCommit(mergeCommitHash, isConflicting, leftParent.getName(),
+            mergeCommit = new MergeCommit(mergeCommitHash, true, leftParent.getName(),
                     rightParent.getName(), project, mergeCommitRev.getCommitTime());
             mergeCommit.saveIt();
         }
@@ -112,7 +106,7 @@ public class IntelliMergeReplication {
         }
         else if(!mergeCommit.isDone()) {
             mergeCommit.delete();
-            mergeCommit = new MergeCommit(mergeCommitHash, isConflicting, leftParent.getName(),
+            mergeCommit = new MergeCommit(mergeCommitHash, true, leftParent.getName(),
                     rightParent.getName(), project, mergeCommitRev.getCommitTime());
             mergeCommit.saveIt();
         }
@@ -162,13 +156,13 @@ public class IntelliMergeReplication {
         ComparisonResult modifiedVsManual = EvaluationUtils.compareAutoMerged(modifiedResultsPath, manuallyMergedFiles, path);
 
         // Add IntelliMerge data to database
-        MergeResult intelliMergeResult = new MergeResult("IntelliMerge", unmodifiedIntelliMergeConflicts.getLeft().getLeft(),
+        MergeResult unmodifiedResult = new MergeResult("IntelliMerge_unmodified", unmodifiedIntelliMergeConflicts.getLeft().getLeft(),
                 unmodifiedIntelliMergeConflicts.getLeft().getRight(), unmodifiedTime, unmodifiedVsManual, mergeCommit);
-        intelliMergeResult.saveIt();
+        unmodifiedResult.saveIt();
         // Add conflicting files to database
         List<Pair<ConflictingFileData, List<ConflictBlockData>>> unmodifiedConflictingFiles = unmodifiedIntelliMergeConflicts.getRight();
         for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : unmodifiedConflictingFiles) {
-            ConflictingFile conflictingFile = new ConflictingFile(intelliMergeResult, pair.getLeft());
+            ConflictingFile conflictingFile = new ConflictingFile(unmodifiedResult, pair.getLeft());
             conflictingFile.saveIt();
             // Add each conflict block for the conflicting file
             for(ConflictBlockData conflictBlockData : pair.getRight()) {
@@ -178,7 +172,7 @@ public class IntelliMergeReplication {
         }
 
         // Add IntelliMerge data to database
-        MergeResult modifiedMergeResult = new MergeResult("IntelliMerge", modifiedIntelliMergeConflicts.getLeft().getLeft(),
+        MergeResult modifiedMergeResult = new MergeResult("IntelliMerge_modified", modifiedIntelliMergeConflicts.getLeft().getLeft(),
                 modifiedIntelliMergeConflicts.getLeft().getRight(), modifiedTime, modifiedVsManual, mergeCommit);
         modifiedMergeResult.saveIt();
         // Add conflicting files to database
