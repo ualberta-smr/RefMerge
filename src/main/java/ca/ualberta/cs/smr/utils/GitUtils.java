@@ -235,8 +235,8 @@ public class GitUtils {
     /*
      * Checkout the given commit for the IntelliMerge replication. Use this instead of GitUtils because there is no project.
      */
-    public static void checkoutForReplication(String commit) {
-        Utils.runSystemCommand("git", "checkout", commit);
+    public static void checkoutForReplication(org.eclipse.jgit.api.Git git, String commit) throws GitAPIException {
+        git.checkout().setName(commit).call();
     }
 
     /*
