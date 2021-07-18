@@ -220,7 +220,7 @@ public class EvaluationUtils {
      * and recall.
      */
     public static ComparisonResult compareAutoMerged(String mergedDir, List<SourceFile> manuallyMergedFiles,
-                                                     String projectPath) {
+                                                     String projectPath, boolean isReplication) {
         int numberOfDiffFiles = 0;
         double autoMergePrecision = 0.0;
         double autoMergeRecall = 0.0;
@@ -287,7 +287,14 @@ public class EvaluationUtils {
             autoMergeRecall = totalSameLOCManual / (double) totalManualMergedLOC;
         }
         else {
-            autoMergeRecall = 0;
+            // If IntelliMerge replication, set recall to 1.0 because it was set to 1.0 in the IntelliMerge evaluation
+            if(isReplication) {
+                autoMergeRecall = 1.0;
+            }
+            // Otherwise set it to 0 because 0/x = 0
+            else {
+                autoMergeRecall = 0.0;
+            }
         }
 
         return new ComparisonResult(numberOfDiffFiles, totalAutoMergedLOC, totalManualMergedLOC,

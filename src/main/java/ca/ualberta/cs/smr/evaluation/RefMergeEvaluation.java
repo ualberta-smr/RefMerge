@@ -200,9 +200,9 @@ public class RefMergeEvaluation {
                 .getJavaSourceFiles(manuallyMergedPath, new ArrayList<>(), manuallyMergedDir);
 
         // Compare tools with manually merged code
-        ComparisonResult refMergeVsManual = EvaluationUtils.compareAutoMerged(refMergePath, manuallyMergedFiles, project.getBasePath());
-        ComparisonResult gitVsManual = EvaluationUtils.compareAutoMerged(gitMergePath, manuallyMergedFiles, project.getBasePath());
-        ComparisonResult intelliMergeVsManual = EvaluationUtils.compareAutoMerged(intelliMergePath, manuallyMergedFiles, project.getBasePath());
+        ComparisonResult refMergeVsManual = EvaluationUtils.compareAutoMerged(refMergePath, manuallyMergedFiles, project.getBasePath(), false);
+        ComparisonResult gitVsManual = EvaluationUtils.compareAutoMerged(gitMergePath, manuallyMergedFiles, project.getBasePath(), false);
+        ComparisonResult intelliMergeVsManual = EvaluationUtils.compareAutoMerged(intelliMergePath, manuallyMergedFiles, project.getBasePath(), false);
 
         System.out.println("Elapsed RefMerge runtime = " + refMergeConflictsAndRuntime);
         System.out.println("Elapsed Git merge runtime = " + gitMergeRuntime);

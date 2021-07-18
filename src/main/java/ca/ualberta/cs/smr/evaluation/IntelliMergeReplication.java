@@ -39,6 +39,9 @@ public class IntelliMergeReplication {
         ca.ualberta.cs.smr.evaluation.database.Project proj = null;
         for(String line : lines) {
             String[] values = line.split(";");
+            if(!values[0].contains("error-prone")) {
+                continue;
+            }
             if(!values[0].equals(projectUrl)) {
                 if(proj != null) {
                     if(!proj.isDone()) {
@@ -82,6 +85,7 @@ public class IntelliMergeReplication {
         String manualResults = System.getProperty("user.home") + "/temp/manualMerge";
         File manualDir = new File(manualResults);
         manualDir.mkdirs();
+        GitUtils.checkoutForReplication(git, mergeCommitHash);
         Utils.runSystemCommand("cp", "-r", path + "/.", manualResults);
         Repository repository = git.getRepository();
         ObjectId id = repository.resolve(mergeCommitHash);
@@ -121,11 +125,11 @@ public class IntelliMergeReplication {
         leftFile.mkdirs();
         baseFile.mkdirs();
         rightFile.mkdirs();
-        GitUtils.checkoutForReplication(leftParent.getName());
+        GitUtils.checkoutForReplication(git, leftParent.getName());
         Utils.runSystemCommand("cp", "-r", path + "/.", leftPath);
-        GitUtils.checkoutForReplication(rightParent.getName());
+        GitUtils.checkoutForReplication(git, rightParent.getName());
         Utils.runSystemCommand("cp", "-r", path + "/.", rightPath);
-        GitUtils.checkoutForReplication(baseCommit);
+        GitUtils.checkoutForReplication(git, baseCommit);
         Utils.runSystemCommand("cp", "-r", path + "/.", basePath);
 
         String unmodifiedResultsPath = System.getProperty("user.home") + "/temp/unmodifiedResults";
@@ -152,8 +156,8 @@ public class IntelliMergeReplication {
                 .getJavaSourceFiles(manualResults, new ArrayList<>(), manualDir);
 
         // Compare tools with manually merged code
-        ComparisonResult unmodifiedVsManual = EvaluationUtils.compareAutoMerged(unmodifiedResultsPath, manuallyMergedFiles, path);
-        ComparisonResult modifiedVsManual = EvaluationUtils.compareAutoMerged(modifiedResultsPath, manuallyMergedFiles, path);
+        ComparisonResult unmodifiedVsManual = EvaluationUtils.compareAutoMerged(unmodifiedResultsPath, manuallyMergedFiles, path, true);
+        ComparisonResult modifiedVsManual = EvaluationUtils.compareAutoMerged(modifiedResultsPath, manuallyMergedFiles, path, true);
 
         // Add IntelliMerge data to database
         MergeResult unmodifiedResult = new MergeResult("IntelliMerge_unmodified", unmodifiedIntelliMergeConflicts.getLeft().getLeft(),
