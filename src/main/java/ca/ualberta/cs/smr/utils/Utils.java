@@ -30,6 +30,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Utils {
@@ -48,6 +49,8 @@ public class Utils {
             pb.redirectOutput(new File(System.getProperty("user.home") + "/temp/IntelliMergeOutput"));
             pb.redirectError(new File(System.getProperty("user.home") + "/temp/Error"));
             Process p = pb.start();
+            p.waitFor(200, TimeUnit.SECONDS);
+            p.destroy();
             p.waitFor();
         } catch (Exception e) {
             e.printStackTrace();
