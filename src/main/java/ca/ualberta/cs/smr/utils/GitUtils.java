@@ -12,6 +12,16 @@ import git4idea.commands.GitLineHandler;
 import git4idea.history.GitHistoryUtils;
 import git4idea.repo.GitRepository;
 import git4idea.reset.GitResetMode;
+import org.eclipse.jgit.api.CheckoutCommand;
+import org.eclipse.jgit.api.MergeCommand;
+import org.eclipse.jgit.api.MergeResult;
+import org.eclipse.jgit.api.ResetCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.revwalk.filter.RevFilter;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -197,7 +207,7 @@ public class GitUtils {
         return mergeCommit;
     }
 
-    public String diff(String dir, String path1, String path2) {
+    public static String diff(String dir, String path1, String path2) {
         StringBuilder builder = new StringBuilder();
         try {
             String commands = "git diff --ignore-cr-at-eol --ignore-all-space --ignore-blank-lines --ignore-space-change " +
@@ -220,6 +230,59 @@ public class GitUtils {
         }
         return builder.toString();
 
+    }
+
+    /*
+     * Checkout the given commit for the IntelliMerge replication. Use this instead of GitUtils because there is no project.
+     */
+    public static void checkoutForReplication(String commit) {
+        Utils.runSystemCommand("git", "checkout", commit);
+    }
+
+    /*
+     * Get the base commit for the IntelliMerge replications. Use this instead of GitUtils because there is no project.
+     */
+    public static String getBaseCommit(RevCommit leftParent, RevCommit rightParent, Repository repository) throws IOException {
+        RevWalk walk = new RevWalk(repository);
+        walk.setRevFilter(RevFilter.MERGE_BASE);
+        walk.markStart(leftParent);
+        walk.markStart(rightParent);
+        RevCommit mergeBase = walk.next();
+        return mergeBase.getName();
+    }
+
+    /*
+     * Check to see if the merge scenario is conflicting.
+     */
+    public static boolean checkForConflict(org.eclipse.jgit.api.Git git, String leftCommit, ObjectId rightCommit) throws GitAPIException {
+        CheckoutCommand checkoutCommand = git.checkout();
+        // Commands are part of the api module, which include git-like calls
+        checkoutCommand.setName(leftCommit);
+        checkoutCommand.setCreateBranch(false); // probably not needed, just to make sure
+        checkoutCommand.call(); // switch to "master" branch
+
+        MergeCommand mergeCommand = git.merge();
+        mergeCommand.setCommit(false);
+        mergeCommand.include(rightCommit);
+        MergeResult res = mergeCommand.call();
+
+        if (res.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING)){
+            return true;
+        }
+        return false;
+    }
+
+    /*
+     * Reset for IntelliMerge replication
+     */
+    public static void gitReset(org.eclipse.jgit.api.Git git) throws GitAPIException {
+        git.reset().setMode(ResetCommand.ResetType.HARD).call();
+        String lockPath = git.getRepository().getWorkTree().getAbsolutePath() + ".git/index.lock";
+        File f = new File(lockPath);
+        if (f.exists()) {
+            Utils.runSystemCommand("rm", lockPath);
+            git.reset().setMode(ResetCommand.ResetType.HARD).call();
+        }
     }
 
 

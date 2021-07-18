@@ -66,7 +66,7 @@ patchPluginXml {
 
 tasks {
     runIde {
-        runIde.jvmArgs '-Djava.awt.headless=true'
+        runIde.jvmArgs '-Djava.awt.headless=true', '-Xss40m'
         if (project.hasProperty("mode")) {
             Object x = project.findProperty("mode")
             runIde.args 'evaluation', x.toString(), '/temp/projects'
