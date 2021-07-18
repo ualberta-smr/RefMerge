@@ -1,7 +1,14 @@
 package ca.ualberta.cs.smr.evaluation;
 
+import ca.ualberta.cs.smr.evaluation.data.ComparisonResult;
+import ca.ualberta.cs.smr.evaluation.data.ConflictBlockData;
+import ca.ualberta.cs.smr.evaluation.data.ConflictingFileData;
+import ca.ualberta.cs.smr.evaluation.data.SourceFile;
+import ca.ualberta.cs.smr.evaluation.database.*;
 import ca.ualberta.cs.smr.utils.EvaluationUtils;
+import ca.ualberta.cs.smr.utils.GitUtils;
 import ca.ualberta.cs.smr.utils.Utils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
@@ -12,13 +19,17 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 public class IntelliMergeReplication {
+    private final static String UNMODIFIED = "IntelliMerge-1.0.7-all.jar";
+    private final static String MODIFIED = "IntelliMerge-1.0.7-modified.jar";
+
 
     /*
      * Use the IntelliMerge dataset to try to replicate the IntelliMerge results with both versions of IntelliMerge.
      */
-    public static void runIntelliMergeReplication(String path) throws IOException {
+    public static void runIntelliMergeReplication(String path) throws IOException, GitAPIException {
         Utils.clearTemp("projects");
         URL url = EvaluationPipeline.class.getResource("/intelliMerge_data");
         InputStream inputStream = url.openStream();
@@ -45,7 +56,7 @@ public class IntelliMergeReplication {
                     cloneProject(path, projectUrl);
                 }
             }
-            replicateMergeScenario(values[1], path + "/" + projectName);
+            replicateMergeScenario(values[1], path + "/" + projectName, proj);
         }
         if(proj != null) {
             if(!proj.isDone()) {
@@ -59,17 +70,153 @@ public class IntelliMergeReplication {
     /*
      * Run both versions of IntelliMerge on the given merge scenario.
      */
-    private static void replicateMergeScenario(String mergeCommitHash, String path) throws IOException {
-        Utils.clearTemp("intelliMergeResults");
+    private static void replicateMergeScenario(String mergeCommitHash, String path, Project project) throws IOException, GitAPIException {
+        Utils.clearTemp("unmodifiedResults");
+        Utils.clearTemp("modifiedResults");
+        Utils.clearTemp("intelliMerge");
         Utils.clearTemp("manualMerge");
         File file = new File(path);
         Git git = Git.open(file);
-        EvaluationUtils.checkout(git, mergeCommitHash);
+        GitUtils.gitReset(git);
+
+        String manualResults = System.getProperty("user.home") + "/temp/manualMerge";
+        File manualDir = new File(manualResults);
+        manualDir.mkdirs();
+        Utils.runSystemCommand("cp", "-r", path + "/.", manualResults);
         Repository repository = git.getRepository();
         ObjectId id = repository.resolve(mergeCommitHash);
-        RevCommit commit = git.getRepository().parseCommit(id);
+        RevCommit mergeCommitRev = git.getRepository().parseCommit(id);
+        RevCommit leftParent = mergeCommitRev.getParent(0);
+        RevCommit rightParent = mergeCommitRev.getParent(1);
+        String baseCommit = null;
+        try {
+            baseCommit = GitUtils.getBaseCommit(leftParent, rightParent, git.getRepository());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ObjectId rightId = repository.resolve(rightParent.getName());
+        boolean isConflicting = false;
+        try {
+            isConflicting = GitUtils.checkForConflict(git, leftParent.getName(), rightId);
+        } catch (GitAPIException e) {
+            e.printStackTrace();
+        }
+        MergeCommit mergeCommit = MergeCommit.findFirst("commit_hash = ?", mergeCommitHash);
+        if(mergeCommit == null) {
+            mergeCommit = new MergeCommit(mergeCommitHash, isConflicting, leftParent.getName(),
+                    rightParent.getName(), project, mergeCommitRev.getCommitTime());
+            mergeCommit.saveIt();
+        }
+        else if(mergeCommit.isDone()) {
+            return;
+        }
+        else if(!mergeCommit.isDone()) {
+            mergeCommit.delete();
+            mergeCommit = new MergeCommit(mergeCommitHash, isConflicting, leftParent.getName(),
+                    rightParent.getName(), project, mergeCommitRev.getCommitTime());
+            mergeCommit.saveIt();
+        }
 
 
+        String leftPath = System.getProperty("user.home") + "/temp/intelliMerge/ours";
+        String rightPath = System.getProperty("user.home") + "/temp/intelliMerge/theirs";
+        String basePath = System.getProperty("user.home") + "/temp/intelliMerge/base";
+        File leftFile = new File(leftPath);
+        File baseFile = new File(basePath);
+        File rightFile = new File(rightPath);
+        leftFile.mkdirs();
+        baseFile.mkdirs();
+        rightFile.mkdirs();
+        GitUtils.checkoutForReplication(leftParent.getName());
+        Utils.runSystemCommand("cp", "-r", path + "/.", leftPath);
+        GitUtils.checkoutForReplication(rightParent.getName());
+        Utils.runSystemCommand("cp", "-r", path + "/.", rightPath);
+        GitUtils.checkoutForReplication(baseCommit);
+        Utils.runSystemCommand("cp", "-r", path + "/.", basePath);
+
+        String unmodifiedResultsPath = System.getProperty("user.home") + "/temp/unmodifiedResults";
+        String modifiedResultsPath = System.getProperty("user.home") + "/temp/modifiedResults";
+        // Run unmodified IntelliMerge
+        long unmodifiedTime = runIntelliMerge(leftPath, basePath, rightPath, UNMODIFIED, "unmodifiedResults");
+        // Run modified IntelliMerge
+        long modifiedTime = runIntelliMerge(leftPath, basePath, rightPath, MODIFIED, "modifiedResults");
+
+        // Remove all comments from all directories
+        EvaluationUtils.removeAllComments(unmodifiedResultsPath);
+        EvaluationUtils.removeAllComments(modifiedResultsPath);
+        EvaluationUtils.removeAllComments(manualResults);
+
+
+        // Get the conflict blocks from each of the merged results as well as the number of conflict blocks
+        Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> unmodifiedIntelliMergeConflicts =
+                EvaluationUtils.extractMergeConflicts(unmodifiedResultsPath);
+        Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> modifiedIntelliMergeConflicts =
+                EvaluationUtils.extractMergeConflicts(modifiedResultsPath);
+
+        // Get manually merged java files
+        ArrayList<SourceFile> manuallyMergedFiles = EvaluationUtils
+                .getJavaSourceFiles(manualResults, new ArrayList<>(), manualDir);
+
+        // Compare tools with manually merged code
+        ComparisonResult unmodifiedVsManual = EvaluationUtils.compareAutoMerged(unmodifiedResultsPath, manuallyMergedFiles, path);
+        ComparisonResult modifiedVsManual = EvaluationUtils.compareAutoMerged(modifiedResultsPath, manuallyMergedFiles, path);
+
+        // Add IntelliMerge data to database
+        MergeResult intelliMergeResult = new MergeResult("IntelliMerge", unmodifiedIntelliMergeConflicts.getLeft().getLeft(),
+                unmodifiedIntelliMergeConflicts.getLeft().getRight(), unmodifiedTime, unmodifiedVsManual, mergeCommit);
+        intelliMergeResult.saveIt();
+        // Add conflicting files to database
+        List<Pair<ConflictingFileData, List<ConflictBlockData>>> unmodifiedConflictingFiles = unmodifiedIntelliMergeConflicts.getRight();
+        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : unmodifiedConflictingFiles) {
+            ConflictingFile conflictingFile = new ConflictingFile(intelliMergeResult, pair.getLeft());
+            conflictingFile.saveIt();
+            // Add each conflict block for the conflicting file
+            for(ConflictBlockData conflictBlockData : pair.getRight()) {
+                ConflictBlock conflictBlock = new ConflictBlock(conflictingFile, conflictBlockData);
+                conflictBlock.saveIt();
+            }
+        }
+
+        // Add IntelliMerge data to database
+        MergeResult modifiedMergeResult = new MergeResult("IntelliMerge", modifiedIntelliMergeConflicts.getLeft().getLeft(),
+                modifiedIntelliMergeConflicts.getLeft().getRight(), modifiedTime, modifiedVsManual, mergeCommit);
+        modifiedMergeResult.saveIt();
+        // Add conflicting files to database
+        List<Pair<ConflictingFileData, List<ConflictBlockData>>> modifiedConflictingFiles = modifiedIntelliMergeConflicts.getRight();
+        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : modifiedConflictingFiles) {
+            ConflictingFile conflictingFile = new ConflictingFile(modifiedMergeResult, pair.getLeft());
+            conflictingFile.saveIt();
+            // Add each conflict block for the conflicting file
+            for(ConflictBlockData conflictBlockData : pair.getRight()) {
+                ConflictBlock conflictBlock = new ConflictBlock(conflictingFile, conflictBlockData);
+                conflictBlock.saveIt();
+            }
+        }
+
+        mergeCommit.setDone();
+        mergeCommit.saveIt();
+
+
+    }
+
+    /*
+     * Merge the left and right parent using the specified IntelliMerge via command line. Return how long it takes for IntelliMerge
+     * to finish.
+     */
+    private static long runIntelliMerge(String leftPath, String basePath, String rightPath, String intelliMergeVersion, String output) {
+        String outputDir = System.getProperty("user.home") + "/temp/" + output;
+        String jarFile =  System.getProperty("user.home") + "/temp/" + intelliMergeVersion;
+        System.out.println("Starting IntelliMerge");
+        long time = System.currentTimeMillis();
+        try {
+            Utils.runSystemCommand("java", "-jar", jarFile, "-d", leftPath, basePath, rightPath, "-o", outputDir);
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
+        long time2 = System.currentTimeMillis();
+        System.out.println("IntelliMerge is done");
+        return time2 - time;
     }
 
     /*

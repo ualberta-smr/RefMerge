@@ -6,15 +6,12 @@ import com.commentremover.app.CommentRemover;
 import com.commentremover.exception.CommentRemoverException;
 import com.google.googlejavaformat.java.Formatter;
 import com.google.googlejavaformat.java.FormatterException;
-import com.intellij.openapi.project.Project;
-import git4idea.repo.GitRepository;
 import io.reflectoring.diffparser.api.DiffParser;
 import io.reflectoring.diffparser.api.UnifiedDiffParser;
 import io.reflectoring.diffparser.api.model.Diff;
 import io.reflectoring.diffparser.api.model.Hunk;
 import io.reflectoring.diffparser.api.model.Line;
 import org.apache.commons.lang3.tuple.Pair;
-import org.eclipse.jgit.api.Git;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -223,8 +220,7 @@ public class EvaluationUtils {
      * and recall.
      */
     public static ComparisonResult compareAutoMerged(String mergedDir, List<SourceFile> manuallyMergedFiles,
-                                                     Project project, GitRepository repo) {
-        GitUtils gitUtils = new GitUtils(repo, project);
+                                                     String projectPath) {
         int numberOfDiffFiles = 0;
         double autoMergePrecision = 0.0;
         double autoMergeRecall = 0.0;
@@ -238,8 +234,6 @@ public class EvaluationUtils {
             String manualAbsolutePath = manuallyMergedFile.getAbsolutePath();
             String manualRelativePath = manuallyMergedFile.getRelativePath();
             String mergedAbsolutePath = mergedDir + "/" + manualRelativePath;
-            double filePrecision = 0.0;
-            double fileRecall = 0.0;
 
             // Get the number of manually merged lines of code
             int manualLOC = readFileToLines(manualAbsolutePath).size();
@@ -251,7 +245,7 @@ public class EvaluationUtils {
 
             int manualDiffLOC= 0;
             int mergedDiffLOC = 0;
-            String diffOutput = gitUtils.diff(project.getBasePath(), manualAbsolutePath, mergedAbsolutePath);
+            String diffOutput = GitUtils.diff(projectPath, manualAbsolutePath, mergedAbsolutePath);
             DiffParser parser = new UnifiedDiffParser();
             List<Diff> diffs = parser.parse(new ByteArrayInputStream(diffOutput.getBytes()));
             for(Diff diff : diffs) {
@@ -259,8 +253,6 @@ public class EvaluationUtils {
                 // If the files differ, add to the number of different files
                 numberOfDiffFiles += hunks.size() > 0 ? 1 : 0;
                 for(Hunk hunk : hunks) {
-                    int manualStartLine = hunk.getFromFileRange().getLineStart();
-                    int mergedStartLine = hunk.getToFileRange().getLineStart();
                     String manualContent = getHunkContent(hunk, Line.LineType.FROM);
                     String mergedContent = getHunkContent(hunk, Line.LineType.TO);
                     int manualHunkLOC = manualContent.length() > 0 ? hunk.getFromFileRange().getLineCount() : 0;
@@ -273,12 +265,6 @@ public class EvaluationUtils {
             // greater than the autoMergedLOC, then there are no lines that are the same
             int sameLOCManual = 0;
             int sameLOCMerged = 0;
-//            if(autoMergedLOC > 0 && autoMergedLOC > manualDiffLOC) {
-//                sameLOCManual = autoMergedLOC - manualDiffLOC;
-//            }
-//            if(autoMergedLOC > 0 && autoMergedLOC > mergedDiffLOC) {
-//                sameLOCMerged = autoMergedLOC - mergedDiffLOC;
-//            }
             if(autoMergedLOC > 0) {
                 sameLOCManual = autoMergedLOC - manualDiffLOC;
             }
@@ -288,18 +274,6 @@ public class EvaluationUtils {
             totalSameLOCMerged += sameLOCMerged;
             totalSameLOCManual += sameLOCManual;
 
-            if (autoMergedLOC > 0) {
-                filePrecision = sameLOCMerged / (double) autoMergedLOC;
-            } else {
-                filePrecision = 1.0;
-            }
-            if (manualLOC > 0) {
-                fileRecall = sameLOCManual / (double) manualLOC;
-            } else {
-                fileRecall = 1.0;
-            }
-            FileDetails fileDetails = new FileDetails(manualRelativePath, autoMergedLOC, manualLOC, sameLOCMerged, sameLOCManual,
-                    filePrecision, fileRecall);
         }
         if(totalAutoMergedLOC > 0) {
             autoMergePrecision = totalSameLOCMerged / (double) totalAutoMergedLOC;
@@ -393,8 +367,5 @@ public class EvaluationUtils {
         }
     }
 
-    public static void checkout(Git git, String commit) {
-        Utils.runSystemCommand("git", "checkout", commit);
-    }
 
 }
