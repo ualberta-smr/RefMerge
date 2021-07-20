@@ -39,9 +39,6 @@ public class IntelliMergeReplication {
         ca.ualberta.cs.smr.evaluation.database.Project proj = null;
         for(String line : lines) {
             String[] values = line.split(";");
-            if(!values[0].contains("error-prone")) {
-                continue;
-            }
             if(!values[0].equals(projectUrl)) {
                 if(proj != null) {
                     if(!proj.isDone()) {
@@ -85,7 +82,13 @@ public class IntelliMergeReplication {
         String manualResults = System.getProperty("user.home") + "/temp/manualMerge";
         File manualDir = new File(manualResults);
         manualDir.mkdirs();
-        GitUtils.checkoutForReplication(git, mergeCommitHash);
+        try {
+            GitUtils.checkoutForReplication(git, mergeCommitHash);
+        }
+        catch(Exception e) {
+            System.out.println("Skipping: " + mergeCommitHash);
+            return;
+        }
         Utils.runSystemCommand("cp", "-r", path + "/.", manualResults);
         Repository repository = git.getRepository();
         ObjectId id = repository.resolve(mergeCommitHash);
