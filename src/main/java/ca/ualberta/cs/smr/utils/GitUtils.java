@@ -12,12 +12,8 @@ import git4idea.commands.GitLineHandler;
 import git4idea.history.GitHistoryUtils;
 import git4idea.repo.GitRepository;
 import git4idea.reset.GitResetMode;
-import org.eclipse.jgit.api.CheckoutCommand;
-import org.eclipse.jgit.api.MergeCommand;
-import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -86,6 +82,11 @@ public class GitUtils {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void reset() {
+        Utils.runSystemCommand("git", "clean");
+        Git.getInstance().reset(repo, GitResetMode.HARD, "HEAD");
     }
 
     public boolean merge(String rightCommit) {
@@ -162,6 +163,7 @@ public class GitUtils {
             @Override
             public void run() {
                 try {
+
                     this.commits = GitHistoryUtils.history(project, root);
                 } catch (VcsException e) {
                     e.printStackTrace();
