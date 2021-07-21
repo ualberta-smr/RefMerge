@@ -21,6 +21,7 @@ import java.util.Set;
 public class ExtractMethodObject implements RefactoringObject {
 
     private final RefactoringType refactoringType;
+    private final String refactoringDetail;
     private String originalFilePath;
     private String destinationFilePath;
     private String originalClassName;
@@ -41,6 +42,7 @@ public class ExtractMethodObject implements RefactoringObject {
     public ExtractMethodObject(String originalFilePath, String originalClassName, MethodSignatureObject originalMethodSignature,
                               String destinationFilePath, String destinationClassName, MethodSignatureObject destinationMethodSignature) {
         this.refactoringType = RefactoringType.EXTRACT_OPERATION;
+        this.refactoringDetail = "";
         this.originalFilePath = originalFilePath;
         this.originalClassName = originalClassName;
         this.originalMethodSignature = originalMethodSignature;
@@ -58,6 +60,7 @@ public class ExtractMethodObject implements RefactoringObject {
         UMLOperation originalOperation = extractOperationRefactoring.getSourceOperationBeforeExtraction();
         UMLOperation destinationOperation = extractOperationRefactoring.getExtractedOperation();
         this.refactoringType = refactoring.getRefactoringType();
+        this.refactoringDetail = refactoring.toString();
         this.originalFilePath = originalOperation.getLocationInfo().getFilePath();
         this.destinationFilePath = destinationOperation.getLocationInfo().getFilePath();
         this.originalClassName = originalOperation.getClassName();
@@ -77,6 +80,10 @@ public class ExtractMethodObject implements RefactoringObject {
 
     public RefactoringType getRefactoringType() {
         return this.refactoringType;
+    }
+
+    public String getRefactoringDetail() {
+        return this.refactoringDetail;
     }
 
     public RefactoringOrder getRefactoringOrder() {

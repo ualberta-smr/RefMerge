@@ -98,6 +98,8 @@ CREATE TABLE IF NOT EXISTS `refMerge_evaluation`.`refactoring_conflict` (
   `right_new_path` VARCHAR(1000) NOT NULL,
   `left_refactoring_type` VARCHAR(100),
   `right_refactoring_type` VARCHAR(100),
+  `left_refactoring_detail` VARCHAR(2000),
+  `right_refactoring_detail` VARCHAR(2000),
   `merge_result_id` INT NOT NULL,
   `merge_commit_id` INT NOT NULL,
   `project_id` INT NOT NULL,

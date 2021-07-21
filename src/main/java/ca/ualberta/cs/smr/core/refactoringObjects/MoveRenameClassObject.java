@@ -16,6 +16,7 @@ import org.refactoringminer.api.RefactoringType;
 public class MoveRenameClassObject implements RefactoringObject {
 
     private final RefactoringType refactoringType;
+    private final String refactoringDetail;
     private String originalFilePath;
     private String destinationFilePath;
     private ClassObject originalClassObject;
@@ -36,6 +37,7 @@ public class MoveRenameClassObject implements RefactoringObject {
     public MoveRenameClassObject(String originalFilePath, String originalClassName, String originalPackageName,
                                  String destinationFilePath, String destinationClassName, String destinationPackageName) {
         this.refactoringType = RefactoringType.RENAME_CLASS;
+        this.refactoringDetail = "";
         this.originalFilePath = originalFilePath;
         this.destinationFilePath = destinationFilePath;
         this.originalClassObject =
@@ -103,11 +105,16 @@ public class MoveRenameClassObject implements RefactoringObject {
         this.isMoveMethod = false;
         this.isRenameMethod = false;
         setType(refactoringType);
+        this.refactoringDetail = refactoring.toString();
         this.isReplay = true;
     }
 
     public RefactoringType getRefactoringType() {
         return this.refactoringType;
+    }
+
+    public String getRefactoringDetail() {
+        return this.refactoringDetail;
     }
 
     public RefactoringOrder getRefactoringOrder() {

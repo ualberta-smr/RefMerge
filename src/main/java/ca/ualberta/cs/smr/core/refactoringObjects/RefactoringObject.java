@@ -7,6 +7,8 @@ import org.refactoringminer.api.RefactoringType;
  */
 public interface RefactoringObject {
 
+    String getRefactoringDetail();
+
     RefactoringType getRefactoringType();
 
     RefactoringOrder getRefactoringOrder();
