@@ -115,7 +115,9 @@ public class Utils {
         }
         File directory = new File(path);
         VirtualFile sourceVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(directory);
-        assert sourceVirtualFile != null;
+        if(sourceVirtualFile == null) {
+            return;
+        }
         ModuleManager moduleManager = ModuleManager.getInstance(project);
         // Get the first module that does not depend on any other modules
         ArrayList<Module> modules = getModule(sourceVirtualFile, moduleManager.getModules());
