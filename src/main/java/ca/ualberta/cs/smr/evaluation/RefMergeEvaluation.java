@@ -43,7 +43,7 @@ public class RefMergeEvaluation {
      */
     public void runComparison(String path) throws IOException {
         //Utils.clearTemp("projects");
-        URL url = EvaluationPipeline.class.getResource("/intelliMerge_data");
+        URL url = EvaluationPipeline.class.getResource("/refMerge_evaluation_projects");
         InputStream inputStream = url.openStream();
         ArrayList<String> lines = getLinesFromInputStream(inputStream);
         String projectUrl = "";
@@ -51,39 +51,42 @@ public class RefMergeEvaluation {
         GitRepository repo = null;
         ca.ualberta.cs.smr.evaluation.database.Project proj = null;
         for(String line : lines) {
-            String[] values = line.split(";");
-            if(!values[0].contains("error-prone") && !values[0].contains("junit")) {
+            projectUrl = line;
+            proj = ca.ualberta.cs.smr.evaluation.database.Project.findFirst("url = ?", projectUrl);
+            if(proj == null) {
+                projectName = openProject(path, projectUrl).substring(1);
+                System.out.println("Starting " + projectName);
+                proj = new ca.ualberta.cs.smr.evaluation.database.Project(projectUrl, projectName);
+                proj.saveIt();
+                GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
+                List<GitRepository> repos = repoManager.getRepositories();
+                if(repos.size() == 0) {
+                    // Why does this fail?
+                    // Does it load the project properly?
+                    VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path + "/" + projectName + "/.git");
+                    GitRepositoryManager.getInstance(project).updateRepository(virtualFile);
+                    assert virtualFile != null;
+                    repo = repoManager.getRepositoryForFile(virtualFile);
+                }
+                else {
+                    repo = repos.get(0);
+                }
+            }
+            else if(proj.isDone()) {
                 continue;
             }
-            if(!values[0].equals(projectUrl)) {
-                if(proj != null) {
-                    if(!proj.isDone()) {
-                        proj.setDone();
-                        proj.saveIt();
-                    }
-                }
-                projectUrl = values[0];
-                proj = ca.ualberta.cs.smr.evaluation.database.Project.findFirst("url = ?", projectUrl);
-                if (proj == null) {
-                    projectName = openProject(path, projectUrl).substring(1);
-                    System.out.println("Starting " + projectName);
-                    proj = new ca.ualberta.cs.smr.evaluation.database.Project(projectUrl, projectName);
-                    proj.saveIt();
-                    GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
-                    List<GitRepository> repos = repoManager.getRepositories();
-                    if(repos.size() == 0) {
-                        // Why does this fail?
-                        // Does it load the project properly?
-                        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path + "/" + projectName + "/.git");
-                        GitRepositoryManager.getInstance(project).updateRepository(virtualFile);
-                        repo = repoManager.getRepositoryForFile(virtualFile);
-                    }
-                    else {
-                        repo = repos.get(0);
-                    }
-                }
+            else {
+                projectName = openProject(path, projectUrl).substring(1);
+                System.out.println("Continuing " + projectName);
+                GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
+                List<GitRepository> repos = repoManager.getRepositories();
+                repo = repos.get(0);
             }
-            evaluateMergeScenario(values[1], repo, proj);
+            evaluateProject(repo, proj);
+            proj.setDone();
+            proj.saveIt();
+
+
         }
         if(proj != null) {
             if(!proj.isDone()) {
@@ -93,15 +96,26 @@ public class RefMergeEvaluation {
         }
     }
 
+    /*
+     * Evaluate every merge scenario in the given project.
+     */
+    private void evaluateProject(GitRepository repo, Project proj) {
+        GitUtils gitUtils = new GitUtils(repo, project);
+        List<GitCommit> mergeCommits = gitUtils.getMergeCommits();
+        System.out.println(mergeCommits.size());
+        for(GitCommit mergeCommit : mergeCommits) {
+            evaluateMergeScenario(mergeCommit, repo, proj);
+        }
 
+    }
 
     /*
      * Run RefMerge, IntelliMerge, and Git on the given merge scenario.
      */
-    private void evaluateMergeScenario(String mergeCommitHash, GitRepository repo,
+    private void evaluateMergeScenario(GitCommit targetCommit, GitRepository repo,
                                        ca.ualberta.cs.smr.evaluation.database.Project proj) {
-        GitUtils git = new GitUtils(repo, project);
-
+        GitUtils gitUtils = new GitUtils(repo, project);
+        gitUtils.reset();
         Utils.clearTemp("manualMerge");
         Utils.clearTemp("intelliMerge");
         Utils.clearTemp("refMergeResults");
@@ -109,27 +123,29 @@ public class RefMergeEvaluation {
         Utils.clearTemp("gitMergeResults");
         Utils.clearTemp("refMergeResultsOriginal");
         Utils.clearTemp("gitMergeResultsOriginal");
-        Utils.clearTemp("intelliMergeResultsOriginal");
+        Utils.clearTemp("intelliMergeResultsOriginal");;
 
-        git.checkout(mergeCommitHash);
+        String mergeCommitHash = targetCommit.getId().asString();
+        gitUtils.checkout(mergeCommitHash);
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
         // Save the manually merged version
         String manuallyMergedPath = Utils.saveContent(project, "manualMerge");
-        GitCommit targetCommit = git.getTargetMergeCommit(mergeCommitHash);
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
         // Perform the merge with the three tools.
         List<Hash> parents = targetCommit.getParents();
         String rightParent = parents.get(0).toShortString();
         String leftParent = parents.get(1).toShortString();
-        String baseCommit = git.getBaseCommit(leftParent, rightParent);
+        String baseCommit = gitUtils.getBaseCommit(leftParent, rightParent);
 
         // Get the refactorings detected by RefMiner in the merge scenario
 
-        GitUtils gitUtils = new GitUtils(repo, project);
         gitUtils.checkout(leftParent);
         boolean isConflicting = gitUtils.merge(rightParent);
+        if(isConflicting) {
+            gitUtils.reset();
+        }
         // Add merge commit to database
         MergeCommit mergeCommit = MergeCommit.findFirst("commit_hash = ?", mergeCommitHash);
         if(mergeCommit == null) {
@@ -172,12 +188,15 @@ public class RefMergeEvaluation {
         File refMergeResultDirectory = new File(resultDir + "/refMerge");
         File gitResultDirectory = new File(resultDir + "/git");
         File intelliMergeResultDirectory = new File(resultDir + "/intelliMerge");
+        File manualMergeResultDirectory = new File(resultDir + "/manualMerge");
         refMergeResultDirectory.mkdirs();
         gitResultDirectory.mkdirs();
         intelliMergeResultDirectory.mkdirs();
+        manualMergeResultDirectory.mkdirs();
         Utils.runSystemCommand("cp", "-r", refMergePath + "/.", refMergeResultDirectory.getAbsolutePath());
         Utils.runSystemCommand("cp", "-r", gitMergePath + "/.", gitResultDirectory.getAbsolutePath());
         Utils.runSystemCommand("cp", "-r", intelliMergePath + "/.", intelliMergeResultDirectory.getAbsolutePath());
+        Utils.runSystemCommand("cp", "-r", manuallyMergedPath + "/.", manualMergeResultDirectory.getAbsolutePath());
 
         // Remove all comments from all directories
         EvaluationUtils.removeAllComments(manuallyMergedPath);
@@ -328,7 +347,7 @@ public class RefMergeEvaluation {
         String basePath = Utils.saveContent(project, "intelliMerge/base");
         gitUtils.checkout(rightParent);
         String rightPath = Utils.saveContent(project, "intelliMerge/theirs");
-        String jarFile =  System.getProperty("user.home") + "/temp/IntelliMerge-1.0.7-all.jar";
+        String jarFile =  System.getProperty("user.home") + "/temp/IntelliMerge-1.0.7-modified.jar";
         System.out.println("Starting IntelliMerge");
         long time = System.currentTimeMillis();
         try {
@@ -366,6 +385,9 @@ public class RefMergeEvaluation {
         try {
             if(this.project != null) {
                 ProjectUtil.closeAndDispose(this.project);
+            }
+            if(!pathToProject.exists()) {
+                cloneProject(path, url);
             }
             this.project = ProjectUtil.openOrImport(pathToProject.toPath(), null, false);
         }
