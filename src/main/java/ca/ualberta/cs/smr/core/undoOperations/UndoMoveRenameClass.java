@@ -269,7 +269,9 @@ public class UndoMoveRenameClass {
         if(commonPackage.length() == 0) {
             return null;
         }
-        commonPackage = commonPackage.substring(0, commonPackage.lastIndexOf("."));
+        if(commonPackage.contains(".")) {
+            commonPackage = commonPackage.substring(0, commonPackage.lastIndexOf("."));
+        }
         return commonPackage;
     }
 
