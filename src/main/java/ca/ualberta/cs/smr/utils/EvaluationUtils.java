@@ -133,6 +133,7 @@ public class EvaluationUtils {
                 rightContent = rightContent.replaceAll(" ", "");
                 rightContent = rightContent.replaceAll("\n", "");
                 if(leftContent.length() == 0 && rightContent.length() == 0) {
+                    iterator.remove();
                     continue;
                 }
                 ConflictBlockData mergeConflict = new ConflictBlockData(leftContent, rightContent, startLOC, endLOC);
