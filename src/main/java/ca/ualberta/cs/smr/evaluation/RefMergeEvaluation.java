@@ -15,6 +15,7 @@ import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.vcs.log.Hash;
+import edu.pku.intellimerge.client.IntelliMerge;
 import git4idea.GitCommit;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
@@ -52,6 +53,9 @@ public class RefMergeEvaluation {
         ca.ualberta.cs.smr.evaluation.database.Project proj = null;
         for(String line : lines) {
             projectUrl = line;
+            if(!projectUrl.contains("error-prone")) {
+                continue;
+            }
             proj = ca.ualberta.cs.smr.evaluation.database.Project.findFirst("url = ?", projectUrl);
             if(proj == null) {
                 projectName = openProject(path, projectUrl).substring(1);
@@ -139,6 +143,11 @@ public class RefMergeEvaluation {
         String leftParent = parents.get(1).toShortString();
         String baseCommit = gitUtils.getBaseCommit(leftParent, rightParent);
 
+        // Skip cases without a base commit
+        if(baseCommit == null) {
+            return;
+        }
+
         // Get the refactorings detected by RefMiner in the merge scenario
 
         gitUtils.checkout(leftParent);
@@ -175,7 +184,11 @@ public class RefMergeEvaluation {
         DumbService.getInstance(project).completeJustSubmittedTasks();
         // Run IntelliMerge
         String intelliMergePath = System.getProperty("user.home") + "/temp/intelliMergeResults";
-        long intelliMergeRuntime = runIntelliMerge(project, repo, leftParent, baseCommit, rightParent, intelliMergePath);
+        List<String> commits = new ArrayList<>();
+        commits.add(leftParent);
+        commits.add(baseCommit);
+        commits.add(rightParent);
+        long intelliMergeRuntime = runIntelliMerge(project.getBasePath(), commits, "intelliMergeResults");
         DumbService.getInstance(project).completeJustSubmittedTasks();
         // Run RefMerge
         Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, Long> refMergeConflictsAndRuntime =
@@ -338,27 +351,26 @@ public class RefMergeEvaluation {
      * Merge the left and right parent using IntelliMerge via command line. Return how long it takes for IntelliMerge
      * to finish
      */
-    private long runIntelliMerge(com.intellij.openapi.project.Project project, GitRepository repo, String leftParent, String baseCommit,
-                                 String rightParent, String output) {
-        GitUtils gitUtils = new GitUtils(repo, project);
-        gitUtils.checkout(leftParent);
-        String leftPath = Utils.saveContent(project, "intelliMerge/ours");
-        gitUtils.checkout(baseCommit);
-        String basePath = Utils.saveContent(project, "intelliMerge/base");
-        gitUtils.checkout(rightParent);
-        String rightPath = Utils.saveContent(project, "intelliMerge/theirs");
-        String jarFile =  System.getProperty("user.home") + "/temp/IntelliMerge-1.0.7-modified.jar";
+    private long runIntelliMerge(String repoPath, List<String> commits, String output) {
+        String outputDir = System.getProperty("user.home") + "/temp/" + output;
         System.out.println("Starting IntelliMerge");
         long time = System.currentTimeMillis();
         try {
-            Utils.runSystemCommand("java", "-jar", jarFile, "-d", leftPath, basePath, rightPath, "-o", output);
-        }
-        catch(Exception e) {
+            IntelliMerge merge = new IntelliMerge();
+            // our commit, base commit, their commit in that order
+            List<Long> times = merge.mergeBranchesForRefMergeEvaluation(repoPath, commits, outputDir, true);
+            long time2 = System.currentTimeMillis();
+            System.out.println("Collection took: " + times.get(0));
+            System.out.println("Building took: " + times.get(1));
+            System.out.println("Matching took: " + times.get(2));
+            System.out.println("Merging took: " + times.get(3));
+            return time2 - time;
+        } catch(Exception e) {
             e.printStackTrace();
+
         }
-        long time2 = System.currentTimeMillis();
         System.out.println("IntelliMerge is done");
-        return time2 - time;
+        return -1;
     }
 
     /*

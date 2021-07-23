@@ -23,7 +23,9 @@ repositories {
 
 }
 
+
 dependencies {
+    implementation fileTree(dir: 'lib', include: ['*.jar'])
     compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '5.10.0.202012080955-r'
     compile group: 'com.github.tsantalis', name: 'refactoring-miner', version: '2.1.0'
     compile 'com.google.googlejavaformat:google-java-format:1.7'
