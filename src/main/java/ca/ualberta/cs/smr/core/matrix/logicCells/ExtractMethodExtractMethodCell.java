@@ -55,6 +55,9 @@ public class ExtractMethodExtractMethodCell {
         MethodSignatureObject dispatcherOriginalMethod = dispatcherExtractMethod.getOriginalMethodSignature();
         MethodSignatureObject receiverOriginalMethod = receiverExtractMethod.getOriginalMethodSignature();
 
+        MethodSignatureObject dispatcherDestinationMethod = dispatcherExtractMethod.getDestinationMethodSignature();
+        MethodSignatureObject receiverDestinationMethod = receiverExtractMethod.getDestinationMethodSignature();
+
         String dispatcherOriginalClassName = dispatcherExtractMethod.getOriginalClassName();
         String receiverOriginalClassName = receiverExtractMethod.getOriginalClassName();
 
@@ -63,34 +66,43 @@ public class ExtractMethodExtractMethodCell {
                 && !dispatcherOriginalMethod.equalsSignature(receiverOriginalMethod)) {
             return false;
         }
-        String dispatcherDestinationName = dispatcherExtractMethod.getDestinationMethodSignature().getName();
-        String receiverDestinationName = receiverExtractMethod.getDestinationMethodSignature().getName();
 
         Set<AbstractCodeFragment> dispatcherFragments = dispatcherExtractMethod.getSourceCodeFragments();
         Set<AbstractCodeFragment> receiverFragments = receiverExtractMethod.getSourceCodeFragments();
+
+        // If the same method is being extracted on each branch to the same destination, it is not a conflict
+        if(dispatcherOriginalMethod.equalsSignature(receiverOriginalMethod)
+                && dispatcherDestinationMethod.equalsSignature(receiverDestinationMethod)
+                && dispatcherFragments.size() == receiverFragments.size()) {
+            return false;
+        }
+        // If they are not the same original method, it cannot be a case of overlapping code fragments.
+        else if(!dispatcherOriginalMethod.equalsSignature(receiverOriginalMethod)) {
+            return false;
+        }
+
         // Check if a code fragment exists in both extracted methods
         int sameFragments = 0;
         for(AbstractCodeFragment dispatcherFragment : dispatcherFragments) {
+            if(dispatcherFragment.toString().equals("{") || dispatcherFragment.toString().equals("}")) {
+                continue;
+            }
             for(AbstractCodeFragment receiverFragment : receiverFragments) {
                 // Use the text of the fragment instead of the line number because the line numbers may differ between
                 // branches.
                 if (dispatcherFragment.equalFragment(receiverFragment)) {
                     sameFragments++;
+                    break;
                 }
             }
         }
         // If the same section is extracted from both branches, then it is not conflicting
         // unless it's extracted to two different names
-        if(dispatcherFragments.size() == receiverFragments.size() && dispatcherDestinationName.equals(receiverDestinationName)) {
-            if(sameFragments == dispatcherFragments.size()) {
-                return false;
-            }
+        if(sameFragments == dispatcherFragments.size()) {
+            return false;
+        }
+        return sameFragments > 0;
 
-        }
-        if(sameFragments > 0) {
-            return true;
-        }
-        return false;
     }
 
     /*
@@ -179,19 +191,24 @@ public class ExtractMethodExtractMethodCell {
         if (!dispatcherOriginalClassName.equals(receiverOriginalClassName)) {
             return false;
         }
+        // If it is the same refactoring operation but on different branches, return false
         if(dispatcherDestinationMethod.equalsSignature(receiverDestinationMethod) &&
                 dispatcherOriginalMethod.equalsSignature(receiverOriginalMethod)) {
             return false;
         }
+        // If two different methods are extracted from the same method but are not overlapping (as checked in the first
+        // check), return false
         else if(!dispatcherDestinationMethod.equalsSignature(receiverDestinationMethod) &&
                 dispatcherOriginalMethod.equalsSignature(receiverOriginalMethod)) {
             return false;
         }
+        // If the refactorings are not related, return false
         else if(!dispatcherDestinationMethod.equalsSignature(receiverDestinationMethod) &&
                 !dispatcherOriginalMethod.equalsSignature(receiverOriginalMethod)) {
             return false;
         }
-        else {
+        // If the original method is the same
+        else if(dispatcherOriginalMethod.equalsSignature(receiverOriginalMethod)) {
             // Double check that they are not the same destination method
             Set<AbstractCodeFragment> dispatcherFragments = dispatcherExtractMethod.getExtractedCodeFragments();
             Set<AbstractCodeFragment> receiverFragments = receiverExtractMethod.getExtractedCodeFragments();
@@ -202,7 +219,7 @@ public class ExtractMethodExtractMethodCell {
             }
             for(AbstractCodeFragment dispatcherFragment : dispatcherFragments) {
                 for(AbstractCodeFragment receiverFragment : receiverFragments) {
-                    // If the methods are not the same
+                    // If the methods are not the same and contain at least one overlapping line
                     if (!dispatcherFragment.equalFragment(receiverFragment)) {
                         return true;
                     }
