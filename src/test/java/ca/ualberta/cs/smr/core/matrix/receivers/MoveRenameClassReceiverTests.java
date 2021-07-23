@@ -62,6 +62,8 @@ public class MoveRenameClassReceiverTests extends LightJavaCodeInsightFixtureTes
         Refactoring bar = refactorings.get(2);
         RefactoringObject leftRefactoring = RefactoringObjectUtils.createRefactoringObject(foo);
         RefactoringObject rightRefactoring = RefactoringObjectUtils.createRefactoringObject(foo2);
+        leftRefactoring.setDestinationFilePath("File.java");
+        rightRefactoring.setDestinationFilePath("File.java");
         boolean isConflicting = MoveRenameClassMoveRenameClassCell.conflictCell(leftRefactoring, rightRefactoring);
         Assert.assertTrue(isConflicting);
         rightRefactoring = RefactoringObjectUtils.createRefactoringObject(bar);
