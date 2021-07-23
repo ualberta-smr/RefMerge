@@ -132,8 +132,12 @@ public class GitUtils {
                     System.out.println("Project: " + project + " LeftCommit: " + leftCommit + " RightCommit: " + rightCommit);
                     e.printStackTrace();
                 }
-                assert num != null;
-                this.baseCommit = num.getShortRev();
+                if(num == null) {
+                    this.baseCommit = null;
+                }
+                else {
+                    this.baseCommit = num.getShortRev();
+                }
             }
 
             public String getBaseCommit() {
