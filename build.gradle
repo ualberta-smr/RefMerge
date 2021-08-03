@@ -71,7 +71,8 @@ tasks {
         runIde.jvmArgs '-Djava.awt.headless=true', '-Xss40m'
         if (project.hasProperty("mode")) {
             Object x = project.findProperty("mode")
-            runIde.args 'evaluation', x.toString(), '/temp/projects'
+            Object y = project.findProperty("dataPath")
+            runIde.args 'evaluation', x.toString(), y.toString()
         }
         else {
             println "Use gradle runIde -Pmode=x where x= 'replication' or 'comparison'"
