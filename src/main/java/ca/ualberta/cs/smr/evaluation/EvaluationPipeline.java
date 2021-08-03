@@ -4,11 +4,19 @@ package ca.ualberta.cs.smr.evaluation;
 import ca.ualberta.cs.smr.evaluation.database.*;
 
 import com.intellij.openapi.application.ApplicationStarter;
+import org.apache.commons.lang3.tuple.Pair;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.javalite.activejdbc.Base;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.*;
 
+/*
+ * Evaluates RefMerge and IntelliMerge. If in replication mode, The pipeline will attempt to replicate IntelliMerge's
+ * results. If in comparison mode, the pipeline will run a comparison on RefMerge, IntelliMerge, and Git. If in
+ * stats mode, it will run RefMiner and collect merge scenarios that contain refactorings.
+ */
 public class EvaluationPipeline implements ApplicationStarter {
 
     @Override
@@ -29,6 +37,10 @@ public class EvaluationPipeline implements ApplicationStarter {
                 DatabaseUtils.createDatabase(true);
                 String path = System.getProperty("user.home") + args.get(2);
                 startEvaluation(path);
+            }
+            else if(mode.equals("stats")) {
+                String path = System.getProperty("user.home") + args.get(2);
+                collectAndPrintMergeScenarios(path);
             }
         } catch(Throwable e) {
             System.out.println(e.getMessage());
@@ -67,6 +79,17 @@ public class EvaluationPipeline implements ApplicationStarter {
             e.printStackTrace();
         }
 
+    }
+
+    private void collectAndPrintMergeScenarios(String path) {
+        try {
+            List<Pair<String, Integer>> pairs = MergeScenarioCollection.collectScenarios(path);
+            for(Pair<String, Integer> pair : pairs) {
+                System.out.println(pair.getLeft() + ":  " + pair.getRight());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 

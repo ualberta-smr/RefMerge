@@ -27,14 +27,21 @@ import com.intellij.usageView.UsageInfo;
 import org.jetbrains.jps.model.serialization.PathMacroUtil;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Utils {
     Project project;
+
+    private static final boolean LOG_TO_FILE  = true;
+    private static final String LOG_FILE = "log.txt";
+
 
     public Utils(Project project) {
         this.project = project;
@@ -46,15 +53,59 @@ public class Utils {
     public static void runSystemCommand(String... commands) {
         try {
             ProcessBuilder pb = new ProcessBuilder(commands);
-            pb.redirectOutput(new File(System.getProperty("user.home") + "/temp/IntelliMergeOutput"));
-            pb.redirectError(new File(System.getProperty("user.home") + "/temp/Error"));
             Process p = pb.start();
             p.waitFor(200, TimeUnit.SECONDS);
             p.destroy();
             p.waitFor();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+    }
+
+    public static void log(String projectName, Object message) {
+        String timeStamp = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss z").format(new Date());
+        String logMessage = timeStamp + " ";
+        if (message instanceof String){
+            logMessage += (String) message;
+        } else if (message instanceof Exception) {
+            logMessage += ((Exception) message).getMessage() + "\n";
+            StringBuilder stackBuilder = new StringBuilder();
+            StackTraceElement[] stackTraceElements = ((Exception) message).getStackTrace();
+            for (int i = 0; i < stackTraceElements.length; i++) {
+                StackTraceElement stackTraceElement = stackTraceElements[i];
+                stackBuilder.append(stackTraceElement.toString());
+                if (i < stackTraceElements.length - 1) stackBuilder.append("\n");
+            }
+            logMessage += stackBuilder.toString();
+        } else {
+            logMessage = message.toString();
+        }
+        System.out.println(logMessage);
+
+        if (LOG_TO_FILE) {
+            String logPath = LOG_FILE;
+            if (projectName != null && !projectName.trim().equals("")) logPath = projectName;
+            try {
+                String path = System.getProperty("user.home") + "/temp/logs/";
+                new File(path).mkdirs();
+                Files.write(Paths.get(path + logPath), Arrays.asList(logMessage),
+                        StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void writeContent(String path, String content) {
+        try {
+            Files.write(Paths.get(path), Arrays.asList(content),
+                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     /*

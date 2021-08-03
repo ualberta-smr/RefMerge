@@ -14,6 +14,7 @@ import git4idea.repo.GitRepository;
 import git4idea.reset.GitResetMode;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.StopWalkException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -254,6 +255,9 @@ public class GitUtils {
         walk.markStart(leftParent);
         walk.markStart(rightParent);
         RevCommit mergeBase = walk.next();
+        if(mergeBase == null) {
+            return null;
+        }
         return mergeBase.getName();
     }
 
@@ -271,6 +275,29 @@ public class GitUtils {
             Utils.runSystemCommand("rm", lockPath);
             git.reset().setMode(ResetCommand.ResetType.HARD).call();
         }
+    }
+
+    /*
+     * Get all merge scenarios for merge scenario collection
+     */
+    public static Iterable<RevCommit> getMergeScenarios(org.eclipse.jgit.api.Git git) {
+        try {
+        gitReset(git);
+        return git.log().all().setRevFilter(new RevFilter() {
+            @Override
+            public boolean include(RevWalk revWalk, RevCommit revCommit) throws StopWalkException {
+                return revCommit.getParentCount() == 2;
+            }
+
+            @Override
+            public RevFilter clone() {
+                return this;
+            }
+        }).call();
+        } catch (IOException | GitAPIException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 
