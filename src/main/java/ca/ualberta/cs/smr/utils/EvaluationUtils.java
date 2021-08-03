@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static edu.pku.intellimerge.util.Utils.flattenString;
+
 /*
  * Contains the methods necessary to get the metrics for the evaluation.
  */
@@ -133,6 +135,10 @@ public class EvaluationUtils {
                 rightContent = rightContent.replaceAll(" ", "");
                 rightContent = rightContent.replaceAll("\n", "");
                 if(leftContent.length() == 0 && rightContent.length() == 0) {
+                    iterator.remove();
+                    continue;
+                }
+                if(leftContent.equals(rightContent)) {
                     iterator.remove();
                     continue;
                 }
@@ -251,11 +257,25 @@ public class EvaluationUtils {
             List<Diff> diffs = parser.parse(new ByteArrayInputStream(diffOutput.getBytes()));
             for(Diff diff : diffs) {
                 List<Hunk> hunks = diff.getHunks();
+
+                List<Hunk> visitedHunks = new ArrayList<>();
+                for(Hunk hunk : hunks) {
+                    if(isReplication) {
+                        if (!removeMovingCausedHunks(hunk, visitedHunks)) {
+                            visitedHunks.add(hunk);
+                        }
+                    }
+                    else {
+                        visitedHunks.add(hunk);
+                    }
+                }
+                removeFormatCausedHunks(visitedHunks);
                 // If the files differ, add to the number of different files
                 numberOfDiffFiles += hunks.size() > 0 ? 1 : 0;
                 for(Hunk hunk : hunks) {
-                    String manualContent = getHunkContent(hunk, Line.LineType.FROM);
-                    String mergedContent = getHunkContent(hunk, Line.LineType.TO);
+                    String manualContent = getHunkContent(hunk, Line.LineType.FROM, false);
+                    String mergedContent = getHunkContent(hunk, Line.LineType.TO, false);
+
                     int manualHunkLOC = manualContent.length() > 0 ? hunk.getFromFileRange().getLineCount() : 0;
                     int mergedHunkLOC = mergedContent.length() > 0 ? hunk.getToFileRange().getLineCount() : 0;
                     manualDiffLOC += manualHunkLOC;
@@ -284,7 +304,7 @@ public class EvaluationUtils {
             autoMergePrecision = 1.0;
         }
 //        // The manually merged LOC should not be 0
-        if(totalAutoMergedLOC > 0) {
+        if(totalAutoMergedLOC > 0 && totalManualMergedLOC > 0) {
             autoMergeRecall = totalSameLOCManual / (double) totalManualMergedLOC;
         }
         else {
@@ -300,6 +320,64 @@ public class EvaluationUtils {
 
         return new ComparisonResult(numberOfDiffFiles, totalAutoMergedLOC, totalManualMergedLOC,
                 totalSameLOCMerged, totalSameLOCManual, autoMergePrecision, autoMergeRecall);
+    }
+
+    /**
+     * Remove diff hunks that have the identical content ignoring empty chars
+     * Specifically for replication
+     * @param hunks
+     */
+    private static void removeFormatCausedHunks(List<Hunk> hunks) {
+        List<Hunk> hunksCopy = new ArrayList<>(hunks);
+        for (Hunk hunk : hunksCopy) {
+            String hunkFromContent = getHunkContent(hunk, Line.LineType.FROM, true);
+            String hunkToContent = getHunkContent(hunk, Line.LineType.TO, true);
+            if (hunkFromContent.equals(hunkToContent)) {
+                hunks.remove(hunk);
+            }
+        }
+    }
+
+
+    /**
+     * Check if one hunk is caused by moving (false positive diff)
+     * Only for replication
+     * @param hunk
+     * @param visitedHunks
+     * @return true: the hunk if casued by moving, remove it as well as the other one caused by moving
+     */
+    private static boolean removeMovingCausedHunks(Hunk hunk, List<Hunk> visitedHunks) {
+        for (Hunk visitedHunk : visitedHunks) {
+            // P.S. since actually \n brings deviation to line ranges, so here we directly compare hunk
+            // contents
+            // check if line ranges are opposite, e.g. @@ -130,47 +132,0 @@ and @@ -330,0 +287,47 @@
+            //      if (visitedHunk.getFromFileRange().getLineCount() ==
+            // hunk.getToFileRange().getLineCount()
+            //          && visitedHunk.getToFileRange().getLineCount()
+            //              == hunk.getFromFileRange().getLineCount()) {
+            // check if hunk contents are the same
+            String hunkFromContent = getHunkContent(hunk, Line.LineType.FROM, true);
+            String visitedHunkFromContent = getHunkContent(visitedHunk, Line.LineType.FROM, true);
+            String hunkToContent = getHunkContent(hunk, Line.LineType.TO, true);
+            String visitedHunkToContent = getHunkContent(visitedHunk, Line.LineType.TO, true);
+            if (hunkFromContent.equals(visitedHunkToContent)
+                    && hunkToContent.equals(visitedHunkFromContent)) {
+                visitedHunks.remove(visitedHunk);
+                return true;
+            }
+            //      }
+        }
+        return false;
+    }
+
+    /*
+     * Get the corresponding content from the hunk. Ignore empty chars if performing replication
+     */
+    private static String getHunkContent(Hunk hunk, Line.LineType lineType, boolean ignoreEmptyChars) {
+        String content = hunk.getLines().stream().filter(line -> line.getLineType().equals(lineType)).map(Line::getContent)
+                .collect(Collectors.joining("\n"));
+
+        return ignoreEmptyChars ? flattenString(content).trim() : content.trim();
     }
 
     /*
@@ -340,17 +418,6 @@ public class EvaluationUtils {
             e.printStackTrace();
         }
         return content;
-    }
-
-    /*
-     * Get the corresponding content from the hunk
-     */
-    private static String getHunkContent(
-            Hunk hunk, Line.LineType lineType) {
-        String content = hunk.getLines().stream().filter(line -> line.getLineType().equals(lineType)).map(Line::getContent)
-                        .collect(Collectors.joining("\n"));
-
-        return content.trim();
     }
 
     /*

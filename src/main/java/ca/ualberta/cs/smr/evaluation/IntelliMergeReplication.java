@@ -6,16 +6,14 @@ import ca.ualberta.cs.smr.evaluation.data.ConflictingFileData;
 import ca.ualberta.cs.smr.evaluation.data.SourceFile;
 import ca.ualberta.cs.smr.evaluation.database.*;
 import ca.ualberta.cs.smr.utils.EvaluationUtils;
-import ca.ualberta.cs.smr.utils.GitUtils;
-import ca.ualberta.cs.smr.utils.Utils;
-import edu.pku.intellimerge.client.IntelliMerge;
+import com.google.googlejavaformat.java.Formatter;
+import com.google.googlejavaformat.java.FormatterException;
+import edu.pku.intellimerge.client.APIClient;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.*;
 import java.net.URL;
@@ -30,32 +28,33 @@ public class IntelliMergeReplication {
      * Use the IntelliMerge dataset to try to replicate the IntelliMerge results with both versions of IntelliMerge.
      */
     public static void runIntelliMergeReplication(String path) throws Exception {
-        URL url = EvaluationPipeline.class.getResource("/intelliMerge_data");
+        URL url = EvaluationPipeline.class.getResource("/intelliMerge_replication_projects");
         InputStream inputStream = url.openStream();
         ArrayList<String> lines = getLinesFromInputStream(inputStream);
         String projectUrl = "";
         String projectName = "";
         ca.ualberta.cs.smr.evaluation.database.Project proj = null;
         for(String line : lines) {
-            String[] values = line.split(";");
-            if(!values[0].equals(projectUrl)) {
+            if(!line.contains("error-prone")) {
+                continue;
+            }
+            if(!line.equals(projectUrl)) {
                 if(proj != null) {
                     if(!proj.isDone()) {
                         proj.setDone();
                         proj.saveIt();
                     }
                 }
-                projectUrl = values[0];
+                projectUrl = line;
                 projectName = projectUrl.substring(projectUrl.lastIndexOf("/") + 1);
                 proj = ca.ualberta.cs.smr.evaluation.database.Project.findFirst("url = ?", projectUrl);
                 if (proj == null) {
                     System.out.println("Starting " + projectName);
                     proj = new ca.ualberta.cs.smr.evaluation.database.Project(projectUrl, projectName);
                     proj.saveIt();
-                    cloneProject(path, projectUrl);
                 }
             }
-            replicateMergeScenario(values[1], path + "/" + projectName, proj);
+            replicateProject(path + "/" + projectName, proj);
         }
         if(proj != null) {
             if(!proj.isDone()) {
@@ -63,98 +62,126 @@ public class IntelliMergeReplication {
                 proj.saveIt();
             }
         }
-        Utils.clearTemp("projects");
+    }
+
+    /*
+     * Use the project path to get data for each merge scenario and replicate.
+     */
+    private static void replicateProject(String path, Project project) throws Exception {
+        File projectDir = new File(path);
+        File[] scenarios = projectDir.listFiles();
+        for(File scenario : scenarios) {
+            String scenarioName = scenario.getName();
+            if(scenarioName.contains("statistics")) {
+                continue;
+            }
+            replicateMergeScenario(scenario.getName(), path + "/" + scenarioName, project, path + "/" + "statistics.csv");
+        }
     }
 
     /*
      * Run both versions of IntelliMerge on the given merge scenario.
      */
-    private static void replicateMergeScenario(String mergeCommitHash, String path, Project project) throws Exception {
-        Utils.clearTemp("unmodifiedResults");
-        Utils.clearTemp("intelliMergeResults");
-        Utils.clearTemp("intelliMerge");
-        Utils.clearTemp("manualMerge");
-        File file = new File(path);
-        Git git = Git.open(file);
-        GitUtils.gitReset(git);
+    private static void replicateMergeScenario(String mergeCommitHash, String path, Project project, String csvPath)
+            throws Exception {
 
-        String manualResults = System.getProperty("user.home") + "/temp/manualMerge";
-        File manualDir = new File(manualResults);
-        manualDir.mkdirs();
-        try {
-            GitUtils.checkoutForReplication(git, mergeCommitHash);
+        File[] directories = new File(path).listFiles();
+        File base = directories[0];
+        File theirs = directories[1];
+        File ours = directories[2];
+        File gitMerged = directories[3];
+        File manuallyMerged = null;
+        if(directories.length > 4) {
+            manuallyMerged = directories[4];
         }
-        catch(Exception e) {
-            System.out.println("Skipping: " + mergeCommitHash);
-            return;
-        }
-        Repository repository = git.getRepository();
-        ObjectId id = repository.resolve(mergeCommitHash);
-        RevCommit mergeCommitRev = git.getRepository().parseCommit(id);
-        RevCommit leftParent = mergeCommitRev.getParent(0);
-        RevCommit rightParent = mergeCommitRev.getParent(1);
-        String baseCommit;
-        try {
-            baseCommit = GitUtils.getBaseCommit(leftParent, rightParent, git.getRepository());
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
+
+
+        File csvFile = new File(csvPath);
 
         MergeCommit mergeCommit = MergeCommit.findFirst("commit_hash = ?", mergeCommitHash);
         if(mergeCommit == null) {
-            mergeCommit = new MergeCommit(mergeCommitHash, true, leftParent.getName(),
-                    rightParent.getName(), project, mergeCommitRev.getCommitTime());
-            mergeCommit.saveIt();
+            List<String> lines = getLinesFromInputStream(csvFile.toURI().toURL().openStream());
+            for(String line : lines) {
+                String[] values = line.split(";");
+                if(values[0].equals(mergeCommitHash)) {
+                    mergeCommit = new MergeCommit(mergeCommitHash, true, values[1],
+                            values[2], project, 0);
+                    mergeCommit.saveIt();
+                    break;
+                }
+            }
         }
         else if(mergeCommit.isDone()) {
             return;
         }
         else if(!mergeCommit.isDone()) {
-            mergeCommit.delete();
-            mergeCommit = new MergeCommit(mergeCommitHash, true, leftParent.getName(),
-                    rightParent.getName(), project, mergeCommitRev.getCommitTime());
-            mergeCommit.saveIt();
+            List<String> lines = getLinesFromInputStream(csvFile.toURI().toURL().openStream());
+            for(String line : lines) {
+                String[] values = line.split(";");
+                if(values[0].equals(mergeCommitHash)) {
+                    mergeCommit = new MergeCommit(mergeCommitHash, true, values[1],
+                            values[2], project, 0);
+                    mergeCommit.saveIt();
+                    break;
+                }
+            }
+        }
+        String gitMergedPath = gitMerged.getAbsolutePath();
+        // Run IntelliMerge with getDirectories()
+        String resultPath = "intelliMergeResults";
+        String intelliMergeResultPath = path + "/" + resultPath;
+        long time = runIntelliMerge(ours, base, theirs, intelliMergeResultPath, path);
+
+        String gitTemp = gitMerged + "temp";
+        String intelliMergeTemp = intelliMergeResultPath + "temp";
+        copyDir(intelliMergeResultPath, intelliMergeTemp);
+        copyDir(gitMergedPath, gitTemp);
+        //getManualFiles(modifiedResultsPath, path, manualResults);
+
+        String manuallyMergedPath = "";
+        String formattedPath = manuallyMergedPath + "Formatted";
+        if(manuallyMerged != null) {
+            manuallyMergedPath = manuallyMerged.getAbsolutePath();
+            formattedPath = manuallyMergedPath + "Formatted";
+            copyDir(manuallyMergedPath, formattedPath);
+            formatAllJavaFiles(formattedPath);
+
+
         }
 
-        List<String> commits = new ArrayList<>();
-        commits.add(rightParent.getName());
-        commits.add(baseCommit);
-        commits.add(leftParent.getName());
-
-        String modifiedResultsPath = System.getProperty("user.home") + "/temp/intelliMergeResults";
-        // Run modified IntelliMerge
-        String resultPath = "intelliMergeResults";
-        long modifiedTime = runIntelliMerge(path, commits, resultPath);
-
-        GitUtils.checkoutForReplication(git, mergeCommitHash);
-        getManualFiles(modifiedResultsPath, path, manualResults);
-
-        EvaluationUtils.removeAllComments(modifiedResultsPath);
-        EvaluationUtils.removeAllComments(manualResults);
+        EvaluationUtils.removeAllComments(intelliMergeTemp);
+        EvaluationUtils.removeAllComments(gitTemp);
+        EvaluationUtils.removeAllComments(manuallyMergedPath);
+        EvaluationUtils.removeAllComments(formattedPath);
 
 
         // Get the conflict blocks from each of the merged results as well as the number of conflict blocks
-        Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> modifiedIntelliMergeConflicts =
-                EvaluationUtils.extractMergeConflicts(modifiedResultsPath);
+        Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> intelliMergeConflicts =
+                EvaluationUtils.extractMergeConflicts(intelliMergeTemp);
+
+        Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> gitMergeConflicts =
+                EvaluationUtils.extractMergeConflicts(gitTemp);
 
         // Get manually merged java files
         ArrayList<SourceFile> manuallyMergedFiles = EvaluationUtils
-                .getJavaSourceFiles(manualResults, new ArrayList<>(), manualDir);
+                .getJavaSourceFiles(manuallyMergedPath, new ArrayList<>(), manuallyMerged);
+
+        ArrayList<SourceFile> formattedMergedFiles = EvaluationUtils
+                .getJavaSourceFiles(formattedPath, new ArrayList<>(), new File(formattedPath));
 
         // Compare tools with manually merged code
-        ComparisonResult modifiedVsManual = EvaluationUtils.compareAutoMerged(modifiedResultsPath, manuallyMergedFiles, path, true);
-
+        ComparisonResult intelliVsManual = EvaluationUtils.compareAutoMerged(intelliMergeTemp, formattedMergedFiles, path, true);
+        ComparisonResult gitVsManual = EvaluationUtils.compareAutoMerged(gitTemp, manuallyMergedFiles, path, true);
 
 
         // Add IntelliMerge data to database
-        MergeResult modifiedMergeResult = new MergeResult("IntelliMerge_modified", modifiedIntelliMergeConflicts.getLeft().getLeft(),
-                modifiedIntelliMergeConflicts.getLeft().getRight(), modifiedTime, modifiedVsManual, mergeCommit);
-        modifiedMergeResult.saveIt();
+        MergeResult intelliMergeResult = new MergeResult("IntelliMerge", intelliMergeConflicts.getLeft().getLeft(),
+                intelliMergeConflicts.getLeft().getRight(), time, intelliVsManual, mergeCommit);
+        intelliMergeResult.saveIt();
         // Add conflicting files to database
-        List<Pair<ConflictingFileData, List<ConflictBlockData>>> modifiedConflictingFiles = modifiedIntelliMergeConflicts.getRight();
-        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : modifiedConflictingFiles) {
-            ConflictingFile conflictingFile = new ConflictingFile(modifiedMergeResult, pair.getLeft());
+        List<Pair<ConflictingFileData, List<ConflictBlockData>>> intelliMergeConflictingFiles = intelliMergeConflicts.getRight();
+        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : intelliMergeConflictingFiles) {
+            ConflictingFile conflictingFile = new ConflictingFile(intelliMergeResult, pair.getLeft());
             conflictingFile.saveIt();
             // Add each conflict block for the conflicting file
             for(ConflictBlockData conflictBlockData : pair.getRight()) {
@@ -162,6 +189,24 @@ public class IntelliMergeReplication {
                 conflictBlock.saveIt();
             }
         }
+
+        // Add IntelliMerge data to database
+        MergeResult gitMergeResult = new MergeResult("gitMerge", gitMergeConflicts.getLeft().getLeft(),
+                gitMergeConflicts.getLeft().getRight(), time, gitVsManual, mergeCommit);
+        gitMergeResult.saveIt();
+        // Add conflicting files to database
+        List<Pair<ConflictingFileData, List<ConflictBlockData>>> gitMergeConflictingFiles = gitMergeConflicts.getRight();
+        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : gitMergeConflictingFiles) {
+            ConflictingFile conflictingFile = new ConflictingFile(intelliMergeResult, pair.getLeft());
+            conflictingFile.saveIt();
+            // Add each conflict block for the conflicting file
+            for(ConflictBlockData conflictBlockData : pair.getRight()) {
+                ConflictBlock conflictBlock = new ConflictBlock(conflictingFile, conflictBlockData);
+                conflictBlock.saveIt();
+            }
+        }
+
+
 
         mergeCommit.setDone();
         mergeCommit.saveIt();
@@ -173,19 +218,19 @@ public class IntelliMergeReplication {
      * Merge the left and right parent using the specified IntelliMerge via command line. Return how long it takes for IntelliMerge
      * to finish.
      */
-    private static long runIntelliMerge(String repoPath, List<String> commits, String output) throws Exception{
-        String outputDir = System.getProperty("user.home") + "/temp/" + output;
+    private static long runIntelliMerge(File ours, File base, File theirs, String output, String path) throws Exception {
         System.out.println("Starting IntelliMerge");
-        long time = System.currentTimeMillis();
+        List<String> directories = new ArrayList<>();
+        directories.add(ours.getAbsolutePath());
+        directories.add(base.getAbsolutePath());
+        directories.add(theirs.getAbsolutePath());
         try {
-            IntelliMerge merge = new IntelliMerge();
-            // our commit, base commit, their commit in that order
-            List<Long> times = merge.mergeBranchesForRefMergeEvaluation(repoPath, commits, outputDir, true);
+            // None of the values are used, so setting to null for now
+            APIClient apiClient = new APIClient(null, null, null, null, null, false);
+            long time = System.currentTimeMillis();
+            apiClient.processDirectory(path, output);
+            // merge.mergeDirectories(directories, output);
             long time2 = System.currentTimeMillis();
-            System.out.println("Collection took: " + times.get(0));
-            System.out.println("Building took: " + times.get(1));
-            System.out.println("Matching took: " + times.get(2));
-            System.out.println("Merging took: " + times.get(3));
             return time2 - time;
         }
         catch(IndexOutOfBoundsException e) {
@@ -246,5 +291,50 @@ public class IntelliMergeReplication {
             }
         }
     }
+
+    /*
+     * Format all java files with google-java-formatter in a directory
+     */
+    public static void formatAllJavaFiles(String dir) {
+        // read file content as string
+        File file = new File(dir);
+        if (file.exists()) {
+            File[] files = file.listFiles();
+            for (File f : files) {
+                if (f.isDirectory()) {
+                    formatAllJavaFiles(f.getAbsolutePath());
+                } else if (f.isFile() && isJavaFile(f)) {
+                    String code = EvaluationUtils.readFileToString(f);
+                    try {
+                        // format with google-java-formatter
+                        String reformattedCode = new Formatter().formatSource(code);
+                        // write string back into the original file
+                        EvaluationUtils.writeContent(f.getAbsolutePath(), reformattedCode);
+                    } catch (FormatterException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean isJavaFile(File file) {
+        return file.getName().toLowerCase().contains(".java");
+    }
+
+
+
+    public static void copyDir(String sourceDir, String targetDir) {
+        File srcDir = new File(sourceDir);
+        if (srcDir.exists()) {
+            File destDir = new File(targetDir);
+            try {
+                FileUtils.copyDirectory(srcDir, destDir);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
 }
