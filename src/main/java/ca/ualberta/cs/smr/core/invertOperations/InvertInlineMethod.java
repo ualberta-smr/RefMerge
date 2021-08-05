@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.core.undoOperations;
+package ca.ualberta.cs.smr.core.invertOperations;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.InlineMethodObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
@@ -25,19 +25,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-public class UndoInlineMethod {
+public class InvertInlineMethod {
 
     Project project;
 
-    public UndoInlineMethod(Project project) {
+    public InvertInlineMethod(Project project) {
         this.project = project;
     }
 
     /*
-     * Undo the inline method refactoring that was originally performed by performing extract method. Use the text offset
+     * Invert the inline method refactoring that was originally performed by performing extract method. Use the text offset
      * to move the extracted method to the correct spot within the class.
      */
-    public void undoInlineMethod(RefactoringObject ref) {
+    public void invertInlineMethod(RefactoringObject ref) {
         InlineMethodObject inlineMethodObject = (InlineMethodObject) ref;
         // Original method that is being inlined
         MethodSignatureObject originalOperation = inlineMethodObject.getOriginalMethodSignature();

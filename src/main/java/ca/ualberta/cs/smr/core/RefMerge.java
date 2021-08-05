@@ -2,7 +2,7 @@ package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.core.matrix.Matrix;
 import ca.ualberta.cs.smr.core.replayOperations.*;
-import ca.ualberta.cs.smr.core.undoOperations.*;
+import ca.ualberta.cs.smr.core.invertOperations.*;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.utils.Utils;
@@ -89,7 +89,7 @@ public class RefMerge extends AnAction {
         // Update the PSI classes after the commit
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
-        rightRefs = UndoRefactorings.undoRefactorings(rightRefs, project);
+        rightRefs = InvertRefactorings.invertRefactorings(rightRefs, project);
         Utils.saveContent(project, "right");
         String rightUndoCommit = gitUtils.addAndCommit();
         gitUtils.checkout(leftCommit);
@@ -97,7 +97,7 @@ public class RefMerge extends AnAction {
         // Update the PSI classes after the commit
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
-        leftRefs = UndoRefactorings.undoRefactorings(leftRefs, project);
+        leftRefs = InvertRefactorings.invertRefactorings(leftRefs, project);
         Utils.saveContent(project, "left");
         gitUtils.addAndCommit();
         gitUtils.merge(rightUndoCommit);

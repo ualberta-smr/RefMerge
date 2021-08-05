@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.core.undoOperations;
+package ca.ualberta.cs.smr.core.invertOperations;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -6,12 +6,12 @@ import com.intellij.openapi.project.Project;
 
 import java.util.ArrayList;
 
-public class UndoRefactorings {
+public class InvertRefactorings {
     /*
-     * undoRefactorings takes a list of refactorings and performs the inverse for each one.
+     * invertRefactorings takes a list of refactorings and performs the inverse for each one.
      */
-    public static ArrayList<RefactoringObject> undoRefactorings(ArrayList<RefactoringObject> refactoringObjects,
-                                                                Project project) {
+    public static ArrayList<RefactoringObject> invertRefactorings(ArrayList<RefactoringObject> refactoringObjects,
+                                                                  Project project) {
         // Iterate through the list of refactorings and undo each one
         for(RefactoringObject refactoringObject : refactoringObjects) {
             switch (refactoringObject.getRefactoringType()) {
@@ -20,8 +20,8 @@ public class UndoRefactorings {
                 case MOVE_RENAME_CLASS:
                     try {
                         // Undo the rename class refactoring. This is commented out because of the prompt issue
-                        UndoMoveRenameClass undoMoveRenameClass = new UndoMoveRenameClass(project);
-                        undoMoveRenameClass.undoMoveRenameClass(refactoringObject);
+                        InvertMoveRenameClass invertMoveRenameClass = new InvertMoveRenameClass(project);
+                        invertMoveRenameClass.invertMoveRenameClass(refactoringObject);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -31,15 +31,15 @@ public class UndoRefactorings {
                 case MOVE_AND_RENAME_OPERATION:
                     // Undo the rename method refactoring
                     try {
-                        UndoMoveRenameMethod undoMoveRenameMethod = new UndoMoveRenameMethod(project);
-                        undoMoveRenameMethod.undoMoveRenameMethod(refactoringObject);
+                        InvertMoveRenameMethod invertMoveRenameMethod = new InvertMoveRenameMethod(project);
+                        invertMoveRenameMethod.invertMoveRenameMethod(refactoringObject);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                     break;
                 case EXTRACT_OPERATION:
-                    UndoExtractMethod undoExtractMethod = new UndoExtractMethod(project);
-                    refactoringObject = undoExtractMethod.undoExtractMethod(refactoringObject);
+                    InvertExtractMethod invertExtractMethod = new InvertExtractMethod(project);
+                    refactoringObject = invertExtractMethod.invertExtractMethod(refactoringObject);
                     if(refactoringObject == null) {
                         continue;
                     }
@@ -48,8 +48,8 @@ public class UndoRefactorings {
                     break;
                 case INLINE_OPERATION:
                     try {
-                        UndoInlineMethod undoInlineMethod = new UndoInlineMethod(project);
-                        undoInlineMethod.undoInlineMethod(refactoringObject);
+                        InvertInlineMethod invertInlineMethod = new InvertInlineMethod(project);
+                        invertInlineMethod.invertInlineMethod(refactoringObject);
                     } catch (Exception exception) {
                         exception.printStackTrace();
                     }
