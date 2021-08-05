@@ -1,7 +1,7 @@
 <idea-plugin>
-    <id>org.example.RefMerge</id>
+    <id>ca.ualberta.cs.smr</id>
     <name>RefMerge</name>
-    <vendor email="mjellis@ualberta.ca" url="http://www.ualberta.ca"/>
+    <vendor>University of Alberta</vendor>
 
     <description>
         Test refactoring tool to explore refactoring capabilities.
