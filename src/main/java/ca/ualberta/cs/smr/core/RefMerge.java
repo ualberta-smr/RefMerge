@@ -114,7 +114,7 @@ public class RefMerge extends AnAction {
 
         // Check if any of the refactorings are conflicting or have ordering dependencies
         Matrix matrix = new Matrix(project);
-        Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, ArrayList<RefactoringObject>> pair = matrix.runMatrix(leftRefs, rightRefs);
+        Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, ArrayList<RefactoringObject>> pair = matrix.detectConflicts(leftRefs, rightRefs);
 
         // Combine the lists so we can perform all the refactorings on the merged project
         // Replay all of the refactorings

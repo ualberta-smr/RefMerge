@@ -57,7 +57,7 @@ public class Matrix {
     /*
      * Iterate through each of the left refactorings to compare against the right refactorings.
      */
-    public Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, ArrayList<RefactoringObject>> runMatrix(
+    public Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, ArrayList<RefactoringObject>> detectConflicts(
                                                             ArrayList<RefactoringObject> leftRefactoringList,
                                                                  ArrayList<RefactoringObject> rightRefactoringList) {
         ArrayList<RefactoringObject> replayObjectList = new ArrayList<>();
