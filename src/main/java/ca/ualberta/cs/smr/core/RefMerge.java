@@ -1,10 +1,7 @@
 package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.core.matrix.Matrix;
-import ca.ualberta.cs.smr.core.replayOperations.ReplayExtractMethod;
-import ca.ualberta.cs.smr.core.replayOperations.ReplayInlineMethod;
-import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameClass;
-import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameMethod;
+import ca.ualberta.cs.smr.core.replayOperations.*;
 import ca.ualberta.cs.smr.core.undoOperations.UndoExtractMethod;
 import ca.ualberta.cs.smr.core.undoOperations.UndoInlineMethod;
 import ca.ualberta.cs.smr.core.undoOperations.UndoMoveRenameClass;
@@ -118,7 +115,7 @@ public class RefMerge extends AnAction {
 
         // Combine the lists so we can perform all the refactorings on the merged project
         // Replay all of the refactorings
-        replayRefactorings(pair.getRight());
+        ReplayRefactorings.replayRefactorings(pair.getRight(), project);
 
         return pair.getLeft();
 
@@ -179,55 +176,7 @@ public class RefMerge extends AnAction {
         return refactoringObjects;
     }
 
-    /*
-     * replayRefactorings takes a list of refactorings and performs each of the refactorings.
-     */
-    public void replayRefactorings(ArrayList<RefactoringObject> refactoringObjects) {
-            for(RefactoringObject refactoringObject : refactoringObjects) {
-                switch (refactoringObject.getRefactoringType()) {
-                    case RENAME_CLASS:
-                    case MOVE_CLASS:
-                    case MOVE_RENAME_CLASS:
-                        try {
-                        ReplayMoveRenameClass replayMoveRenameClass = new ReplayMoveRenameClass(project);
-                        replayMoveRenameClass.replayMoveRenameClass(refactoringObject);
-                        } catch (Exception exception) {
-                            exception.printStackTrace();
-                        }
-                        break;
-                    case RENAME_METHOD:
-                    case MOVE_OPERATION:
-                    case MOVE_AND_RENAME_OPERATION:
-                        try {
-                        ReplayMoveRenameMethod replayMoveRenameMethod = new ReplayMoveRenameMethod(project);
-                        replayMoveRenameMethod.replayMoveRenameMethod(refactoringObject);
-                        } catch (Exception exception) {
-                            exception.printStackTrace();
-                        }
-                        break;
-                    case EXTRACT_OPERATION:
-                        ReplayExtractMethod replayExtractMethod = new ReplayExtractMethod(project);
-                        try {
-                            replayExtractMethod.replayExtractMethod(refactoringObject);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        break;
-                    case INLINE_OPERATION:
-                        try {
-                        ReplayInlineMethod replayInlineMethod = new ReplayInlineMethod(project);
-                        replayInlineMethod.replayInlineMethod(refactoringObject);
-                        } catch (Exception exception) {
-                            exception.printStackTrace();
-                        }
-                        break;
-                }
 
-            }
-
-        // Save all of the refactoring changes from memory onto disk
-        FileDocumentManager.getInstance().saveAllDocuments();
-    }
 
     /*
      * Use RefMiner to detect refactorings in commits between the base commit and the parent commit. Compare each newly
