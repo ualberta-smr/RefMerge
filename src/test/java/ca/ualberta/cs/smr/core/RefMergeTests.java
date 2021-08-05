@@ -2,6 +2,7 @@ package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.core.replayOperations.ReplayRefactorings;
+import ca.ualberta.cs.smr.core.undoOperations.UndoRefactorings;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
 import com.intellij.openapi.project.Project;
@@ -50,9 +51,7 @@ public class RefMergeTests extends LightJavaCodeInsightFixtureTestCase {
         ArrayList<RefactoringObject> refactorings = new ArrayList<>();
         refactorings.addAll(classRefactorings);
         refactorings.addAll(methodRefactorings);
-        RefMerge refMerge = new RefMerge();
-        refMerge.project = project;
-        refMerge.undoRefactorings(refactorings);
+        UndoRefactorings.undoRefactorings(refactorings, project);
 
         oldMethods = TestUtils.getPsiMethodsFromFile(psiFiles[0]);
         newMethods = TestUtils.getPsiMethodsFromFile(psiFiles[1]);
@@ -97,8 +96,6 @@ public class RefMergeTests extends LightJavaCodeInsightFixtureTestCase {
         ArrayList<RefactoringObject> refactorings = new ArrayList<>();
         refactorings.addAll(methodRefactorings);
         refactorings.addAll(classRefactorings);
-//        RefMerge refMerge = new RefMerge();
-//        refMerge.project = project;
         ReplayRefactorings.replayRefactorings(refactorings, project);
 
         oldMethods = TestUtils.getPsiMethodsFromFile(psiFiles[0]);
