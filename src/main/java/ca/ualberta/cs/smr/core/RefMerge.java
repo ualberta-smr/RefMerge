@@ -82,8 +82,8 @@ public class RefMerge extends AnAction {
 
         GitUtils gitUtils = new GitUtils(repo, project);
         String baseCommit = gitUtils.getBaseCommit(leftCommit, rightCommit);
-        ArrayList<RefactoringObject> rightRefs = getAndSimplifyRefactorings(rightCommit, baseCommit);
-        ArrayList<RefactoringObject> leftRefs = getAndSimplifyRefactorings(leftCommit, baseCommit);
+        ArrayList<RefactoringObject> rightRefs = detectAndSimplifyRefactorings(rightCommit, baseCommit);
+        ArrayList<RefactoringObject> leftRefs = detectAndSimplifyRefactorings(leftCommit, baseCommit);
 
         gitUtils.checkout(rightCommit);
         // Update the PSI classes after the commit
@@ -122,7 +122,7 @@ public class RefMerge extends AnAction {
      * detected refactoring against previously detected refactorings to check for transitivity or if the refactorings can
      * be simplified.
      */
-    public ArrayList<RefactoringObject> getAndSimplifyRefactorings(String commit, String base) {
+    public ArrayList<RefactoringObject> detectAndSimplifyRefactorings(String commit, String base) {
         ArrayList<RefactoringObject> simplifiedRefactorings = new ArrayList<>();
         Matrix matrix = new Matrix(project);
         GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
