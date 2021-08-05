@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.core.undoOperations;
+package ca.ualberta.cs.smr.core.invertOperations;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.MoveRenameClassObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
@@ -24,18 +24,18 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class UndoMoveRenameClass {
+public class InvertMoveRenameClass {
 
     Project project;
 
-    public UndoMoveRenameClass(Project project) {
+    public InvertMoveRenameClass(Project project) {
         this.project = project;
     }
 
     /*
-     * Undo the rename class refactoring that was originally performed by performing another rename class refactoring.
+     * Invert the rename class refactoring that was originally performed by performing another rename class refactoring.
      */
-    public void undoMoveRenameClass(RefactoringObject ref) {
+    public void invertMoveRenameClass(RefactoringObject ref) {
         MoveRenameClassObject moveRenameClassObject = (MoveRenameClassObject) ref;
         String srcQualifiedClass = moveRenameClassObject.getOriginalClassObject().getClassName();
         String destQualifiedClass = moveRenameClassObject.getDestinationClassObject().getClassName();

@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.core.undoOperations;
+package ca.ualberta.cs.smr.core.invertOperations;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
@@ -13,18 +13,18 @@ import com.intellij.usageView.UsageInfo;
 import com.intellij.usages.UsageView;
 import com.intellij.usages.UsageViewManager;
 
-public class UndoMoveRenameMethod {
+public class InvertMoveRenameMethod {
 
     Project project;
 
-    public UndoMoveRenameMethod(Project project) {
+    public InvertMoveRenameMethod(Project project) {
         this.project = project;
     }
 
     /*
-     * Undo the rename method refactoring that was performed in the commit
+     * Invert the rename method refactoring that was performed in the commit
      */
-    public void undoMoveRenameMethod(RefactoringObject ref) {
+    public void invertMoveRenameMethod(RefactoringObject ref) {
         MoveRenameMethodObject moveRenameMethodObject = (MoveRenameMethodObject) ref;
         MethodSignatureObject original = moveRenameMethodObject.getOriginalMethodSignature();
         MethodSignatureObject refactored = moveRenameMethodObject.getDestinationMethodSignature();

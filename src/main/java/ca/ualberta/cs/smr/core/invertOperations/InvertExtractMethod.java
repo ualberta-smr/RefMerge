@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.core.undoOperations;
+package ca.ualberta.cs.smr.core.invertOperations;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.ExtractMethodObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
@@ -21,18 +21,18 @@ import com.intellij.usages.UsageViewManager;
 import com.intellij.util.Query;
 import gr.uom.java.xmi.decomposition.OperationInvocation;
 
-public class UndoExtractMethod {
+public class InvertExtractMethod {
 
     Project project;
 
-    public UndoExtractMethod(Project project) {
+    public InvertExtractMethod(Project project) {
         this.project = project;
     }
 
     /*
-     * Undo the extract method refactoring that was originally performed by performing an inline method refactoring.
+     * Invert the extract method refactoring that was originally performed by performing an inline method refactoring.
      */
-    public RefactoringObject undoExtractMethod(RefactoringObject ref) {
+    public RefactoringObject invertExtractMethod(RefactoringObject ref) {
         ExtractMethodObject extractMethodObject = (ExtractMethodObject) ref;
         MethodSignatureObject originalMethod = extractMethodObject.getOriginalMethodSignature();
         MethodSignatureObject destinationMethod = extractMethodObject.getDestinationMethodSignature();
