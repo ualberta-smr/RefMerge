@@ -7,7 +7,7 @@ plugins {
 
 }
 
-group 'org.example'
+group 'ca.ualberta.cs.smr'
 version '1.0-SNAPSHOT'
 
 repositories {
