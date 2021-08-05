@@ -2,17 +2,13 @@ package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.core.matrix.Matrix;
 import ca.ualberta.cs.smr.core.replayOperations.*;
-import ca.ualberta.cs.smr.core.undoOperations.UndoExtractMethod;
-import ca.ualberta.cs.smr.core.undoOperations.UndoInlineMethod;
-import ca.ualberta.cs.smr.core.undoOperations.UndoMoveRenameClass;
-import ca.ualberta.cs.smr.core.undoOperations.UndoMoveRenameMethod;
+import ca.ualberta.cs.smr.core.undoOperations.*;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import org.apache.commons.lang3.tuple.Pair;
@@ -93,7 +89,7 @@ public class RefMerge extends AnAction {
         // Update the PSI classes after the commit
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
-        rightRefs = undoRefactorings(rightRefs);
+        rightRefs = UndoRefactorings.undoRefactorings(rightRefs, project);
         Utils.saveContent(project, "right");
         String rightUndoCommit = gitUtils.addAndCommit();
         gitUtils.checkout(leftCommit);
@@ -101,7 +97,7 @@ public class RefMerge extends AnAction {
         // Update the PSI classes after the commit
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
-        leftRefs = undoRefactorings(leftRefs);
+        leftRefs = UndoRefactorings.undoRefactorings(leftRefs, project);
         Utils.saveContent(project, "left");
         gitUtils.addAndCommit();
         gitUtils.merge(rightUndoCommit);
@@ -120,63 +116,6 @@ public class RefMerge extends AnAction {
         return pair.getLeft();
 
     }
-
-    /*
-     * undoRefactorings takes a list of refactorings and performs the inverse for each one.
-     */
-    public ArrayList<RefactoringObject> undoRefactorings(ArrayList<RefactoringObject> refactoringObjects) {
-        // Iterate through the list of refactorings and undo each one
-        for(RefactoringObject refactoringObject : refactoringObjects) {
-            switch (refactoringObject.getRefactoringType()) {
-                case RENAME_CLASS:
-                case MOVE_CLASS:
-                case MOVE_RENAME_CLASS:
-                    try {
-                    // Undo the rename class refactoring. This is commented out because of the prompt issue
-                    UndoMoveRenameClass undoMoveRenameClass = new UndoMoveRenameClass(project);
-                    undoMoveRenameClass.undoMoveRenameClass(refactoringObject);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                case RENAME_METHOD:
-                case MOVE_OPERATION:
-                case MOVE_AND_RENAME_OPERATION:
-                    // Undo the rename method refactoring
-                    try {
-                        UndoMoveRenameMethod undoMoveRenameMethod = new UndoMoveRenameMethod(project);
-                        undoMoveRenameMethod.undoMoveRenameMethod(refactoringObject);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                case EXTRACT_OPERATION:
-                    UndoExtractMethod undoExtractMethod = new UndoExtractMethod(project);
-                    refactoringObject = undoExtractMethod.undoExtractMethod(refactoringObject);
-                    if(refactoringObject == null) {
-                        continue;
-                    }
-                    int index = refactoringObjects.indexOf(refactoringObject);
-                    refactoringObjects.set(index, refactoringObject);
-                    break;
-                case INLINE_OPERATION:
-                    try {
-                        UndoInlineMethod undoInlineMethod = new UndoInlineMethod(project);
-                        undoInlineMethod.undoInlineMethod(refactoringObject);
-                    } catch (Exception exception) {
-                        exception.printStackTrace();
-                    }
-                    break;
-
-            }
-
-        }
-        // Save all of the refactoring changes from memory onto disk
-        FileDocumentManager.getInstance().saveAllDocuments();
-        return refactoringObjects;
-    }
-
-
 
     /*
      * Use RefMiner to detect refactorings in commits between the base commit and the parent commit. Compare each newly
