@@ -11,13 +11,10 @@ import com.google.googlejavaformat.java.FormatterException;
 import edu.pku.intellimerge.client.APIClient;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.JGitInternalException;
+import org.eclipse.jgit.errors.LargeObjectException;
 
 import java.io.*;
 import java.net.URL;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,16 +32,11 @@ public class IntelliMergeReplication {
         String projectName = "";
         ca.ualberta.cs.smr.evaluation.database.Project proj = null;
         for(String line : lines) {
-            if(!line.contains("error-prone")) {
-                continue;
-            }
+//            if(line.contains("junit") || line.contains("gradle") || line.contains("error-prone") ||
+//                line.contains("storm") || line.contains("javaparser") || line.contains("antlr") || line.contains("deeplearning")) {
+//                continue;
+//            }
             if(!line.equals(projectUrl)) {
-                if(proj != null) {
-                    if(!proj.isDone()) {
-                        proj.setDone();
-                        proj.saveIt();
-                    }
-                }
                 projectUrl = line;
                 projectName = projectUrl.substring(projectUrl.lastIndexOf("/") + 1);
                 proj = ca.ualberta.cs.smr.evaluation.database.Project.findFirst("url = ?", projectUrl);
@@ -52,6 +44,9 @@ public class IntelliMergeReplication {
                     System.out.println("Starting " + projectName);
                     proj = new ca.ualberta.cs.smr.evaluation.database.Project(projectUrl, projectName);
                     proj.saveIt();
+                }
+                if(proj.isDone()) {
+                    continue;
                 }
             }
             replicateProject(path + "/" + projectName, proj);
@@ -86,15 +81,12 @@ public class IntelliMergeReplication {
             throws Exception {
 
         File[] directories = new File(path).listFiles();
-        File base = directories[0];
-        File theirs = directories[1];
-        File ours = directories[2];
         File gitMerged = directories[3];
-        File manuallyMerged = null;
-        if(directories.length > 4) {
-            manuallyMerged = directories[4];
+        File manuallyMerged;
+        if(directories.length < 5) {
+            return;
         }
-
+        manuallyMerged = directories[4];
 
         File csvFile = new File(csvPath);
 
@@ -111,26 +103,17 @@ public class IntelliMergeReplication {
                 }
             }
         }
-        else if(mergeCommit.isDone()) {
+        else  {
             return;
         }
-        else if(!mergeCommit.isDone()) {
-            List<String> lines = getLinesFromInputStream(csvFile.toURI().toURL().openStream());
-            for(String line : lines) {
-                String[] values = line.split(";");
-                if(values[0].equals(mergeCommitHash)) {
-                    mergeCommit = new MergeCommit(mergeCommitHash, true, values[1],
-                            values[2], project, 0);
-                    mergeCommit.saveIt();
-                    break;
-                }
-            }
+        if(mergeCommit == null) {
+            return;
         }
         String gitMergedPath = gitMerged.getAbsolutePath();
         // Run IntelliMerge with getDirectories()
         String resultPath = "intelliMergeResults";
         String intelliMergeResultPath = path + "/" + resultPath;
-        long time = runIntelliMerge(ours, base, theirs, intelliMergeResultPath, path);
+        long time = runIntelliMerge(intelliMergeResultPath, path);
 
         String gitTemp = gitMerged + "temp";
         String intelliMergeTemp = intelliMergeResultPath + "temp";
@@ -138,16 +121,12 @@ public class IntelliMergeReplication {
         copyDir(gitMergedPath, gitTemp);
         //getManualFiles(modifiedResultsPath, path, manualResults);
 
-        String manuallyMergedPath = "";
+        String manuallyMergedPath = manuallyMerged.getAbsolutePath();
         String formattedPath = manuallyMergedPath + "Formatted";
-        if(manuallyMerged != null) {
-            manuallyMergedPath = manuallyMerged.getAbsolutePath();
-            formattedPath = manuallyMergedPath + "Formatted";
-            copyDir(manuallyMergedPath, formattedPath);
-            formatAllJavaFiles(formattedPath);
+        copyDir(manuallyMergedPath, formattedPath);
+        formatAllJavaFiles(formattedPath);
 
 
-        }
 
         EvaluationUtils.removeAllComments(intelliMergeTemp);
         EvaluationUtils.removeAllComments(gitTemp);
@@ -157,10 +136,10 @@ public class IntelliMergeReplication {
 
         // Get the conflict blocks from each of the merged results as well as the number of conflict blocks
         Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> intelliMergeConflicts =
-                EvaluationUtils.extractMergeConflicts(intelliMergeTemp);
+                EvaluationUtils.extractMergeConflicts(intelliMergeTemp, true);
 
         Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> gitMergeConflicts =
-                EvaluationUtils.extractMergeConflicts(gitTemp);
+                EvaluationUtils.extractMergeConflicts(gitTemp, false);
 
         // Get manually merged java files
         ArrayList<SourceFile> manuallyMergedFiles = EvaluationUtils
@@ -191,7 +170,7 @@ public class IntelliMergeReplication {
         }
 
         // Add IntelliMerge data to database
-        MergeResult gitMergeResult = new MergeResult("gitMerge", gitMergeConflicts.getLeft().getLeft(),
+        MergeResult gitMergeResult = new MergeResult("GitMerge", gitMergeConflicts.getLeft().getLeft(),
                 gitMergeConflicts.getLeft().getRight(), time, gitVsManual, mergeCommit);
         gitMergeResult.saveIt();
         // Add conflicting files to database
@@ -218,22 +197,18 @@ public class IntelliMergeReplication {
      * Merge the left and right parent using the specified IntelliMerge via command line. Return how long it takes for IntelliMerge
      * to finish.
      */
-    private static long runIntelliMerge(File ours, File base, File theirs, String output, String path) throws Exception {
+    private static long runIntelliMerge(String output, String path) throws Exception {
         System.out.println("Starting IntelliMerge");
-        List<String> directories = new ArrayList<>();
-        directories.add(ours.getAbsolutePath());
-        directories.add(base.getAbsolutePath());
-        directories.add(theirs.getAbsolutePath());
         try {
-            // None of the values are used, so setting to null for now
-            APIClient apiClient = new APIClient(null, null, null, null, null, false);
+            // None of the values are used, so setting to null for now except for hasMultiple
+            APIClient apiClient = new APIClient(null, null, null, null, null, true);
             long time = System.currentTimeMillis();
             apiClient.processDirectory(path, output);
-            // merge.mergeDirectories(directories, output);
             long time2 = System.currentTimeMillis();
+            System.out.println("IntelliMerge is done");
             return time2 - time;
         }
-        catch(IndexOutOfBoundsException e) {
+        catch(IndexOutOfBoundsException | OutOfMemoryError | LargeObjectException.OutOfMemory e) {
             e.printStackTrace();
 
         }
@@ -251,45 +226,6 @@ public class IntelliMergeReplication {
             lines.add(reader.readLine());
         }
         return lines;
-    }
-
-    /*
-     * Clone the given project.
-     */
-    private static void cloneProject(String path, String url) {
-        String projectName = url.substring(url.lastIndexOf("/"));
-        String clonePath = path + projectName;
-        try {
-            Git.cloneRepository().setURI(url).setDirectory(new File(clonePath)).call();
-        }
-        catch(GitAPIException | JGitInternalException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void getManualFiles(String result, String projectPath, String manualPath) {
-
-        File resultDir = new File(result);
-        ArrayList<SourceFile> resultFiles = EvaluationUtils.getJavaSourceFiles(result, new ArrayList<>(), resultDir);
-        for(SourceFile resultFile : resultFiles) {
-            String relativePath = resultFile.getRelativePath();
-            String projectFilePath = projectPath + "/" + relativePath;
-            File manualFile = new File(projectFilePath);
-            if(manualFile.exists()) {
-                String manualFilePath = manualPath + "/" + relativePath;
-                try {
-                    File targetDirectory = new File(manualFilePath.substring(0, manualFilePath.lastIndexOf("/")));
-                    if(!targetDirectory.exists()) {
-                        targetDirectory.mkdirs();
-                    }
-
-                    File targetFile = new File(manualFilePath);
-                    Files.copy(manualFile.toPath(), targetFile.toPath());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 
     /*

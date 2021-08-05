@@ -220,11 +220,11 @@ public class RefMergeEvaluation {
 
         // Get the conflict blocks from each of the merged results as well as the number of conflict blocks
         Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> refMergeConflicts =
-                EvaluationUtils.extractMergeConflicts(refMergePath);
+                EvaluationUtils.extractMergeConflicts(refMergePath, false);
         Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> gitMergeConflicts =
-                EvaluationUtils.extractMergeConflicts(gitMergePath);
+                EvaluationUtils.extractMergeConflicts(gitMergePath, false);
         Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> intelliMergeConflicts =
-                EvaluationUtils.extractMergeConflicts(intelliMergePath);
+                EvaluationUtils.extractMergeConflicts(intelliMergePath, false);
 
         // Get manually merged java files
         File manuallyMergedDir = new File(manuallyMergedPath);
