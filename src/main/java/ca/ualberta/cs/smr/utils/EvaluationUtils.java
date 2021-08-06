@@ -55,7 +55,7 @@ public class EvaluationUtils {
             }
             // If the file is conflicting
             if(conflictBlocks.size() > 0) {
-                ConflictingFileData conflictingFileData = new ConflictingFileData(file.getAbsolutePath(), conflictBlocks.size(), conflictingLOC);
+                ConflictingFileData conflictingFileData = new ConflictingFileData(file.getRelativePath(), conflictBlocks.size(), conflictingLOC);
                 conflictingFiles.add(Pair.of(conflictingFileData, conflictBlocks));
             }
             totalConflictingLOC += conflictingLOC;
@@ -160,18 +160,18 @@ public class EvaluationUtils {
                 isLeftContent = false;
                 String leftContent = leftConflictingContent.toString();
                 String rightContent = rightConflictingContent.toString();
-                leftContent = flattenString(leftContent).trim();
-                rightContent = flattenString(rightContent).trim();
-                if(leftContent.length() == 0 && rightContent.length() == 0) {
-                    iterator.remove();
-                    continue;
-                }
-                if(leftContent.equals(rightContent)) {
-                    iterator.remove();
-                    continue;
-                }
+//                leftContent = flattenString(leftContent).trim();
+//                rightContent = flattenString(rightContent).trim();
+//                if(leftContent.length() == 0 && rightContent.length() == 0) {
+//                    iterator.remove();
+//                    continue;
+//                }
+//                if(leftContent.equals(rightContent)) {
+//                    iterator.remove();
+//                    continue;
+//                }
 
-                ConflictBlockData mergeConflict = new ConflictBlockData(leftContent, rightContent, startLOC, endLOC);
+                ConflictBlockData mergeConflict = new ConflictBlockData(leftContent, rightContent, startLOC, endLOC, path);
                 mergeConflicts.add(mergeConflict);
                 iterator.remove();
 
@@ -230,27 +230,27 @@ public class EvaluationUtils {
                 String leftContent = leftConflictingContent.toString();
                 String rightContent = rightConflictingContent.toString();
 
-                leftContent = flattenString(leftContent).trim();
-                rightContent = flattenString(rightContent).trim();
-                if(leftContent.length() == 0 && rightContent.length() == 0) {
-                    iterator.remove();
-                    continue;
-                }
-                if(leftContent.equals(rightContent)) {
-                    iterator.remove();
-                    continue;
-                }
-                if(leftContent.length() == 0 && rightContent.contains("@") && rightContent.length() < 30) {
-                    iterator.remove();
-                    continue;
-                }
-                if(rightContent.length() == 0 && leftContent.contains("@") && leftContent.length() < 30) {
-                    iterator.remove();
-                    continue;
-                }
+//                leftContent = flattenString(leftContent).trim();
+//                rightContent = flattenString(rightContent).trim();
+//                if(leftContent.length() == 0 && rightContent.length() == 0) {
+//                    iterator.remove();
+//                    continue;
+//                }
+//                if(leftContent.equals(rightContent)) {
+//                    iterator.remove();
+//                    continue;
+//                }
+//                if(leftContent.length() == 0 && rightContent.contains("@") && rightContent.length() < 30) {
+//                    iterator.remove();
+//                    continue;
+//                }
+//                if(rightContent.length() == 0 && leftContent.contains("@") && leftContent.length() < 30) {
+//                    iterator.remove();
+//                    continue;
+//                }
 
 
-                ConflictBlockData mergeConflict = new ConflictBlockData(leftContent, rightContent, startLOC, endLOC);
+                ConflictBlockData mergeConflict = new ConflictBlockData(leftContent, rightContent, startLOC, endLOC, path);
                 mergeConflicts.add(mergeConflict);
                 // reset the flags
                 leftConflictingContent = new StringBuilder();
@@ -333,7 +333,7 @@ public class EvaluationUtils {
      * and recall.
      */
     public static ComparisonResult compareAutoMerged(String mergedDir, List<SourceFile> manuallyMergedFiles,
-                                                     String projectPath, boolean isReplication) {
+                                                     String projectPath, List<String> relativePaths, boolean isReplication) {
         int numberOfDiffFiles = 0;
         double autoMergePrecision = 0.0;
         double autoMergeRecall = 0.0;
@@ -348,11 +348,18 @@ public class EvaluationUtils {
             String manualRelativePath = manuallyMergedFile.getRelativePath();
             String mergedAbsolutePath = mergedDir + "/" + manualRelativePath;
 
+            if(!relativePaths.contains(manualRelativePath)) {
+                continue;
+            }
+
+            if(manualAbsolutePath.contains("f95")) {
+                System.out.println();
+            }
+
             // Get the number of manually merged lines of code
             int manualLOC = readFileToLines(manualAbsolutePath).size();
             // get the number of auto-merged lines of code
-            //int autoMergedLOC = readFileToLines(mergedAbsolutePath).size();
-            int autoMergedLOC = computeFileLOC(mergedAbsolutePath);
+            int autoMergedLOC = readFileToLines(mergedAbsolutePath).size();
             totalManualMergedLOC += manualLOC;
             totalAutoMergedLOC += autoMergedLOC;
 
@@ -368,14 +375,19 @@ public class EvaluationUtils {
 
                 List<Hunk> visitedHunks = new ArrayList<>();
                 for(Hunk hunk : hunks) {
+                    if (!removeMovingCausedHunks(hunk, visitedHunks)) {
                         visitedHunks.add(hunk);
+                    }
+                    else {
+                        visitedHunks.add(hunk);
+                    }
                 }
                 removeFormatCausedHunks(visitedHunks);
                 // If the files differ, add to the number of different files
                 numberOfDiffFiles += hunks.size() > 0 ? 1 : 0;
                 for(Hunk hunk : visitedHunks) {
-                    String manualContent = getHunkContent(hunk, Line.LineType.FROM, false);
-                    String mergedContent = getHunkContent(hunk, Line.LineType.TO, false);
+                    String manualContent = getHunkContent(hunk, Line.LineType.FROM, true);
+                    String mergedContent = getHunkContent(hunk, Line.LineType.TO, true);
 
                     int manualHunkLOC = manualContent.length() > 0 ? hunk.getFromFileRange().getLineCount() : 0;
                     int mergedHunkLOC = mergedContent.length() > 0 ? hunk.getToFileRange().getLineCount() : 0;
@@ -387,7 +399,7 @@ public class EvaluationUtils {
 
             // If in replication mode and there are no different hunks detected, assume that the sameloc is the same as total
             // for the given file.
-            if(isReplication && diffHunks == 0) {
+            if(diffHunks == 0) {
                 totalSameLOCMerged += autoMergedLOC;
                 totalSameLOCManual += manualLOC;
             }
@@ -432,21 +444,6 @@ public class EvaluationUtils {
         return new ComparisonResult(numberOfDiffFiles, totalAutoMergedLOC, totalManualMergedLOC,
                 totalSameLOCMerged, totalSameLOCManual, autoMergePrecision, autoMergeRecall);
     }
-
-    /*
-     * Compute the lines of code in a file, without comments or blanck lines
-     *
-     * @param path
-     * @return
-     */
-    public static int computeFileLOC(String path) {
-        List<String> lines =
-                readFileToLines(path).stream()
-                        .filter(line -> line.trim().length() > 0)
-                        .collect(Collectors.toList());
-        return lines.size();
-    }
-
 
     /*
      * Remove diff hunks that have the identical content ignoring empty chars
@@ -509,6 +506,30 @@ public class EvaluationUtils {
         } catch (CommentRemoverException e) {
             e.printStackTrace();
         }
+    }
+
+    private static boolean removeMovingCausedHunks(Hunk hunk, List<Hunk> visitedHunks) {
+        for (Hunk visitedHunk : visitedHunks) {
+            // P.S. since actually \n brings deviation to line ranges, so here we directly compare hunk
+            // contents
+            // check if line ranges are opposite, e.g. @@ -130,47 +132,0 @@ and @@ -330,0 +287,47 @@
+            //      if (visitedHunk.getFromFileRange().getLineCount() ==
+            // hunk.getToFileRange().getLineCount()
+            //          && visitedHunk.getToFileRange().getLineCount()
+            //              == hunk.getFromFileRange().getLineCount()) {
+            // check if hunk contents are the same
+            String hunkFromContent = getHunkContent(hunk, Line.LineType.FROM, true);
+            String visitedHunkFromContent = getHunkContent(visitedHunk, Line.LineType.FROM, true);
+            String hunkToContent = getHunkContent(hunk, Line.LineType.TO, true);
+            String visitedHunkToContent = getHunkContent(visitedHunk, Line.LineType.TO, true);
+            if (hunkFromContent.equals(visitedHunkToContent)
+                    && hunkToContent.equals(visitedHunkFromContent)) {
+                visitedHunks.remove(visitedHunk);
+                return true;
+            }
+            //      }
+        }
+        return false;
     }
 
 

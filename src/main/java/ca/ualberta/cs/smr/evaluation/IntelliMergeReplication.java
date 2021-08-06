@@ -67,7 +67,7 @@ public class IntelliMergeReplication {
         File[] scenarios = projectDir.listFiles();
         for(File scenario : scenarios) {
             String scenarioName = scenario.getName();
-            if(scenarioName.contains("statistics")) {
+            if(scenarioName.contains("statistics") || scenarioName.contains("involved_refactorings")) {
                 continue;
             }
             replicateMergeScenario(scenario.getName(), path + "/" + scenarioName, project, path + "/" + "statistics.csv");
@@ -77,8 +77,7 @@ public class IntelliMergeReplication {
     /*
      * Run both versions of IntelliMerge on the given merge scenario.
      */
-    private static void replicateMergeScenario(String mergeCommitHash, String path, Project project, String csvPath)
-            throws Exception {
+    private static void replicateMergeScenario(String mergeCommitHash, String path, Project project, String csvPath) throws Exception {
 
         File[] directories = new File(path).listFiles();
         File gitMerged = directories[3];
@@ -120,13 +119,13 @@ public class IntelliMergeReplication {
         copyDir(intelliMergeResultPath, intelliMergeTemp);
         copyDir(gitMergedPath, gitTemp);
         //getManualFiles(modifiedResultsPath, path, manualResults);
-
         String manuallyMergedPath = manuallyMerged.getAbsolutePath();
         String formattedPath = manuallyMergedPath + "Formatted";
         copyDir(manuallyMergedPath, formattedPath);
-        formatAllJavaFiles(formattedPath);
 
-
+//        List<String> refactoringConflicts = EvaluationUtils.readFileToLines(refactoringConflictsFile.getAbsolutePath());
+//        List<String> relativePaths = EvaluationUtils.getRelativePathsFromRefactoringConflicts(mergeCommitHash, refactoringConflicts);
+        List<String> relativePaths = new ArrayList<>();
 
         EvaluationUtils.removeAllComments(intelliMergeTemp);
         EvaluationUtils.removeAllComments(gitTemp);
@@ -141,6 +140,14 @@ public class IntelliMergeReplication {
         Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> gitMergeConflicts =
                 EvaluationUtils.extractMergeConflicts(gitTemp, false);
 
+        formatAllJavaFiles(formattedPath);
+
+        for(Pair<ConflictingFileData, List<ConflictBlockData>> conflictPair : gitMergeConflicts.getRight()) {
+                if (!relativePaths.contains(conflictPair.getLeft().getFilePath())) {
+                    relativePaths.add(conflictPair.getLeft().getFilePath());
+                }
+        }
+
         // Get manually merged java files
         ArrayList<SourceFile> manuallyMergedFiles = EvaluationUtils
                 .getJavaSourceFiles(manuallyMergedPath, new ArrayList<>(), manuallyMerged);
@@ -149,8 +156,10 @@ public class IntelliMergeReplication {
                 .getJavaSourceFiles(formattedPath, new ArrayList<>(), new File(formattedPath));
 
         // Compare tools with manually merged code
-        ComparisonResult intelliVsManual = EvaluationUtils.compareAutoMerged(intelliMergeTemp, formattedMergedFiles, path, true);
-        ComparisonResult gitVsManual = EvaluationUtils.compareAutoMerged(gitTemp, manuallyMergedFiles, path, true);
+        ComparisonResult intelliVsManual = EvaluationUtils
+                .compareAutoMerged(intelliMergeTemp, formattedMergedFiles, path, relativePaths, true);
+        ComparisonResult gitVsManual = EvaluationUtils
+                .compareAutoMerged(gitTemp, manuallyMergedFiles, path, relativePaths, true);
 
 
         // Add IntelliMerge data to database

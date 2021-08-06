@@ -8,12 +8,14 @@ public class ConflictBlockData {
     private final String right;
     private final int startLine;
     private final int endLine;
+    private final String path;
 
-    public ConflictBlockData(String left, String right, int startLine, int endLine) {
+    public ConflictBlockData(String left, String right, int startLine, int endLine, String path) {
         this.left = left;
         this.right = right;
         this.startLine = startLine;
         this.endLine = endLine;
+        this.path = path;
     }
 
     public String getLeft() {
@@ -34,6 +36,10 @@ public class ConflictBlockData {
 
     public int getConflictingLOC() {
         return (endLine - startLine);
+    }
+
+    public String getPath() {
+        return path;
     }
 
 }
