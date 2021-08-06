@@ -134,15 +134,15 @@ public class IntelliMergeReplication {
 
 
         // Get the conflict blocks from each of the merged results as well as the number of conflict blocks
-        Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> intelliMergeConflicts =
+        List<Pair<ConflictingFileData, List<ConflictBlockData>>> intelliMergeConflicts =
                 EvaluationUtils.extractMergeConflicts(intelliMergeTemp, true);
 
-        Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> gitMergeConflicts =
+        List<Pair<ConflictingFileData, List<ConflictBlockData>>> gitMergeConflicts =
                 EvaluationUtils.extractMergeConflicts(gitTemp, false);
 
         formatAllJavaFiles(formattedPath);
 
-        for(Pair<ConflictingFileData, List<ConflictBlockData>> conflictPair : gitMergeConflicts.getRight()) {
+        for(Pair<ConflictingFileData, List<ConflictBlockData>> conflictPair : gitMergeConflicts) {
                 if (!relativePaths.contains(conflictPair.getLeft().getFilePath())) {
                     relativePaths.add(conflictPair.getLeft().getFilePath());
                 }
@@ -163,12 +163,17 @@ public class IntelliMergeReplication {
 
 
         // Add IntelliMerge data to database
-        MergeResult intelliMergeResult = new MergeResult("IntelliMerge", intelliMergeConflicts.getLeft().getLeft(),
-                intelliMergeConflicts.getLeft().getRight(), time, intelliVsManual, mergeCommit);
+        int totalConflictingLOC = 0;
+        int totalConflicts = 0;
+        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : intelliMergeConflicts) {
+            totalConflicts += pair.getRight().size();
+            totalConflictingLOC += pair.getLeft().getConflictingLOC();
+        }
+        MergeResult intelliMergeResult = new MergeResult("IntelliMerge", totalConflicts,
+                totalConflictingLOC, time, intelliVsManual, mergeCommit);
         intelliMergeResult.saveIt();
         // Add conflicting files to database
-        List<Pair<ConflictingFileData, List<ConflictBlockData>>> intelliMergeConflictingFiles = intelliMergeConflicts.getRight();
-        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : intelliMergeConflictingFiles) {
+        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : intelliMergeConflicts) {
             ConflictingFile conflictingFile = new ConflictingFile(intelliMergeResult, pair.getLeft());
             conflictingFile.saveIt();
             // Add each conflict block for the conflicting file
@@ -178,14 +183,20 @@ public class IntelliMergeReplication {
             }
         }
 
-        // Add IntelliMerge data to database
-        MergeResult gitMergeResult = new MergeResult("GitMerge", gitMergeConflicts.getLeft().getLeft(),
-                gitMergeConflicts.getLeft().getRight(), time, gitVsManual, mergeCommit);
+        // Add GitMerge data to database
+        totalConflictingLOC = 0;
+        totalConflicts = 0;
+        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : gitMergeConflicts) {
+            totalConflicts += pair.getRight().size();
+            totalConflictingLOC += pair.getLeft().getConflictingLOC();
+        }
+        MergeResult gitMergeResult = new MergeResult("GitMerge", totalConflicts, totalConflictingLOC,
+                 time, gitVsManual, mergeCommit);
         gitMergeResult.saveIt();
         // Add conflicting files to database
-        List<Pair<ConflictingFileData, List<ConflictBlockData>>> gitMergeConflictingFiles = gitMergeConflicts.getRight();
-        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : gitMergeConflictingFiles) {
-            ConflictingFile conflictingFile = new ConflictingFile(intelliMergeResult, pair.getLeft());
+
+        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : gitMergeConflicts) {
+            ConflictingFile conflictingFile = new ConflictingFile(gitMergeResult, pair.getLeft());
             conflictingFile.saveIt();
             // Add each conflict block for the conflicting file
             for(ConflictBlockData conflictBlockData : pair.getRight()) {

@@ -219,12 +219,18 @@ public class RefMergeEvaluation {
 
 
         // Get the conflict blocks from each of the merged results as well as the number of conflict blocks
-        Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> refMergeConflicts =
-                EvaluationUtils.extractMergeConflicts(refMergePath, false);
-        Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> gitMergeConflicts =
-                EvaluationUtils.extractMergeConflicts(gitMergePath, false);
-        Pair<Pair<Integer, Integer>, List<Pair<ConflictingFileData, List<ConflictBlockData>>>> intelliMergeConflicts =
-                EvaluationUtils.extractMergeConflicts(intelliMergePath, false);
+        List<Pair<ConflictingFileData, List<ConflictBlockData>>> refMergeConflicts = EvaluationUtils
+                .extractMergeConflicts(refMergePath, false);
+        List<Pair<ConflictingFileData, List<ConflictBlockData>>> gitMergeConflicts = EvaluationUtils
+                .extractMergeConflicts(gitMergePath, false);
+        List<Pair<ConflictingFileData, List<ConflictBlockData>>> intelliMergeConflicts = EvaluationUtils
+                .extractMergeConflicts(intelliMergePath, false);
+
+
+        // Compare IntelliMerge and RefMerge conflict blocks for discrepancies
+//        getDiscrepanciesBetweenConflicts(refMergeConflicts, intelliMergeConflicts);
+
+        // Get manually merged files from git conflicts
 
         // Get manually merged java files
         File manuallyMergedDir = new File(manuallyMergedPath);
@@ -242,9 +248,6 @@ public class RefMergeEvaluation {
         System.out.println("Elapsed RefMerge runtime = " + refMergeConflictsAndRuntime);
         System.out.println("Elapsed Git merge runtime = " + gitMergeRuntime);
         System.out.println("Elapsed IntelliMerge runtime = " + intelliMergeRuntime);
-        System.out.println("Total RefMerge Conflicts: " + refMergeConflicts.getLeft());
-        System.out.println("Total Git Merge Conflicts: " + gitMergeConflicts.getLeft());
-        System.out.println("Total IntelliMerge Conflicts: " + intelliMergeConflicts.getLeft());
 
         System.out.println("RefMerge Statistics:\n#Different Files: " + refMergeVsManual.getTotalDiffFiles() + "\nPrecision: " +
                 refMergeVsManual.getPrecision() + "\nRecall: " + refMergeVsManual.getRecall());
@@ -255,13 +258,18 @@ public class RefMergeEvaluation {
 
         // Add RefMerge data to database
         List<Pair<RefactoringObject, RefactoringObject>> refactoringConflicts = refMergeConflictsAndRuntime.getLeft();
-        int totalConflicts = refactoringConflicts.size() + refMergeConflicts.getLeft().getLeft();
-        MergeResult refMergeResult = new MergeResult("RefMerge", totalConflicts, refMergeConflicts.getLeft().getRight(),
+        int totalConflictingLOC = 0;
+        int totalConflicts = 0;
+        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : refMergeConflicts) {
+            totalConflicts += pair.getRight().size();
+            totalConflictingLOC += pair.getLeft().getConflictingLOC();
+        }
+        totalConflicts += refactoringConflicts.size();
+        MergeResult refMergeResult = new MergeResult("RefMerge", totalConflicts, totalConflictingLOC,
                 refMergeConflictsAndRuntime.getRight(), refMergeVsManual, mergeCommit);
         refMergeResult.saveIt();
-        // Add conflicting files to database
-        List<Pair<ConflictingFileData, List<ConflictBlockData>>> refMergeConflictingFiles = refMergeConflicts.getRight();
-        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : refMergeConflictingFiles) {
+        // Add conflicting files to database;
+        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : refMergeConflicts) {
             ConflictingFile conflictingFile = new ConflictingFile(refMergeResult, pair.getLeft());
             conflictingFile.saveIt();
             // Add each conflict block for the conflicting file
@@ -277,12 +285,17 @@ public class RefMergeEvaluation {
         }
 
         // Add Git data to database
-        MergeResult gitMergeResult = new MergeResult("Git", gitMergeConflicts.getLeft().getLeft(),
-                gitMergeConflicts.getLeft().getRight(), gitMergeRuntime, gitVsManual, mergeCommit);
+        totalConflictingLOC = 0;
+        totalConflicts = 0;
+        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : gitMergeConflicts) {
+            totalConflicts += pair.getRight().size();
+            totalConflictingLOC += pair.getLeft().getConflictingLOC();
+        }
+        MergeResult gitMergeResult = new MergeResult("Git", totalConflicts, totalConflictingLOC,
+                gitMergeRuntime, gitVsManual, mergeCommit);
         gitMergeResult.saveIt();
         // Add conflicting files to database
-        List<Pair<ConflictingFileData, List<ConflictBlockData>>> gitMergeConflictingFiles = gitMergeConflicts.getRight();
-        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : gitMergeConflictingFiles) {
+        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : gitMergeConflicts) {
             ConflictingFile conflictingFile = new ConflictingFile(gitMergeResult, pair.getLeft());
             conflictingFile.saveIt();
             // Add each conflict block for the conflicting file
@@ -294,12 +307,17 @@ public class RefMergeEvaluation {
 
 
         // Add IntelliMerge data to database
-        MergeResult intelliMergeResult = new MergeResult("IntelliMerge", intelliMergeConflicts.getLeft().getLeft(),
-                intelliMergeConflicts.getLeft().getRight(), intelliMergeRuntime, intelliMergeVsManual, mergeCommit);
+        totalConflictingLOC = 0;
+        totalConflicts = 0;
+        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : intelliMergeConflicts) {
+            totalConflicts += pair.getRight().size();
+            totalConflictingLOC += pair.getLeft().getConflictingLOC();
+        }
+        MergeResult intelliMergeResult = new MergeResult("IntelliMerge", totalConflicts, totalConflictingLOC,
+                intelliMergeRuntime, intelliMergeVsManual, mergeCommit);
         intelliMergeResult.saveIt();
         // Add conflicting files to database
-        List<Pair<ConflictingFileData, List<ConflictBlockData>>> intelliMergeConflictingFiles = intelliMergeConflicts.getRight();
-        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : intelliMergeConflictingFiles) {
+        for(Pair<ConflictingFileData, List<ConflictBlockData>> pair : intelliMergeConflicts) {
             ConflictingFile conflictingFile = new ConflictingFile(intelliMergeResult, pair.getLeft());
             conflictingFile.saveIt();
             // Add each conflict block for the conflicting file
