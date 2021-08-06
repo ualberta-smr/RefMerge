@@ -228,7 +228,7 @@ public class RefMergeEvaluation {
 
 
         // Compare IntelliMerge and RefMerge conflict blocks for discrepancies
-//        getDiscrepanciesBetweenConflicts(refMergeConflicts, intelliMergeConflicts);
+        EvaluationUtils.getSameConflicts(refMergeConflicts, intelliMergeConflicts);
 
         // Get manually merged files from git conflicts
 
@@ -236,6 +236,8 @@ public class RefMergeEvaluation {
         File manuallyMergedDir = new File(manuallyMergedPath);
         ArrayList<SourceFile> manuallyMergedFiles = EvaluationUtils
                 .getJavaSourceFiles(manuallyMergedPath, new ArrayList<>(), manuallyMergedDir);
+
+
 
         // Compare tools with manually merged code
         ComparisonResult refMergeVsManual = EvaluationUtils

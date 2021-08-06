@@ -147,6 +147,8 @@ CREATE TABLE IF NOT EXISTS `refMerge_evaluation`.`conflict_block` (
   `conflicting_loc` INT NOT NULL,
   `start_line` INT NOT NULL,
   `end_line` INT NOT NULL,
+  `merge_tool` VARCHAR(20) NOT NULL,
+  `is_same` TINYINT NOT NULL,
   `conflicting_file_id` INT NOT NULL,
   `merge_result_id` INT NOT NULL,
   `merge_commit_id` INT NOT NULL,

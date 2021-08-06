@@ -155,8 +155,8 @@ public class EvaluationUtils {
                 isLeftContent = false;
                 String leftContent = leftConflictingContent.toString();
                 String rightContent = rightConflictingContent.toString();
-//                leftContent = flattenString(leftContent).trim();
-//                rightContent = flattenString(rightContent).trim();
+                leftContent = flattenString(leftContent).trim();
+                rightContent = flattenString(rightContent).trim();
 //                if(leftContent.length() == 0 && rightContent.length() == 0) {
 //                    iterator.remove();
 //                    continue;
@@ -225,8 +225,8 @@ public class EvaluationUtils {
                 String leftContent = leftConflictingContent.toString();
                 String rightContent = rightConflictingContent.toString();
 
-//                leftContent = flattenString(leftContent).trim();
-//                rightContent = flattenString(rightContent).trim();
+                leftContent = flattenString(leftContent).trim();
+                rightContent = flattenString(rightContent).trim();
 //                if(leftContent.length() == 0 && rightContent.length() == 0) {
 //                    iterator.remove();
 //                    continue;
@@ -329,6 +329,7 @@ public class EvaluationUtils {
      */
     public static ComparisonResult compareAutoMerged(String mergedDir, List<SourceFile> manuallyMergedFiles,
                                                      String projectPath, List<String> relativePaths, boolean isReplication) {
+
         int numberOfDiffFiles = 0;
         double autoMergePrecision = 0.0;
         double autoMergeRecall = 0.0;
@@ -343,9 +344,10 @@ public class EvaluationUtils {
             String manualRelativePath = manuallyMergedFile.getRelativePath();
             String mergedAbsolutePath = mergedDir + "/" + manualRelativePath;
 
-            if(!relativePaths.contains(manualRelativePath)) {
-                continue;
+            if (!relativePaths.contains(manualRelativePath)) {
+                    continue;
             }
+
 
             if(manualAbsolutePath.contains("f95")) {
                 System.out.println();
@@ -525,6 +527,44 @@ public class EvaluationUtils {
             //      }
         }
         return false;
+    }
+
+    /*
+     * Compare the conflicts reported by RefMerge and IntelliMerge to check for discrepancies. Add discrepancies to
+     * a new list.
+     */
+    public static void getSameConflicts(
+            List<Pair<ConflictingFileData, List<ConflictBlockData>>> refMergeConflicts,
+            List<Pair<ConflictingFileData, List<ConflictBlockData>>> intelliMergeConflicts) {
+
+        for(Pair<ConflictingFileData, List<ConflictBlockData>> refMergePairs : refMergeConflicts) {
+            String refMergeFile = refMergePairs.getLeft().getFilePath();
+            for(Pair<ConflictingFileData, List<ConflictBlockData>> intelliMergePairs : intelliMergeConflicts) {
+                String intelliMergeFile = intelliMergePairs.getLeft().getFilePath();
+                // Compare the files, if the files are different, then the conflicts can't be the same.
+                if(!refMergeFile.equals(intelliMergeFile)) {
+                    break;
+                }
+                // Compare each RefMerge conflict block with each IntelliMerge conflict block within the same file.
+                for(ConflictBlockData refMergeConflictBlock : refMergePairs.getRight()) {
+                    refMergeConflictBlock.setMergeTool("RefMerge");
+                    String refMergeLeftContent = refMergeConflictBlock.getLeft();
+                    String refMergeRightContent = refMergeConflictBlock.getRight();
+
+                    for(ConflictBlockData intelliMergeConflictBlock : intelliMergePairs.getRight()) {
+                        refMergeConflictBlock.setMergeTool("IntelliMerge");
+                        String intelliMergeLeftContent = intelliMergeConflictBlock.getLeft();
+                        String intelliMergeRightContent = intelliMergeConflictBlock.getRight();
+
+                        if(refMergeLeftContent.equals(intelliMergeLeftContent)
+                                && refMergeRightContent.equals(intelliMergeRightContent)) {
+                            refMergeConflictBlock.setSame();
+                            intelliMergeConflictBlock.setSame();
+                        }
+                    }
+                }
+            }
+        }
     }
 
 
