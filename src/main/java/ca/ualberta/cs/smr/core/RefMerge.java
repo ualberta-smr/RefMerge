@@ -90,7 +90,7 @@ public class RefMerge extends AnAction {
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
         rightRefs = InvertRefactorings.invertRefactorings(rightRefs, project);
-        Utils.saveContent(project, "right");
+//        Utils.saveContent(project, "right");
         String rightUndoCommit = gitUtils.addAndCommit();
         gitUtils.checkout(leftCommit);
 
@@ -98,7 +98,7 @@ public class RefMerge extends AnAction {
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
         leftRefs = InvertRefactorings.invertRefactorings(leftRefs, project);
-        Utils.saveContent(project, "left");
+//        Utils.saveContent(project, "left");
         gitUtils.addAndCommit();
         gitUtils.merge(rightUndoCommit);
         Utils.refreshVFS();
