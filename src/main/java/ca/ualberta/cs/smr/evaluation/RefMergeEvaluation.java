@@ -244,6 +244,10 @@ public class RefMergeEvaluation {
         List<Pair<ConflictingFileData, List<ConflictBlockData>>> intelliMergeConflicts = EvaluationUtils
                 .extractMergeConflicts(intelliMergePath, false);
 
+        List<String> relativePaths = new ArrayList<>();
+        for(Pair<ConflictingFileData, List<ConflictBlockData>> gitConflictFiles : gitMergeConflicts) {
+            relativePaths.add(gitConflictFiles.getLeft().getFilePath());
+        }
 
         // Compare IntelliMerge and RefMerge conflict blocks for discrepancies
         EvaluationUtils.getSameConflicts(refMergeConflicts, intelliMergeConflicts);
@@ -259,11 +263,11 @@ public class RefMergeEvaluation {
 
         // Compare tools with manually merged code
         ComparisonResult refMergeVsManual = EvaluationUtils
-                .compareAutoMerged(refMergePath, manuallyMergedFiles, project.getBasePath(), null, false);
+                .compareAutoMerged(refMergePath, manuallyMergedFiles, project.getBasePath(), relativePaths, false);
         ComparisonResult gitVsManual = EvaluationUtils
-                .compareAutoMerged(gitMergePath, manuallyMergedFiles, project.getBasePath(), null, false);
+                .compareAutoMerged(gitMergePath, manuallyMergedFiles, project.getBasePath(), relativePaths, false);
         ComparisonResult intelliMergeVsManual = EvaluationUtils
-                .compareAutoMerged(intelliMergePath, manuallyMergedFiles, project.getBasePath(), null, false);
+                .compareAutoMerged(intelliMergePath, manuallyMergedFiles, project.getBasePath(), relativePaths, false);
 
         System.out.println("Elapsed RefMerge runtime = " + refMergeConflictsAndRuntime);
         System.out.println("Elapsed IntelliMerge runtime = " + intelliMergeRuntime);

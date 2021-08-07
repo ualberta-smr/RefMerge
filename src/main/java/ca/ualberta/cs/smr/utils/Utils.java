@@ -54,8 +54,8 @@ public class Utils {
         try {
             ProcessBuilder pb = new ProcessBuilder(commands);
             Process p = pb.start();
-            p.waitFor(200, TimeUnit.SECONDS);
-            p.destroy();
+//            p.waitFor(200, TimeUnit.SECONDS);
+//            p.destroy();
             p.waitFor();
 
         } catch (Exception e) {

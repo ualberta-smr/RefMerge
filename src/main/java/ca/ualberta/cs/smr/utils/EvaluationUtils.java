@@ -344,15 +344,8 @@ public class EvaluationUtils {
             String manualRelativePath = manuallyMergedFile.getRelativePath();
             String mergedAbsolutePath = mergedDir + "/" + manualRelativePath;
 
-            if(isReplication) {
-                if (!relativePaths.contains(manualRelativePath)) {
-                    continue;
-                }
-            }
-
-
-            if(manualAbsolutePath.contains("f95")) {
-                System.out.println();
+            if (!relativePaths.contains(manualRelativePath)) {
+                continue;
             }
 
             // Get the number of manually merged lines of code
@@ -554,7 +547,7 @@ public class EvaluationUtils {
                     String refMergeRightContent = refMergeConflictBlock.getRight();
 
                     for(ConflictBlockData intelliMergeConflictBlock : intelliMergePairs.getRight()) {
-                        refMergeConflictBlock.setMergeTool("IntelliMerge");
+                        intelliMergeConflictBlock.setMergeTool("IntelliMerge");
                         String intelliMergeLeftContent = intelliMergeConflictBlock.getLeft();
                         String intelliMergeRightContent = intelliMergeConflictBlock.getRight();
 
