@@ -344,8 +344,10 @@ public class EvaluationUtils {
             String manualRelativePath = manuallyMergedFile.getRelativePath();
             String mergedAbsolutePath = mergedDir + "/" + manualRelativePath;
 
-            if (!relativePaths.contains(manualRelativePath)) {
+            if(isReplication) {
+                if (!relativePaths.contains(manualRelativePath)) {
                     continue;
+                }
             }
 
 
