@@ -183,6 +183,9 @@ public class RefMergeEvaluation {
         });
         try {
             future.get(2, TimeUnit.MINUTES);
+            if(refactorings.size() == 0) {
+                return;
+            }
             recordRefactorings(refactorings);
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
