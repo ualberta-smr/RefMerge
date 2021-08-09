@@ -108,7 +108,8 @@ public class InvertExtractMethod {
 
         // Get the correct PSI reference
         Query<PsiReference> psiReferences = ReferencesSearch.search(extractedMethod);
-        PsiElement psiElement = (PsiElement) psiReferences.findFirst();
+        PsiElement psiElement = psiReferences.findFirst().getElement();
+
         if(psiElement instanceof PsiMethod) {
             for (PsiReference psiReference : psiReferences) {
                 psiElement = (PsiElement) psiReference;
