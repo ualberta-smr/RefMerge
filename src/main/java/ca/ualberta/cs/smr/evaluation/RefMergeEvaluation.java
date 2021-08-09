@@ -51,9 +51,7 @@ public class RefMergeEvaluation {
         ca.ualberta.cs.smr.evaluation.database.Project proj = null;
         for(String line : lines) {
             projectUrl = line;
-            if(!projectUrl.contains("error-prone")) {
-                continue;
-            }
+
             proj = ca.ualberta.cs.smr.evaluation.database.Project.findFirst("url = ?", projectUrl);
             if(proj == null) {
                 projectName = openProject(path, projectUrl).substring(1);
@@ -164,11 +162,13 @@ public class RefMergeEvaluation {
                     rightParent, proj, targetCommit.getTimestamp());
             mergeCommit.saveIt();
         }
-
-        String gitMergePath = Utils.saveContent(project, "gitMergeResults");
-        if (isConflicting) {
-            gitUtils.reset();
+        if(!isConflicting) {
+            mergeCommit.setDone();
+            mergeCommit.saveIt();
+            return;
         }
+        String gitMergePath = Utils.saveContent(project, "gitMergeResults");
+        gitUtils.reset();
 
         boolean refMinerTimeOut = false;
         // Get refactoring details
