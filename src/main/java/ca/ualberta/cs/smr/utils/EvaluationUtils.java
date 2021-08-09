@@ -375,8 +375,10 @@ public class EvaluationUtils {
 
                 List<Hunk> visitedHunks = new ArrayList<>();
                 for(Hunk hunk : hunks) {
-                    if (!removeMovingCausedHunks(hunk, visitedHunks)) {
-                        visitedHunks.add(hunk);
+                    if(isReplication) {
+                        if (!removeMovingCausedHunks(hunk, visitedHunks)) {
+                            visitedHunks.add(hunk);
+                        }
                     }
                     else {
                         visitedHunks.add(hunk);
