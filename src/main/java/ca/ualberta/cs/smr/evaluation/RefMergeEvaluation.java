@@ -286,7 +286,7 @@ public class RefMergeEvaluation {
         // If RefMiner or RefMerge timeout
         if(refMinerTimeOut || refMergeConflictsAndRuntime.getRight() < 0) {
             MergeResult refMergeResult = new MergeResult("RefMerge", -1, -1,
-                    120, refMergeVsManual, mergeCommit);
+                    120000, refMergeVsManual, mergeCommit);
             refMergeResult.saveIt();
         }
         // Add RefMerge data to database
@@ -356,7 +356,7 @@ public class RefMergeEvaluation {
         // Add IntelliMerge data to database
         if(intelliMergeRuntime < 0) {
             MergeResult intelliMergeResult = new MergeResult("IntelliMerge", -1, -1,
-                    120, intelliMergeVsManual, mergeCommit);
+                    120000, intelliMergeVsManual, mergeCommit);
             intelliMergeResult.saveIt();
         }
         else {
@@ -428,20 +428,21 @@ public class RefMergeEvaluation {
                 e.printStackTrace();
             }
         });
-
+        long time2 = System.currentTimeMillis();
         long time = System.currentTimeMillis();
         try {
             System.out.println("Starting IntelliMerge");
             future.get(2, TimeUnit.MINUTES);
-            long time2 = System.currentTimeMillis();
+            time2 = System.currentTimeMillis();
             System.out.println("IntelliMerge is done");
             return time2 - time;
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         } catch (TimeoutException e) {
             System.out.println("IntelliMerge timed out");
+            return 120000;
         }
-        return -1;
+        return time2 - time;
     }
 
     /*
