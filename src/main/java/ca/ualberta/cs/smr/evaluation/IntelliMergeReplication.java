@@ -135,10 +135,10 @@ public class IntelliMergeReplication {
 
         // Get the conflict blocks from each of the merged results as well as the number of conflict blocks
         List<Pair<ConflictingFileData, List<ConflictBlockData>>> intelliMergeConflicts =
-                EvaluationUtils.extractMergeConflicts(intelliMergeTemp, true);
+                EvaluationUtils.extractMergeConflicts(intelliMergeTemp, "IntelliMerge", true);
 
         List<Pair<ConflictingFileData, List<ConflictBlockData>>> gitMergeConflicts =
-                EvaluationUtils.extractMergeConflicts(gitTemp, false);
+                EvaluationUtils.extractMergeConflicts(gitTemp, "GitMerge", false);
 
         formatAllJavaFiles(formattedPath);
 

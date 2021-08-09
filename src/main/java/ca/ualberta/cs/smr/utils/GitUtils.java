@@ -107,9 +107,6 @@ public class GitUtils {
         String s2 = gitCommandResult.toString();
         String s3 = gitCommandResult.get().getErrorOutputAsJoinedString();
         String s4 = gitCommandResult.get().getOutputAsJoinedString();
-        if(s1.contains("conflict") || s2.contains("conflict") || s3.contains("conflict") || s4.contains("conflict")) {
-            System.out.println("CONFLICT");
-        }
 
         return gitCommandResult.get().toString().contains("conflict");
     }

@@ -113,6 +113,34 @@ CREATE TABLE IF NOT EXISTS `refMerge_evaluation`.`refactoring_conflict` (
 ENGINE = InnoDB;
 
 -- -----------------------------------------------------
+-- Table `refMerge_evaluation`.`file_statistics`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `refMerge_evaluation`.`file_statistics` ;
+
+CREATE TABLE IF NOT EXISTS `refMerge_evaluation`.`file_statistics` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `merge_tool` VARCHAR(45) NOT NULL,
+  `path` VARCHAR(1000) NOT NULL,
+  `auto_merged_loc` INT NOT NULL,
+  `manual_merged_loc` INT NOT NULL,
+  `same_auto_merged_loc` INT NOT NULL,
+  `same_manual_loc` INT NOT NULL,
+  `file_precision` DOUBLE NOT NULL,
+  `file_recall` DOUBLE NOT NULL,
+  `merge_result_id` INT NOT NULL,
+  `merge_commit_id` INT NOT NULL,
+  `project_id` INT NOT NULL,
+  PRIMARY KEY (`id`, `merge_result_id`, `merge_commit_id`, `project_id`),
+  INDEX `fk_file_statistics_merge_result1_idx` (`merge_result_id` ASC, `merge_commit_id` ASC, `project_id` ASC),
+  CONSTRAINT `fk_file_statistics_merge_result1`
+    FOREIGN KEY (`merge_result_id` , `merge_commit_id` , `project_id`)
+    REFERENCES `refMerge_evaluation`.`merge_result` (`id` , `merge_commit_id` , `project_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `refMerge_evaluation`.`conflicting_file`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `refMerge_evaluation`.`conflicting_file` ;

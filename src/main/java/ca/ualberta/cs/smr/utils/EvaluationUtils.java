@@ -38,14 +38,14 @@ public class EvaluationUtils {
      * Get the number of merge conflicts as well as each conflicting file.
      */
     public static List<Pair<ConflictingFileData, List<ConflictBlockData>>>
-    extractMergeConflicts(String directory, boolean isDiff2) {
+    extractMergeConflicts(String directory, String mergeTool, boolean isDiff2) {
         ArrayList<SourceFile> temp = new ArrayList<>();
         File dir = new File(directory);
         ArrayList<SourceFile> mergedFiles = getJavaSourceFiles(directory, temp, dir);
         List<Pair<ConflictingFileData, List<ConflictBlockData>>> conflictingFiles = new ArrayList<>();
         for(SourceFile file : mergedFiles) {
             int conflictingLOC = 0;
-            List<ConflictBlockData> conflictBlocks = extractConflictBlocks(file.getAbsolutePath(), isDiff2);
+            List<ConflictBlockData> conflictBlocks = extractConflictBlocks(file.getAbsolutePath(), mergeTool, isDiff2);
             for(ConflictBlockData conflictBlock : conflictBlocks) {
                 conflictingLOC += conflictBlock.getEndLine() - conflictBlock.getStartLine();
             }
@@ -93,12 +93,12 @@ public class EvaluationUtils {
     }
 
 
-    public static List<ConflictBlockData> extractConflictBlocks(String path, boolean isDiff2) {
+    public static List<ConflictBlockData> extractConflictBlocks(String path, String mergeTool, boolean isDiff2) {
         if(isDiff2) {
-            return extractConflictBlocksDiff2(path);
+            return extractConflictBlocksDiff2(path, mergeTool);
         }
         else {
-            return extractConflictBlocksDiff3(path);
+            return extractConflictBlocksDiff3(path, mergeTool);
 
         }
     }
@@ -110,7 +110,7 @@ public class EvaluationUtils {
      * @param removeConflicts whether to remove conflict blocks while extracting
      * @return list of merge conflicts
      */
-    public static List<ConflictBlockData> extractConflictBlocksDiff3(String path) {
+    public static List<ConflictBlockData> extractConflictBlocksDiff3(String path, String mergeTool) {
         // diff3 conflict style
         StringBuilder leftConflictingContent = new StringBuilder();
         StringBuilder rightConflictingContent = new StringBuilder();
@@ -166,7 +166,7 @@ public class EvaluationUtils {
 //                    continue;
 //                }
 
-                ConflictBlockData mergeConflict = new ConflictBlockData(leftContent, rightContent, startLOC, endLOC, path);
+                ConflictBlockData mergeConflict = new ConflictBlockData(leftContent, rightContent, startLOC, endLOC, path, mergeTool);
                 mergeConflicts.add(mergeConflict);
                 iterator.remove();
 
@@ -193,7 +193,7 @@ public class EvaluationUtils {
     /*
      * Extract the individual merge conflicts from the file and record their information.
      */
-    private static List<ConflictBlockData> extractConflictBlocksDiff2(String path) {
+    private static List<ConflictBlockData> extractConflictBlocksDiff2(String path, String mergeTool) {
         StringBuilder leftConflictingContent = new StringBuilder();
         StringBuilder rightConflictingContent = new StringBuilder();
         boolean inConflictBlock = false;
@@ -245,7 +245,7 @@ public class EvaluationUtils {
 //                }
 
 
-                ConflictBlockData mergeConflict = new ConflictBlockData(leftContent, rightContent, startLOC, endLOC, path);
+                ConflictBlockData mergeConflict = new ConflictBlockData(leftContent, rightContent, startLOC, endLOC, path, mergeTool);
                 mergeConflicts.add(mergeConflict);
                 // reset the flags
                 leftConflictingContent = new StringBuilder();
@@ -330,6 +330,14 @@ public class EvaluationUtils {
     public static ComparisonResult compareAutoMerged(String mergedDir, List<SourceFile> manuallyMergedFiles,
                                                      String projectPath, List<String> relativePaths, boolean isReplication) {
 
+        // If Git does not have any conflicts, do not calculate precision/recall.
+        ArrayList<FileDetails> files = new ArrayList<>();
+
+        if(relativePaths.size() == 0) {
+            return new ComparisonResult(0, -1, -1,
+                    -1, -1, -1, -1, null);
+        }
+
         int numberOfDiffFiles = 0;
         double autoMergePrecision = 0.0;
         double autoMergeRecall = 0.0;
@@ -408,6 +416,13 @@ public class EvaluationUtils {
                 }
                 totalSameLOCMerged += sameLOCMerged;
                 totalSameLOCManual += sameLOCManual;
+
+                double filePrecision = sameLOCMerged / (double) autoMergedLOC;
+                double fileRecall = sameLOCManual / (double) manualLOC;
+
+                FileDetails fileDetails = new FileDetails(manualRelativePath, manualLOC, autoMergedLOC,
+                        sameLOCMerged, sameLOCManual, filePrecision, fileRecall);
+                files.add(fileDetails);
             }
 
         }
@@ -434,7 +449,7 @@ public class EvaluationUtils {
         }
 
         return new ComparisonResult(numberOfDiffFiles, totalAutoMergedLOC, totalManualMergedLOC,
-                totalSameLOCMerged, totalSameLOCManual, autoMergePrecision, autoMergeRecall);
+                totalSameLOCMerged, totalSameLOCManual, autoMergePrecision, autoMergeRecall, files);
     }
 
     /*
@@ -542,12 +557,10 @@ public class EvaluationUtils {
                 }
                 // Compare each RefMerge conflict block with each IntelliMerge conflict block within the same file.
                 for(ConflictBlockData refMergeConflictBlock : refMergePairs.getRight()) {
-                    refMergeConflictBlock.setMergeTool("RefMerge");
                     String refMergeLeftContent = refMergeConflictBlock.getLeft();
                     String refMergeRightContent = refMergeConflictBlock.getRight();
 
                     for(ConflictBlockData intelliMergeConflictBlock : intelliMergePairs.getRight()) {
-                        intelliMergeConflictBlock.setMergeTool("IntelliMerge");
                         String intelliMergeLeftContent = intelliMergeConflictBlock.getLeft();
                         String intelliMergeRightContent = intelliMergeConflictBlock.getRight();
 

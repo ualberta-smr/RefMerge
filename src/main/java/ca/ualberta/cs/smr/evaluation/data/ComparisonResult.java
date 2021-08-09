@@ -1,5 +1,7 @@
 package ca.ualberta.cs.smr.evaluation.data;
 
+import java.util.ArrayList;
+
 public class ComparisonResult {
 
     private final int totalDiffFiles;
@@ -9,10 +11,11 @@ public class ComparisonResult {
     private final int totalSameLOCManual;
     private final double precision;
     private final double recall;
+    private final ArrayList<FileDetails> files;
 
     public ComparisonResult(int totalDiffFiles, int totalAutoMergedLOC, int totalManualMergedLOC,
                             int totalSameLOCMerged, int totalSameLOCManual,
-                            double precision, double recall) {
+                            double precision, double recall, ArrayList<FileDetails> files) {
         this.totalDiffFiles = totalDiffFiles;
         this.totalAutoMergedLOC = totalAutoMergedLOC;
         this.totalManualMergedLOC = totalManualMergedLOC;
@@ -20,6 +23,7 @@ public class ComparisonResult {
         this.totalSameLOCManual = totalSameLOCManual;
         this.precision = precision;
         this.recall = recall;
+        this.files = files;
     }
 
     public int getTotalDiffFiles() {
@@ -48,5 +52,9 @@ public class ComparisonResult {
 
     public int getTotalSameLOCManual() {
         return totalSameLOCManual;
+    }
+
+    public ArrayList<FileDetails> getFiles() {
+        return files;
     }
 }

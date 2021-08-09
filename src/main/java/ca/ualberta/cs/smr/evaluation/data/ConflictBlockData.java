@@ -12,7 +12,7 @@ public class ConflictBlockData {
     private String mergeTool;
     private boolean isSame;
 
-    public ConflictBlockData(String left, String right, int startLine, int endLine, String path) {
+    public ConflictBlockData(String left, String right, int startLine, int endLine, String path, String mergeTool) {
         this.left = left;
         this.right = right;
         this.startLine = startLine;
@@ -20,6 +20,7 @@ public class ConflictBlockData {
         this.path = path;
         this.mergeTool = "";
         this.isSame = true;
+        this.mergeTool = mergeTool;
     }
 
     public String getLeft() {
@@ -46,9 +47,6 @@ public class ConflictBlockData {
         return path;
     }
 
-    public void setMergeTool(String mergeTool) {
-        this.mergeTool = mergeTool;
-    }
 
     public void setSame() {
         this.isSame = false;

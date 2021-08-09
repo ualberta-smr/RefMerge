@@ -2,10 +2,7 @@ package ca.ualberta.cs.smr.evaluation;
 
 import ca.ualberta.cs.smr.core.RefMerge;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
-import ca.ualberta.cs.smr.evaluation.data.ComparisonResult;
-import ca.ualberta.cs.smr.evaluation.data.ConflictBlockData;
-import ca.ualberta.cs.smr.evaluation.data.ConflictingFileData;
-import ca.ualberta.cs.smr.evaluation.data.SourceFile;
+import ca.ualberta.cs.smr.evaluation.data.*;
 import ca.ualberta.cs.smr.evaluation.database.*;
 import ca.ualberta.cs.smr.utils.EvaluationUtils;
 import ca.ualberta.cs.smr.utils.GitUtils;
@@ -153,10 +150,6 @@ public class RefMergeEvaluation {
 
         gitUtils.checkout(leftParent);
         boolean isConflicting = gitUtils.merge(rightParent);
-        String gitMergePath = Utils.saveContent(project, "gitMergeResults");
-        if (isConflicting) {
-            gitUtils.reset();
-        }
         // Add merge commit to database
         MergeCommit mergeCommit = MergeCommit.findFirst("commit_hash = ?", mergeCommitHash);
         if (mergeCommit == null) {
@@ -170,6 +163,11 @@ public class RefMergeEvaluation {
             mergeCommit = new MergeCommit(mergeCommitHash, isConflicting, leftParent,
                     rightParent, proj, targetCommit.getTimestamp());
             mergeCommit.saveIt();
+        }
+
+        String gitMergePath = Utils.saveContent(project, "gitMergeResults");
+        if (isConflicting) {
+            gitUtils.reset();
         }
 
         boolean refMinerTimeOut = false;
@@ -238,11 +236,11 @@ public class RefMergeEvaluation {
 
         // Get the conflict blocks from each of the merged results as well as the number of conflict blocks
         List<Pair<ConflictingFileData, List<ConflictBlockData>>> refMergeConflicts = EvaluationUtils
-                .extractMergeConflicts(refMergePath, false);
+                .extractMergeConflicts(refMergePath, "RefMerge", false);
         List<Pair<ConflictingFileData, List<ConflictBlockData>>> gitMergeConflicts = EvaluationUtils
-                .extractMergeConflicts(gitMergePath, false);
+                .extractMergeConflicts(gitMergePath, "Git", false);
         List<Pair<ConflictingFileData, List<ConflictBlockData>>> intelliMergeConflicts = EvaluationUtils
-                .extractMergeConflicts(intelliMergePath, false);
+                .extractMergeConflicts(intelliMergePath, "IntelliMerge", false);
 
         List<String> relativePaths = new ArrayList<>();
         for(Pair<ConflictingFileData, List<ConflictBlockData>> gitConflictFiles : gitMergeConflicts) {
@@ -260,13 +258,17 @@ public class RefMergeEvaluation {
                 .getJavaSourceFiles(manuallyMergedPath, new ArrayList<>(), manuallyMergedDir);
 
 
+        ComparisonResult refMergeVsManual = null;
+        ComparisonResult gitVsManual = null;
+        ComparisonResult intelliMergeVsManual = null;
+        // If not conflicting, don't calculate precision/recall
 
-        // Compare tools with manually merged code
-        ComparisonResult refMergeVsManual = EvaluationUtils
+            // Compare tools with manually merged code
+        refMergeVsManual = EvaluationUtils
                 .compareAutoMerged(refMergePath, manuallyMergedFiles, project.getBasePath(), relativePaths, false);
-        ComparisonResult gitVsManual = EvaluationUtils
+        gitVsManual = EvaluationUtils
                 .compareAutoMerged(gitMergePath, manuallyMergedFiles, project.getBasePath(), relativePaths, false);
-        ComparisonResult intelliMergeVsManual = EvaluationUtils
+        intelliMergeVsManual = EvaluationUtils
                 .compareAutoMerged(intelliMergePath, manuallyMergedFiles, project.getBasePath(), relativePaths, false);
 
         System.out.println("Elapsed RefMerge runtime = " + refMergeConflictsAndRuntime);
@@ -308,6 +310,14 @@ public class RefMergeEvaluation {
                     conflictBlock.saveIt();
                 }
             }
+            // Add file stats to database if Git is conflicting
+            if(gitMergeConflicts.size() > 0) {
+                for (FileDetails file : refMergeVsManual.getFiles()) {
+                    FileStatistics fileStatistics = new FileStatistics(refMergeResult, file);
+                    fileStatistics.saveIt();
+                }
+            }
+
             // Add refactoring conflict data to database
             for (Pair<RefactoringObject, RefactoringObject> pair : refactoringConflicts) {
                 RefactoringConflict refactoringConflict = new RefactoringConflict(pair.getLeft(), pair.getRight(), refMergeResult);
@@ -333,6 +343,12 @@ public class RefMergeEvaluation {
             for(ConflictBlockData conflictBlockData : pair.getRight()) {
                 ConflictBlock conflictBlock = new ConflictBlock(conflictingFile, conflictBlockData);
                 conflictBlock.saveIt();
+            }
+        }
+        if(gitMergeConflicts.size() > 0) {
+            for (FileDetails file : gitVsManual.getFiles()) {
+                FileStatistics fileStatistics = new FileStatistics(gitMergeResult, file);
+                fileStatistics.saveIt();
             }
         }
 
@@ -361,6 +377,12 @@ public class RefMergeEvaluation {
                 for (ConflictBlockData conflictBlockData : pair.getRight()) {
                     ConflictBlock conflictBlock = new ConflictBlock(conflictingFile, conflictBlockData);
                     conflictBlock.saveIt();
+                }
+            }
+            if(gitMergeConflicts.size() > 0) {
+                for (FileDetails file : intelliMergeVsManual.getFiles()) {
+                    FileStatistics fileStatistics = new FileStatistics(intelliMergeResult, file);
+                    fileStatistics.saveIt();
                 }
             }
         }
