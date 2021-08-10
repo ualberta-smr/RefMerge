@@ -129,6 +129,9 @@ public class ExtractMethodExtractMethodCell {
         Utils utils = new Utils(project);
         PsiClass dispatcherPsiClass = utils.getPsiClassByFilePath(dispatcherOriginalFile, dispatcherOriginalClassName);
         PsiClass receiverPsiClass = utils.getPsiClassByFilePath(receiverOriginalFile, receiverOriginalClassName);
+        if(dispatcherPsiClass == null || receiverPsiClass == null) {
+            return false;
+        }
         if(!ifClassExtends(dispatcherPsiClass, receiverPsiClass)) {
             return false;
         }
@@ -156,6 +159,9 @@ public class ExtractMethodExtractMethodCell {
             String receiverOriginalFile = receiverExtractMethod.getOriginalFilePath();
             PsiClass dispatcherPsiClass = utils.getPsiClassByFilePath(dispatcherOriginalFile, dispatcherOriginalClassName);
             PsiClass receiverPsiClass = utils.getPsiClassByFilePath(receiverOriginalFile, receiverOriginalClassName);
+            if(dispatcherPsiClass == null || receiverPsiClass == null) {
+                return false;
+            }
             if(!ifClassExtends(dispatcherPsiClass, receiverPsiClass)) {
                 return false;
             }
