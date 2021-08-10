@@ -394,7 +394,7 @@ public class EvaluationUtils {
 
             // If in replication mode and there are no different hunks detected, assume that the sameloc is the same as total
             // for the given file.
-            if(diffHunks == 0) {
+            if(isReplication && diffHunks == 0) {
                 totalSameLOCMerged += autoMergedLOC;
                 totalSameLOCManual += manualLOC;
             }
