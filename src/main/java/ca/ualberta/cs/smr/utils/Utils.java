@@ -33,7 +33,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Utils {
@@ -111,9 +110,7 @@ public class Utils {
     /*
      * Save the content of one directory to another. Return the path
      */
-    public static String saveContent(Project project, String dir) {
-        // Save project to temporary directory
-        String path = System.getProperty("user.home") + "/temp/" + dir;
+    public static String saveContent(Project project, String path) {
         File file = new File(path);
         file.mkdirs();
         runSystemCommand("cp", "-r", project.getBasePath() + "/.", path);
