@@ -410,6 +410,8 @@ public class EvaluationUtils {
                 // greater than the autoMergedLOC, then there are no lines that are the same
                 int sameLOCManual = 0;
                 int sameLOCMerged = 0;
+                double filePrecision = 0.0;
+                double fileRecall = 0.0;
                 if (autoMergedLOC > 0) {
                     sameLOCManual = manualLOC - manualDiffLOC;
                 }
@@ -419,8 +421,12 @@ public class EvaluationUtils {
                 totalSameLOCMerged += sameLOCMerged;
                 totalSameLOCManual += sameLOCManual;
 
-                double filePrecision = sameLOCMerged / (double) autoMergedLOC;
-                double fileRecall = sameLOCManual / (double) manualLOC;
+                if(autoMergedLOC > 0) {
+                    filePrecision = sameLOCMerged / (double) autoMergedLOC;
+                }
+                else {
+                    fileRecall = sameLOCManual / (double) manualLOC;
+                }
 
                 FileDetails fileDetails = new FileDetails(manualRelativePath, manualLOC, autoMergedLOC,
                         sameLOCMerged, sameLOCManual, filePrecision, fileRecall);
@@ -504,7 +510,7 @@ public class EvaluationUtils {
                     new CommentRemover.CommentRemoverBuilder()
                             .removeJava(true)
                             .removeTodos(true) // Remove todos
-                            .removeSingleLines(false) // Do not remove single line type comments
+                            .removeSingleLines(true) // Do not remove single line type comments
                             .removeMultiLines(true) // Remove multiple type comments
                             .preserveJavaClassHeaders(false) // Preserves class header comment
                             .preserveCopyRightHeaders(false) // Preserves copyright comment

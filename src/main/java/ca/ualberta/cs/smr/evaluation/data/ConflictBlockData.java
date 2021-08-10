@@ -19,7 +19,7 @@ public class ConflictBlockData {
         this.endLine = endLine;
         this.path = path;
         this.mergeTool = "";
-        this.isSame = true;
+        this.isSame = false;
         this.mergeTool = mergeTool;
     }
 
@@ -49,7 +49,7 @@ public class ConflictBlockData {
 
 
     public void setSame() {
-        this.isSame = false;
+        this.isSame = true;
     }
 
     public boolean isSame() {
