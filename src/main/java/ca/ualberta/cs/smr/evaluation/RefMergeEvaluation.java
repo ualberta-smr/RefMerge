@@ -51,7 +51,9 @@ public class RefMergeEvaluation {
         ca.ualberta.cs.smr.evaluation.database.Project proj = null;
         for(String line : lines) {
             projectUrl = line;
-
+            if(!line.contains("error")) {
+                continue;
+            }
             proj = ca.ualberta.cs.smr.evaluation.database.Project.findFirst("url = ?", projectUrl);
             if(proj == null) {
                 projectName = openProject(path, projectUrl).substring(1);
@@ -116,21 +118,16 @@ public class RefMergeEvaluation {
                                        ca.ualberta.cs.smr.evaluation.database.Project proj) {
         GitUtils gitUtils = new GitUtils(repo, project);
         gitUtils.reset();
+
         Utils.clearTemp("manualMerge");
         Utils.clearTemp("intelliMerge");
-        Utils.clearTemp("refMergeResults");
-        Utils.clearTemp("intelliMergeResults");
-        Utils.clearTemp("gitMergeResults");
-        Utils.clearTemp("refMergeResultsOriginal");
-        Utils.clearTemp("gitMergeResultsOriginal");
-        Utils.clearTemp("intelliMergeResultsOriginal");
 
         String mergeCommitHash = targetCommit.getId().asString();
         gitUtils.checkout(mergeCommitHash);
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
         // Save the manually merged version
-        String manuallyMergedPath = Utils.saveContent(project, "manualMerge");
+        String manuallyMergedCopy = Utils.saveContent(project, System.getProperty("user.home") + "/temp/manualMerge");
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
         // Perform the merge with the three tools.
@@ -167,7 +164,18 @@ public class RefMergeEvaluation {
             mergeCommit.saveIt();
             return;
         }
-        String gitMergePath = Utils.saveContent(project, "gitMergeResults");
+        String resultDir = System.getProperty("user.home") + "/temp/results/" + project.getName() + "/" + "commit" + mergeCommit.getId();
+
+        String manuallyMergedPath = resultDir + "/manualMerge";
+        String refMergePath = resultDir + "/refMerge";
+        String gitMergePath = resultDir + "/git";
+        String intelliMergePath = resultDir + "/intelliMerge";
+
+        File manualMergeResultDirectory = new File(manuallyMergedPath);
+        manualMergeResultDirectory.mkdirs();
+
+        Utils.saveContent(project, gitMergePath);
+        System.out.println(gitMergePath);
         gitUtils.reset();
 
         boolean refMinerTimeOut = false;
@@ -197,35 +205,31 @@ public class RefMergeEvaluation {
 
         DumbService.getInstance(project).completeJustSubmittedTasks();
         // Run IntelliMerge
-        String intelliMergePath = System.getProperty("user.home") + "/temp/intelliMergeResults";
         List<String> commits = new ArrayList<>();
         commits.add(leftParent);
         commits.add(baseCommit);
         commits.add(rightParent);
-        long intelliMergeRuntime = runIntelliMerge(project.getBasePath(), commits, "intelliMergeResults", executor);
+        long intelliMergeRuntime = runIntelliMerge(project.getBasePath(), commits, intelliMergePath, executor);
         DumbService.getInstance(project).completeJustSubmittedTasks();
         // Run RefMerge if RefMiner did not timeout
         Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, Long> refMergeConflictsAndRuntime = null;
         if(!refMinerTimeOut) {
             refMergeConflictsAndRuntime = runRefMerge(project, repo, leftParent, rightParent);
         }
-        String refMergePath = Utils.saveContent(project, "refMergeResults");
+        Utils.saveContent(project, refMergePath);
         DumbService.getInstance(project).completeJustSubmittedTasks();
 
 
-        String resultDir = System.getProperty("user.home") + "/temp/results/" + project.getName() + "/" + "commit" + mergeCommit.getId();
-        File refMergeResultDirectory = new File(resultDir + "/refMerge");
-        File gitResultDirectory = new File(resultDir + "/git");
-        File intelliMergeResultDirectory = new File(resultDir + "/intelliMerge");
-        File manualMergeResultDirectory = new File(resultDir + "/manualMerge");
-        refMergeResultDirectory.mkdirs();
-        gitResultDirectory.mkdirs();
-        intelliMergeResultDirectory.mkdirs();
-        manualMergeResultDirectory.mkdirs();
-        Utils.runSystemCommand("cp", "-r", refMergePath + "/.", refMergeResultDirectory.getAbsolutePath());
-        Utils.runSystemCommand("cp", "-r", gitMergePath + "/.", gitResultDirectory.getAbsolutePath());
-        Utils.runSystemCommand("cp", "-r", intelliMergePath + "/.", intelliMergeResultDirectory.getAbsolutePath());
-        Utils.runSystemCommand("cp", "-r", manuallyMergedPath + "/.", manualMergeResultDirectory.getAbsolutePath());
+        File refMergeConflictDirectory = new File(resultDir + "/refMergeWithConflicts");
+        File gitConflictDirectory = new File(resultDir + "/gitWithConflicts");
+        File intelliMergeConflictDirectory = new File(resultDir + "/intelliMergeWithConflicts");
+        refMergeConflictDirectory.mkdirs();
+        gitConflictDirectory.mkdirs();
+        intelliMergeConflictDirectory.mkdirs();
+        Utils.runSystemCommand("cp", "-r", refMergePath + "/.", refMergeConflictDirectory.getAbsolutePath());
+        Utils.runSystemCommand("cp", "-r", gitMergePath + "/.", gitConflictDirectory.getAbsolutePath());
+        Utils.runSystemCommand("cp", "-r", intelliMergePath + "/.", intelliMergeConflictDirectory.getAbsolutePath());
+        Utils.runSystemCommand("cp", "-r", manuallyMergedCopy + "/.", manuallyMergedPath);
 
         // Remove all comments from all directories
         EvaluationUtils.removeAllComments(manuallyMergedPath);
@@ -419,11 +423,10 @@ public class RefMergeEvaluation {
      * to finish
      */
     private long runIntelliMerge(String repoPath, List<String> commits, String output, ExecutorService executor) {
-        String outputDir = System.getProperty("user.home") + "/temp/" + output;
         final Future future = executor.submit(() -> {
             IntelliMerge merge = new IntelliMerge();
             try {
-                merge.mergeBranchesForRefMergeEvaluation(repoPath, commits, outputDir, true);
+                merge.mergeBranchesForRefMergeEvaluation(repoPath, commits, output, true);
             } catch (Exception e) {
                 e.printStackTrace();
             }
