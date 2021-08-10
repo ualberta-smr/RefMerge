@@ -375,14 +375,7 @@ public class EvaluationUtils {
 
                 List<Hunk> visitedHunks = new ArrayList<>();
                 for(Hunk hunk : hunks) {
-                    if(isReplication) {
-                        if (!removeMovingCausedHunks(hunk, visitedHunks)) {
-                            visitedHunks.add(hunk);
-                        }
-                    }
-                    else {
-                        visitedHunks.add(hunk);
-                    }
+                    visitedHunks.add(hunk);
                 }
                 removeFormatCausedHunks(visitedHunks);
                 // If the files differ, add to the number of different files

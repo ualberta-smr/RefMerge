@@ -51,7 +51,9 @@ public class RefMergeEvaluation {
         ca.ualberta.cs.smr.evaluation.database.Project proj = null;
         for(String line : lines) {
             projectUrl = line;
-
+            if(!line.contains("junit")) {
+                continue;
+            }
             proj = ca.ualberta.cs.smr.evaluation.database.Project.findFirst("url = ?", projectUrl);
             if(proj == null) {
                 projectName = openProject(path, projectUrl).substring(1);
