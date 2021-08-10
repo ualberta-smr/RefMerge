@@ -103,12 +103,24 @@ public class GitUtils {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        String s1 =  gitCommandResult.get().toString();
-        String s2 = gitCommandResult.toString();
-        String s3 = gitCommandResult.get().getErrorOutputAsJoinedString();
-        String s4 = gitCommandResult.get().getOutputAsJoinedString();
 
-        return gitCommandResult.get().toString().contains("conflict");
+        String gitMergeResult = gitCommandResult.get().toString();
+        if(gitMergeResult.contains("conflict")) {
+            return hasJavaConflict(gitMergeResult);
+        }
+        return false;
+    }
+
+    private boolean hasJavaConflict(String gitResult) {
+        for (String line : gitResult.split(",")) {
+            if (!line.contains("CONFLICT")) {
+                continue;
+            }
+            if (line.contains(".java")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /*

@@ -51,9 +51,7 @@ public class RefMergeEvaluation {
         ca.ualberta.cs.smr.evaluation.database.Project proj = null;
         for(String line : lines) {
             projectUrl = line;
-            if(!line.contains("error")) {
-                continue;
-            }
+
             proj = ca.ualberta.cs.smr.evaluation.database.Project.findFirst("url = ?", projectUrl);
             if(proj == null) {
                 projectName = openProject(path, projectUrl).substring(1);
@@ -145,6 +143,9 @@ public class RefMergeEvaluation {
 
         gitUtils.checkout(leftParent);
         boolean isConflicting = gitUtils.merge(rightParent);
+        if(!isConflicting) {
+            return;
+        }
         // Add merge commit to database
         MergeCommit mergeCommit = MergeCommit.findFirst("commit_hash = ?", mergeCommitHash);
         if (mergeCommit == null) {
@@ -158,11 +159,6 @@ public class RefMergeEvaluation {
             mergeCommit = new MergeCommit(mergeCommitHash, isConflicting, leftParent,
                     rightParent, proj, targetCommit.getTimestamp());
             mergeCommit.saveIt();
-        }
-        if(!isConflicting) {
-            mergeCommit.setDone();
-            mergeCommit.saveIt();
-            return;
         }
         String resultDir = System.getProperty("user.home") + "/temp/results/" + project.getName() + "/" + "commit" + mergeCommit.getId();
 
