@@ -425,7 +425,13 @@ public class EvaluationUtils {
                     filePrecision = sameLOCMerged / (double) autoMergedLOC;
                 }
                 else {
+                    filePrecision = 0.0;
+                }
+                if(manualLOC > 0) {
                     fileRecall = sameLOCManual / (double) manualLOC;
+                }
+                else {
+                    fileRecall = 0.0;
                 }
 
                 FileDetails fileDetails = new FileDetails(manualRelativePath, manualLOC, autoMergedLOC,
