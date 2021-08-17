@@ -38,10 +38,16 @@ public class InvertRefactorings {
                     }
                     break;
                 case EXTRACT_OPERATION:
-                    InvertExtractMethod invertExtractMethod = new InvertExtractMethod(project);
-                    refactoringObject = invertExtractMethod.invertExtractMethod(refactoringObject);
+                    try {
+                        InvertExtractMethod invertExtractMethod = new InvertExtractMethod(project);
+                        refactoringObject = invertExtractMethod.invertExtractMethod(refactoringObject);
+                    }
+                    catch(Exception e) {
+                        e.printStackTrace();
+                        break;
+                    }
                     if(refactoringObject == null) {
-                        continue;
+                        break;
                     }
                     int index = refactoringObjects.indexOf(refactoringObject);
                     refactoringObjects.set(index, refactoringObject);
