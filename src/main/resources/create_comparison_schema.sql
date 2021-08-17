@@ -200,7 +200,6 @@ CREATE TABLE IF NOT EXISTS `refMerge_evaluation`.`refactoring` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `refactoring_type` VARCHAR(100) NULL,
   `refactoring_detail` VARCHAR(2000) NULL,
-  `commit_hash` VARCHAR(40) NULL,
   `merge_commit_id` INT NOT NULL,
   `project_id` INT NOT NULL,
   PRIMARY KEY (`id`, `merge_commit_id`, `project_id`),
