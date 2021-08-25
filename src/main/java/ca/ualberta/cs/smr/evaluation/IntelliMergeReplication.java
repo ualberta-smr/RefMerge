@@ -178,7 +178,7 @@ public class IntelliMergeReplication {
             conflictingFile.saveIt();
             // Add each conflict block for the conflicting file
             for(ConflictBlockData conflictBlockData : pair.getRight()) {
-                ConflictBlock conflictBlock = new ConflictBlock(conflictingFile, conflictBlockData);
+                ConflictBlock conflictBlock = new ConflictBlock(conflictingFile, conflictBlockData, true);
                 conflictBlock.saveIt();
             }
         }
@@ -200,7 +200,7 @@ public class IntelliMergeReplication {
             conflictingFile.saveIt();
             // Add each conflict block for the conflicting file
             for(ConflictBlockData conflictBlockData : pair.getRight()) {
-                ConflictBlock conflictBlock = new ConflictBlock(conflictingFile, conflictBlockData);
+                ConflictBlock conflictBlock = new ConflictBlock(conflictingFile, conflictBlockData, true);
                 conflictBlock.saveIt();
             }
         }
