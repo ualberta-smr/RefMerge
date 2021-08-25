@@ -12,7 +12,7 @@ public class ConflictBlock extends Model {
     public ConflictBlock(ConflictingFile conflictingFile, ConflictBlockData conflictBlockData) {
         set("path", conflictingFile.getPath(), "conflicting_loc", conflictBlockData.getConflictingLOC(),
                 "start_line", conflictBlockData.getStartLine(), "end_line", conflictBlockData.getEndLine(),
-                "merge_tool", conflictBlockData.getMergeTool(), "is_same", conflictBlockData.isSame(),
+                "merge_tool", conflictBlockData.getMergeTool(), "is_same", conflictBlockData.isSame(), "is_comment", conflictBlockData.isComment(),
                 "conflicting_file_id", conflictingFile.getId(), "merge_result_id", conflictingFile.getMergeResultId(),
                 "merge_commit_id", conflictingFile.getMergeCommitId(), "project_id", conflictingFile.getProjectId());
     }
