@@ -89,7 +89,7 @@ public class EvaluationUtils {
      * Check if the given file is a java file.
      */
     private static boolean isJavaFile(File file) {
-        return file.getName().toLowerCase().contains(".java");
+        return file.getName().toLowerCase().endsWith(".java");
     }
 
 
@@ -157,16 +157,24 @@ public class EvaluationUtils {
                 String rightContent = rightConflictingContent.toString();
                 leftContent = flattenString(leftContent).trim();
                 rightContent = flattenString(rightContent).trim();
-//                if(leftContent.length() == 0 && rightContent.length() == 0) {
-//                    iterator.remove();
-//                    continue;
-//                }
-//                if(leftContent.equals(rightContent)) {
-//                    iterator.remove();
-//                    continue;
-//                }
 
-                ConflictBlockData mergeConflict = new ConflictBlockData(leftContent, rightContent, startLOC, endLOC, path, mergeTool);
+                boolean isSingleLine = false;
+                if ((endLOC - startLOC) == 3) {
+                    isSingleLine = true;
+                }
+                boolean isComment = false;
+                if (leftContent.length() == 0 && (isComment(rightContent, isSingleLine) || (isAnnotation(rightContent) && rightContent.length() < 30))) {
+                    isComment = true;
+                }
+                else if (rightContent.length() == 0 && (isComment(leftContent, isSingleLine) || (isAnnotation(leftContent) && leftContent.length() < 30))) {
+                    isComment = true;
+
+                }
+                else if (isComment(leftContent, isSingleLine) && isComment(rightContent, isSingleLine)) {
+                    isComment = true;
+                }
+
+                ConflictBlockData mergeConflict = new ConflictBlockData(leftContent, rightContent, startLOC, endLOC, path, mergeTool, isComment);
                 mergeConflicts.add(mergeConflict);
                 iterator.remove();
 
@@ -218,7 +226,7 @@ public class EvaluationUtils {
             } else if (line.contains(CONFLICT_RIGHT_BEGIN)) {
                 isLeftContent = false;
                 iterator.remove();
-            } else if (line.contains(CONFLICT_RIGHT_END)) {
+            } else if (line.contains(CONFLICT_RIGHT_END) && inConflictBlock) {
                 inConflictBlock = false;
                 isLeftContent = false;
                 endLOC = lineCounter;
@@ -227,6 +235,7 @@ public class EvaluationUtils {
 
                 leftContent = flattenString(leftContent).trim();
                 rightContent = flattenString(rightContent).trim();
+
 //                if(leftContent.length() == 0 && rightContent.length() == 0) {
 //                    iterator.remove();
 //                    continue;
@@ -235,17 +244,24 @@ public class EvaluationUtils {
 //                    iterator.remove();
 //                    continue;
 //                }
-//                if(leftContent.length() == 0 && rightContent.contains("@") && rightContent.length() < 30) {
-//                    iterator.remove();
-//                    continue;
-//                }
-//                if(rightContent.length() == 0 && leftContent.contains("@") && leftContent.length() < 30) {
-//                    iterator.remove();
-//                    continue;
-//                }
+                boolean isSingleLine = false;
+                if ((endLOC - startLOC) == 3) {
+                    isSingleLine = true;
+                }
+                boolean isComment = false;
+                if (leftContent.length() == 0 && (isComment(rightContent, isSingleLine) || (isAnnotation(rightContent) && rightContent.length() < 30))) {
+                    isComment = true;
+                }
+                else if (rightContent.length() == 0 && (isComment(leftContent, isSingleLine) || (isAnnotation(leftContent) && leftContent.length() < 30))) {
+                    isComment = true;
+
+                }
+                else if (isComment(leftContent, isSingleLine) && isComment(rightContent, isSingleLine)) {
+                    isComment = true;
+                }
 
 
-                ConflictBlockData mergeConflict = new ConflictBlockData(leftContent, rightContent, startLOC, endLOC, path, mergeTool);
+                ConflictBlockData mergeConflict = new ConflictBlockData(leftContent, rightContent, startLOC, endLOC, path, mergeTool, isComment);
                 mergeConflicts.add(mergeConflict);
                 // reset the flags
                 leftConflictingContent = new StringBuilder();
@@ -269,6 +285,29 @@ public class EvaluationUtils {
 
         return mergeConflicts;
 
+    }
+
+    /*
+     * Check if the conflicting code is a comment
+     */
+    private static boolean isComment(String content, boolean isSingleLine) {
+        if(content.startsWith("/*") && content.endsWith("*/")) {
+            return true;
+        }
+        else if(content.startsWith("//") && isSingleLine) {
+            return true;
+        }
+        return false;
+    }
+
+    /*
+     * Check if the conflicting code is an annotation
+     */
+    private static boolean isAnnotation(String content) {
+        if(content.contains("@")) {
+            return true;
+        }
+        return false;
     }
 
     /*
@@ -375,7 +414,14 @@ public class EvaluationUtils {
 
                 List<Hunk> visitedHunks = new ArrayList<>();
                 for(Hunk hunk : hunks) {
-                    visitedHunks.add(hunk);
+                    if(isReplication) {
+                        if(!removeMovingCausedHunks(hunk, visitedHunks)) {
+                            visitedHunks.add(hunk);
+                        }
+                    }
+                    else {
+                        visitedHunks.add(hunk);
+                    }
                 }
                 removeFormatCausedHunks(visitedHunks);
                 // If the files differ, add to the number of different files
@@ -538,6 +584,7 @@ public class EvaluationUtils {
             String visitedHunkToContent = getHunkContent(visitedHunk, Line.LineType.TO, true);
             if (hunkFromContent.equals(visitedHunkToContent)
                     && hunkToContent.equals(visitedHunkFromContent)) {
+
                 visitedHunks.remove(visitedHunk);
                 return true;
             }
