@@ -11,18 +11,16 @@ import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.vcs.log.Hash;
+import edu.pku.intellimerge.client.APIClient;
 import edu.pku.intellimerge.client.IntelliMerge;
-import git4idea.GitCommit;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.refactoringminer.api.GitHistoryRefactoringMiner;
-import org.refactoringminer.api.RefactoringHandler;
-import org.refactoringminer.rm1.GitHistoryRefactoringMinerImpl;
+import org.eclipse.jgit.errors.LargeObjectException;
+import org.refactoringminer.api.Refactoring;
 
 import java.io.*;
 import java.net.URL;
@@ -45,13 +43,13 @@ public class RefMergeEvaluation {
         URL url = EvaluationPipeline.class.getResource("/refMerge_evaluation_projects");
         InputStream inputStream = url.openStream();
         ArrayList<String> lines = getLinesFromInputStream(inputStream);
-        String projectUrl = "";
-        String projectName = "";
-        GitRepository repo = null;
+        String projectUrl;
+        String projectName;
+        GitRepository repo;
         ca.ualberta.cs.smr.evaluation.database.Project proj = null;
         for(String line : lines) {
             projectUrl = line;
-            if(!line.contains("junit")) {
+            if(!line.contains("error-prone")) {
                 continue;
             }
             proj = ca.ualberta.cs.smr.evaluation.database.Project.findFirst("url = ?", projectUrl);
@@ -84,29 +82,43 @@ public class RefMergeEvaluation {
                 List<GitRepository> repos = repoManager.getRepositories();
                 repo = repos.get(0);
             }
-            evaluateProject(repo, proj);
+            evaluateProject(repo, proj, projectName);
             proj.setDone();
             proj.saveIt();
 
 
-        }
-        if(proj != null) {
-            if(!proj.isDone()) {
-                proj.setDone();
-                proj.saveIt();
-            }
         }
     }
 
     /*
      * Evaluate every merge scenario in the given project.
      */
-    private void evaluateProject(GitRepository repo, Project proj) {
-        GitUtils gitUtils = new GitUtils(repo, project);
-        List<GitCommit> mergeCommits = gitUtils.getMergeCommits();
-        System.out.println(mergeCommits.size());
-        for(GitCommit mergeCommit : mergeCommits) {
-            evaluateMergeScenario(mergeCommit, repo, proj);
+//    private void evaluateProject(GitRepository repo, Project proj) {
+//        GitUtils gitUtils = new GitUtils(repo, project);
+//        List<GitCommit> mergeCommits = gitUtils.getMergeCommits();
+//        System.out.println(mergeCommits.size());
+//        int i = 0;
+//        for(GitCommit mergeCommit : mergeCommits) {
+//            System.out.println("Evaluating on " + ++i + ": " + mergeCommit.getId().toShortString());
+//            evaluateMergeScenario(mergeCommit, repo, proj);
+//        }
+//
+//    }
+
+    /*
+     * Evaluate merge scenarios with refactoring-involved conflicts in the given project.
+     */
+    private void evaluateProject(GitRepository repo, Project proj, String projectName) throws IOException {
+        URL url = EvaluationPipeline.class.getResource("/refMerge_evaluation_commits");
+        InputStream inputStream = url.openStream();
+        ArrayList<String> lines = getLinesFromInputStream(inputStream);
+        int i = 0;
+        for(String line : lines) {
+            String[] values = line.split(";");
+            if(values[0].contains(projectName)) {
+                System.out.println("Evaluating on " + ++i + ": " + values[1]);
+                evaluateMergeScenario(values, repo, proj);
+            }
         }
 
     }
@@ -114,15 +126,29 @@ public class RefMergeEvaluation {
     /*
      * Run RefMerge, IntelliMerge, and Git on the given merge scenario.
      */
-    private void evaluateMergeScenario(GitCommit targetCommit, GitRepository repo,
-                                       ca.ualberta.cs.smr.evaluation.database.Project proj) {
+//    private void evaluateMergeScenario(GitCommit targetCommit, GitRepository repo,
+//                                       ca.ualberta.cs.smr.evaluation.database.Project proj) {
+    private void evaluateMergeScenario(String[] values, GitRepository repo,
+                                   ca.ualberta.cs.smr.evaluation.database.Project proj) {
+
+        if(values[1].contains("e9c838dad6c9e") || values[1].contains("5723e23479c8615")) {
+            return;
+        }
+
         GitUtils gitUtils = new GitUtils(repo, project);
         gitUtils.reset();
+        String tempPath = System.getProperty("user.home") + "/temp/";
+        Utils.clearTemp(tempPath + "manualMerge");
+        Utils.clearTemp(tempPath + "intelliMerge");
 
-        Utils.clearTemp("manualMerge");
-        Utils.clearTemp("intelliMerge");
+        String mergeCommitHash = values[1];
+        MergeCommit mergeCommit = MergeCommit.findFirst("commit_hash = ?", mergeCommitHash);
+        if(mergeCommit != null && mergeCommit.isDone()) {
+            return;
+        }
 
-        String mergeCommitHash = targetCommit.getId().asString();
+//        String mergeCommitHash = targetCommit.getId().asString();
+
         gitUtils.checkout(mergeCommitHash);
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
@@ -131,9 +157,11 @@ public class RefMergeEvaluation {
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
         // Perform the merge with the three tools.
-        List<Hash> parents = targetCommit.getParents();
-        String rightParent = parents.get(0).toShortString();
-        String leftParent = parents.get(1).toShortString();
+//        List<Hash> parents = targetCommit.getParents();
+//        String rightParent = parents.get(0).toShortString();
+//        String leftParent = parents.get(1).toShortString();
+        String rightParent = values[2];
+        String leftParent = values[3];
         String baseCommit = gitUtils.getBaseCommit(leftParent, rightParent);
 
         // Skip cases without a base commit
@@ -141,28 +169,28 @@ public class RefMergeEvaluation {
             return;
         }
 
-        // Get the refactorings detected by RefMiner in the merge scenario
-
         gitUtils.checkout(leftParent);
         boolean isConflicting = gitUtils.merge(rightParent);
         if(!isConflicting) {
+            // This should always be conflicting at the moment
+            System.out.println("Error merging with Git");
             return;
         }
         // Add merge commit to database
-        MergeCommit mergeCommit = MergeCommit.findFirst("commit_hash = ?", mergeCommitHash);
         if (mergeCommit == null) {
             mergeCommit = new MergeCommit(mergeCommitHash, isConflicting, leftParent,
-                    rightParent, proj, targetCommit.getTimestamp());
+                    rightParent, proj, Long.parseLong(values[4]));
             mergeCommit.saveIt();
         } else if (mergeCommit.isDone()) {
             return;
         } else if (!mergeCommit.isDone()) {
             mergeCommit.delete();
             mergeCommit = new MergeCommit(mergeCommitHash, isConflicting, leftParent,
-                    rightParent, proj, targetCommit.getTimestamp());
+                    rightParent, proj, Long.parseLong(values[4]));
             mergeCommit.saveIt();
         }
-        String resultDir = System.getProperty("user.home") + "/temp/results/" + project.getName() + "/" + "commit" + mergeCommit.getId();
+//        String resultDir = System.getProperty("user.home") + "/temp/results/" + project.getName() + "/" + "commit" + mergeCommit.getId();
+        String resultDir = "/mnt/DATA/temp/results/" + project.getName() + "/" + "commit" + mergeCommit.getId();
 
         String manuallyMergedPath = resultDir + "/manualMerge";
         String refMergePath = resultDir + "/refMerge";
@@ -173,30 +201,12 @@ public class RefMergeEvaluation {
         manualMergeResultDirectory.mkdirs();
 
         Utils.saveContent(project, gitMergePath);
-        System.out.println(gitMergePath);
         gitUtils.reset();
 
-        boolean refMinerTimeOut = false;
-        // Get refactoring details
-        final ExecutorService executor = Executors.newSingleThreadExecutor();
-        MergeCommit finalMergeCommit = mergeCommit;
-        List<Refactoring> refactorings = new ArrayList<>();
-        final Future future = executor.submit(() -> {
-                refactorings.addAll(getRefactorings(baseCommit, leftParent, project.getBasePath(), finalMergeCommit));
-                refactorings.addAll(getRefactorings(baseCommit, rightParent, project.getBasePath(), finalMergeCommit));
-        });
-        try {
-            future.get(2, TimeUnit.MINUTES);
-            if(refactorings.size() == 0) {
-                return;
-            }
-            recordRefactorings(refactorings);
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            System.out.println("RefMiner timed out");
-            refMinerTimeOut = true;
-        }
+//        List<Refactoring> refactorings = new ArrayList<>();
+//        refactorings.addAll(getRefactorings(baseCommit, leftParent, project.getBasePath(), finalMergeCommit));
+//        refactorings.addAll(getRefactorings(baseCommit, rightParent, project.getBasePath(), finalMergeCommit));
+//        recordRefactorings(refactorings);
 
         // Merge the merge scenario with the three tools and record the runtime
         DumbService.getInstance(project).completeJustSubmittedTasks();
@@ -207,13 +217,12 @@ public class RefMergeEvaluation {
         commits.add(leftParent);
         commits.add(baseCommit);
         commits.add(rightParent);
-        long intelliMergeRuntime = runIntelliMerge(project.getBasePath(), commits, intelliMergePath, executor);
+        long intelliMergeRuntime = runIntelliMerge(project.getBasePath(), commits, intelliMergePath, mergeCommitHash);
         DumbService.getInstance(project).completeJustSubmittedTasks();
         // Run RefMerge if RefMiner did not timeout
-        Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, Long> refMergeConflictsAndRuntime = null;
-        if(!refMinerTimeOut) {
-            refMergeConflictsAndRuntime = runRefMerge(project, repo, leftParent, rightParent);
-        }
+        Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, Long> refMergeConflictsAndRuntime =
+                runRefMerge(project, repo, leftParent, rightParent, mergeCommit);
+
         Utils.saveContent(project, refMergePath);
         DumbService.getInstance(project).completeJustSubmittedTasks();
 
@@ -230,19 +239,19 @@ public class RefMergeEvaluation {
         Utils.runSystemCommand("cp", "-r", manuallyMergedCopy + "/.", manuallyMergedPath);
 
         // Remove all comments from all directories
-        EvaluationUtils.removeAllComments(manuallyMergedPath);
-        EvaluationUtils.removeAllComments(refMergePath);
-        EvaluationUtils.removeAllComments(intelliMergePath);
-        EvaluationUtils.removeAllComments(gitMergePath);
+//        EvaluationUtils.removeAllComments(manuallyMergedPath);
+//        EvaluationUtils.removeAllComments(refMergePath);
+//        EvaluationUtils.removeAllComments(intelliMergePath);
+//        EvaluationUtils.removeAllComments(gitMergePath);
 
 
         // Get the conflict blocks from each of the merged results as well as the number of conflict blocks
         List<Pair<ConflictingFileData, List<ConflictBlockData>>> refMergeConflicts = EvaluationUtils
-                .extractMergeConflicts(refMergePath, "RefMerge", false);
+                .extractMergeConflicts(refMergePath, "RefMerge", true);
         List<Pair<ConflictingFileData, List<ConflictBlockData>>> gitMergeConflicts = EvaluationUtils
-                .extractMergeConflicts(gitMergePath, "Git", false);
+                .extractMergeConflicts(gitMergePath, "Git", true);
         List<Pair<ConflictingFileData, List<ConflictBlockData>>> intelliMergeConflicts = EvaluationUtils
-                .extractMergeConflicts(intelliMergePath, "IntelliMerge", false);
+                .extractMergeConflicts(intelliMergePath, "IntelliMerge", true);
 
         List<String> relativePaths = new ArrayList<>();
         for(Pair<ConflictingFileData, List<ConflictBlockData>> gitConflictFiles : gitMergeConflicts) {
@@ -259,18 +268,12 @@ public class RefMergeEvaluation {
         ArrayList<SourceFile> manuallyMergedFiles = EvaluationUtils
                 .getJavaSourceFiles(manuallyMergedPath, new ArrayList<>(), manuallyMergedDir);
 
-
-        ComparisonResult refMergeVsManual = null;
-        ComparisonResult gitVsManual = null;
-        ComparisonResult intelliMergeVsManual = null;
-        // If not conflicting, don't calculate precision/recall
-
             // Compare tools with manually merged code
-        refMergeVsManual = EvaluationUtils
+        ComparisonResult refMergeVsManual = EvaluationUtils
                 .compareAutoMerged(refMergePath, manuallyMergedFiles, project.getBasePath(), relativePaths, false);
-        gitVsManual = EvaluationUtils
+        ComparisonResult gitVsManual = EvaluationUtils
                 .compareAutoMerged(gitMergePath, manuallyMergedFiles, project.getBasePath(), relativePaths, false);
-        intelliMergeVsManual = EvaluationUtils
+        ComparisonResult intelliMergeVsManual = EvaluationUtils
                 .compareAutoMerged(intelliMergePath, manuallyMergedFiles, project.getBasePath(), relativePaths, false);
 
         System.out.println("Elapsed RefMerge runtime = " + refMergeConflictsAndRuntime);
@@ -286,9 +289,9 @@ public class RefMergeEvaluation {
         int totalConflictingLOC = 0;
         int totalConflicts = 0;
         // If RefMiner or RefMerge timeout
-        if(refMinerTimeOut || refMergeConflictsAndRuntime.getRight() < 0) {
+        if(refMergeConflictsAndRuntime.getRight() < 0) {
             MergeResult refMergeResult = new MergeResult("RefMerge", -1, -1,
-                    120000, refMergeVsManual, mergeCommit);
+                    -1, refMergeVsManual, mergeCommit);
             refMergeResult.saveIt();
         }
         // Add RefMerge data to database
@@ -358,7 +361,7 @@ public class RefMergeEvaluation {
         // Add IntelliMerge data to database
         if(intelliMergeRuntime < 0) {
             MergeResult intelliMergeResult = new MergeResult("IntelliMerge", -1, -1,
-                    120000, intelliMergeVsManual, mergeCommit);
+                    -1, intelliMergeVsManual, mergeCommit);
             intelliMergeResult.saveIt();
         }
         else {
@@ -389,6 +392,10 @@ public class RefMergeEvaluation {
             }
         }
 
+        Utils.clearTemp(gitMergePath);
+        Utils.clearTemp(intelliMergePath);
+        Utils.clearTemp(refMergePath);
+
         mergeCommit.setDone();
         mergeCommit.saveIt();
 
@@ -400,19 +407,28 @@ public class RefMergeEvaluation {
     private Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, Long> runRefMerge(com.intellij.openapi.project.Project project,
                                                                                           GitRepository repo,
                                                                                           String leftParent,
-                                                                                          String rightParent) {
+                                                                                          String rightParent,
+                                                                                          MergeCommit mergeCommit) {
+        ArrayList<Pair<RefactoringObject, RefactoringObject>> conflicts = new ArrayList<>();
+        List<org.refactoringminer.api.Refactoring> refactorings = new ArrayList<>();
         RefMerge refMerging = new RefMerge();
         System.out.println("Starting RefMerge");
         long time = System.currentTimeMillis();
-        ArrayList<Pair<RefactoringObject, RefactoringObject>> conflicts = new ArrayList<>();
         try {
-            conflicts = refMerging.refMerge(leftParent, rightParent, project, repo);
+            conflicts = refMerging.refMerge(leftParent, rightParent, project, repo, refactorings);
         }
-        catch(AssertionError e) {
+        catch(AssertionError | OutOfMemoryError | LargeObjectException.OutOfMemory e) {
             e.printStackTrace();
         }
         long time2 = System.currentTimeMillis();
+        // If RefMerge crashes
+        if(conflicts == null) {
+            time = -1;
+            System.out.println("RefMerge crashed");
+            return Pair.of(new ArrayList<>(), time);
+        }
         System.out.println("RefMerge is done");
+        recordRefactorings(refactorings, mergeCommit);
         return Pair.of(conflicts, time2 - time);
     }
 
@@ -420,7 +436,8 @@ public class RefMergeEvaluation {
      * Merge the left and right parent using IntelliMerge via command line. Return how long it takes for IntelliMerge
      * to finish
      */
-    private long runIntelliMerge(String repoPath, List<String> commits, String output, ExecutorService executor) {
+    private long runIntelliMerge(String repoPath, List<String> commits, String output, String mergeCommit) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
         final Future future = executor.submit(() -> {
             IntelliMerge merge = new IntelliMerge();
             try {
@@ -433,18 +450,46 @@ public class RefMergeEvaluation {
         long time = System.currentTimeMillis();
         try {
             System.out.println("Starting IntelliMerge");
-            future.get(2, TimeUnit.MINUTES);
+            future.get(30, TimeUnit.MINUTES);
             time2 = System.currentTimeMillis();
             System.out.println("IntelliMerge is done");
             return time2 - time;
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         } catch (TimeoutException e) {
-            System.out.println("IntelliMerge timed out");
-            return 120000;
+            System.out.println("IntelliMerge timed out, falling back onto mergeDirectories method");
+            APIClient apiClient = new APIClient(null, null, null, null, null, true);
+            String path = System.getProperty("user.home") + "/temp/replication_data/" + project.getName() + "/" + mergeCommit;
+            System.out.println(path);
+            System.out.println(output);
+            try {
+                apiClient.processDirectory(path, output);
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
+            return 18000000;
         }
         return time2 - time;
     }
+//        long time2;
+//        long time = System.currentTimeMillis();
+//        try {
+//            System.out.println("Starting IntelliMerge");
+//            IntelliMerge merge = new IntelliMerge();
+//            try {
+//                merge.mergeBranchesForRefMergeEvaluation(repoPath, commits, output, true);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//            time2 = System.currentTimeMillis();
+//            System.out.println("IntelliMerge is done");
+//            return time2 - time;
+//        } catch (OutOfMemoryError | LargeObjectException.OutOfMemory e) {
+//            e.printStackTrace();
+//            System.out.println("IntelliMerge crashed");
+//            return -1;
+//        }
+//    }
 
     /*
      * Clone the given project.
@@ -468,9 +513,6 @@ public class RefMergeEvaluation {
         File pathToProject = new File(path + projectName);
 
         try {
-            if(this.project != null) {
-                ProjectUtil.closeAndDispose(this.project);
-            }
             if(!pathToProject.exists()) {
                 cloneProject(path, url);
             }
@@ -495,45 +537,55 @@ public class RefMergeEvaluation {
         return lines;
     }
 
+//    /*
+//     * Get each refactoring between the base commit and a parent commit for the merge scenario.
+//     */
+//    private List<Refactoring> getRefactorings(String base, String parent, String path, MergeCommit mergeCommit) {
+//        List<Refactoring> refactoringRecords = new ArrayList<>();
+//        File pathDir = new File(path);
+//        try {
+//            Git git = Git.open(pathDir);
+//            GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
+//            miner.detectBetweenCommits(git.getRepository(), base, parent,
+//                    new RefactoringHandler() {
+//                        @Override
+//                        public void handle(String commitId, List<org.refactoringminer.api.Refactoring> refactorings) {
+//                            for (org.refactoringminer.api.Refactoring refactoringObject : refactorings) {
+//                                String refactoringType = refactoringObject.getName();
+//                                String refactoringDetail = refactoringObject.toString();
+//                                if(refactoringDetail.length() > 2000) {
+//                                    refactoringDetail = refactoringDetail.substring(0, 1900);
+//                                }
+//                                ca.ualberta.cs.smr.evaluation.database.Refactoring refactoring =
+//                                        new ca.ualberta.cs.smr.evaluation.database.Refactoring(
+//                                                refactoringType,
+//                                                refactoringDetail,
+//                                                commitId,
+//                                                mergeCommit);
+//                                refactoringRecords.add(refactoring);
+//                            }
+//                        }
+//                    });
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return refactoringRecords;
+//    }
+
     /*
-     * Get each refactoring between the base commit and a parent commit for the merge scenario.
+     * Record each refactoring that was detected by RefactoringMiner
      */
-    private List<Refactoring> getRefactorings(String base, String parent, String path, MergeCommit mergeCommit) {
-        List<Refactoring> refactoringRecords = new ArrayList<>();
-        File pathDir = new File(path);
-        try {
-            Git git = Git.open(pathDir);
-            GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
-            miner.detectBetweenCommits(git.getRepository(), base, parent,
-                    new RefactoringHandler() {
-                        @Override
-                        public void handle(String commitId, List<org.refactoringminer.api.Refactoring> refactorings) {
-                            for (org.refactoringminer.api.Refactoring refactoringObject : refactorings) {
-                                String refactoringType = refactoringObject.getName();
-                                String refactoringDetail = refactoringObject.toString();
-                                if(refactoringDetail.length() > 2000) {
-                                    refactoringDetail = refactoringDetail.substring(0, 1900);
-                                }
-                                ca.ualberta.cs.smr.evaluation.database.Refactoring refactoring =
-                                        new ca.ualberta.cs.smr.evaluation.database.Refactoring(
-                                                refactoringType,
-                                                refactoringDetail,
-                                                commitId,
-                                                mergeCommit);
-                                refactoringRecords.add(refactoring);
-                            }
-                        }
-                    });
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return refactoringRecords;
-    }
-
-    private void recordRefactorings(List<Refactoring> refactorings) {
+    private void recordRefactorings(List<Refactoring> refactorings, MergeCommit mergeCommit) {
         for(Refactoring refactoring : refactorings) {
-            refactoring.saveIt();
+            String refactoringType = refactoring.getRefactoringType().toString();
+            String refactoringDetail = refactoring.toString();
+            if(refactoringDetail.length() > 1999) {
+                refactoringDetail = refactoringDetail.substring(0, 1999);
+            }
+            ca.ualberta.cs.smr.evaluation.database.Refactoring refactoringRecord =
+                    new ca.ualberta.cs.smr.evaluation.database.Refactoring(refactoringType, refactoringDetail, mergeCommit);
+            refactoringRecord.saveIt();
         }
     }
 
