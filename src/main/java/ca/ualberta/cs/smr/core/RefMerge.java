@@ -48,8 +48,8 @@ public class RefMerge extends AnAction {
         String rightCommit = "287b1a4275";
         String leftCommit = "e93bac43b8";
 
-
-        refMerge(rightCommit, leftCommit, project, repo);
+        List<Refactoring> detectedRefactorings = new ArrayList<>();
+        refMerge(rightCommit, leftCommit, project, repo, detectedRefactorings);
 
     }
 
@@ -57,7 +57,8 @@ public class RefMerge extends AnAction {
      * Gets the directory of the project that's being merged, then it calls the function that performs the merge.
      */
     public ArrayList<Pair<RefactoringObject, RefactoringObject>> refMerge(String rightCommit, String leftCommit,
-                                                                          Project project, GitRepository repo) {
+                                                                          Project project, GitRepository repo,
+                                                                          List<Refactoring> detectedRefactorings) {
         this.project = project;
         File dir = new File(Objects.requireNonNull(project.getBasePath()));
         try {
@@ -66,7 +67,7 @@ public class RefMerge extends AnAction {
             ioException.printStackTrace();
         }
 
-        return doMerge(rightCommit, leftCommit, repo);
+        return doMerge(rightCommit, leftCommit, repo, detectedRefactorings);
 
     }
 
@@ -78,39 +79,55 @@ public class RefMerge extends AnAction {
      * left commit, but it uses the current directory instead of saving it to a new one. After it's undone all the
      * refactorings, the merge function is called and it replays the refactorings.
      */
-    private ArrayList<Pair<RefactoringObject, RefactoringObject>> doMerge(String leftCommit, String rightCommit, GitRepository repo){
+    private ArrayList<Pair<RefactoringObject, RefactoringObject>> doMerge(String leftCommit, String rightCommit,
+                                                                          GitRepository repo,
+                                                                          List<Refactoring> detectedRefactorings){
 
         GitUtils gitUtils = new GitUtils(repo, project);
         String baseCommit = gitUtils.getBaseCommit(leftCommit, rightCommit);
-        ArrayList<RefactoringObject> rightRefs = detectAndSimplifyRefactorings(rightCommit, baseCommit);
-        ArrayList<RefactoringObject> leftRefs = detectAndSimplifyRefactorings(leftCommit, baseCommit);
+        System.out.println("Detecting refactorings");
+        ArrayList<RefactoringObject> rightRefs = detectAndSimplifyRefactorings(rightCommit, baseCommit, detectedRefactorings);
+        ArrayList<RefactoringObject> leftRefs = detectAndSimplifyRefactorings(leftCommit, baseCommit, detectedRefactorings);
 
         gitUtils.checkout(rightCommit);
         // Update the PSI classes after the commit
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
+        System.out.println("Inverting right refactorings");
         rightRefs = InvertRefactorings.invertRefactorings(rightRefs, project);
-//        Utils.saveContent(project, "right");
+
         String rightUndoCommit = gitUtils.addAndCommit();
         gitUtils.checkout(leftCommit);
-
         // Update the PSI classes after the commit
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
+        System.out.println("Inverting left refactorings");
         leftRefs = InvertRefactorings.invertRefactorings(leftRefs, project);
-//        Utils.saveContent(project, "left");
+
         gitUtils.addAndCommit();
-        gitUtils.merge(rightUndoCommit);
+        boolean isConflicting = gitUtils.merge(rightUndoCommit);
+
         Utils.refreshVFS();
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
 
         // Check if any of the refactorings are conflicting or have ordering dependencies
+        System.out.println("Detecting refactoring conflicts");
         Matrix matrix = new Matrix(project);
+
         Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, ArrayList<RefactoringObject>> pair = matrix.detectConflicts(leftRefs, rightRefs);
+        ArrayList<RefactoringObject> refactorings = pair.getRight();
+        if(isConflicting) {
+            List<String> conflictingFilePaths = gitUtils.getConflictingFilePaths();
+            for(String conflictingFilePath : conflictingFilePaths) {
+                Utils.removeRefactoringsInConflictingFile(conflictingFilePath, refactorings, gitUtils);
+
+            }
+        }
 
         // Combine the lists so we can perform all the refactorings on the merged project
         // Replay all of the refactorings
+        System.out.println("Replaying refactorings");
         ReplayRefactorings.replayRefactorings(pair.getRight(), project);
 
         return pair.getLeft();
@@ -122,7 +139,7 @@ public class RefMerge extends AnAction {
      * detected refactoring against previously detected refactorings to check for transitivity or if the refactorings can
      * be simplified.
      */
-    public ArrayList<RefactoringObject> detectAndSimplifyRefactorings(String commit, String base) {
+    public ArrayList<RefactoringObject> detectAndSimplifyRefactorings(String commit, String base, List<Refactoring> detectedRefactorings) {
         ArrayList<RefactoringObject> simplifiedRefactorings = new ArrayList<>();
         Matrix matrix = new Matrix(project);
         GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
@@ -133,6 +150,7 @@ public class RefMerge extends AnAction {
                     public void handle(String commitId, List<Refactoring> refactorings) {
                         // Add each refactoring to refResult
                         for(Refactoring refactoring : refactorings) {
+                            detectedRefactorings.add(refactoring);
                             // Create the refactoring object so we can compare and update
                             RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(refactoring);
                             // If the refactoring type is not presently supported, skip it
