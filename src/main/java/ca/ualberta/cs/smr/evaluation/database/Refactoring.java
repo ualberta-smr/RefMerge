@@ -8,8 +8,8 @@ public class Refactoring extends Model {
 
     public Refactoring() {}
 
-    public Refactoring(String refactoringType, String refactoringDetail, String commitHash, MergeCommit mergeCommit) {
+    public Refactoring(String refactoringType, String refactoringDetail, MergeCommit mergeCommit) {
         set("refactoring_type", refactoringType, "merge_commit_id", mergeCommit.getId(), "project_id", mergeCommit.getProjectId(),
-                "refactoring_detail", refactoringDetail, "commit_hash", commitHash);
+                "refactoring_detail", refactoringDetail);
     }
 }
