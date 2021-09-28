@@ -35,6 +35,8 @@ public class ExtractMethodObject implements RefactoringObject {
     private SmartPsiElementPointer[] surroundingElements;
     private ThrownExceptionInfo[] thrownExceptionInfo;
     private boolean isReplay;
+    private int startLine;
+    private int endLine;
 
     /*
      * Use the provided information to create the extract method object for testing.
@@ -76,6 +78,24 @@ public class ExtractMethodObject implements RefactoringObject {
         this.surroundingElements = null;
         this.thrownExceptionInfo = null;
         this.isReplay = true;
+        this.startLine = 0;
+        this.endLine = 0;
+    }
+
+    public void setStartLine(int startLine) {
+        this.startLine = startLine;
+    }
+
+    public void setEndLine(int endLine) {
+        this.endLine = endLine;
+    }
+
+    public int getStartLine() {
+        return startLine;
+    }
+
+    public int getEndLine() {
+        return endLine;
     }
 
     public RefactoringType getRefactoringType() {

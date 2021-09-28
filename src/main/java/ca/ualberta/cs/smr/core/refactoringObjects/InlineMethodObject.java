@@ -29,6 +29,8 @@ public class InlineMethodObject implements RefactoringObject {
     private Set<AbstractCodeFragment> inlinedCodeFragments;
     private int startOffset;
     private boolean isReplay;
+    private int startLine;
+    private int endLine;
 
 
     public InlineMethodObject(String originalFilePath, String originalClassName, MethodSignatureObject originalMethodSignature,
@@ -62,8 +64,25 @@ public class InlineMethodObject implements RefactoringObject {
         this.inlinedCodeFragments = operation.getInlinedCodeFragments();
         this.startOffset = originalOperation.getLocationInfo().getStartOffset();
         this.isReplay = true;
+        this.startLine = 0;
+        this.endLine = 0;
     }
 
+    public void setStartLine(int startLine) {
+        this.startLine = startLine;
+    }
+
+    public void setEndLine(int endLine) {
+        this.endLine = endLine;
+    }
+
+    public int getStartLine() {
+        return startLine;
+    }
+
+    public int getEndLine() {
+        return endLine;
+    }
 
 
     @Override

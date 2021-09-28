@@ -28,6 +28,8 @@ public class MoveRenameMethodObject implements RefactoringObject {
     private boolean isRenameMethod;
     private boolean isMoveMethod;
     private boolean isReplay;
+    private int startLine;
+    private int endLine;
 
     /*
      * Use the provided information to create the rename method object for testing.
@@ -46,6 +48,8 @@ public class MoveRenameMethodObject implements RefactoringObject {
         this.isMoveMethod = false;
         this.isRenameMethod = false;
         this.isReplay = true;
+        this.startLine = 0;
+        this.endLine = 0;
 
     }
 
@@ -83,6 +87,22 @@ public class MoveRenameMethodObject implements RefactoringObject {
         setType(refactoringType);
         this.isReplay = true;
 
+    }
+
+    public void setStartLine(int startLine) {
+        this.startLine = startLine;
+    }
+
+    public void setEndLine(int endLine) {
+        this.endLine = endLine;
+    }
+
+    public int getStartLine() {
+        return startLine;
+    }
+
+    public int getEndLine() {
+        return endLine;
     }
 
     public String getRefactoringDetail() {
