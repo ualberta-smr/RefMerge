@@ -3,8 +3,6 @@ package ca.ualberta.cs.smr.core.invertOperations;
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.utils.Utils;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
@@ -80,8 +78,6 @@ public class InvertMoveRenameMethod {
             if(psiClass == null) {
                 return;
             }
-            // If the method was not moved to the correct location within the class, move it to the correct location
-            moveMethodToOriginalLocation(psiClass, psiMethod,  moveRenameMethodObject.getStartOffset());
         }
 
         UsageViewManager viewManager = UsageViewManager.getInstance(project);
@@ -114,82 +110,6 @@ public class InvertMoveRenameMethod {
             }
         }
         return signatureString;
-    }
-
-    /*
-     * Move the method to the correct location within the class using the text offset detected by RefMiner.
-     */
-    private void moveMethodToOriginalLocation(PsiClass psiClass, PsiMethod psiMethod,  int startOffset) {
-
-        if (ApplicationManager.getApplication().isUnitTestMode()) {
-            return;
-        }
-
-        // Get all of the methods inside of the class.
-        PsiMethod[] psiMethods = psiClass.getMethods();
-
-        // Get the physical copy of the PSI method so we can delete it
-        try {
-            for (PsiMethod method : psiMethods) {
-                boolean isSame = true;
-                String m1 = method.getName();
-                String m2 = psiMethod.getName();
-                if(m1.equals(m2)) {
-                    PsiParameter[] parameterList1 = method.getParameterList().getParameters();
-                    PsiParameter[] parameterList2 = psiMethod.getParameterList().getParameters();
-                    if(parameterList1.length != parameterList2.length) {
-                        continue;
-                    }
-                    for(int i = 0; i < parameterList1.length; i++) {
-                        if (!parameterList1[i].isEquivalentTo(parameterList2[i])) {
-                            isSame = false;
-                            break;
-                        }
-                    }
-                }
-                if (isSame) {
-                    psiMethod = method;
-                    break;
-                }
-            }
-        }
-        catch(PsiInvalidElementAccessException e) {
-            e.printStackTrace();
-            System.out.println("Failed on " + psiMethod.getName());
-            return;
-        }
-        PsiMethod psiMethodBefore = null;
-        // Find which method comes before the moved method
-        for(PsiMethod otherMethod : psiMethods) {
-            int otherMethodStartOffset = otherMethod.getTextOffset();
-            otherMethodStartOffset = otherMethodStartOffset - (psiMethod.getTextRange().getEndOffset() - psiMethod.getTextOffset());
-            if(otherMethodStartOffset < startOffset) {
-                psiMethodBefore = otherMethod;
-            }
-        }
-        final PsiMethod newMethod = PsiElementFactory.getInstance(project).createMethodFromText(psiMethod.getText(), psiClass);
-        PsiMethod finalPsiMethod = psiMethod;
-        // if it's the first method in the class
-        PsiMethod psiMethodAfter = null;
-        if(psiMethodBefore == null) {
-            for(PsiMethod otherMethod : psiMethods) {
-                if(!otherMethod.isConstructor()) {
-                    psiMethodAfter = otherMethod;
-                    break;
-                }
-            }
-            PsiMethod finalPsiMethodAfter = psiMethodAfter;
-            WriteCommandAction.runWriteCommandAction(project, () -> {
-                psiClass.addAfter(newMethod, finalPsiMethodAfter);
-                finalPsiMethod.delete();
-            });
-            return;
-        }
-        PsiMethod finalPsiMethodBefore = psiMethodBefore;
-        WriteCommandAction.runWriteCommandAction(project, () -> {
-            psiClass.addAfter(newMethod, finalPsiMethodBefore);
-            finalPsiMethod.delete();
-        });
     }
 
 }
