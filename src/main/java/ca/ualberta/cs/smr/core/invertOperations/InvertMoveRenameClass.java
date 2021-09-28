@@ -43,10 +43,6 @@ public class InvertMoveRenameClass {
         String filePath = moveRenameClassObject.getDestinationFilePath();
         Utils utils = new Utils(project);
 
-        if(srcQualifiedClass.contains("DescribingMatcher")) {
-            System.out.println();
-        }
-
         utils.addSourceRoot(filePath, destQualifiedClass);
 
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(destQualifiedClass, filePath);
@@ -66,55 +62,40 @@ public class InvertMoveRenameClass {
         if(moveRenameClassObject.isMoveMethod()) {
             // If the move class refactoring is outer to inner
             if(moveRenameClassObject.isMoveInner()) {
-                // If the outer to inner move class happens in the same file
-                if(moveRenameClassObject.isSameFile()) {
-                    vFile = psiClass.getContainingFile().getVirtualFile();
-                    moveClassOuterInFile(psiClass, srcClassName, moveRenameClassObject.getStartOffset());
-                }
-                // Otherwise if the outer class is moved inner in a different file
-                else {
-                    String originalPackage = moveRenameClassObject.getOriginalClassObject().getPackageName();
-                    PsiPackage psiPackage = JavaPsiFacade.getInstance(project).findPackage(originalPackage);
-                    assert psiPackage != null;
-                    PsiDirectory[] psiDirectories = psiPackage.getDirectories();
-                    PsiDirectory targetContainer = psiDirectories[0];
-                    if (psiDirectories.length > 1) {
-                        String path = filePath.substring(0, filePath.lastIndexOf("/"));
-                        for (PsiDirectory directory : psiDirectories) {
-                            String dirPath = directory.getVirtualFile().getPath();
-                            if (dirPath.contains(path)) {
-                                targetContainer = directory;
-                                break;
-                            }
+                String originalPackage = moveRenameClassObject.getOriginalClassObject().getPackageName();
+                PsiPackage psiPackage = JavaPsiFacade.getInstance(project).findPackage(originalPackage);
+                assert psiPackage != null;
+                PsiDirectory[] psiDirectories = psiPackage.getDirectories();
+                PsiDirectory targetContainer = psiDirectories[0];
+                if (psiDirectories.length > 1) {
+                    String path = filePath.substring(0, filePath.lastIndexOf("/"));
+                    for (PsiDirectory directory : psiDirectories) {
+                        String dirPath = directory.getVirtualFile().getPath();
+                        if (dirPath.contains(path)) {
+                            targetContainer = directory;
+                            break;
                         }
                     }
-                    MoveInnerProcessor processor = new MoveInnerProcessor(project, null);
-                    processor.setup(psiClass, srcClassName, true,
-                            null, true, false, targetContainer);
-                    ApplicationManager.getApplication().invokeAndWait(processor);
                 }
+                MoveInnerProcessor processor = new MoveInnerProcessor(project, null);
+                processor.setup(psiClass, srcClassName, true,
+                        null, true, false, targetContainer);
+                ApplicationManager.getApplication().invokeAndWait(processor);
             }
             // If the move class refactoring is inner to outer
             else if(moveRenameClassObject.isMoveOuter()) {
-                // If the inner to outer move class happens in the same file
-                if(moveRenameClassObject.isSameFile()) {
-                    vFile = psiClass.getContainingFile().getVirtualFile();
-                    moveClassInnerInFile(psiClass, srcClassName, moveRenameClassObject.getStartOffset());
+
+                PsiClass[] psiClasses = new PsiClass[1];
+                psiClasses[0] = psiClass;
+                String originalTopClass = moveRenameClassObject.getOriginalClassObject().getPackageName();
+                filePath = moveRenameClassObject.getOriginalFilePath();
+                PsiClass targetClass = utils.getPsiClassByFilePath(filePath, originalTopClass);
+                if(targetClass == null) {
+                    return;
                 }
-                // Otherwise if the inner to outer move class happens in different files
-                else {
-                    PsiClass[] psiClasses = new PsiClass[1];
-                    psiClasses[0] = psiClass;
-                    String originalTopClass = moveRenameClassObject.getOriginalClassObject().getPackageName();
-                    filePath = moveRenameClassObject.getOriginalFilePath();
-                    PsiClass targetClass = utils.getPsiClassByFilePath(filePath, originalTopClass);
-                    if(targetClass == null) {
-                        return;
-                    }
-                    MoveClassToInnerProcessor processor = new MoveClassToInnerProcessor(project, psiClasses, targetClass,
-                            true, false, null);
-                    ApplicationManager.getApplication().invokeAndWait(processor, ModalityState.current());
-                }
+                MoveClassToInnerProcessor processor = new MoveClassToInnerProcessor(project, psiClasses, targetClass,
+                        true, false, null);
+                ApplicationManager.getApplication().invokeAndWait(processor, ModalityState.current());
             }
             // Move the inner class to another class
             else if(moveRenameClassObject.isMoveInnerToInner()) {
@@ -203,57 +184,6 @@ public class InvertMoveRenameClass {
 
         // Update the virtual file of the class
         vFile.refresh(false, true);
-
-    }
-
-    /*
-     * Move the inner class out of the class in the same file.
-     */
-    private void moveClassOuterInFile(PsiClass psiClass, String originalClassName, int startOffset) {
-        PsiFile psiFile = psiClass.getContainingFile();
-        PsiClass outerClass = psiClass.getContainingClass();
-        PsiClass[] psiClasses = ((PsiJavaFile) psiFile).getClasses();
-        for(PsiClass candidateClass : psiClasses) {
-           int candidateOffset = candidateClass.getTextOffset();
-           if(candidateOffset > startOffset) {
-               break;
-           }
-           outerClass = candidateClass;
-        }
-        final PsiClass newClass = PsiElementFactory.getInstance(project).createClassFromText(psiClass.getText(), psiFile);
-        PsiClass finalOuterClass = outerClass;
-        WriteCommandAction.runWriteCommandAction(project, () -> {
-            PsiClass finalClass = (PsiClass) psiFile.addAfter(newClass, finalOuterClass);
-            finalClass.setName(originalClassName);
-            psiClass.delete();
-        });
-
-
-    }
-
-    /*
-     * Move the outer class in the class into a class in the same file.
-     */
-    private void moveClassInnerInFile(PsiClass psiClass, String originalClassName, int startOffset) {
-        PsiFile psiFile = psiClass.getContainingFile();
-        PsiClass[] psiClasses = ((PsiJavaFile) psiFile).getClasses();
-        PsiClass outerClass = psiClasses[0];
-        psiClasses = outerClass.getInnerClasses();
-        PsiClass previousClass = null;
-        for(PsiClass candidateClass : psiClasses) {
-            int candidateOffset = candidateClass.getTextOffset();
-            if(candidateOffset > startOffset) {
-                break;
-            }
-            previousClass = candidateClass;
-        }
-        final PsiClass newClass = PsiElementFactory.getInstance(project).createClassFromText(psiClass.getText(), psiFile);
-        PsiClass finalPreviousClass = previousClass;
-        WriteCommandAction.runWriteCommandAction(project, () -> {
-            PsiClass finalClass = (PsiClass) outerClass.addAfter(newClass, finalPreviousClass);
-            finalClass.setName(originalClassName);
-            psiClass.delete();
-        });
 
     }
 
