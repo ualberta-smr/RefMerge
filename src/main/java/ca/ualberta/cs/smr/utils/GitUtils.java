@@ -30,6 +30,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class GitUtils {
 
+    public static final String CONFLICT_LEFT_BEGIN = "<<<<<<<";
+    public static final String CONFLICT_RIGHT_END = ">>>>>>>";
+
     private final Project project;
     private final GitRepository repo;
 
@@ -316,6 +319,24 @@ public class GitUtils {
         }
         return null;
     }
+
+    public List<String> getConflictingFilePaths() {
+        AtomicReference<GitCommandResult> gitCommandResult = new AtomicReference<>();
+        Thread thread = new Thread(() -> {
+            GitLineHandler lineHandler = new GitLineHandler(project, repo.getRoot(), GitCommand.DIFF);
+            lineHandler.addParameters("--name-only", "--diff-filter=U");
+            gitCommandResult.set(Git.getInstance().runCommand(lineHandler));
+        });
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return gitCommandResult.get().getOutput();
+
+    }
+
 
 
 }

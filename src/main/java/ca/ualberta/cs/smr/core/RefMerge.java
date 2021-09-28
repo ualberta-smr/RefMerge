@@ -82,7 +82,7 @@ public class RefMerge extends AnAction {
     private ArrayList<Pair<RefactoringObject, RefactoringObject>> doMerge(String leftCommit, String rightCommit,
                                                                           GitRepository repo,
                                                                           List<Refactoring> detectedRefactorings){
-
+        long time = System.currentTimeMillis();
         GitUtils gitUtils = new GitUtils(repo, project);
         String baseCommit = gitUtils.getBaseCommit(leftCommit, rightCommit);
         System.out.println("Detecting refactorings");
@@ -116,11 +116,20 @@ public class RefMerge extends AnAction {
         Matrix matrix = new Matrix(project);
 
         Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, ArrayList<RefactoringObject>> pair = matrix.detectConflicts(leftRefs, rightRefs);
+
+        long time2 = System.currentTimeMillis();
+        // If it has been 23 minutes, it will take more than 30 minutes to complete RefMerge
+        if((time - time2) > 1400000) {
+            System.out.println("RefMerge Timed Out");
+            return pair.getLeft();
+        }
+
         ArrayList<RefactoringObject> refactorings = pair.getRight();
         if(isConflicting) {
             List<String> conflictingFilePaths = gitUtils.getConflictingFilePaths();
             for(String conflictingFilePath : conflictingFilePaths) {
-                Utils.removeRefactoringsInConflictingFile(conflictingFilePath, refactorings, gitUtils);
+                Utils utils = new Utils(project);
+                utils.removeRefactoringsInConflictingFile(conflictingFilePath, refactorings);
 
             }
         }

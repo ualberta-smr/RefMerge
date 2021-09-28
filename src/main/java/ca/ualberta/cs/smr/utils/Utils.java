@@ -1,10 +1,12 @@
 package ca.ualberta.cs.smr.utils;
 
+import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ParameterObject;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.application.WriteAction;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
@@ -13,6 +15,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
@@ -24,10 +27,10 @@ import com.intellij.refactoring.JavaRefactoringFactory;
 import com.intellij.refactoring.RefactoringFactory;
 import com.intellij.refactoring.RenameRefactoring;
 import com.intellij.usageView.UsageInfo;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.jps.model.serialization.PathMacroUtil;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -37,6 +40,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class Utils {
     Project project;
+
+    public static final String CONFLICT_LEFT_BEGIN = "<<<<<<<";
+    public static final String CONFLICT_RIGHT_END = ">>>>>>>";
 
     private static final boolean LOG_TO_FILE  = true;
     private static final String LOG_FILE = "log.txt";
@@ -121,10 +127,10 @@ public class Utils {
      * Remove the temp files
      */
     public static void clearTemp(String dir) {
-        String path = System.getProperty("user.home") + "/temp/" + dir;
-        File file = new File(path);
+        //String path = System.getProperty("user.home") + "/temp/" + dir;
+        File file = new File(dir);
         file.mkdirs();
-        runSystemCommand("rm", "-rf", path);
+        runSystemCommand("rm", "-rf", dir);
     }
 
     public static void dumbServiceHandler(Project project) {
@@ -441,5 +447,130 @@ public class Utils {
         }
         return null;
     }
+
+    public void removeRefactoringsInConflictingFile(String path, List<RefactoringObject> refactorings) {
+        if(!path.endsWith(".java")) {
+            return;
+        }
+        List<Pair<Integer, Integer>> conflictingRegions = getConflictingRegions(path);
+        for(RefactoringObject refactoring : refactorings) {
+            if(refactoring instanceof InlineMethodObject || refactoring instanceof ExtractMethodObject) {
+                continue;
+            }
+
+            if (!refactoring.getOriginalFilePath().equals(path)) {
+                continue;
+            }
+            setBoundaries(refactoring);
+            if (!checkReplayRefactoring(refactoring, conflictingRegions)) {
+                refactorings.remove(refactoring);
+            }
+        }
+    }
+
+    private List<Pair<Integer, Integer>> getConflictingRegions(String path) {
+        File file = new File(path);
+        List<Pair<Integer, Integer>> conflictingRegions = new ArrayList<>();
+        int startLine = 0;
+        int endLine = 0;
+        int counter = 0;
+        try {
+            InputStream stream = file.toURI().toURL().openStream();
+
+        for(String line : getLinesFromInputStream(stream)) {
+            counter++;
+            if(line.contains(CONFLICT_LEFT_BEGIN)) {
+                startLine = counter;
+            }
+            else if(line.contains(CONFLICT_RIGHT_END)) {
+                endLine = counter;
+                conflictingRegions.add(Pair.of(startLine, endLine));
+            }
+        }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return conflictingRegions;
+    }
+
+    /*
+     * Get each line from the input stream containing the IntelliMerge dataset.
+     */
+    public static ArrayList<String> getLinesFromInputStream(InputStream inputStream) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        ArrayList<String> lines = new ArrayList<>();
+        while(reader.ready()) {
+            lines.add(reader.readLine());
+        }
+        return lines;
+    }
+
+    private boolean checkReplayRefactoring(RefactoringObject refactoring, List<Pair<Integer, Integer>> conflictingRegions) {
+        int refStartLine = refactoring.getStartLine();
+        int refEndLine = refactoring.getEndLine();
+        for(Pair<Integer,Integer> conflictingRegion : conflictingRegions) {
+            int conflictingStartLine = conflictingRegion.getLeft();
+            int conflictingEndLine = conflictingRegion.getRight();
+            // If the refactoring is within the conflicting region, do not replay
+            if(refStartLine > conflictingStartLine && refEndLine < conflictingEndLine) {
+                return false;
+            }
+            // Otherwise, if the regions overlap, do not replay
+            else if(refStartLine < conflictingStartLine && refEndLine < conflictingEndLine) {
+                return false;
+            }
+            else if(refStartLine > conflictingStartLine && refEndLine > conflictingEndLine) {
+                return false;
+            }
+        }
+        // If the regions are not related or the region is within the method or class, replay
+        return true;
+    }
+
+    /*
+     * Get the boundaries for the given PSI class
+     */
+    private void setBoundaries(RefactoringObject ref) {
+        PsiElement psiElement;
+        if(ref instanceof MoveRenameMethodObject) {
+            String filePath = ref.getOriginalFilePath();
+            String className = ((MoveRenameMethodObject) ref).getOriginalClassName();
+            PsiClass psiClass = getPsiClassFromClassAndFileNames(className, filePath);
+            if(psiClass == null) {
+                return;
+            }
+            PsiMethod psiMethod = getPsiMethod(psiClass, ((MoveRenameMethodObject) ref).getOriginalMethodSignature());
+            if(psiMethod == null) {
+                return;
+            }
+            psiElement = psiMethod;
+        }
+        else if(ref instanceof MoveRenameClassObject) {
+            String filePath = ref.getOriginalFilePath();
+            String className = ((MoveRenameClassObject) ref).getOriginalClassObject().getClassName();
+            PsiClass psiClass = getPsiClassFromClassAndFileNames(className, filePath);
+            if(psiClass == null) {
+                return;
+            }
+            psiElement = psiClass;
+        }
+        else {
+            return;
+        }
+
+        try {
+            TextRange range = psiElement.getTextRange();
+            Document document = PsiDocumentManager.getInstance(project).getCachedDocument(psiElement.getContainingFile());
+            if (document != null) {
+                ref.setStartLine(document.getLineNumber(range.getStartOffset()));
+                ref.setEndLine(document.getLineNumber(range.getEndOffset()));
+            }
+        }
+        catch(NullPointerException e) {
+            e.printStackTrace();
+            return;
+        }
+    }
+
 }
 
