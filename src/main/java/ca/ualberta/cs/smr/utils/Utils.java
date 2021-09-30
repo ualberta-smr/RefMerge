@@ -370,6 +370,10 @@ public class Utils {
             return null;
         }
         for (PsiFile file : psiFiles) {
+            String classPath = file.getVirtualFile().getPath();
+            if(!classPath.contains(filePath)) {
+                continue;
+            }
             PsiJavaFile psiFile = (PsiJavaFile) file;
             // Get the classes in the file
             PsiClass[] jClasses = psiFile.getClasses();
