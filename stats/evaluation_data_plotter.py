@@ -29,12 +29,12 @@ def plot_conflicting_scenarios():
     conflicting_ms = get_data_frame('conflicting_scenarios')
     c_projects = conflicting_ms.groupby(['project_name'])
 
-    refMerge_data = conflicting_ms.groupby('project_name')['refMerge']
-    git_data = conflicting_ms.groupby('project_name')['git']
-    intelliMerge_data = conflicting_ms.groupby('project_name')['intelliMerge']
-    refMerge_comments_data = conflicting_ms.groupby('project_name')['refMerge_comments']
-    git_comments_data = conflicting_ms.groupby('project_name')['git_comments']
-    intelliMerge_comments_data = conflicting_ms.groupby('project_name')['intelliMerge_comments']
+    refMerge_data = conflicting_ms.groupby('project_name')['refMerge_conflicts']
+    git_data = conflicting_ms.groupby('project_name')['git_conflicts']
+    intelliMerge_data = conflicting_ms.groupby('project_name')['intelliMerge_conflicts']
+    refMerge_comments_data = conflicting_ms.groupby('project_name')['refMerge_comments_conflicts']
+    git_comments_data = conflicting_ms.groupby('project_name')['git_comments_conflicts']
+    intelliMerge_comments_data = conflicting_ms.groupby('project_name')['intelliMerge_comments_conflicts']
     
     git_total = 0
     git_comments_total = 0
@@ -44,10 +44,10 @@ def plot_conflicting_scenarios():
     intelliMerge_comments_total = 0
 
     for group in c_projects.groups:
-        refMerge = c_projects.get_group(group)['refMerge'].iloc[0]
+        refMerge = c_projects.get_group(group)['refMerge_conflicts'].iloc[0]
         git = c_projects.get_group(group)['git'].iloc[0]
-        intelliMerge = c_projects.get_group(group)['intelliMerge'].iloc[0]
-        refMerge_comments = c_projects.get_group(group)['refMerge_comments'].iloc[0]
+        intelliMerge = c_projects.get_group(group)['intelliMerge_conflicts'].iloc[0]
+        refMerge_comments = c_projects.get_group(group)['refMerge_comments_conflicts'].iloc[0]
         git_comments = c_projects.get_group(group)['git_comments'].iloc[0]
         intelliMerge_comments = c_projects.get_group(group)['intelliMerge_comments'].iloc[0]
         print(group)
@@ -100,11 +100,11 @@ def plot_conflicting_scenarios_bar_graph():
         intelliMerge_timedout += c_projects.get_group(group)['intelliMerge_timeouts'].iloc[0]
 
         print(group)
-        print("RefMerge conflicting Scenarios Without Comments: " + str(refMerge))
+        print("RefMerge conflicting Scenarios: " + str(refMerge) + " " + str(refMerge_comments))
         print("RefMerge Timeouts: " + str(c_projects.get_group(group)['refMerge_timeouts'].iloc[0]))
         print("Git conflicting Scenarios: " + str(git_comments))
         print("Git conflicting Scenarios Without Comments: " + str(git))
-        print("IntelliMerge conflicting Scenarios Without Comments: " + str(intelliMerge))
+        print("IntelliMerge conflicting Scenarios: " + str(intelliMerge) + " " + str(intelliMerge_comments))
         print("IntelliMerge Timeouts: " + str(c_projects.get_group(group)['intelliMerge_timeouts'].iloc[0]))
         git_total += git
         git_comments_total += git_comments
@@ -163,13 +163,13 @@ def plot_conflicting_files_with_comments_by_project():
     
     conflicting_files.drop(conflicting_files.index[0])
     fig, ax = plt.subplots(figsize=(15,6))
-    labels = list(c_projects.groups.keys())
+
+    conflicting_files.drop(conflicting_files.index[0])
 
 
     refMerge_data = conflicting_files.groupby('project_name')['refMerge']
     git_data = conflicting_files.groupby('project_name')['git']
     intelliMerge_data = conflicting_files.groupby('project_name')['intelliMerge']
-
 
     refMerge = []
     git = []
@@ -192,23 +192,25 @@ def plot_conflicting_files_with_comments_by_project():
         w1, p1 = wilcoxon_test(refMerge_p, git_p)
         w2, p2 = wilcoxon_test(intelliMerge_p, git_p)
         w3, p3 = wilcoxon_test(refMerge_p, intelliMerge_p)
-        
+
         refMerge_list = refMerge_p.tolist()
         git_list = git_p.tolist()
         intelliMerge_list = intelliMerge_p.tolist()
 
-        if p1 < 0.05 or p2 < 0.05 or p3 < 0.05:
-            print(group)
-            print('RefMerge Median: ', np.median(refMerge_p))
-            print('IntelliMerge Median: ', np.median(intelliMerge_p))
-            print('Git Median: ', np.median(git_p))
-            print("refMerge, git:", w1, p1)
-            print("intelliMerge, git:", w2, p2)
-            print("refMerge, intelliMerge:", w3, p3)
-            refMerge.append(refMerge_list)
-            git.append(git_list)
-            intelliMerge.append(intelliMerge_list)
-            labels.append(group)
+        refMerge_list = list(filter(lambda a: a > -1, refMerge_list))
+        intelliMerge_list = list(filter(lambda a: a > -1, intelliMerge_list))
+
+        print(group)
+        print('RefMerge Median: ', np.median(refMerge_p))
+        print('IntelliMerge Median: ', np.median(intelliMerge_p))
+        print('Git Median: ', np.median(git_p))
+        print("refMerge, git:", w1, p1)
+        print("intelliMerge, git:", w2, p2)
+        print("refMerge, intelliMerge:", w3, p3)
+        refMerge.append(refMerge_list)
+        git.append(git_list)
+        intelliMerge.append(intelliMerge_list)
+        labels.append(group)
         refMerge_overall.append(np.median(refMerge_list))
         git_overall.append(np.median(git_list))
         intelliMerge_overall.append(np.median(intelliMerge_list))
@@ -223,17 +225,23 @@ def plot_conflicting_files_with_comments_by_project():
     intelliMerge.append(intelliMerge_ms)
     intelliMerge.append(intelliMerge_overall)
 
+
+
+    fig, ax = plt.subplots(figsize=(15,6))
     labels.append('All Merge Scenarios')
     labels.append('All Projects')
 
-    bpr = plt.boxplot(refMerge, patch_artist=True, positions = np.array(range(len(labels)))*2.0-0.5, sym='', widths=0.4)
-    bpg = plt.boxplot(git, patch_artist=True, positions = np.array(range(len(labels)))*2.0, sym='', widths=0.4)
-    bpi = plt.boxplot(intelliMerge, patch_artist=True, positions = np.array(range(len(labels)))*2.0+0.5, sym='', widths=0.4)
-    
+    print(len(refMerge))
+    print(labels)
+    labels = ['']
+    bpr = plt.boxplot(refMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0-0.5, sym='', widths=0.4)
+    bpg = plt.boxplot(git_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0, sym='', widths=0.4)
+    bpi = plt.boxplot(intelliMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0+0.5, sym='', widths=0.4)
+
     set_box_color(bpr, REFMERGE)
     set_box_color(bpg, GIT)
     set_box_color(bpi, INTELLIMERGE)
-    ax.set_xlabel("Projects")
+    ax.set_xlabel("All Merge Scenarios")
     ax.set_ylabel("Number of Conflicting Files")
 
     plt.plot([], c=REFMERGE, label="RefMerge")
@@ -242,12 +250,8 @@ def plot_conflicting_files_with_comments_by_project():
     plt.legend()
 
     plt.xticks(range(0, len(labels) * 2, 2), labels)
-    plt.rc('xtick', labelsize=8)
-    plt.setp(ax.xaxis.get_majorticklabels(), rotation=-30, ha="left", rotation_mode="anchor")
 
     fig.tight_layout()
-
-    plt.savefig('horizontalGraphs/FilesCommentsPlot.pdf')
 
     print("Project Medians")
     w1, p1 = wilcoxon_test(refMerge_overall, git_overall)
@@ -261,21 +265,17 @@ def plot_conflicting_files_with_comments_by_project():
     print("refMerge, intelliMerge:", w3, p3)
 
     print("All Merge Scenarios")
-    w1, p1 = wilcoxon_test(refMerge_ms, git_ms)
-    w2, p2 = wilcoxon_test(intelliMerge_ms, git_ms)
-    w3, p3 = wilcoxon_test(refMerge_ms, intelliMerge_ms)
     print('RefMerge Median: ', np.median(refMerge_ms))
     print('IntelliMerge Median: ', np.median(intelliMerge_ms))
     print('Git Median: ', np.median(git_ms))
-    print("refMerge, git:", w1, p1)
-    print("intelliMerge, git:", w2, p2)
-    print("refMerge, intelliMerge:", w3, p3)
-    f.write("\\newcommand{\\filesCommentsRefMergeProjectMedian}{" + str(np.median(refMerge_overall)) + "}\n")
-    f.write("\\newcommand{\\filesCommentsGitProjectMedian}{" + str(np.median(git_overall)) + "}\n")
-    f.write("\\newcommand{\\filesCommentsIntelliMergeProjectMedian}{" + str(np.median(intelliMerge_overall)) + "}\n")
-    f.write("\\newcommand{\\filesCommentsRefMergeScenarioMedian}{" + str(np.median(refMerge_ms)) + "}\n")
-    f.write("\\newcommand{\\filesCommentsGitScenarioMedian}{" + str(np.median(git_ms)) + "}\n")
-    f.write("\\newcommand{\\filesCommentsIntelliMergeScenarioMedian}{" + str(np.median(intelliMerge_ms)) + "}\n")
+    f.write("\\newcommand{\\filesRefMergeProjectMedian}{" + str(np.median(refMerge_overall)) + "}\n")
+    f.write("\\newcommand{\\filesGitProjectMedian}{" + str(np.median(git_overall)) + "}\n")
+    f.write("\\newcommand{\\filesIntelliMergeProjectMedian}{" + str(np.median(intelliMerge_overall)) + "}\n")
+    f.write("\\newcommand{\\filesRefMergeScenarioMedian}{" + str(np.median(refMerge_ms)) + "}\n")
+    f.write("\\newcommand{\\filesGitScenarioMedian}{" + str(np.median(git_ms)) + "}\n")
+    f.write("\\newcommand{\\filesIntelliMergeScenarioMedian}{" + str(np.median(intelliMerge_ms)) + "}\n")
+
+    plt.savefig('horizontalGraphs/FilesPlot.pdf')
     f.close()
 
 
@@ -400,6 +400,109 @@ def plot_conflicting_files_by_project():
     f.close()
 
 
+def plot_conflicting_loc_per_block_with_comments_stats():
+    f = open("results.tex", "a")
+    conflicting_loc = get_data_frame('conflicting_loc_per_block_with_comments_stats')
+    c_projects = conflicting_loc.groupby(['project_name'])
+
+
+
+    conflicting_loc.drop(conflicting_loc.index[0])
+
+
+    refMerge_data = conflicting_loc[conflicting_loc['refMerge_conflicting_loc'] > -1].groupby('project_name')
+    git_data = conflicting_loc.groupby('project_name')['git_conflicting_loc']
+    intelliMerge_data = conflicting_loc[conflicting_loc['intelliMerge_conflicting_loc'] > -1].groupby('project_name')
+
+
+    refMerge = []
+    git = []
+    intelliMerge = []
+
+    refMerge_overall = []
+    git_overall = []
+    intelliMerge_overall = []
+
+    refMerge_ms = []
+    git_ms = []
+    intelliMerge_ms = []
+
+    labels = []
+
+    for group in c_projects.groups:
+        refMerge_p = c_projects.get_group(group)['refMerge_conflicting_loc']
+        git_p = c_projects.get_group(group)['git_conflicting_loc']
+        intelliMerge_p = c_projects.get_group(group)['intelliMerge_conflicting_loc']
+
+        refMerge_list = refMerge_p.tolist()
+        git_list = git_p.tolist()
+        intelliMerge_list = intelliMerge_p.tolist()
+
+        refMerge_list = list(filter(lambda a: a > -1, refMerge_list))
+        intelliMerge_list = list(filter(lambda a: a > -1, intelliMerge_list))
+        git_list = list(filter(lambda a: a > -1, git_list))
+
+        print(group)
+        print('RefMerge Median: ', np.median(refMerge_list))
+        print('IntelliMerge Median: ', np.median(intelliMerge_list))
+        print('Git Median: ', np.median(git_list))
+        refMerge.append(refMerge_list)
+        git.append(git_list)
+        intelliMerge.append(intelliMerge_list)
+        labels.append(group)
+        refMerge_overall.append(np.median(refMerge_list))
+        git_overall.append(np.median(git_list))
+        intelliMerge_overall.append(np.median(intelliMerge_list))
+        refMerge_ms = refMerge_ms + refMerge_list
+        git_ms = git_ms + git_list
+        intelliMerge_ms = intelliMerge_ms + intelliMerge_list
+
+    refMerge.append(refMerge_ms)
+    refMerge.append(refMerge_overall)
+    git.append(git_ms)
+    git.append(git_overall)
+    intelliMerge.append(intelliMerge_ms)
+    intelliMerge.append(intelliMerge_overall)
+
+    fig, ax = plt.subplots(figsize=(15,6))
+    labels.append('All Merge Scenarios')
+    labels.append('All Projects')
+
+
+    labels = ['']
+    bpr = plt.boxplot(refMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0-0.5, sym='', widths=0.4)
+    bpg = plt.boxplot(git_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0, sym='', widths=0.4)
+    bpi = plt.boxplot(intelliMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0+0.5, sym='', widths=0.4)
+
+    set_box_color(bpr, REFMERGE)
+    set_box_color(bpg, GIT)
+    set_box_color(bpi, INTELLIMERGE)
+    ax.set_xlabel("All Conflict Blocks")
+    ax.set_ylabel("Number of Conflicting LOC")
+
+    plt.plot([], c=REFMERGE, label="RefMerge")
+    plt.plot([], c=GIT, label='Git')
+    plt.plot([], c=INTELLIMERGE, label='IntelliMerge')
+    plt.legend()
+
+    plt.xticks(range(0, len(labels) * 2, 2), labels)
+    plt.rc('xtick', labelsize=8)
+    plt.setp(ax.xaxis.get_majorticklabels(), rotation=0, ha="left", rotation_mode="anchor")
+
+    fig.tight_layout()
+
+    print("Project Medians")
+    print('RefMerge Median: ', np.median(refMerge_overall))
+    print('IntelliMerge Median: ', np.median(intelliMerge_overall))
+    print('Git Median: ', np.median(git_overall))
+
+    print("All Merge Scenarios")
+    print('RefMerge Median: ', np.median(refMerge_ms))
+    print('IntelliMerge Median: ', np.median(intelliMerge_ms))
+    print('Git Median: ', np.median(git_ms))
+
+    plt.savefig('horizontalGraphs/LOCPerBlockPlot.pdf')
+    f.close()
 
 def plot_conflicting_loc_with_comments_by_project():
     f = open("results.tex", "a")
@@ -409,12 +512,11 @@ def plot_conflicting_loc_with_comments_by_project():
 
     
     conflicting_loc.drop(conflicting_loc.index[0])
-    fig, ax = plt.subplots(figsize=(15,6))
-    labels = list(c_projects.groups.keys())
 
-    refMerge_data = conflicting_loc.groupby('project_name')['refMerge_conflicting_loc']
+
+    refMerge_data = conflicting_loc[conflicting_loc['refMerge_conflicting_loc'] > -1].groupby('project_name')
     git_data = conflicting_loc.groupby('project_name')['git_conflicting_loc']
-    intelliMerge_data = conflicting_loc.groupby('project_name')['intelliMerge_conflicting_loc']
+    intelliMerge_data = conflicting_loc[conflicting_loc['intelliMerge_conflicting_loc'] > -1].groupby('project_name')
 
 
     refMerge = []
@@ -438,23 +540,25 @@ def plot_conflicting_loc_with_comments_by_project():
         w1, p1 = wilcoxon_test(refMerge_p, git_p)
         w2, p2 = wilcoxon_test(intelliMerge_p, git_p)
         w3, p3 = wilcoxon_test(refMerge_p, intelliMerge_p)
-        
+
         refMerge_list = refMerge_p.tolist()
         git_list = git_p.tolist()
         intelliMerge_list = intelliMerge_p.tolist()
 
-        if p1 < 0.05 or p2 < 0.05 or p3 < 0.05:
-            print(group)
-            print('RefMerge Median: ', np.median(refMerge_p))
-            print('IntelliMerge Median: ', np.median(intelliMerge_p))
-            print('Git Median: ', np.median(git_p))
-            print("refMerge, git:", w1, p1)
-            print("intelliMerge, git:", w2, p2)
-            print("refMerge, intelliMerge:", w3, p3)
-            refMerge.append(refMerge_list)
-            git.append(git_list)
-            intelliMerge.append(intelliMerge_list)
-            labels.append(group)
+        refMerge_list = list(filter(lambda a: a > -1, refMerge_list))
+        intelliMerge_list = list(filter(lambda a: a > -1, intelliMerge_list))
+
+        print(group)
+        print('RefMerge Median: ', np.median(refMerge_list))
+        print('IntelliMerge Median: ', np.median(intelliMerge_list))
+        print('Git Median: ', np.median(git_list))
+        print("refMerge, git:", w1, p1)
+        print("intelliMerge, git:", w2, p2)
+        print("refMerge, intelliMerge:", w3, p3)
+        refMerge.append(refMerge_list)
+        git.append(git_list)
+        intelliMerge.append(intelliMerge_list)
+        labels.append(group)
         refMerge_overall.append(np.median(refMerge_list))
         git_overall.append(np.median(git_list))
         intelliMerge_overall.append(np.median(intelliMerge_list))
@@ -469,18 +573,20 @@ def plot_conflicting_loc_with_comments_by_project():
     intelliMerge.append(intelliMerge_ms)
     intelliMerge.append(intelliMerge_overall)
 
+    fig, ax = plt.subplots(figsize=(15,6))
+    labels.append('All Merge Scenarios')
+    labels.append('All Projects')
 
-    labels.append("All Merge Scenarios")
-    labels.append("All Projects")
 
-    bpr = plt.boxplot(refMerge, patch_artist=True, positions = np.array(range(len(labels)))*2.0-0.5, sym='', widths=0.4)
-    bpg = plt.boxplot(git, patch_artist=True, positions = np.array(range(len(labels)))*2.0, sym='', widths=0.4)
-    bpi = plt.boxplot(intelliMerge, patch_artist=True, positions = np.array(range(len(labels)))*2.0+0.5, sym='', widths=0.4)
-    
+    labels = ['']
+    bpr = plt.boxplot(refMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0-0.5, sym='', widths=0.4)
+    bpg = plt.boxplot(git_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0, sym='', widths=0.4)
+    bpi = plt.boxplot(intelliMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0+0.5, sym='', widths=0.4)
+
     set_box_color(bpr, REFMERGE)
     set_box_color(bpg, GIT)
     set_box_color(bpi, INTELLIMERGE)
-    ax.set_xlabel("Projects")
+    ax.set_xlabel("All Merge Scenarios")
     ax.set_ylabel("Number of Conflicting LOC")
 
     plt.plot([], c=REFMERGE, label="RefMerge")
@@ -490,11 +596,9 @@ def plot_conflicting_loc_with_comments_by_project():
 
     plt.xticks(range(0, len(labels) * 2, 2), labels)
     plt.rc('xtick', labelsize=8)
-    plt.setp(ax.xaxis.get_majorticklabels(), rotation=-30, ha="left", rotation_mode="anchor")
+    plt.setp(ax.xaxis.get_majorticklabels(), rotation=0, ha="left", rotation_mode="anchor")
 
     fig.tight_layout()
-
-    plt.savefig('horizontalGraphs/LOCCommentsPlot.pdf')
 
     print("Project Medians")
     w1, p1 = wilcoxon_test(refMerge_overall, git_overall)
@@ -508,21 +612,17 @@ def plot_conflicting_loc_with_comments_by_project():
     print("refMerge, intelliMerge:", w3, p3)
 
     print("All Merge Scenarios")
-    w1, p1 = wilcoxon_test(refMerge_ms, git_ms)
-    w2, p2 = wilcoxon_test(intelliMerge_ms, git_ms)
-    w3, p3 = wilcoxon_test(refMerge_ms, intelliMerge_ms)
     print('RefMerge Median: ', np.median(refMerge_ms))
     print('IntelliMerge Median: ', np.median(intelliMerge_ms))
     print('Git Median: ', np.median(git_ms))
-    print("refMerge, git:", w1, p1)
-    print("intelliMerge, git:", w2, p2)
-    print("refMerge, intelliMerge:", w3, p3)
-    f.write("\\newcommand{\\locCommentsRefMergeProjectMedian}{" + str(np.median(refMerge_overall)) + "}\n")
-    f.write("\\newcommand{\\locCommentsGitProjectMedian}{" + str(np.median(git_overall)) + "}\n")
-    f.write("\\newcommand{\\locCommentsIntelliMergeProjectMedian}{" + str(np.median(intelliMerge_overall)) + "}\n")
-    f.write("\\newcommand{\\locCommentsRefMergeScenarioMedian}{" + str(np.median(refMerge_ms)) + "}\n")
-    f.write("\\newcommand{\\locCommentsGitScenarioMedian}{" + str(np.median(git_ms)) + "}\n")
-    f.write("\\newcommand{\\locCommentsIntelliMergeScenarioMedian}{" + str(np.median(intelliMerge_ms)) + "}\n")
+    f.write("\\newcommand{\\locRefMergeProjectMedian}{" + str(np.median(refMerge_overall)) + "}\n")
+    f.write("\\newcommand{\\locGitProjectMedian}{" + str(np.median(git_overall)) + "}\n")
+    f.write("\\newcommand{\\locIntelliMergeProjectMedian}{" + str(np.median(intelliMerge_overall)) + "}\n")
+    f.write("\\newcommand{\\locRefMergeScenarioMedian}{" + str(np.median(refMerge_ms)) + "}\n")
+    f.write("\\newcommand{\\locGitScenarioMedian}{" + str(np.median(git_ms)) + "}\n")
+    f.write("\\newcommand{\\locIntelliMergeScenarioMedian}{" + str(np.median(intelliMerge_ms)) + "}\n")
+
+    plt.savefig('horizontalGraphs/LOCPlot.pdf')
     f.close()
 
 
@@ -652,13 +752,13 @@ def plot_conflict_blocks_with_comments_by_project():
     conflict_blocks = get_data_frame('conflict_block_with_comments_stats')
     c_projects = conflict_blocks.groupby(['project_name'])
 
-
-    
     conflict_blocks.drop(conflict_blocks.index[0])
 
     refMerge_data = conflict_blocks.groupby('project_name')['refMerge_conflict_blocks']
     git_data = conflict_blocks.groupby('project_name')['git_conflict_blocks']
     intelliMerge_data = conflict_blocks.groupby('project_name')['intelliMerge_conflict_blocks']
+
+
 
     refMerge = []
     git = []
@@ -674,6 +774,7 @@ def plot_conflict_blocks_with_comments_by_project():
 
     labels = []
 
+
     for group in c_projects.groups:
         refMerge_p = c_projects.get_group(group)['refMerge_conflict_blocks']
         git_p = c_projects.get_group(group)['git_conflict_blocks']
@@ -681,23 +782,25 @@ def plot_conflict_blocks_with_comments_by_project():
         w1, p1 = wilcoxon_test(refMerge_p, git_p)
         w2, p2 = wilcoxon_test(intelliMerge_p, git_p)
         w3, p3 = wilcoxon_test(refMerge_p, intelliMerge_p)
-        
+
         refMerge_list = refMerge_p.tolist()
         git_list = git_p.tolist()
         intelliMerge_list = intelliMerge_p.tolist()
 
-        if p1 < 0.05 or p2 < 0.05 or p3 < 0.05:
-            print(group)
-            print('RefMerge Median: ', np.median(refMerge_p))
-            print('IntelliMerge Median: ', np.median(intelliMerge_p))
-            print('Git Median: ', np.median(git_p))
-            print("refMerge, git:", w1, p1)
-            print("intelliMerge, git:", w2, p2)
-            print("refMerge, intelliMerge:", w3, p3)
-            refMerge.append(refMerge_list)
-            git.append(git_list)
-            intelliMerge.append(intelliMerge_list)
-            labels.append(group)
+        refMerge_list = list(filter(lambda a: a > -1, refMerge_list))
+        intelliMerge_list = list(filter(lambda a: a > -1, intelliMerge_list))
+
+        print(group)
+        print('RefMerge Median: ', np.median(refMerge_p))
+        print('IntelliMerge Median: ', np.median(intelliMerge_p))
+        print('Git Median: ', np.median(git_p))
+        print("refMerge, git:", w1, p1)
+        print("intelliMerge, git:", w2, p2)
+        print("refMerge, intelliMerge:", w3, p3)
+        refMerge.append(refMerge_list)
+        git.append(git_list)
+        intelliMerge.append(intelliMerge_list)
+        labels.append(group)
         refMerge_overall.append(np.median(refMerge_list))
         git_overall.append(np.median(git_list))
         intelliMerge_overall.append(np.median(intelliMerge_list))
@@ -713,18 +816,23 @@ def plot_conflict_blocks_with_comments_by_project():
     intelliMerge.append(intelliMerge_overall)
 
 
+
+
     fig, ax = plt.subplots(figsize=(15,6))
     labels.append("All Merge Scenarios")
     labels.append("All Projects")
-    labels = ['All Merge Scenarios']
+
+    labels = ['']
     bpr = plt.boxplot(refMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0-0.5, sym='', widths=0.4)
     bpg = plt.boxplot(git_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0, sym='', widths=0.4)
     bpi = plt.boxplot(intelliMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0+0.5, sym='', widths=0.4)
-    
+
+
+
     set_box_color(bpr, REFMERGE)
     set_box_color(bpg, GIT)
     set_box_color(bpi, INTELLIMERGE)
-    ax.set_xlabel("Projects")
+    ax.set_xlabel("All Merge Scenarios")
     ax.set_ylabel("Number of Conflict Blocks")
 
     plt.plot([], c=REFMERGE, label="RefMerge")
@@ -734,11 +842,8 @@ def plot_conflict_blocks_with_comments_by_project():
 
     plt.xticks(range(0, len(labels) * 2, 2), labels)
     plt.rc('xtick', labelsize=8)
-    plt.setp(ax.xaxis.get_majorticklabels(), rotation=0, ha="left", rotation_mode="anchor")
 
     fig.tight_layout()
-
-    plt.savefig('horizontalGraphs/BlocksCommentsPlot.pdf')
 
     print("Project Medians")
     w1, p1 = wilcoxon_test(refMerge_overall, git_overall)
@@ -752,21 +857,17 @@ def plot_conflict_blocks_with_comments_by_project():
     print("refMerge, intelliMerge:", w3, p3)
 
     print("All Merge Scenarios")
-    w1, p1 = wilcoxon_test(refMerge_ms, git_ms)
-    w2, p2 = wilcoxon_test(intelliMerge_ms, git_ms)
-    w3, p3 = wilcoxon_test(refMerge_ms, intelliMerge_ms)
     print('RefMerge Median: ', np.median(refMerge_ms))
     print('IntelliMerge Median: ', np.median(intelliMerge_ms))
     print('Git Median: ', np.median(git_ms))
-    print("refMerge, git:", w1, p1)
-    print("intelliMerge, git:", w2, p2)
-    print("refMerge, intelliMerge:", w3, p3)
-    f.write("\\newcommand{\\blocksCommentsRefMergeProjectMedian}{" + str(np.median(refMerge_overall)) + "}\n")
-    f.write("\\newcommand{\\blocksCommentsGitProjectMedian}{" + str(np.median(git_overall)) + "}\n")
-    f.write("\\newcommand{\\blocksCommentsIntelliMergeProjectMedian}{" + str(np.median(intelliMerge_overall)) + "}\n")
-    f.write("\\newcommand{\\blocksCommentsRefMergeScenarioMedian}{" + str(np.median(refMerge_ms)) + "}\n")
-    f.write("\\newcommand{\\blocksCommentsGitScenarioMedian}{" + str(np.median(git_ms)) + "}\n")
-    f.write("\\newcommand{\\blocksCommentsIntelliMergeScenarioMedian}{" + str(np.median(intelliMerge_ms)) + "}\n")
+    f.write("\\newcommand{\\blocksRefMergeProjectMedian}{" + str(np.median(refMerge_overall)) + "}\n")
+    f.write("\\newcommand{\\blocksGitProjectMedian}{" + str(np.median(git_overall)) + "}\n")
+    f.write("\\newcommand{\\blocksIntelliMergeProjectMedian}{" + str(np.median(intelliMerge_overall)) + "}\n")
+    f.write("\\newcommand{\\blocksRefMergeScenarioMedian}{" + str(np.median(refMerge_ms)) + "}\n")
+    f.write("\\newcommand{\\blocksGitScenarioMedian}{" + str(np.median(git_ms)) + "}\n")
+    f.write("\\newcommand{\\blocksIntelliMergeScenarioMedian}{" + str(np.median(intelliMerge_ms)) + "}\n")
+
+    plt.savefig('horizontalGraphs/BlocksPlot.pdf')
     f.close()
 
 
@@ -1179,7 +1280,7 @@ def plot_conflicting_file_reduction_by_project():
 
 
 
-    bpr = plt.boxplot(refMerge, patch_artist=True, positions = np.array(range(len(labels)))*2.0-DISTANCEwidths=0.4)
+    bpr = plt.boxplot(refMerge, patch_artist=True, positions = np.array(range(len(labels)))*2.0-DISTANCE, widths=0.4)
     bpi = plt.boxplot(intelliMerge, patch_artist=True, positions = np.array(range(len(labels)))*2.0+DISTANCE, widths=0.4)
     
     set_box_color(bpr, REFMERGE)
