@@ -11,6 +11,17 @@ public class MergeResult extends Model {
     public MergeResult() {
     }
 
+    public MergeResult(String mergeTool, int totalConflictingFiles, int totalConflicts, int totalConflictingLOC,
+                       long runtime, MergeCommit mergeCommit) {
+        set("merge_tool", mergeTool,
+                "total_conflicting_files", totalConflictingFiles,
+                "total_conflicts", totalConflicts,
+                "total_conflicting_loc", totalConflictingLOC,
+                "runtime", runtime,
+                "merge_commit_id", mergeCommit.getId(),
+                "project_id", mergeCommit.getProjectId());
+    }
+
     public MergeResult(String mergeTool, int totalConflicts, int totalConflictingLOC,
                        long runtime, ComparisonResult result, MergeCommit mergeCommit) {
         set("merge_tool", mergeTool,
