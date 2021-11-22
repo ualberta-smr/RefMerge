@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 public class RefMerge extends AnAction {
@@ -79,22 +81,45 @@ public class RefMerge extends AnAction {
      * left commit, but it uses the current directory instead of saving it to a new one. After it's undone all the
      * refactorings, the merge function is called and it replays the refactorings.
      */
-    private ArrayList<Pair<RefactoringObject, RefactoringObject>> doMerge(String leftCommit, String rightCommit,
+    private ArrayList<Pair<RefactoringObject, RefactoringObject>> doMerge(String rightCommit, String leftCommit,
                                                                           GitRepository repo,
                                                                           List<Refactoring> detectedRefactorings){
         long time = System.currentTimeMillis();
         GitUtils gitUtils = new GitUtils(repo, project);
         String baseCommit = gitUtils.getBaseCommit(leftCommit, rightCommit);
         System.out.println("Detecting refactorings");
-        ArrayList<RefactoringObject> rightRefs = detectAndSimplifyRefactorings(rightCommit, baseCommit, detectedRefactorings);
-        ArrayList<RefactoringObject> leftRefs = detectAndSimplifyRefactorings(leftCommit, baseCommit, detectedRefactorings);
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        AtomicReference<ArrayList<RefactoringObject>> rightRefsAtomic = new AtomicReference<>(new ArrayList<>());
+        AtomicReference<ArrayList<RefactoringObject>> leftRefsAtomic = new AtomicReference<>(new ArrayList<>());
+        Future futureRefMiner = executor.submit(() -> {
+            rightRefsAtomic.set(detectAndSimplifyRefactorings(rightCommit, baseCommit, detectedRefactorings));
+            leftRefsAtomic.set(detectAndSimplifyRefactorings(leftCommit, baseCommit, detectedRefactorings));
+        });
+        try {
+            futureRefMiner.get(11, TimeUnit.MINUTES);
+
+
+        } catch (TimeoutException | InterruptedException | ExecutionException e) {
+            System.out.println("RefMerge Timed Out");
+            return null;
+        }
+        ArrayList<RefactoringObject> rightRefs = rightRefsAtomic.get();
+        ArrayList<RefactoringObject> leftRefs = leftRefsAtomic.get();
+
+        long time2 = System.currentTimeMillis();
+        // If it has been 10 minutes, it will take more than 15 minutes to complete RefMerge
+        if((time - time2) > 600000) {
+            System.out.println("RefMerge Timed Out");
+            return null;
+        }
+
 
         gitUtils.checkout(rightCommit);
         // Update the PSI classes after the commit
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
         System.out.println("Inverting right refactorings");
-        rightRefs = InvertRefactorings.invertRefactorings(rightRefs, project);
+        InvertRefactorings.invertRefactorings(rightRefs, project);
 
         String rightUndoCommit = gitUtils.addAndCommit();
         gitUtils.checkout(leftCommit);
@@ -102,7 +127,7 @@ public class RefMerge extends AnAction {
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
         System.out.println("Inverting left refactorings");
-        leftRefs = InvertRefactorings.invertRefactorings(leftRefs, project);
+        InvertRefactorings.invertRefactorings(leftRefs, project);
 
         gitUtils.addAndCommit();
         boolean isConflicting = gitUtils.merge(rightUndoCommit);
@@ -117,11 +142,11 @@ public class RefMerge extends AnAction {
 
         Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, ArrayList<RefactoringObject>> pair = matrix.detectConflicts(leftRefs, rightRefs);
 
-        long time2 = System.currentTimeMillis();
-        // If it has been 23 minutes, it will take more than 30 minutes to complete RefMerge
-        if((time - time2) > 1400000) {
+        time2 = System.currentTimeMillis();
+        // If it has been 14 minutes, it will take more than 30 minutes to complete RefMerge
+        if((time - time2) > 780000) {
             System.out.println("RefMerge Timed Out");
-            return pair.getLeft();
+            return null;
         }
 
         ArrayList<RefactoringObject> refactorings = pair.getRight();
