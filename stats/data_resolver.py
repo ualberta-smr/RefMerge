@@ -12,24 +12,8 @@ import math
 def get_db_connection():
     username = 'root'
     password = "password"
-#    database_name = 'intelliMerge_data1'
-    database_name = 'original_analysis'
+    database_name = "intelliMerge_data1"
     server = '127.0.0.1'
-
-#    with open("../database.properties", 'r') as db_file:
-#        for line in db_file:
-#          line = line.strip()
-#            username_search = re.search('^development.username=(.*)$', line, re.IGNORECASE)
-#            password_search = re.search('^development.password=(.*)$', line, re.IGNORECASE)
-#            url_search = re.search('^development.url=jdbc:mysql://(.*)/(.*)$', line, re.IGNORECASE)
-#
-#            if username_search:
-#                username = username_search.group(1)
-#            if password_search:
-#                password = password_search.group(1)
-#            if url_search:
-#                server = url_search.group(1)
-#                database_name = url_search.group(2)
 
     return create_engine('mysql+pymysql://{}:{}@{}/{}'.format(username, password, server, database_name))
 
@@ -60,6 +44,7 @@ accepted_types = ['Change Package', 'Extract And Move Method', 'Extract Interfac
                       'Extract Superclass', 'Inline Method', 'Move And Rename Class', 'Move Attribute', 'Move Class',
                       'Move Method', 'Pull Up Attribute', 'Pull Up Method', 'Pull Up Method', 'Push Down Method',
                       'Rename Class', 'Rename Method']
+
 
 def write_to_projects_file(project_url):
     f = open('refMerge_evaluation_projects', 'r')
@@ -116,13 +101,17 @@ def get_merge_commit_hash(merge_commit_id):
     df = pd.read_sql(query, get_db_connection())
     return df.iloc[0]['commit_hash']
 
+def get_refactoring_from_region(ref_id):
+    query = "SELECT * FROM refactoring WHERE id = '{}'".format(ref_id)
+    df = pd.read_sql(query, get_db_connection())
+    return df.iloc[0]
 
 def get_projects():
     query = "SELECT * FROM project"
     df = pd.read_sql(query, get_db_connection())
     return df
 
-def get_merge_commits():
+def get_merge_commits(project_id):
     return read_sql_table('merge_commit')
 
 
@@ -150,10 +139,13 @@ def get_accepted_refactoring_regions():
 
 
 def get_conflicting_regions_by_involved_refactorings_per_merge_commit():
+    f = open("intelliMerge_data", "w+")
+    f = open("refMerge_evaluation_projects", "w+")
+    f.close()
     conflicting_region_histories = get_conflicting_region_histories()
     refactoring_regions = get_accepted_refactoring_regions()
 
-    for project_url in get_projects.get('url'):
+    for project_url in get_projects().get('url'):
         write_to_projects_file(project_url)
 
     cr_count_per_merge = conflicting_region_histories.groupby('merge_commit_id').conflicting_region_id.nunique().to_frame().rename(columns={'conflicting_region_id': 'cr_count'})
@@ -174,57 +166,7 @@ def get_conflicting_regions_by_involved_refactorings_per_merge_commit():
     rq1_table = cr_count_per_merge.join(involved_cr_count_per_merge, how='outer').fillna(0).astype(int)
     rq1_table['percent'] = rq1_table['involved_cr_count'] / rq1_table['cr_count']
     return rq1_table
-
-def get_refactorings_per_project():
-    projects = get_projects()
-    project_ids = projects.get('id')
-    refactorings_per_project = []
-    refactorings = get_refactorings()
-    refactorings_grouped_by_project = refactorings.groupby('project_id')
-    size = len(refactorings_grouped_by_project)
-    refactorings_per_project = [0 for i in range(size)]
-    projects_with_refactorings = [0 for i in range(size)]
-    i = 0
-    for project_id in project_ids:
-        count = 0
-        if project_id not in refactorings_grouped_by_project.groups:
-            continue
-        group = refactorings_grouped_by_project.get_group(project_id)
-        count = group.count()['id']
-        refactorings_per_project[i] = count
-        projects_with_refactorings[i] = project_id
-        i = i + 1
-
-    fig, ax = plt.subplots()
-    q = [0., 0.3, 0.7, 1.]
-    bin_edges = stats.mstats.mquantiles(refactorings_per_project, q)
-    N, bins, patches = plt.hist(refactorings_per_project, bins = bin_edges)    
-    plt.title("Refactorings per project")
-    ax.set_xlabel("Total Refactorings")
-    ax.set_ylabel("Number of Projects")
-    ax.set_xscale("log")
-    patches[0].set_facecolor('green')
-    patches[1].set_facecolor('red')
-    patches[2].set_facecolor('blue')
-    fig.tight_layout()
-    plt.savefig('refactorings_per_project_histogram.pdf')
-
-    np.random.seed(338219)
-    # Get the projects in each bin
-    for i in range(1, len(bin_edges)):
-        e1 = bin_edges[i-1]
-        e2 = bin_edges[i]
-        values = np.where(np.logical_and(refactorings_per_project>=e1, refactorings_per_project<=e2))
-        for j in range(round(10*(q[i] - q[i-1]))):
-            qArray = values[0]
-            val = round(np.random.random() * len(qArray))
-            index = qArray[val]
-            project_id = projects_with_refactorings[index]
-            write_to_projects_file(get_project_by_id(project_id))
             
 
 if __name__ == '__main__':
-    f = open("intelliMerge_data", "w+")
-    f.close()
-#    get_conflicting_regions_by_involved_refactorings_per_merge_commit()
-    get_refactorings_per_project()
+    get_conflicting_regions_by_involved_refactorings_per_merge_commit()
