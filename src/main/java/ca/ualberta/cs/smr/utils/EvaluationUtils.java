@@ -629,5 +629,36 @@ public class EvaluationUtils {
         }
     }
 
+    /*
+     * Remove all non-java files to save space.
+     */
+    public static void removeUnmergedAndNonJavaFiles(String path) {
+        removeNonJavaFiles(path);
+    }
+
+    /*
+     * Delete all files within the merged results that are not java files.
+     */
+    public static void removeNonJavaFiles(String path) {
+        File file = new File(path);
+        if (file.exists()) {
+            File[] files = file.listFiles();
+            for (File f : files) {
+                if (f.isDirectory() && !f.getName().startsWith(".")) {
+                    removeNonJavaFiles(f.getAbsolutePath());
+                } else if (f.isFile() && !isJavaFile(f)) {
+                    if(!f.getName().startsWith(".")) {
+                        boolean isDeleted = f.delete();
+                        if (!isDeleted) {
+                            System.out.println("Cannot delete " + f.getName());
+                        }
+                    }
+                }
+            }
+        } else {
+            System.out.println(path + " does not exist!");
+        }
+
+    }
 
 }
