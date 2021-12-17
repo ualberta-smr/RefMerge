@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS `refMerge_evaluation`.`merge_result` (
   `total_conflicting_files` INT NOT NULL,
   `total_conflicts` INT NOT NULL,
   `total_conflicting_loc` INT NOT NULL,
-  `runtime` MEDIUMTEXT NOT NULL,
+  `runtime` INT NOT NULL,
   `merge_commit_id` INT NOT NULL,
   `project_id` INT NOT NULL,
   PRIMARY KEY (`id`, `merge_commit_id`, `project_id`),
