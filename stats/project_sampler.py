@@ -68,10 +68,10 @@ def write_to_csv(project_url, merge_commit_hash):
         line.append(merge_commit_hash)
         entry = ";".join(line)
         found = False
-    
+
         if merge_commit_hash in lines:
             return
-        open_file.write(entry + '\n') 
+        open_file.write(entry + '\n')
 
 def get_refactoring_types_sql_condition():
     type_condition = str()
@@ -144,39 +144,8 @@ def get_accepted_refactoring_regions():
     return pd.read_sql(query, get_db_connection())
 
 
-def get_merge_scenario_involved_refactorings():
-
-
-
-    conflicting_region_histories = get_conflicting_region_histories()
-    refactoring_regions = get_accepted_refactoring_regions()
-    merge_commits = get_merge_commits()
-
-    cr_count_per_merge = conflicting_region_histories.groupby(
-        'merge_commit_id').conflicting_region_id.nunique().to_frame().rename(
-        columns={'conflicting_region_id': 'cr_count'})
-
-    rr_grouped_by_project = refactoring_regions.groupby('project_id')
-    counter = 0
-    for project_id, project_crh in conflicting_region_histories.groupby('project_id'):
-        counter += 1
-        print('Processing project {}'.format(project_id))
-        path = 'merge_scenario_' + str(counter) + '.csv'
-        if project_id not in rr_grouped_by_project.groups:
-            continue
-        project_rrs = rr_grouped_by_project.get_group(project_id)
-        crh_rr_combined = pd.merge(project_crh.reset_index(), project_rrs.reset_index(), on='commit_hash', how='inner')
-        involved = crh_rr_combined[crh_rr_combined.apply(record_involved, axis=1)]
-        for index, group in involved.groupby('merge_commit_id'):
-            for _, row in group.iterrows():
-                four_commits = get_four_commits(merge_commits, row.merge_commit_id, project_id)
-                save_to_csv(path, row, four_commits)
-
-
 def get_total_merge_commits(project_id):
     merge_commits = get_merge_commits(project_id)
-#    project_group = merge_commits_.get_group(project_id)
- #   return project_group.count()['id']
     return merge_commits.count()['id']
 
 def get_total_conflicting_commits(project_id):
@@ -241,12 +210,12 @@ def get_involved_refactorings_per_project():
         project_rrs = rr_grouped_by_project.get_group(project_id)
         crh_rr_combined = pd.merge(project_crh.reset_index(), project_rrs.reset_index(), on='commit_hash', how='inner')
         involved = crh_rr_combined[crh_rr_combined.apply(record_involved, axis=1)]
-        total_involved = len(involved.groupby('merge_commit_id').groups) 
+        total_involved = len(involved.groupby('merge_commit_id').groups)
         if total_involved < 8:
             continue
-        
+
         ir_project = ir_project.append({'project': project_id, 'involved_refs': total_involved}, ignore_index=True)
-    
+
     return ir_project
 
 
@@ -260,7 +229,7 @@ def analyze_data():
     fig, ax = plt.subplots()
     q = [0., 0.3, 0.7, 1.]
     bin_edges = stats.mstats.mquantiles(refs_per_proj, q)
-    N, bins, patches = plt.hist(refs_per_proj, bins = bin_edges)    
+    N, bins, patches = plt.hist(refs_per_proj, bins = bin_edges)
     plt.title("Refactorings per project")
     ax.set_xlabel("Total Refactorings")
     ax.set_ylabel("Number of Projects")
@@ -298,6 +267,5 @@ def get_data_frame(df_name):
 
 
 if __name__ == '__main__':
-    get_involved_refactorings_per_project()
     get_data_frame('involved_refactorings_per_project')
     analyze_data()

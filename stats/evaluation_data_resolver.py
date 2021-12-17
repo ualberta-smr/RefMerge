@@ -179,66 +179,6 @@ def get_accepted_refactoring_regions():
         .format(get_refactoring_types_sql_condition())
     return pd.read_sql(query, get_db_connection())
 
-
-def get_merge_conflict_and_conflicting_loc_diffs_per_tool():
-    return
-    
-def get_statistics_per_project():
-
-    merge_results = get_merge_results()
-    counter = 0
-
-    total_precision = {'Git': 0.0, 'IntelliMerge': 0.0, 'RefMerge': 0.0}
-    total_recall = {'Git': 0.0, 'IntelliMerge': 0.0, 'RefMerge': 0.0}
-    total_conflicts = {'Git': 0, 'IntelliMerge': 0, 'RefMerge': 0}
-    total_conflicting_loc = {'Git': 0, 'IntelliMerge': 0, 'RefMerge': 0}
-
-    plot_df = pd.DataFrame(columns=['project_name', 'merge_tool', 'precision', 'recall', 'conflict_blocks', 'conflicting_loc'])
-    for project_id, project_mr in merge_results.groupby('project_id'):
-        if project_id == 10:
-            continue
-        counter += 1
-        print('Processing project {}'.format(counter))
-        project_mr_mc = project_mr.groupby('merge_tool')
-        for merge_tool, mr_mc in project_mr_mc:
-            conflict_blocks = 0
-            conflicting_loc = 0
-            auto_merged_precision = 0.0
-            auto_merged_recall = 0.0
-            all_precision = mr_mc['auto_merged_precision']
-            all_recall = mr_mc['auto_merged_recall']
-            all_conflicts = mr_mc['total_conflicts']
-            all_conflicting_loc = mr_mc['total_conflicting_loc']
-            for precision in all_precision:
-                if precision > 0:
-                    auto_merged_precision = auto_merged_precision + precision
-            for recall in all_recall:
-                if recall > 0:
-                    auto_merged_recall = auto_merged_recall + recall
-            for conflicts in all_conflicts:
-                if conflicts > 0:
-                    conflict_blocks = conflict_blocks + conflicts
-            for loc in all_conflicting_loc:
-                if loc > 0:
-                    conflicting_loc = conflicting_loc + loc
-
-            auto_merged_precision = auto_merged_precision / len(all_precision)
-            auto_merged_recall = auto_merged_recall / len(all_recall)
-            print(total_precision)
-            total_precision[merge_tool] = total_precision[merge_tool] + auto_merged_precision
-            total_recall[merge_tool] = total_recall[merge_tool] + auto_merged_recall
-            total_conflicts[merge_tool] = total_conflicts[merge_tool] + conflict_blocks
-            total_conflicting_loc[merge_tool] = total_conflicting_loc[merge_tool] + conflicting_loc
-            plot_df = plot_df.append({'project_name': get_project_by_id(project_id), 'merge_tool': merge_tool, 'precision': auto_merged_precision, 'recall': auto_merged_recall, 'conflict_blocks': conflict_blocks, 'conflicting_loc': conflicting_loc}, ignore_index=True)
-        
-    for k in total_precision:
-        avg_precision = total_precision[k] / counter
-        avg_recall = total_recall[k] / counter
-        plot_df = plot_df.append({'project_name': 'Overall', 'merge_tool': k, 'precision': avg_precision, 'recall': avg_recall, 'conflict_blocks': total_conflicts[k], 'conflicting_loc': total_conflicting_loc[k]}, ignore_index=True)
-        
-
-    return plot_df
-
 def get_statistics_per_scenario():
 
     merge_results = get_merge_results()
