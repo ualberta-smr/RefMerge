@@ -8,18 +8,19 @@ import matplotlib.ticker as ticker
 
 from evaluation_data_resolver import get_data_frame
 
-REFMERGE = str(0.8)
-GIT = str(0.5)
-INTELLIMERGE = str(0.3)
+REFMERGE = "purple"
+GIT = "red"
+INTELLIMERGE = "orange"
 DISTANCE = 0.3
 
-def set_box_color(bp, color):
-    plt.setp(bp['boxes'], color=color)
-    plt.setp(bp['whiskers'], color=color)
+def set_box_color(bp, color, linestyle):
+    plt.setp(bp['boxes'], color=color, linestyle=linestyle)
+    plt.setp(bp['whiskers'], color=color, linestyle=linestyle)
     plt.setp(bp['caps'], color=color)
-    plt.setp(bp['medians'], color="black")
+    plt.setp(bp['medians'], color=color)
     
-
+    for patch in bp['boxes']:
+        patch.set(facecolor='white')
 
 def wilcoxon_test(x2, x1):
     
@@ -227,31 +228,35 @@ def plot_conflicting_files_with_comments_by_project():
 
 
 
-    fig, ax = plt.subplots(figsize=(15,6))
-    labels.append('All Merge Scenarios')
-    labels.append('All Projects')
+    fig, ax = plt.subplots(figsize=(6,14))
+    plots = [refMerge_ms, git_ms, intelliMerge_ms]
 
-    print(len(refMerge))
-    print(labels)
     labels = ['']
-    bpr = plt.boxplot(refMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0-0.5, sym='', widths=0.4)
-    bpg = plt.boxplot(git_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0, sym='', widths=0.4)
-    bpi = plt.boxplot(intelliMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0+0.5, sym='', widths=0.4)
+    bpr = plt.boxplot(refMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*1.4-0.7, sym='', widths=0.4)
+    bpg = plt.boxplot(git_ms, patch_artist=True, positions = np.array(range(len(labels)))*1.4, sym='', widths=0.4)
+    bpi = plt.boxplot(intelliMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*1.4+0.7, sym='', widths=0.4)
+    set_box_color(bpr, REFMERGE, "--")
+    set_box_color(bpg, GIT, "-")
+    set_box_color(bpi, INTELLIMERGE, ":")
+    ax.set_xlabel('')
 
-    set_box_color(bpr, REFMERGE)
-    set_box_color(bpg, GIT)
-    set_box_color(bpi, INTELLIMERGE)
-    ax.set_xlabel("All Merge Scenarios")
-    ax.set_ylabel("Number of Conflicting Files")
+
+
 
     plt.plot([], c=REFMERGE, label="RefMerge")
     plt.plot([], c=GIT, label='Git')
     plt.plot([], c=INTELLIMERGE, label='IntelliMerge')
-    plt.legend()
 
-    plt.xticks(range(0, len(labels) * 2, 2), labels)
+    lgnd = ax.legend([bpr["whiskers"][0], bpg["whiskers"][0], bpi["whiskers"][0]], ["RefMerge", "Git", "IntelliMerge"],
+                    loc='lower center', bbox_to_anchor=(0.5, -0.25), frameon=False, fontsize=38, markerscale=100.0)
 
-    fig.tight_layout()
+    plt.xticks(range(0, len(labels)), labels)
+    plt.rc('xtick', labelsize=8)
+
+    ax.tick_params(axis='both', which='major', labelsize=32)
+    plt.tick_params(axis = "x", which = "both", bottom = False)
+
+    plt.tight_layout()
 
     print("Project Medians")
     w1, p1 = wilcoxon_test(refMerge_overall, git_overall)
@@ -275,7 +280,7 @@ def plot_conflicting_files_with_comments_by_project():
     f.write("\\newcommand{\\filesGitScenarioMedian}{" + str(np.median(git_ms)) + "}\n")
     f.write("\\newcommand{\\filesIntelliMergeScenarioMedian}{" + str(np.median(intelliMerge_ms)) + "}\n")
 
-    plt.savefig('horizontalGraphs/FilesPlot.pdf')
+    plt.savefig('horizontalGraphs/FilesPlotTrial.pdf')
     f.close()
 
 
@@ -464,32 +469,36 @@ def plot_conflicting_loc_per_block_with_comments_stats():
     intelliMerge.append(intelliMerge_ms)
     intelliMerge.append(intelliMerge_overall)
 
-    fig, ax = plt.subplots(figsize=(15,6))
-    labels.append('All Merge Scenarios')
-    labels.append('All Projects')
-
-
+    fig, ax = plt.subplots(figsize=(15,9))
+    plots = [refMerge_ms, git_ms, intelliMerge_ms]
     labels = ['']
-    bpr = plt.boxplot(refMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0-0.5, sym='', widths=0.4)
-    bpg = plt.boxplot(git_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0, sym='', widths=0.4)
-    bpi = plt.boxplot(intelliMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0+0.5, sym='', widths=0.4)
+    bpr = plt.boxplot(refMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*1.4-0.7, sym='', widths=0.4)
+    bpg = plt.boxplot(git_ms, patch_artist=True, positions = np.array(range(len(labels)))*1.4, sym='', widths=0.4)
+    bpi = plt.boxplot(intelliMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*1.4+0.7, sym='', widths=0.4)
+    set_box_color(bpr, REFMERGE, "--")
+    set_box_color(bpg, GIT, "-")
+    set_box_color(bpi, INTELLIMERGE, ":")
+    ax.set_xlabel('')
 
-    set_box_color(bpr, REFMERGE)
-    set_box_color(bpg, GIT)
-    set_box_color(bpi, INTELLIMERGE)
-    ax.set_xlabel("All Conflict Blocks")
-    ax.set_ylabel("Number of Conflicting LOC")
+
+
 
     plt.plot([], c=REFMERGE, label="RefMerge")
     plt.plot([], c=GIT, label='Git')
     plt.plot([], c=INTELLIMERGE, label='IntelliMerge')
-    plt.legend()
 
-    plt.xticks(range(0, len(labels) * 2, 2), labels)
+    lgnd = ax.legend([bpr["whiskers"][0], bpg["whiskers"][0], bpi["whiskers"][0]], ["RefMerge", "Git", "IntelliMerge"],
+                    loc='lower center', bbox_to_anchor=(0.5, -0.25), frameon=False, fontsize=38, markerscale=100.0, ncol=3)
+
+    plt.xticks(range(0, len(labels)), labels)
     plt.rc('xtick', labelsize=8)
-    plt.setp(ax.xaxis.get_majorticklabels(), rotation=0, ha="left", rotation_mode="anchor")
 
-    fig.tight_layout()
+    ax.tick_params(axis='both', which='major', labelsize=38)
+    plt.tick_params(axis = "x", which = "both", bottom = False)
+
+    plt.tight_layout()
+
+
 
     print("Project Medians")
     print('RefMerge Median: ', np.median(refMerge_overall))
@@ -573,32 +582,36 @@ def plot_conflicting_loc_with_comments_by_project():
     intelliMerge.append(intelliMerge_ms)
     intelliMerge.append(intelliMerge_overall)
 
-    fig, ax = plt.subplots(figsize=(15,6))
-    labels.append('All Merge Scenarios')
-    labels.append('All Projects')
-
+    fig, ax = plt.subplots(figsize=(6,14))
+    plots = [refMerge_ms, git_ms, intelliMerge_ms]
 
     labels = ['']
-    bpr = plt.boxplot(refMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0-0.5, sym='', widths=0.4)
-    bpg = plt.boxplot(git_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0, sym='', widths=0.4)
-    bpi = plt.boxplot(intelliMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0+0.5, sym='', widths=0.4)
+    bpr = plt.boxplot(refMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*1.4-0.7, sym='', widths=0.4)
+    bpg = plt.boxplot(git_ms, patch_artist=True, positions = np.array(range(len(labels)))*1.4, sym='', widths=0.4)
+    bpi = plt.boxplot(intelliMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*1.4+0.7, sym='', widths=0.4)
 
-    set_box_color(bpr, REFMERGE)
-    set_box_color(bpg, GIT)
-    set_box_color(bpi, INTELLIMERGE)
-    ax.set_xlabel("All Merge Scenarios")
-    ax.set_ylabel("Number of Conflicting LOC")
+    set_box_color(bpr, REFMERGE, "--")
+    set_box_color(bpg, GIT, "-")
+    set_box_color(bpi, INTELLIMERGE, ":")
+    ax.set_xlabel('')
+
+
+
 
     plt.plot([], c=REFMERGE, label="RefMerge")
     plt.plot([], c=GIT, label='Git')
     plt.plot([], c=INTELLIMERGE, label='IntelliMerge')
-    plt.legend()
 
-    plt.xticks(range(0, len(labels) * 2, 2), labels)
+    lgnd = ax.legend([bpr["whiskers"][0], bpg["whiskers"][0], bpi["whiskers"][0]], ["RefMerge", "Git", "IntelliMerge"],
+                    loc='lower center', bbox_to_anchor=(0.5, -0.25), frameon=False, fontsize=38, markerscale=100.0)
+
+    plt.xticks(range(0, len(labels)), labels)
     plt.rc('xtick', labelsize=8)
-    plt.setp(ax.xaxis.get_majorticklabels(), rotation=0, ha="left", rotation_mode="anchor")
 
-    fig.tight_layout()
+    ax.tick_params(axis='both', which='major', labelsize=32)
+    plt.tick_params(axis = "x", which = "both", bottom = False)
+
+    plt.tight_layout()
 
     print("Project Medians")
     w1, p1 = wilcoxon_test(refMerge_overall, git_overall)
@@ -817,33 +830,35 @@ def plot_conflict_blocks_with_comments_by_project():
 
 
 
-
-    fig, ax = plt.subplots(figsize=(15,6))
-    labels.append("All Merge Scenarios")
-    labels.append("All Projects")
-
+    fig, ax = plt.subplots(figsize=(6,14))
+    plots = [refMerge_ms, git_ms, intelliMerge_ms]
     labels = ['']
-    bpr = plt.boxplot(refMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0-0.5, sym='', widths=0.4)
-    bpg = plt.boxplot(git_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0, sym='', widths=0.4)
-    bpi = plt.boxplot(intelliMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*2.0+0.5, sym='', widths=0.4)
+    bpr = plt.boxplot(refMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*1.4-0.7, sym='', widths=0.4)
+    bpg = plt.boxplot(git_ms, patch_artist=True, positions = np.array(range(len(labels)))*1.4, sym='', widths=0.4)
+    bpi = plt.boxplot(intelliMerge_ms, patch_artist=True, positions = np.array(range(len(labels)))*1.4+0.7, sym='', widths=0.4)
+
+    set_box_color(bpr, REFMERGE, "--")
+    set_box_color(bpg, GIT, "-")
+    set_box_color(bpi, INTELLIMERGE, ":")
+    ax.set_xlabel('')
 
 
 
-    set_box_color(bpr, REFMERGE)
-    set_box_color(bpg, GIT)
-    set_box_color(bpi, INTELLIMERGE)
-    ax.set_xlabel("All Merge Scenarios")
-    ax.set_ylabel("Number of Conflict Blocks")
 
     plt.plot([], c=REFMERGE, label="RefMerge")
     plt.plot([], c=GIT, label='Git')
     plt.plot([], c=INTELLIMERGE, label='IntelliMerge')
-    plt.legend()
 
-    plt.xticks(range(0, len(labels) * 2, 2), labels)
+    lgnd = ax.legend([bpr["whiskers"][0], bpg["whiskers"][0], bpi["whiskers"][0]], ["RefMerge", "Git", "IntelliMerge"],
+                    loc='lower center', bbox_to_anchor=(0.5, -0.25), frameon=False, fontsize=38, markerscale=100.0)
+
+    plt.xticks(range(0, len(labels)), labels)
     plt.rc('xtick', labelsize=8)
 
-    fig.tight_layout()
+    ax.tick_params(axis='both', which='major', labelsize=32)
+    plt.tick_params(axis = "x", which = "both", bottom = False)
+
+    plt.tight_layout()
 
     print("Project Medians")
     w1, p1 = wilcoxon_test(refMerge_overall, git_overall)
