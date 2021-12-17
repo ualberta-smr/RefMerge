@@ -36,11 +36,8 @@ public class EvaluationPipeline implements ApplicationStarter {
             else if(mode.equals("comparison")) {
                 DatabaseUtils.createDatabase(true);
                 String path = System.getProperty("user.home") + args.get(2);
-                startEvaluation(path);
-            }
-            else if(mode.equals("stats")) {
-                String path = System.getProperty("user.home") + args.get(2);
-                collectAndPrintMergeScenarios(path);
+                String projectName = args.get(3);
+                startEvaluation(path, projectName);
             }
         } catch(Throwable e) {
             System.out.println(e.getMessage());
@@ -68,12 +65,12 @@ public class EvaluationPipeline implements ApplicationStarter {
     /*
      * Start the head to head comparison between RefMerge and IntelliMerge.
      */
-    private void startEvaluation(String path) {
+    private void startEvaluation(String path, String evaluationProject) {
         try {
             Base.open("com.mysql.jdbc.Driver", "jdbc:mysql://localhost/refMerge_evaluation",
                     "root", "password");
             RefMergeEvaluation evaluation = new RefMergeEvaluation();
-            evaluation.runComparison(path);
+            evaluation.runComparison(path, evaluationProject);
             Base.close();
         } catch (Throwable e) {
             e.printStackTrace();

@@ -37,7 +37,7 @@ public class RefMergeEvaluation {
     /*
      * Use the given git repository to evaluate IntelliMerge, RefMerge, and Git.
      */
-    public void runComparison(String path) throws IOException {
+    public void runComparison(String path, String evaluationProject) throws IOException {
         URL url = EvaluationPipeline.class.getResource("/refMerge_evaluation_projects");
         InputStream inputStream = url.openStream();
         ArrayList<String> lines = Utils.getLinesFromInputStream(inputStream);
@@ -47,7 +47,7 @@ public class RefMergeEvaluation {
         ca.ualberta.cs.smr.evaluation.database.Project proj = null;
         for(String line : lines) {
             projectUrl = line;
-            if(!line.contains("error-prone")) {
+            if(!line.contains(evaluationProject)) {
                 continue;
             }
             proj = ca.ualberta.cs.smr.evaluation.database.Project.findFirst("url = ?", projectUrl);
