@@ -540,56 +540,6 @@ def get_conflicting_scenarios_with_comments():
         
     return plot_df
 
-def get_conflicting_scenario_reduction():
-    merge_commits = get_merge_commits()
-    conflict_blocks = get_conflict_blocks()
-    counter = 0
-    cb_mc = conflict_blocks.groupby('merge_commit_id')
-    plot_df = pd.DataFrame(columns=['project_name', 'refMerge', 'intelliMerge'])
-    merge_results_grouped = get_merge_results().groupby('merge_commit_id')
-    refMerge_final = 0
-    intelliMerge_final = 0
-    for project_id, project_mc in merge_commits.groupby('project_id'):
-        refMerge_total = 0
-        intelliMerge_total = 0
-        git_total = 0
-        count = 0
-        for mc_cb in project_mc.iloc:
-            if mc_cb['is_done'] == 0:
-                continue
-            mc_mr = merge_results_grouped.get_group(mc_cb['id'])
-            skip = []
-            for mr in mc_mr.iloc:
-                runtime = mr['runtime']
-                if int(runtime) == 18000000 or int(runtime) < 0:
-                    skip.append(mr['merge_tool'])
-
-            if len(skip) == 2:
-                continue
-
-            cb_group = cb_mc.get_group(mc_cb['id']) 
-            refMerge_conflict_blocks = len(cb_group[(cb_group['merge_tool'] == 'RefMerge') & (cb_group['is_comment'] == 0)]['id'].tolist())
-            intelliMerge_conflict_blocks = len(cb_group[(cb_group['merge_tool'] == 'IntelliMerge') & (cb_group['is_comment'] == 0)]['id'].tolist())
-            git_conflict_blocks = len(cb_group[(cb_group['merge_tool'] == 'Git') & (cb_group['is_comment'] == 0)]['id'].tolist())
-            if git_conflict_blocks == 0:
-                continue
-            if 'RefMerge' in skip or refMerge_conflict_blocks != 0:
-                refMerge_total += 1
-
-            if 'IntelliMerge' in skip or intelliMerge_conflict_blocks != 0:
-                intelliMerge_total += 1
-            count += 1
-
-        refMerge_reduction = (count - refMerge_total) * 100 / count
-        intelliMerge_reduction = (count - intelliMerge_total) * 100 / count
-        plot_df = plot_df.append({'project_name': get_project_by_id(project_id), 'refMerge': refMerge_reduction, 'intelliMerge': intelliMerge_reduction}, ignore_index = True)
-        refMerge_final += refMerge_total
-        intelliMerge_final += intelliMerge_total
-        print(refMerge_final)
-        print(intelliMerge_final)
-        
-    return plot_df
-
 def get_discrepancies_between_tools():
     merge_commits = get_merge_commits()
     merge_results = get_merge_results()
@@ -737,60 +687,6 @@ def get_random_scenarios(list, project_ids, num, merge_commit_ids):
         j += 1
 
 
-
-def get_conflicting_loc_reduction():
-    merge_commits = get_merge_commits()
-    conflict_blocks = get_conflict_blocks()
-    counter = 0
-    cb_mc = conflict_blocks.groupby('merge_commit_id')
-    plot_df = pd.DataFrame(columns=['project_name', 'refMerge', 'intelliMerge'])
-    merge_results_grouped = get_merge_results().groupby('merge_commit_id')
-    for project_id, project_mc in merge_commits.groupby('project_id'):
-        refMerge_total = 0
-        intelliMerge_total = 0
-        git_total = 0
-        count = 0
-        for mc_cb in project_mc.iloc:
-            count += 1
-            if mc_cb['is_done'] == 0:
-                continue
-
-            mc_mr = merge_results_grouped.get_group(mc_cb['id'])
-            skip = []
-            for mr in mc_mr.iloc:
-                runtime = mr['runtime']
-                if int(runtime) == 18000000 or int(runtime) == -1:
-                    skip.append(mr['merge_tool'])
-            if len(skip) == 2:
-                continue
-
-
-            cb_group = cb_mc.get_group(mc_cb['id']) 
-            refMerge_conflicting_loc = sum(cb_group[(cb_group['merge_tool'] == 'RefMerge')]['conflicting_loc'].tolist())
-            intelliMerge_conflicting_loc = sum(cb_group[(cb_group['merge_tool'] == 'IntelliMerge')]['conflicting_loc'].tolist())
-            git_conflicting_loc = sum(cb_group[(cb_group['merge_tool'] == 'Git')]['conflicting_loc'].tolist())
-            if git_conflicting_loc == 0:
-                continue
-
-            refMerge_reduction = (git_conflicting_loc - refMerge_conflicting_loc) * 100 / git_conflicting_loc
-            intelliMerge_reduction = (git_conflicting_loc - intelliMerge_conflicting_loc) * 100 / git_conflicting_loc
-
-            if 'RefMerge' in skip:
-                plot_df = plot_df.append({'project_name': get_project_by_id(project_id), 'intelliMerge': intelliMerge_reduction}, ignore_index = True)
-
-            elif 'IntelliMerge' in skip:
-                plot_df = plot_df.append({'project_name': get_project_by_id(project_id), 'refMerge': refMerge_reduction}, ignore_index = True)
-
-            else:
-                plot_df = plot_df.append({'project_name': get_project_by_id(project_id), 'refMerge': refMerge_reduction, 'intelliMerge': intelliMerge_reduction}, ignore_index = True)
-
-            refMerge_total += refMerge_reduction
-            intelliMerge_total += intelliMerge_reduction
-
-
-    return plot_df
-
-
 def get_conflict_block_with_comments_stats():
     merge_commits = get_merge_commits()
     conflict_blocks = get_conflict_blocks()
@@ -894,60 +790,6 @@ def get_conflict_block_stats():
                 plot_df = plot_df.append({'project_name': get_project_by_id(project_id), 'refMerge_conflict_blocks': refMerge_conflict_blocks, 'intelliMerge_conflict_blocks': intelliMerge_conflict_blocks, 'git_conflict_blocks': git_conflict_blocks}, ignore_index = True)
 
 
-
-
-            refMerge_total += refMerge_reduction
-            intelliMerge_total += intelliMerge_reduction
-
-    return plot_df
-
-def get_conflict_block_reduction():
-    merge_commits = get_merge_commits()
-    conflict_blocks = get_conflict_blocks()
-    counter = 0
-    cb_mc = conflict_blocks.groupby('merge_commit_id')
-    plot_df = pd.DataFrame(columns=['project_name', 'refMerge', 'intelliMerge'])
-    merge_results_grouped = get_merge_results().groupby('merge_commit_id')
-    for project_id, project_mc in merge_commits.groupby('project_id'):
-        refMerge_total = 0
-        intelliMerge_total = 0
-        git_total = 0
-        count = 0
-        
-        
-        for mc_cb in project_mc.iloc:
-            count += 1
-            if mc_cb['is_done'] == 0:
-                continue
-
-            mc_mr = merge_results_grouped.get_group(mc_cb['id'])
-            skip = []
-            for mr in mc_mr.iloc:
-                runtime = mr['runtime']
-                if int(runtime) == 18000000 or int(runtime) == -1:
-                    skip.append(mr['merge_tool'])
-            if len(skip) == 2:
-                continue
-
-            
-
-            cb_group = cb_mc.get_group(mc_cb['id'])
-            refMerge_conflict_blocks = len(cb_group[(cb_group['merge_tool'] == 'RefMerge')]['id'].tolist())
-            intelliMerge_conflict_blocks = len(cb_group[(cb_group['merge_tool'] == 'IntelliMerge')]['id'].tolist())
-            git_conflict_blocks = len(cb_group[(cb_group['merge_tool'] == 'Git')]['id'].tolist())
-            if git_conflict_blocks == 0:
-                continue
-
-            refMerge_reduction = (git_conflict_blocks - refMerge_conflict_blocks) * 100 / git_conflict_blocks
-            intelliMerge_reduction = (git_conflict_blocks - intelliMerge_conflict_blocks) * 100 / git_conflict_blocks
-            if 'RefMerge' in skip:
-                plot_df = plot_df.append({'project_name': get_project_by_id(project_id), 'intelliMerge': intelliMerge_reduction}, ignore_index = True)
-
-            elif 'IntelliMerge' in skip:
-                plot_df = plot_df.append({'project_name': get_project_by_id(project_id), 'refMerge': refMerge_reduction}, ignore_index = True)
-
-            else:
-                plot_df = plot_df.append({'project_name': get_project_by_id(project_id), 'refMerge': refMerge_reduction, 'intelliMerge': intelliMerge_reduction}, ignore_index = True)
 
 
             refMerge_total += refMerge_reduction
@@ -1088,55 +930,6 @@ def get_conflicting_file_stats():
             else:
                 plot_df = plot_df.append({'project_name': get_project_by_id(project_id), 'refMerge': refMerge_conflicting_files, 'git': git_conflicting_files, 'intelliMerge': intelliMerge_conflicting_files,}, ignore_index=True)
 
-
-            
-
-
-    return plot_df
-
-def get_conflicting_file_reduction():
-    merge_commits = get_merge_commits()
-    conflict_blocks = get_conflict_blocks()
-    counter = 0
-    cb_mc = conflict_blocks.groupby('merge_commit_id')
-    plot_df = pd.DataFrame(columns=['project_name', 'refMerge', 'intelliMerge'])
-    merge_results_grouped = get_merge_results().groupby('merge_commit_id')
-    for project_id, project_mc in merge_commits.groupby('project_id'):
-        refMerge_total = 0
-        intelliMerge_total = 0
-        count = 0
-        for mc_cb in project_mc.iloc:
-            count += 1
-            if mc_cb['is_done'] == 0:
-                continue;
-
-            mc_mr = merge_results_grouped.get_group(mc_cb['id'])
-            skip = []
-            for mr in mc_mr.iloc:
-                runtime = mr['runtime']
-                if int(runtime) == 18000000 or int(runtime) == -1:
-                    skip.append(mr['merge_tool'])
-            if len(skip) == 2:
-                continue
-
-
-            cb_group = cb_mc.get_group(mc_cb['id'])
-            refMerge_conflicting_files = len(pd.unique(cb_group[(cb_group['merge_tool'] == 'RefMerge')]['conflicting_file_id'].tolist()))
-            intelliMerge_conflicting_files = len(pd.unique(cb_group[(cb_group['merge_tool'] == 'IntelliMerge')]['conflicting_file_id'].tolist()))
-            git_conflicting_files = len(pd.unique(cb_group[(cb_group['merge_tool'] == 'Git')]['conflicting_file_id'].tolist()))
-            if git_conflicting_files == 0:
-                continue
-            refMerge_reduction = (git_conflicting_files - refMerge_conflicting_files) * 100 / git_conflicting_files
-            intelliMerge_reduction = (git_conflicting_files - intelliMerge_conflicting_files) * 100 / git_conflicting_files
-
-            if 'RefMerge' in skip:
-                plot_df = plot_df.append({'project_name': get_project_by_id(project_id), 'intelliMerge': intelliMerge_reduction}, ignore_index = True)
-
-            elif 'IntelliMerge' in skip:
-                plot_df = plot_df.append({'project_name': get_project_by_id(project_id), 'refMerge': refMerge_reduction}, ignore_index = True)
-
-            else:
-                plot_df = plot_df.append({'project_name': get_project_by_id(project_id), 'refMerge': refMerge_reduction, 'intelliMerge': intelliMerge_reduction}, ignore_index = True)
 
             
 
