@@ -1,23 +1,17 @@
 package ca.ualberta.cs.smr.core;
 
 import ca.ualberta.cs.smr.core.matrix.Matrix;
-import ca.ualberta.cs.smr.core.replayOperations.ReplayExtractMethod;
-import ca.ualberta.cs.smr.core.replayOperations.ReplayInlineMethod;
-import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameClass;
-import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameMethod;
-import ca.ualberta.cs.smr.core.undoOperations.UndoExtractMethod;
-import ca.ualberta.cs.smr.core.undoOperations.UndoInlineMethod;
-import ca.ualberta.cs.smr.core.undoOperations.UndoMoveRenameClass;
-import ca.ualberta.cs.smr.core.undoOperations.UndoMoveRenameMethod;
+import ca.ualberta.cs.smr.core.replayOperations.*;
+import ca.ualberta.cs.smr.core.invertOperations.*;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.utils.Utils;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -33,6 +27,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 public class RefMerge extends AnAction {
@@ -47,25 +43,25 @@ public class RefMerge extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        this.project = ProjectManager.getInstance().getOpenProjects()[0];
-        Project project = this.project;
+        Project project = ProjectManager.getInstance().getOpenProjects()[0];
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         List<GitRepository> repos = repoManager.getRepositories();
         GitRepository repo = repos.get(0);
-        String rightCommit = "ac99afcef";
-        String leftCommit = "67e36f41b";
+        String rightCommit = "287b1a4275";
+        String leftCommit = "e93bac43b8";
 
-
-        refMerge(rightCommit, leftCommit, project, repo);
+        List<Refactoring> detectedRefactorings = new ArrayList<>();
+        refMerge(rightCommit, leftCommit, project, repo, detectedRefactorings);
 
     }
 
     /*
      * Gets the directory of the project that's being merged, then it calls the function that performs the merge.
      */
-    public void refMerge(String rightCommit, String leftCommit, Project project,
-                         GitRepository repo) {
-        Utils.clearTemp();
+    public ArrayList<Pair<RefactoringObject, RefactoringObject>> refMerge(String rightCommit, String leftCommit,
+                                                                          Project project, GitRepository repo,
+                                                                          List<Refactoring> detectedRefactorings) {
+        this.project = project;
         File dir = new File(Objects.requireNonNull(project.getBasePath()));
         try {
             git = Git.open(dir);
@@ -73,7 +69,7 @@ public class RefMerge extends AnAction {
             ioException.printStackTrace();
         }
 
-        doMerge(rightCommit, leftCommit, repo);
+        return doMerge(rightCommit, leftCommit, repo, detectedRefactorings);
 
     }
 
@@ -85,124 +81,91 @@ public class RefMerge extends AnAction {
      * left commit, but it uses the current directory instead of saving it to a new one. After it's undone all the
      * refactorings, the merge function is called and it replays the refactorings.
      */
-    private void doMerge(String rightCommit, String leftCommit, GitRepository repo){
-
+    private ArrayList<Pair<RefactoringObject, RefactoringObject>> doMerge(String rightCommit, String leftCommit,
+                                                                          GitRepository repo,
+                                                                          List<Refactoring> detectedRefactorings){
+        long time = System.currentTimeMillis();
         GitUtils gitUtils = new GitUtils(repo, project);
         String baseCommit = gitUtils.getBaseCommit(leftCommit, rightCommit);
-        ArrayList<RefactoringObject> rightRefs = getAndSimplifyRefactorings(rightCommit, baseCommit);
-        ArrayList<RefactoringObject> leftRefs = getAndSimplifyRefactorings(leftCommit, baseCommit);
+        System.out.println("Detecting refactorings");
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        AtomicReference<ArrayList<RefactoringObject>> rightRefsAtomic = new AtomicReference<>(new ArrayList<>());
+        AtomicReference<ArrayList<RefactoringObject>> leftRefsAtomic = new AtomicReference<>(new ArrayList<>());
+        Future futureRefMiner = executor.submit(() -> {
+            rightRefsAtomic.set(detectAndSimplifyRefactorings(rightCommit, baseCommit, detectedRefactorings));
+            leftRefsAtomic.set(detectAndSimplifyRefactorings(leftCommit, baseCommit, detectedRefactorings));
+        });
+        try {
+            futureRefMiner.get(11, TimeUnit.MINUTES);
 
-        // Checkout base commit and store it in temp/base
-        gitUtils.checkout(baseCommit);
-        Utils.dumbServiceHandler(project);
-        Utils.saveContent(project, "base");
+
+        } catch (TimeoutException | InterruptedException | ExecutionException e) {
+            System.out.println("RefMerge Timed Out");
+            return null;
+        }
+        ArrayList<RefactoringObject> rightRefs = rightRefsAtomic.get();
+        ArrayList<RefactoringObject> leftRefs = leftRefsAtomic.get();
+
+        long time2 = System.currentTimeMillis();
+        // If it has been 10 minutes, it will take more than 15 minutes to complete RefMerge
+        if((time - time2) > 600000) {
+            System.out.println("RefMerge Timed Out");
+            return null;
+        }
+
 
         gitUtils.checkout(rightCommit);
         // Update the PSI classes after the commit
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
-        rightRefs = undoRefactorings(rightRefs);
-        Utils.saveContent(project, "right");
+        System.out.println("Inverting right refactorings");
+        InvertRefactorings.invertRefactorings(rightRefs, project);
+
         String rightUndoCommit = gitUtils.addAndCommit();
         gitUtils.checkout(leftCommit);
-
         // Update the PSI classes after the commit
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
-        leftRefs = undoRefactorings(leftRefs);
-        Utils.saveContent(project, "left");
+        System.out.println("Inverting left refactorings");
+        InvertRefactorings.invertRefactorings(leftRefs, project);
+
         gitUtils.addAndCommit();
-        gitUtils.merge(rightUndoCommit);
+        boolean isConflicting = gitUtils.merge(rightUndoCommit);
+
         Utils.refreshVFS();
         Utils.reparsePsiFiles(project);
         Utils.dumbServiceHandler(project);
 
         // Check if any of the refactorings are conflicting or have ordering dependencies
+        System.out.println("Detecting refactoring conflicts");
         Matrix matrix = new Matrix(project);
-        ArrayList<RefactoringObject> mergedRefactoringList = matrix.runMatrix(leftRefs, rightRefs);
+
+        Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, ArrayList<RefactoringObject>> pair = matrix.detectConflicts(leftRefs, rightRefs);
+
+        time2 = System.currentTimeMillis();
+        // If it has been 14 minutes, it will take more than 30 minutes to complete RefMerge
+        if((time - time2) > 780000) {
+            System.out.println("RefMerge Timed Out");
+            return null;
+        }
+
+        ArrayList<RefactoringObject> refactorings = pair.getRight();
+        if(isConflicting) {
+            List<String> conflictingFilePaths = gitUtils.getConflictingFilePaths();
+            for(String conflictingFilePath : conflictingFilePaths) {
+                Utils utils = new Utils(project);
+                utils.removeRefactoringsInConflictingFile(conflictingFilePath, refactorings);
+
+            }
+        }
 
         // Combine the lists so we can perform all the refactorings on the merged project
         // Replay all of the refactorings
-        replayRefactorings(mergedRefactoringList);
+        System.out.println("Replaying refactorings");
+        ReplayRefactorings.replayRefactorings(pair.getRight(), project);
 
+        return pair.getLeft();
 
-    }
-
-    /*
-     * undoRefactorings takes a list of refactorings and performs the inverse for each one.
-     */
-    public ArrayList<RefactoringObject> undoRefactorings(ArrayList<RefactoringObject> refactoringObjects) {
-        // Iterate through the list of refactorings and undo each one
-        for(RefactoringObject refactoringObject : refactoringObjects) {
-            switch (refactoringObject.getRefactoringType()) {
-                case RENAME_CLASS:
-                case MOVE_CLASS:
-                case MOVE_RENAME_CLASS:
-                    // Undo the rename class refactoring. This is commented out because of the prompt issue
-                    UndoMoveRenameClass undoMoveRenameClass = new UndoMoveRenameClass(project);
-                    undoMoveRenameClass.undoMoveRenameClass(refactoringObject);
-                    break;
-                case RENAME_METHOD:
-                case MOVE_OPERATION:
-                case MOVE_AND_RENAME_OPERATION:
-                    // Undo the rename method refactoring
-                    UndoMoveRenameMethod undoMoveRenameMethod = new UndoMoveRenameMethod(project);
-                    undoMoveRenameMethod.undoMoveRenameMethod(refactoringObject);
-                    break;
-                case EXTRACT_OPERATION:
-                    UndoExtractMethod undoExtractMethod = new UndoExtractMethod(project);
-                    refactoringObject = undoExtractMethod.undoExtractMethod(refactoringObject);
-                    int index = refactoringObjects.indexOf(refactoringObject);
-                    refactoringObjects.set(index, refactoringObject);
-                case INLINE_OPERATION:
-                    UndoInlineMethod undoInlineMethod = new UndoInlineMethod(project);
-                    undoInlineMethod.undoInlineMethod(refactoringObject);
-                    break;
-
-            }
-
-        }
-        // Save all of the refactoring changes from memory onto disk
-        FileDocumentManager.getInstance().saveAllDocuments();
-        return refactoringObjects;
-    }
-
-    /*
-     * replayRefactorings takes a list of refactorings and performs each of the refactorings.
-     */
-    public void replayRefactorings(ArrayList<RefactoringObject> refactoringObjects) {
-        try {
-            for(RefactoringObject refactoringObject : refactoringObjects) {
-                switch (refactoringObject.getRefactoringType()) {
-                    case RENAME_CLASS:
-                    case MOVE_CLASS:
-                    case MOVE_RENAME_CLASS:
-                        ReplayMoveRenameClass replayMoveRenameClass = new ReplayMoveRenameClass(project);
-                        replayMoveRenameClass.replayMoveRenameClass(refactoringObject);
-                        break;
-                    case RENAME_METHOD:
-                    case MOVE_OPERATION:
-                    case MOVE_AND_RENAME_OPERATION:
-                        // Perform the rename method refactoring
-                        ReplayMoveRenameMethod replayMoveRenameMethod = new ReplayMoveRenameMethod(project);
-                        replayMoveRenameMethod.replayMoveRenameMethod(refactoringObject);
-                        break;
-                    case EXTRACT_OPERATION:
-                        ReplayExtractMethod replayExtractMethod = new ReplayExtractMethod(project);
-                        replayExtractMethod.replayExtractMethod(refactoringObject);
-                    case INLINE_OPERATION:
-                        ReplayInlineMethod replayInlineMethod = new ReplayInlineMethod(project);
-                        replayInlineMethod.replayInlineMethod(refactoringObject);
-                        break;
-                }
-
-            }
-
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-        // Save all of the refactoring changes from memory onto disk
-        FileDocumentManager.getInstance().saveAllDocuments();
     }
 
     /*
@@ -210,7 +173,7 @@ public class RefMerge extends AnAction {
      * detected refactoring against previously detected refactorings to check for transitivity or if the refactorings can
      * be simplified.
      */
-    public ArrayList<RefactoringObject> getAndSimplifyRefactorings(String commit, String base) {
+    public ArrayList<RefactoringObject> detectAndSimplifyRefactorings(String commit, String base, List<Refactoring> detectedRefactorings) {
         ArrayList<RefactoringObject> simplifiedRefactorings = new ArrayList<>();
         Matrix matrix = new Matrix(project);
         GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
@@ -221,6 +184,7 @@ public class RefMerge extends AnAction {
                     public void handle(String commitId, List<Refactoring> refactorings) {
                         // Add each refactoring to refResult
                         for(Refactoring refactoring : refactorings) {
+                            detectedRefactorings.add(refactoring);
                             // Create the refactoring object so we can compare and update
                             RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(refactoring);
                             // If the refactoring type is not presently supported, skip it

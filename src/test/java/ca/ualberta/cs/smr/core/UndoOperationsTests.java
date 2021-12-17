@@ -3,10 +3,10 @@ package ca.ualberta.cs.smr.core;
 import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ParameterObject;
-import ca.ualberta.cs.smr.core.undoOperations.UndoExtractMethod;
-import ca.ualberta.cs.smr.core.undoOperations.UndoInlineMethod;
-import ca.ualberta.cs.smr.core.undoOperations.UndoMoveRenameClass;
-import ca.ualberta.cs.smr.core.undoOperations.UndoMoveRenameMethod;
+import ca.ualberta.cs.smr.core.invertOperations.InvertExtractMethod;
+import ca.ualberta.cs.smr.core.invertOperations.InvertInlineMethod;
+import ca.ualberta.cs.smr.core.invertOperations.InvertMoveRenameClass;
+import ca.ualberta.cs.smr.core.invertOperations.InvertMoveRenameMethod;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
@@ -53,9 +53,9 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
-        UndoMoveRenameMethod undo = new UndoMoveRenameMethod(project);
+        InvertMoveRenameMethod undo = new InvertMoveRenameMethod(project);
         RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
-        undo.undoMoveRenameMethod(refactoringObject);
+        undo.invertMoveRenameMethod(refactoringObject);
 
         list1 = TestUtils.getMethodNames(oldMethods);
         list2 = TestUtils.getMethodNames(newMethods);
@@ -109,10 +109,10 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         moveRenameObject.setType(RefactoringType.MOVE_OPERATION);
         moveRenameObject.setType(RefactoringType.RENAME_METHOD);
 
-        UndoMoveRenameMethod undo = new UndoMoveRenameMethod(project);
-        undo.undoMoveRenameMethod(fooObject);
-        undo.undoMoveRenameMethod(moveRenameObject);
-        undo.undoMoveRenameMethod(foobarObject);
+        InvertMoveRenameMethod undo = new InvertMoveRenameMethod(project);
+        undo.invertMoveRenameMethod(fooObject);
+        undo.invertMoveRenameMethod(moveRenameObject);
+        undo.invertMoveRenameMethod(foobarObject);
 
         LightJavaCodeInsightFixtureTestCase.assertEquals(psiFiles[0].getText(), psiFiles[2].getText());
         LightJavaCodeInsightFixtureTestCase.assertEquals(psiFiles[1].getText(), psiFiles[3].getText());
@@ -143,8 +143,8 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
         RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
-        UndoMoveRenameClass undo = new UndoMoveRenameClass(project);
-        undo.undoMoveRenameClass(refactoringObject);
+        InvertMoveRenameClass undo = new InvertMoveRenameClass(project);
+        undo.invertMoveRenameClass(refactoringObject);
 
         list1 = TestUtils.getClassNames(oldClasses);
         list2 = TestUtils.getClassNames(newClasses);
@@ -160,13 +160,13 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         String testFile = "ClassRenameTestData.java";
         PsiFile[] psiFiles = myFixture.configureByFiles(testDataRenamed + testFile);
         String destinationPackage = "renameTestData.classRenameTestData";
-        String originalPackage = "renameTestData";
+        String originalPackage = "renameTestData.original";
         Assert.assertNotEquals(originalPackage, ((PsiJavaFile)psiFiles[0]).getPackageName());
         MoveRenameClassObject moveClass = new MoveRenameClassObject("ClassRenameTestData.java", "ClassRenameTestData", originalPackage,
                 "ClassRenameTestData.java", "ClassRenameTestData", destinationPackage);
         moveClass.setType(RefactoringType.MOVE_CLASS);
-        UndoMoveRenameClass undo = new UndoMoveRenameClass(project);
-        undo.undoMoveRenameClass(moveClass);
+        InvertMoveRenameClass undo = new InvertMoveRenameClass(project);
+        undo.invertMoveRenameClass(moveClass);
         Assert.assertEquals(originalPackage, ((PsiJavaFile)psiFiles[0]).getPackageName());
 
     }
@@ -185,8 +185,8 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
                 "InnerClassTest.java", "moveRenameClass.Class1.Class2", destinationPackage);
         moveClass.setType(RefactoringType.MOVE_CLASS);
         moveClass.setOuterToInner();
-        UndoMoveRenameClass undo = new UndoMoveRenameClass(project);
-        undo.undoMoveRenameClass(moveClass);
+        InvertMoveRenameClass undo = new InvertMoveRenameClass(project);
+        undo.invertMoveRenameClass(moveClass);
         PsiPackage psiPackage = JavaPsiFacade.getInstance(project).findPackage(originalPackage);
         assert psiPackage != null;
         PsiClass[] psiClasses = psiPackage.getClasses();
@@ -212,8 +212,8 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         moveClass.setType(RefactoringType.MOVE_CLASS);
         moveClass.setSameFile();
         moveClass.setOuterToInner();
-        UndoMoveRenameClass undo = new UndoMoveRenameClass(project);
-        undo.undoMoveRenameClass(moveClass);
+        InvertMoveRenameClass undo = new InvertMoveRenameClass(project);
+        undo.invertMoveRenameClass(moveClass);
         Assert.assertEquals(originalPackage, ((PsiJavaFile)psiFiles[0]).getPackageName());
     }
 
@@ -231,8 +231,8 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
                 "TopClass.java", "moveRenameClass.after.Class2", destinationPackage);
         moveClass.setType(RefactoringType.MOVE_CLASS);
         moveClass.setInnerToOuter();
-        UndoMoveRenameClass undo = new UndoMoveRenameClass(project);
-        undo.undoMoveRenameClass(moveClass);
+        InvertMoveRenameClass undo = new InvertMoveRenameClass(project);
+        undo.invertMoveRenameClass(moveClass);
         PsiClass topClass = ((PsiJavaFile) psiFiles[1]).getClasses()[0];
         Assert.assertEquals(1, topClass.getInnerClasses().length);
     }
@@ -251,8 +251,8 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         moveClass.setType(RefactoringType.MOVE_CLASS);
         moveClass.setSameFile();
         moveClass.setInnerToOuter();
-        UndoMoveRenameClass undo = new UndoMoveRenameClass(project);
-        undo.undoMoveRenameClass(moveClass);
+        InvertMoveRenameClass undo = new InvertMoveRenameClass(project);
+        undo.invertMoveRenameClass(moveClass);
         Assert.assertEquals(destinationPackage, ((PsiJavaFile)psiFiles[0]).getPackageName());
     }
 
@@ -269,8 +269,8 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
                 "Class3.java", "moveRenameClass.after.Class3.Class2", destinationPackage);
         moveClass.setType(RefactoringType.MOVE_CLASS);
         moveClass.setInnerToInner();
-        UndoMoveRenameClass undo = new UndoMoveRenameClass(project);
-        undo.undoMoveRenameClass(moveClass);
+        InvertMoveRenameClass undo = new InvertMoveRenameClass(project);
+        undo.invertMoveRenameClass(moveClass);
         PsiClass topClass = ((PsiJavaFile) psiFiles[1]).getClasses()[0];
         Assert.assertEquals(1, topClass.getInnerClasses().length);
         topClass = ((PsiJavaFile) psiFiles[0]).getClasses()[0];
@@ -295,11 +295,11 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
         RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
-        UndoExtractMethod undoOperations = new UndoExtractMethod(project);
-        undoOperations.undoExtractMethod(refactoringObject);
+        InvertExtractMethod undoOperations = new InvertExtractMethod(project);
+        undoOperations.invertExtractMethod(refactoringObject);
         ref = refactorings.get(1);
         refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
-        undoOperations.undoExtractMethod(refactoringObject);
+        undoOperations.invertExtractMethod(refactoringObject);
 
         PsiFile file1 = files[0];
         PsiFile file2 = files[1];
@@ -324,13 +324,13 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("INLINE_OPERATION",
                 originalTestData, refactoredTestData);
         assert refactorings != null;
-        Refactoring ref = refactorings.get(0);
+        Refactoring ref = refactorings.get(1);
         RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
-        UndoInlineMethod undoOperations = new UndoInlineMethod(project);
-        undoOperations.undoInlineMethod(refactoringObject);
-        ref = refactorings.get(1);
+        InvertInlineMethod undoOperations = new InvertInlineMethod(project);
+        undoOperations.invertInlineMethod(refactoringObject);
+        ref = refactorings.get(0);
         refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
-        undoOperations.undoInlineMethod(refactoringObject);
+        undoOperations.invertInlineMethod(refactoringObject);
 
         PsiFile file1 = files[0];
         PsiFile file2 = files[1];

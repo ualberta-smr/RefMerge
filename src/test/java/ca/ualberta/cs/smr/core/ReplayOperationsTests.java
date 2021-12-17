@@ -7,7 +7,7 @@ import ca.ualberta.cs.smr.core.replayOperations.ReplayExtractMethod;
 import ca.ualberta.cs.smr.core.replayOperations.ReplayInlineMethod;
 import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameClass;
 import ca.ualberta.cs.smr.core.replayOperations.ReplayMoveRenameMethod;
-import ca.ualberta.cs.smr.core.undoOperations.UndoExtractMethod;
+import ca.ualberta.cs.smr.core.invertOperations.InvertExtractMethod;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
@@ -302,15 +302,19 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         assert refactorings != null;
         Refactoring firstRef = refactorings.get(0);
         RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(firstRef);
-        UndoExtractMethod undoExtractMethod = new UndoExtractMethod(project);
-        refactoringObject = undoExtractMethod.undoExtractMethod(refactoringObject);
+        InvertExtractMethod invertExtractMethod = new InvertExtractMethod(project);
+        refactoringObject = invertExtractMethod.invertExtractMethod(refactoringObject);
         Refactoring secondRef = refactorings.get(1);
         RefactoringObject secondRefactoringObject = RefactoringObjectUtils.createRefactoringObject(secondRef);
-        secondRefactoringObject = undoExtractMethod.undoExtractMethod(secondRefactoringObject);
+        secondRefactoringObject = invertExtractMethod.invertExtractMethod(secondRefactoringObject);
 
         ReplayExtractMethod replayExtractMethod = new ReplayExtractMethod(project);
-        replayExtractMethod.replayExtractMethod(secondRefactoringObject);
-        replayExtractMethod.replayExtractMethod(refactoringObject);
+        try {
+            replayExtractMethod.replayExtractMethod(secondRefactoringObject);
+            replayExtractMethod.replayExtractMethod(refactoringObject);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
 
         PsiFile file1 = files[0];
         PsiFile file2 = files[1];

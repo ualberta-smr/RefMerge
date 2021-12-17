@@ -39,12 +39,15 @@ public class MoveRenameClassMoveRenameClassCell {
                 || (dispatcherClassRefactoring.isMoveMethod() && receiverClassRefactoring.isMoveMethod())) {
             // If the original class is refactored to two different destinations
             if(dispatcherOriginalClass.equalsClass(receiverOriginalClass)
+                    && dispatcherClassRefactoring.getOriginalFilePath().equals(receiverClassRefactoring.getOriginalFilePath())
                     && !dispatcherDestinationClass.equalsClass(receiverDestinationClass)) {
                 return true;
             }
             // If two classes are refactored to the same class
-            else return !dispatcherOriginalClass.equalsClass(receiverOriginalClass)
-                    && dispatcherDestinationClass.equalsClass(receiverDestinationClass);
+            if(dispatcherClassRefactoring.getDestinationFilePath().equals(receiverClassRefactoring.getDestinationFilePath())) {
+            return !dispatcherOriginalClass.equalsClass(receiverOriginalClass)
+                        && dispatcherDestinationClass.equalsClass(receiverDestinationClass);
+            }
         }
         return false;
     }

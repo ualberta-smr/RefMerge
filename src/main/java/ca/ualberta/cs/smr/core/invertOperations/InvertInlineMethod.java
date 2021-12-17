@@ -1,11 +1,10 @@
-package ca.ualberta.cs.smr.core.undoOperations;
+package ca.ualberta.cs.smr.core.invertOperations;
 
 import ca.ualberta.cs.smr.core.refactoringObjects.InlineMethodObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ParameterObject;
 import ca.ualberta.cs.smr.utils.Utils;
-import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
@@ -15,6 +14,8 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.refactoring.extractMethod.ExtractMethodHandler;
 import com.intellij.refactoring.extractMethod.ExtractMethodProcessor;
 import com.intellij.refactoring.extractMethod.PrepareFailedException;
+import com.intellij.usages.UsageView;
+import com.intellij.usages.UsageViewManager;
 import gr.uom.java.xmi.decomposition.AbstractCodeFragment;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,19 +24,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-public class UndoInlineMethod {
+public class InvertInlineMethod {
 
     Project project;
 
-    public UndoInlineMethod(Project project) {
+    public InvertInlineMethod(Project project) {
         this.project = project;
     }
 
     /*
-     * Undo the inline method refactoring that was originally performed by performing extract method. Use the text offset
+     * Invert the inline method refactoring that was originally performed by performing extract method. Use the text offset
      * to move the extracted method to the correct spot within the class.
      */
-    public void undoInlineMethod(RefactoringObject ref) {
+    public void invertInlineMethod(RefactoringObject ref) {
         InlineMethodObject inlineMethodObject = (InlineMethodObject) ref;
         // Original method that is being inlined
         MethodSignatureObject originalOperation = inlineMethodObject.getOriginalMethodSignature();
@@ -47,9 +48,13 @@ public class UndoInlineMethod {
         // Get PSI method of target method
         Utils utils = new Utils(project);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(targetOperationClassName, filePath);
-        assert psiClass != null;
+        if(psiClass == null) {
+            return;
+        }
         PsiMethod psiMethod = Utils.getPsiMethod(psiClass, targetOperation);
-        assert psiMethod != null;
+        if(psiMethod == null) {
+            return;
+        }
 
         String extractedMethodName = originalOperation.getName();
         String targetOperationName = targetOperation.getName();
@@ -58,6 +63,9 @@ public class UndoInlineMethod {
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
         Set<AbstractCodeFragment> inlinedCodeFragments = inlineMethodObject.getInlinedCodeFragments();
         PsiElement[] psiElements = getElementsFromTargetOperationFragments(psiMethod,inlinedCodeFragments);
+        if(psiElements == null) {
+            return;
+        }
         ExtractMethodProcessor extractMethodProcessor = new ExtractMethodProcessor(project, editor, psiElements,
                 forcedReturnType, extractedMethodName, targetOperationName, helpId);
         extractMethodProcessor.setMethodName(extractedMethodName);
@@ -74,7 +82,12 @@ public class UndoInlineMethod {
         // The method signature could change if code was added/deleted after inlining it
         PsiMethod extractedMethod = extractMethodProcessor.getExtractedMethod();
         updateMethodSignature(ref, extractedMethod);
-        moveMethodWithinOriginalClass(psiClass, extractedMethod, inlineMethodObject.getStartOffset());
+
+        UsageViewManager viewManager = UsageViewManager.getInstance(project);
+        UsageView usageView = viewManager.getSelectedUsageView();
+        if(usageView != null) {
+            usageView.close();
+        }
 
         VirtualFile vFile = psiClass.getContainingFile().getVirtualFile();
         vFile.refresh(false, true);
@@ -106,6 +119,9 @@ public class UndoInlineMethod {
         firstAndLastElements[0] = getPsiElementFromCodeFragment(firstFragment, psiMethod);
         assert lastFragment != null;
         firstAndLastElements[1] = getPsiElementFromCodeFragment(lastFragment, psiMethod);
+        if(firstAndLastElements[0] == null || firstAndLastElements[1] == null) {
+            return null;
+        }
         List<PsiElement> psiElements = PsiTreeUtil.getElementsOfRange(firstAndLastElements[0], firstAndLastElements[1]);
         return psiElements.toArray(new PsiElement[0]);
     }
@@ -142,7 +158,7 @@ public class UndoInlineMethod {
         List<ParameterObject> parameterObjects = new ArrayList<>();
         ParameterObject returnParameter = ((InlineMethodObject) refactoringObject).getOriginalMethodSignature().getReturnParameter();
         parameterObjects.add(returnParameter);
-        for(PsiParameter psiParameter : psiParameters) {
+        for (PsiParameter psiParameter : psiParameters) {
             String parameterType = psiParameter.getText();
             String parameterName = psiParameter.getName();
             ParameterObject parameterObject = new ParameterObject(parameterType, parameterName);
@@ -153,53 +169,5 @@ public class UndoInlineMethod {
         ((InlineMethodObject) refactoringObject).setOriginalMethodSignature(methodSignature);
 
 
-    }
-
-    /*
-     * Shift the method to the correct location within the class.
-     */
-    private void moveMethodWithinOriginalClass(PsiClass psiClass, PsiMethod psiMethod, int startOffset) {
-        // Get all of the methods inside of the class.
-        PsiMethod[] psiMethods = psiClass.getMethods();
-
-        // Get the physical copy of the PSI method so we can delete it
-        for(PsiMethod method : psiMethods) {
-            if(method.getSignature(PsiSubstitutor.UNKNOWN).equals(psiMethod.getSignature(PsiSubstitutor.UNKNOWN))) {
-                psiMethod = method;
-                break;
-            }
-        }
-        PsiMethod psiMethodBefore = null;
-        // Find which method comes before the moved method
-        for(PsiMethod otherMethod : psiMethods) {
-            int otherMethodStartOffset = otherMethod.getTextOffset();
-            otherMethodStartOffset = otherMethodStartOffset - (psiMethod.getTextRange().getEndOffset() - psiMethod.getTextOffset());
-            if(otherMethodStartOffset < startOffset) {
-                psiMethodBefore = otherMethod;
-            }
-        }
-        final PsiMethod newMethod = PsiElementFactory.getInstance(project).createMethodFromText(psiMethod.getText(), psiClass);
-        PsiMethod finalPsiMethod = psiMethod;
-        // if it's the first method in the class
-        PsiMethod psiMethodAfter = null;
-        if(psiMethodBefore == null) {
-            for(PsiMethod otherMethod : psiMethods) {
-                if(!otherMethod.isConstructor()) {
-                    psiMethodAfter = otherMethod;
-                    break;
-                }
-            }
-            PsiMethod finalPsiMethodAfter = psiMethodAfter;
-            WriteCommandAction.runWriteCommandAction(project, () -> {
-                psiClass.addAfter(newMethod, finalPsiMethodAfter);
-                finalPsiMethod.delete();
-            });
-            return;
-        }
-        PsiMethod finalPsiMethodBefore = psiMethodBefore;
-        WriteCommandAction.runWriteCommandAction(project, () -> {
-            psiClass.addAfter(newMethod, finalPsiMethodBefore);
-            finalPsiMethod.delete();
-        });
     }
 }

@@ -32,7 +32,7 @@ public class ReplayMoveRenameMethod {
         MethodSignatureObject renamed = moveRenameMethodObject.getDestinationMethodSignature();
         String destinationMethodName = renamed.getName();
         String originalClassName = moveRenameMethodObject.getOriginalClassName();
-        String destinationClassName = moveRenameMethodObject.getDestinationClassName();
+        String destinationClassName = moveRenameMethodObject.getOriginalDestinationClassName();
         String filePath = moveRenameMethodObject.getOriginalFilePath();
         Utils utils = new Utils(project);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(originalClassName, filePath);
@@ -41,7 +41,9 @@ public class ReplayMoveRenameMethod {
             return;
         }
         PsiMethod psiMethod = Utils.getPsiMethod(psiClass, original);
-        assert psiMethod != null;
+        if(psiMethod == null) {
+            return;
+        }
         if(moveRenameMethodObject.isRenameMethod()) {
             RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
             RenameRefactoring renameRefactoring = factory.createRename(psiMethod, destinationMethodName, true, true);
@@ -78,12 +80,29 @@ public class ReplayMoveRenameMethod {
         PsiMethod[] psiMethods = psiClass.getMethods();
 
         // Get the physical copy of the PSI method so we can delete it
-        for(PsiMethod method : psiMethods) {
-            if(method.getSignature(PsiSubstitutor.UNKNOWN).equals(psiMethod.getSignature(PsiSubstitutor.UNKNOWN))) {
+        for (PsiMethod method : psiMethods) {
+            boolean isSame = true;
+            String m1 = method.getName();
+            String m2 = psiMethod.getName();
+            if(m1.equals(m2)) {
+                PsiParameter[] parameterList1 = method.getParameterList().getParameters();
+                PsiParameter[] parameterList2 = psiMethod.getParameterList().getParameters();
+                if(parameterList1.length != parameterList2.length) {
+                    continue;
+                }
+                for(int i = 0; i < parameterList1.length; i++) {
+                    if (!parameterList1[i].isEquivalentTo(parameterList2[i])) {
+                        isSame = false;
+                        break;
+                    }
+                }
+            }
+            if (isSame) {
                 psiMethod = method;
                 break;
             }
         }
+
 
         // Create the new PSI method
         final PsiMethod newMethod = PsiElementFactory.getInstance(project).createMethodFromText(psiMethod.getText(), psiClass);

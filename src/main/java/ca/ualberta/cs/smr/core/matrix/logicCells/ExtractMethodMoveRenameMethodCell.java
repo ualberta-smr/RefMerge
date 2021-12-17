@@ -61,7 +61,7 @@ public class ExtractMethodMoveRenameMethodCell {
         String extractDestinationClassName = extractMethodObject.getDestinationClassName();
 
         // If the rename methods happen in the same class then there is no override conflict
-        if(renameDestinationClassName.equals(extractDestinationClassName)) {
+        if (renameDestinationClassName.equals(extractDestinationClassName)) {
             return false;
         }
         String renameDestinationFile = moveRenameMethodObject.getDestinationFilePath();
@@ -69,10 +69,11 @@ public class ExtractMethodMoveRenameMethodCell {
         Utils utils = new Utils(project);
         PsiClass renameMethodPsiClass = utils.getPsiClassByFilePath(renameDestinationFile, renameDestinationClassName);
         PsiClass extractMethodPsiClass = utils.getPsiClassByFilePath(extractDestinationFile, extractDestinationClassName);
-        if(!ifClassExtends(renameMethodPsiClass, extractMethodPsiClass)) {
-            return false;
+        if (renameMethodPsiClass != null && extractMethodPsiClass != null) {
+            if (!ifClassExtends(renameMethodPsiClass, extractMethodPsiClass)) {
+                return false;
+            }
         }
-
         // If they have different signatures then there cannot be overriding
         return renameDestinationMethod.equalsSignature(extractDestinationMethod);
     }
@@ -96,8 +97,10 @@ public class ExtractMethodMoveRenameMethodCell {
             String extractMethodFile = extractMethodObject.getDestinationFilePath();
             PsiClass renameMethodPsiClass = utils.getPsiClassByFilePath(renameMethodFile, renameDestinationClassName);
             PsiClass extractMethodPsiClass = utils.getPsiClassByFilePath(extractMethodFile, extractDestinationClassName);
-            if(!ifClassExtends(renameMethodPsiClass, extractMethodPsiClass)) {
-                return false;
+            if (renameMethodPsiClass != null && extractMethodPsiClass != null) {
+                if (!ifClassExtends(renameMethodPsiClass, extractMethodPsiClass)) {
+                    return false;
+                }
             }
         }
         String renameDestinationName = renameDestinationMethod.getName();

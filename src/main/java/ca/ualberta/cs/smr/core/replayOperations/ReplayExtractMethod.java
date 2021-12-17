@@ -39,7 +39,7 @@ public class ReplayExtractMethod {
         this.project = project;
     }
 
-    public void replayExtractMethod(RefactoringObject ref) {
+    public void replayExtractMethod(RefactoringObject ref) throws Exception {
         ExtractMethodObject extractMethodObject = (ExtractMethodObject) ref;
         MethodSignatureObject sourceOperation = extractMethodObject.getOriginalMethodSignature();
         MethodSignatureObject extractedOperation = extractMethodObject.getDestinationMethodSignature();
@@ -51,16 +51,29 @@ public class ReplayExtractMethod {
 
         Utils utils = new Utils(project);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(originalClassName, filePath);
-        assert psiClass != null;
+        if(psiClass == null) {
+            return;
+        }
         PsiMethod psiMethod = Utils.getPsiMethod(psiClass, sourceOperation);
-        assert psiMethod != null;
+        if(psiMethod == null) {
+            return;
+        }
 
         SmartPsiElementPointer[] surroundingElements = extractMethodObject.getSurroundingElements();
+        if(surroundingElements == null) {
+            return;
+        }
+        if(surroundingElements[0] == null || surroundingElements[1] == null) {
+            return;
+        }
         Set<AbstractCodeFragment> sourceFragments = extractMethodObject.getSourceCodeFragments();
         Set<AbstractCodeFragment> extractedFragments = extractMethodObject.getExtractedCodeFragments();
         CodeRange codeRange = extractMethodObject.getCodeRange();
         PsiElement[] psiElements =
                 getPsiElementsBetweenElements(surroundingElements, sourceFragments, extractedFragments, codeRange, psiMethod);
+        if(psiElements == null) {
+            return;
+        }
 
         PsiType forcedReturnType = getPsiReturnType(extractedOperation, psiMethod);
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
@@ -73,6 +86,7 @@ public class ReplayExtractMethod {
             extractMethodProcessor.prepare();
         } catch (PrepareFailedException e) {
             e.printStackTrace();
+            return;
         }
         extractMethodProcessor.setDataFromInputVariables();
         ExtractMethodHandler.extractMethod(project, extractMethodProcessor);
@@ -148,7 +162,7 @@ public class ReplayExtractMethod {
     private PsiElement[] getPsiElementsBetweenElements(SmartPsiElementPointer[] surroundingElements,
                                                        Set<AbstractCodeFragment> sourceFragments,
                                                        Set<AbstractCodeFragment> extractedFragments,
-                                                       CodeRange codeRange, PsiMethod psiMethod) {
+                                                       CodeRange codeRange, PsiMethod psiMethod) throws Exception {
         PsiElement firstElement = surroundingElements[0].getElement();
         PsiElement lastElement = surroundingElements[1].getElement();
         // If the first element was invalidated
@@ -200,9 +214,19 @@ public class ReplayExtractMethod {
             }
         }
 
-        assert firstElement != null;
-        assert lastElement != null;
-        List<PsiElement> psiElements = PsiTreeUtil.getElementsOfRange(firstElement, lastElement);
+        if(firstElement == null) {
+            return null;
+        }
+        if(lastElement == null) {
+            return null;
+        }
+        List<PsiElement> psiElements;
+        try {
+            psiElements = PsiTreeUtil.getElementsOfRange(firstElement, lastElement);
+        }
+        catch(IllegalArgumentException e) {
+            return null;
+        }
         return psiElements.toArray(new PsiElement[0]);
     }
 
@@ -280,6 +304,9 @@ public class ReplayExtractMethod {
             PsiParameter psiParameter = psiParameterList.getParameter(i-1);
             PsiDocumentManager.getInstance(project).commitAllDocuments();
             RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
+            if(psiParameter == null) {
+                return;
+            }
             RenameRefactoring renameRefactoring = factory.createRename(psiParameter, parameterObjectName, true, false);
             UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
             renameRefactoring.doRefactoring(refactoringUsages);

@@ -70,8 +70,10 @@ public class MoveRenameMethodMoveRenameMethodCell {
         Utils utils = new Utils(project);
         PsiClass psiDispatcher = utils.getPsiClassByFilePath(dispatcherFile, dispatcherClassName);
         PsiClass psiReceiver = utils.getPsiClassByFilePath(receiverFile, receiverClassName);
-        if(!ifClassExtends(psiDispatcher, psiReceiver)) {
-            return false;
+        if(psiReceiver != null && psiDispatcher != null) {
+            if (!ifClassExtends(psiDispatcher, psiReceiver)) {
+                return false;
+            }
         }
         // Get original method names
         String dispatcherOriginalMethodName = dispatcherOriginalMethod.getName();
@@ -109,8 +111,10 @@ public class MoveRenameMethodMoveRenameMethodCell {
             String receiverFile = receiverRenameMethod.getOriginalFilePath();
             PsiClass psiDispatcher = utils.getPsiClassByFilePath(dispatcherFile, dispatcherClassName);
             PsiClass psiReceiver = utils.getPsiClassByFilePath(receiverFile, receiverClassName);
-            if(!ifClassExtends(psiDispatcher, psiReceiver)) {
-                return false;
+            if(psiReceiver != null && psiDispatcher != null) {
+                if (!ifClassExtends(psiDispatcher, psiReceiver)) {
+                    return false;
+                }
             }
         }
         String dispatcherOriginalMethodName = dispatcherOriginalMethod.getName();
@@ -211,12 +215,14 @@ public class MoveRenameMethodMoveRenameMethodCell {
             firstRefactoring.setDestinationFilePath(secondObject.getDestinationFilePath());
             ((MoveRenameMethodObject) firstRefactoring).setDestinationClassName(secondObject.getDestinationClassName());
             ((MoveRenameMethodObject) firstRefactoring).setDestinationMethodSignature(secondObject.getDestinationMethodSignature());
+            ((MoveRenameMethodObject) firstRefactoring).setOriginalDestinationClassName(secondObject.getOriginalDestinationClassName());
         }
         else if(firstDestinationClass.equals(secondDestinationClass) && firstDestinationMethod.equalsSignature(secondOriginalMethod)) {
             isTransitive = true;
             firstRefactoring.setDestinationFilePath(secondObject.getDestinationFilePath());
             ((MoveRenameMethodObject) firstRefactoring).setDestinationClassName(secondObject.getDestinationClassName());
             ((MoveRenameMethodObject) firstRefactoring).setDestinationMethodSignature(secondObject.getDestinationMethodSignature());
+            ((MoveRenameMethodObject) firstRefactoring).setOriginalDestinationClassName(secondObject.getOriginalDestinationClassName());
         }
 
         return isTransitive;

@@ -35,11 +35,15 @@ public class ReplayInlineMethod {
         String originalMethodClassName = inlineMethodObject.getOriginalClassName();
         String filePath = inlineMethodObject.getOriginalFilePath();
         Utils utils = new Utils(project);
-        utils.addSourceRoot(filePath);
+        utils.addSourceRoot(filePath, originalMethodClassName);
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(originalMethodClassName, filePath);
-        assert psiClass != null;
+        if(psiClass == null) {
+            return;
+        }
         PsiMethod originalMethod = Utils.getPsiMethod(psiClass, originalOperation);
-        assert originalMethod != null;
+        if(originalMethod == null) {
+            return;
+        }
 
         PsiJavaCodeReferenceElement referenceElement = Utils.getPsiReferenceExpressionsForExtractMethod(originalMethod, project);
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();

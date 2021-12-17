@@ -15,17 +15,21 @@ import org.refactoringminer.api.RefactoringType;
 public class MoveRenameMethodObject implements RefactoringObject {
 
     private final RefactoringType refactoringType;
+    private final String refactoringDetail;
     private String originalFilePath;
     private String destinationFilePath;
     private MethodSignatureObject originalMethodSignature;
     private String originalClassName;
     private String destinationClassName;
+    private String originalDestinationClassName;
     private MethodSignatureObject destinationMethodSignature;
     private int startOffset;
     private String methodAbove;
     private boolean isRenameMethod;
     private boolean isMoveMethod;
     private boolean isReplay;
+    private int startLine;
+    private int endLine;
 
     /*
      * Use the provided information to create the rename method object for testing.
@@ -33,15 +37,19 @@ public class MoveRenameMethodObject implements RefactoringObject {
     public MoveRenameMethodObject(String originalFilePath, String originalClassName, MethodSignatureObject originalMethodSignature,
                                   String destinationFilePath, String destinationClassName, MethodSignatureObject destinationMethodSignature) {
         this.refactoringType = RefactoringType.RENAME_METHOD;
+        this.refactoringDetail = "";
         this.originalFilePath = originalFilePath;
         this.originalClassName = originalClassName;
         this.originalMethodSignature = originalMethodSignature;
         this.destinationFilePath = destinationFilePath;
         this.destinationClassName = destinationClassName;
         this.destinationMethodSignature = destinationMethodSignature;
+        this.originalDestinationClassName = destinationClassName;
         this.isMoveMethod = false;
         this.isRenameMethod = false;
         this.isReplay = true;
+        this.startLine = 0;
+        this.endLine = 0;
 
     }
 
@@ -67,6 +75,7 @@ public class MoveRenameMethodObject implements RefactoringObject {
         this.destinationFilePath = destinationOperation.getLocationInfo().getFilePath();
         this.originalClassName = originalOperation.getClassName();
         this.destinationClassName = destinationOperation.getClassName();
+        this.originalDestinationClassName = destinationClassName;
         this.originalMethodSignature = new MethodSignatureObject(originalOperation.getName(), originalOperation.getParameters(),
                 originalOperation.isConstructor(), originalOperation.getVisibility(), originalOperation.isStatic());
         this.destinationMethodSignature = new MethodSignatureObject(destinationOperation.getName(), destinationOperation.getParameters(),
@@ -74,9 +83,30 @@ public class MoveRenameMethodObject implements RefactoringObject {
         this.isMoveMethod = false;
         this.isRenameMethod = false;
         this.refactoringType = refactoring.getRefactoringType();
+        this.refactoringDetail = refactoring.toString();
         setType(refactoringType);
         this.isReplay = true;
 
+    }
+
+    public void setStartLine(int startLine) {
+        this.startLine = startLine;
+    }
+
+    public void setEndLine(int endLine) {
+        this.endLine = endLine;
+    }
+
+    public int getStartLine() {
+        return startLine;
+    }
+
+    public int getEndLine() {
+        return endLine;
+    }
+
+    public String getRefactoringDetail() {
+        return this.refactoringDetail;
     }
 
     public RefactoringType getRefactoringType() {
@@ -117,6 +147,14 @@ public class MoveRenameMethodObject implements RefactoringObject {
 
     public String getDestinationClassName() {
         return this.destinationClassName;
+    }
+
+    public void setOriginalDestinationClassName(String originalDestinationClassName) {
+        this.originalDestinationClassName = originalDestinationClassName;
+    }
+
+    public String getOriginalDestinationClassName() {
+        return this.originalDestinationClassName;
     }
 
     public MethodSignatureObject getOriginalMethodSignature() {

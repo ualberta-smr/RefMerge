@@ -13,6 +13,7 @@ import ca.ualberta.cs.smr.core.matrix.receivers.MoveRenameMethodReceiver;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
@@ -210,8 +211,9 @@ public class MatrixTest extends LightJavaCodeInsightFixtureTestCase {
 
         Matrix matrix = new Matrix(project);
 
-        ArrayList<RefactoringObject> resultingList = matrix.runMatrix(leftRefactoringList, rightRefactoringList);
-        RefactoringObject actualObject = resultingList.get(0);
+        Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, ArrayList<RefactoringObject>>
+                resultingList = matrix.detectConflicts(leftRefactoringList, rightRefactoringList);
+        RefactoringObject actualObject = resultingList.getRight().get(0);
 
         MethodSignatureObject actualSignature = ((MoveRenameMethodObject) actualObject).getDestinationMethodSignature();
         String actualClass = ((MoveRenameMethodObject) actualObject).getDestinationClassName();

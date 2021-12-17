@@ -18,6 +18,7 @@ import java.util.Set;
 public class InlineMethodObject implements RefactoringObject {
 
     private final RefactoringType refactoringType;
+    private final String refactoringDetail;
     private String originalFilePath;
     private String destinationFilePath;
     private String originalClassName;
@@ -28,11 +29,14 @@ public class InlineMethodObject implements RefactoringObject {
     private Set<AbstractCodeFragment> inlinedCodeFragments;
     private int startOffset;
     private boolean isReplay;
+    private int startLine;
+    private int endLine;
 
 
     public InlineMethodObject(String originalFilePath, String originalClassName, MethodSignatureObject originalMethodSignature,
                                String destinationFilePath, String destinationClassName, MethodSignatureObject destinationMethodSignature) {
         this.refactoringType = RefactoringType.EXTRACT_OPERATION;
+        this.refactoringDetail = "";
         this.originalFilePath = originalFilePath;
         this.originalClassName = originalClassName;
         this.originalMethodSignature = originalMethodSignature;
@@ -47,6 +51,7 @@ public class InlineMethodObject implements RefactoringObject {
         UMLOperation originalOperation = operation.getInlinedOperation();
         UMLOperation destinationOperation = operation.getTargetOperationAfterInline();
         this.refactoringType = operation.getRefactoringType();
+        this.refactoringDetail = refactoring.toString();
         this.originalFilePath = originalOperation.getLocationInfo().getFilePath();
         this.destinationFilePath = destinationOperation.getLocationInfo().getFilePath();
         this.originalClassName = originalOperation.getClassName();
@@ -59,13 +64,35 @@ public class InlineMethodObject implements RefactoringObject {
         this.inlinedCodeFragments = operation.getInlinedCodeFragments();
         this.startOffset = originalOperation.getLocationInfo().getStartOffset();
         this.isReplay = true;
+        this.startLine = 0;
+        this.endLine = 0;
     }
 
+    public void setStartLine(int startLine) {
+        this.startLine = startLine;
+    }
+
+    public void setEndLine(int endLine) {
+        this.endLine = endLine;
+    }
+
+    public int getStartLine() {
+        return startLine;
+    }
+
+    public int getEndLine() {
+        return endLine;
+    }
 
 
     @Override
     public RefactoringType getRefactoringType() {
         return this.refactoringType;
+    }
+
+    @Override
+    public String getRefactoringDetail() {
+        return this.refactoringDetail;
     }
 
     @Override

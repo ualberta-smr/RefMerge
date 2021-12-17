@@ -1,9 +1,12 @@
 package ca.ualberta.cs.smr.utils;
 
+import ca.ualberta.cs.smr.core.refactoringObjects.*;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ParameterObject;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.application.WriteAction;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
@@ -12,6 +15,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
@@ -23,16 +27,26 @@ import com.intellij.refactoring.JavaRefactoringFactory;
 import com.intellij.refactoring.RefactoringFactory;
 import com.intellij.refactoring.RenameRefactoring;
 import com.intellij.usageView.UsageInfo;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.jps.model.serialization.PathMacroUtil;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Utils {
     Project project;
+
+    public static final String CONFLICT_LEFT_BEGIN = "<<<<<<<";
+    public static final String CONFLICT_RIGHT_END = ">>>>>>>";
+
+    private static final boolean LOG_TO_FILE  = true;
+    private static final String LOG_FILE = "log.txt";
+
 
     public Utils(Project project) {
         this.project = project;
@@ -45,35 +59,78 @@ public class Utils {
         try {
             ProcessBuilder pb = new ProcessBuilder(commands);
             Process p = pb.start();
+//            p.waitFor(200, TimeUnit.SECONDS);
+//            p.destroy();
             p.waitFor();
-        } catch (IOException | InterruptedException e) {
+
+        } catch (Exception e) {
             e.printStackTrace();
+        }
+
+    }
+
+    public static void log(String projectName, Object message) {
+        String timeStamp = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss z").format(new Date());
+        String logMessage = timeStamp + " ";
+        if (message instanceof String){
+            logMessage += (String) message;
+        } else if (message instanceof Exception) {
+            logMessage += ((Exception) message).getMessage() + "\n";
+            StringBuilder stackBuilder = new StringBuilder();
+            StackTraceElement[] stackTraceElements = ((Exception) message).getStackTrace();
+            for (int i = 0; i < stackTraceElements.length; i++) {
+                StackTraceElement stackTraceElement = stackTraceElements[i];
+                stackBuilder.append(stackTraceElement.toString());
+                if (i < stackTraceElements.length - 1) stackBuilder.append("\n");
+            }
+            logMessage += stackBuilder.toString();
+        } else {
+            logMessage = message.toString();
+        }
+        System.out.println(logMessage);
+
+        if (LOG_TO_FILE) {
+            String logPath = LOG_FILE;
+            if (projectName != null && !projectName.trim().equals("")) logPath = projectName;
+            try {
+                String path = System.getProperty("user.home") + "/temp/logs/";
+                new File(path).mkdirs();
+                Files.write(Paths.get(path + logPath), Arrays.asList(logMessage),
+                        StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
+    public static void writeContent(String path, String content) {
+        try {
+            Files.write(Paths.get(path), Arrays.asList(content),
+                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     /*
-     * Save the content of one directory to another
+     * Save the content of one directory to another. Return the path
      */
-    public static void saveContent(Project project, String dir) {
-        // Save project to temporary directory
-        String path = System.getProperty("user.home") + "/temp/" + dir;
+    public static String saveContent(Project project, String path) {
         File file = new File(path);
         file.mkdirs();
-        runSystemCommand("cp", "-r", project.getBasePath(), path);
+        runSystemCommand("cp", "-r", project.getBasePath() + "/.", path);
+        return path;
     }
 
     /*
      * Remove the temp files
      */
-    public static void clearTemp() {
-        String path = System.getProperty("user.home") + "/temp/right";
-        File file = new File(path);
+    public static void clearTemp(String dir) {
+        //String path = System.getProperty("user.home") + "/temp/" + dir;
+        File file = new File(dir);
         file.mkdirs();
-        runSystemCommand("rm", "-rf", path);
-        path = System.getProperty("user.home") + "/temp/left";
-        runSystemCommand("rm", "-rf", path);
-        path = System.getProperty("user.home") + "/temp/base";
-        runSystemCommand("rm", "-rf", path);
+        runSystemCommand("rm", "-rf", dir);
     }
 
     public static void dumbServiceHandler(Project project) {
@@ -92,7 +149,7 @@ public class Utils {
     /*
      * Use the file path to add the source root to the module if it is not already in the module.
      */
-    public void addSourceRoot(String filePath) {
+    public void addSourceRoot(String filePath, String filePackage) {
         // There are no modules or source roots in unit test mode
         if (ApplicationManager.getApplication().isUnitTestMode()) {
             return;
@@ -101,10 +158,20 @@ public class Utils {
 
         String projectPath = project.getBasePath();
         String relativePath = projectPath + "/" + filePath;
-        relativePath = getRelativePathOfSourceRoot(relativePath, project.getName());
-        File directory = new File(relativePath);
+        //relativePath = getRelativePathOfSourceRoot(relativePath, project.getName());
+        filePackage = filePackage.replaceAll("\\.", "/");
+        String path = "";
+        try {
+            path = relativePath.substring(0, relativePath.indexOf(filePackage));
+        }
+        catch(StringIndexOutOfBoundsException e) {
+            path = getRelativePathOfSourceRoot(relativePath, project.getName());
+        }
+        File directory = new File(path);
         VirtualFile sourceVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(directory);
-        assert sourceVirtualFile != null;
+        if(sourceVirtualFile == null) {
+            return;
+        }
         ModuleManager moduleManager = ModuleManager.getInstance(project);
         // Get the first module that does not depend on any other modules
         ArrayList<Module> modules = getModule(sourceVirtualFile, moduleManager.getModules());
@@ -112,19 +179,23 @@ public class Utils {
             return;
         }
         for(Module module : modules) {
-            ModifiableRootModel rootModel = ModuleRootManager.getInstance(module).getModifiableModel();
+            AtomicReference<ModifiableRootModel> rootModel = new AtomicReference<>();
+            ReadAction.run(() -> {
+                rootModel.set(ModuleRootManager.getInstance(module).getModifiableModel());
+            });
             directory = new File(Objects.requireNonNull(PathMacroUtil.getModuleDir(module.getModuleFilePath())));
             VirtualFile moduleVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(directory);
-            ContentEntry contentEntry = getContentEntry(moduleVirtualFile, rootModel);
+            ContentEntry contentEntry = getContentEntry(moduleVirtualFile, rootModel.get());
             if(contentEntry == null) {
                 continue;
             }
             if (checkIfSourceFolderExists(sourceVirtualFile, contentEntry)) {
+                WriteAction.run(rootModel.get()::dispose);
                 return;
             }
             else {
                 contentEntry.addSourceFolder(sourceVirtualFile, isTestFolder);
-                WriteAction.run(rootModel::commit);
+                WriteAction.run(rootModel.get()::commit);
                 Utils.dumbServiceHandler(project);
                 break;
             }
@@ -138,6 +209,9 @@ public class Utils {
         // If the relative path contains java, then that's the source folder.
         if(relativePath.contains("java/")) {
             return relativePath.substring(0, relativePath.lastIndexOf("java/") + 4);
+        }
+        if(relativePath.contains("resources/")) {
+            return relativePath.substring(0, relativePath.lastIndexOf("resources/") + 9);
         }
         // Get the project name
         String temp = relativePath.substring(relativePath.indexOf(projectName) + projectName.length());
@@ -296,6 +370,10 @@ public class Utils {
             return null;
         }
         for (PsiFile file : psiFiles) {
+            String classPath = file.getVirtualFile().getPath();
+            if(!classPath.contains(filePath)) {
+                continue;
+            }
             PsiJavaFile psiFile = (PsiJavaFile) file;
             // Get the classes in the file
             PsiClass[] jClasses = psiFile.getClasses();
@@ -304,14 +382,25 @@ public class Utils {
                 if (Objects.equals(it.getQualifiedName(), qualifiedClass)) {
                     return it;
                 }
-                if(qualifiedClass.contains(it.getName())) {
-                    return it;
+                // Need to update tests to remove this
+                if (ApplicationManager.getApplication().isUnitTestMode()) {
+                    if(qualifiedClass.contains(it.getName())) {
+                        return it;
+                    }
                 }
                 PsiClass[] innerClasses = it.getInnerClasses();
                 for (PsiClass innerIt : innerClasses) {
                     if (Objects.equals(innerIt.getQualifiedName(), qualifiedClass)) {
                         return innerIt;
                     }
+                }
+            }
+            for(PsiClass it : jClasses) {
+                String qName = it.getQualifiedName();
+                qName = qName.substring(qName.lastIndexOf(".") + 1);
+                String otherName = qualifiedClass.substring(qualifiedClass.lastIndexOf(".") + 1);
+                if(Objects.equals(qName, otherName)) {
+                    return it;
                 }
             }
         }
@@ -362,5 +451,130 @@ public class Utils {
         }
         return null;
     }
+
+    public void removeRefactoringsInConflictingFile(String path, List<RefactoringObject> refactorings) {
+        if(!path.endsWith(".java")) {
+            return;
+        }
+        List<Pair<Integer, Integer>> conflictingRegions = getConflictingRegions(path);
+        for(RefactoringObject refactoring : refactorings) {
+            if(refactoring instanceof InlineMethodObject || refactoring instanceof ExtractMethodObject) {
+                continue;
+            }
+
+            if (!refactoring.getOriginalFilePath().equals(path)) {
+                continue;
+            }
+            setBoundaries(refactoring);
+            if (!checkReplayRefactoring(refactoring, conflictingRegions)) {
+                refactorings.remove(refactoring);
+            }
+        }
+    }
+
+    private List<Pair<Integer, Integer>> getConflictingRegions(String path) {
+        File file = new File(path);
+        List<Pair<Integer, Integer>> conflictingRegions = new ArrayList<>();
+        int startLine = 0;
+        int endLine = 0;
+        int counter = 0;
+        try {
+            InputStream stream = file.toURI().toURL().openStream();
+
+        for(String line : getLinesFromInputStream(stream)) {
+            counter++;
+            if(line.contains(CONFLICT_LEFT_BEGIN)) {
+                startLine = counter;
+            }
+            else if(line.contains(CONFLICT_RIGHT_END)) {
+                endLine = counter;
+                conflictingRegions.add(Pair.of(startLine, endLine));
+            }
+        }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return conflictingRegions;
+    }
+
+    /*
+     * Get each line from the input stream containing the IntelliMerge dataset.
+     */
+    public static ArrayList<String> getLinesFromInputStream(InputStream inputStream) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        ArrayList<String> lines = new ArrayList<>();
+        while(reader.ready()) {
+            lines.add(reader.readLine());
+        }
+        return lines;
+    }
+
+    private boolean checkReplayRefactoring(RefactoringObject refactoring, List<Pair<Integer, Integer>> conflictingRegions) {
+        int refStartLine = refactoring.getStartLine();
+        int refEndLine = refactoring.getEndLine();
+        for(Pair<Integer,Integer> conflictingRegion : conflictingRegions) {
+            int conflictingStartLine = conflictingRegion.getLeft();
+            int conflictingEndLine = conflictingRegion.getRight();
+            // If the refactoring is within the conflicting region, do not replay
+            if(refStartLine > conflictingStartLine && refEndLine < conflictingEndLine) {
+                return false;
+            }
+            // Otherwise, if the regions overlap, do not replay
+            else if(refStartLine < conflictingStartLine && refEndLine < conflictingEndLine) {
+                return false;
+            }
+            else if(refStartLine > conflictingStartLine && refEndLine > conflictingEndLine) {
+                return false;
+            }
+        }
+        // If the regions are not related or the region is within the method or class, replay
+        return true;
+    }
+
+    /*
+     * Get the boundaries for the given PSI class
+     */
+    private void setBoundaries(RefactoringObject ref) {
+        PsiElement psiElement;
+        if(ref instanceof MoveRenameMethodObject) {
+            String filePath = ref.getOriginalFilePath();
+            String className = ((MoveRenameMethodObject) ref).getOriginalClassName();
+            PsiClass psiClass = getPsiClassFromClassAndFileNames(className, filePath);
+            if(psiClass == null) {
+                return;
+            }
+            PsiMethod psiMethod = getPsiMethod(psiClass, ((MoveRenameMethodObject) ref).getOriginalMethodSignature());
+            if(psiMethod == null) {
+                return;
+            }
+            psiElement = psiMethod;
+        }
+        else if(ref instanceof MoveRenameClassObject) {
+            String filePath = ref.getOriginalFilePath();
+            String className = ((MoveRenameClassObject) ref).getOriginalClassObject().getClassName();
+            PsiClass psiClass = getPsiClassFromClassAndFileNames(className, filePath);
+            if(psiClass == null) {
+                return;
+            }
+            psiElement = psiClass;
+        }
+        else {
+            return;
+        }
+
+        try {
+            TextRange range = psiElement.getTextRange();
+            Document document = PsiDocumentManager.getInstance(project).getCachedDocument(psiElement.getContainingFile());
+            if (document != null) {
+                ref.setStartLine(document.getLineNumber(range.getStartOffset()));
+                ref.setEndLine(document.getLineNumber(range.getEndOffset()));
+            }
+        }
+        catch(NullPointerException e) {
+            e.printStackTrace();
+            return;
+        }
+    }
+
 }
 

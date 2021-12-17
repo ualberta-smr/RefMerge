@@ -7,6 +7,16 @@ import org.refactoringminer.api.RefactoringType;
  */
 public interface RefactoringObject {
 
+    void setStartLine(int startLine);
+
+    void setEndLine(int endLine);
+
+    int getStartLine();
+
+    int getEndLine();
+
+    String getRefactoringDetail();
+
     RefactoringType getRefactoringType();
 
     RefactoringOrder getRefactoringOrder();

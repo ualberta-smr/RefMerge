@@ -5,6 +5,7 @@ import ca.ualberta.cs.smr.core.matrix.receivers.*;
 import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
+import org.apache.commons.lang3.tuple.Pair;
 import org.refactoringminer.api.RefactoringType;
 
 import java.util.*;
@@ -56,12 +57,13 @@ public class Matrix {
     /*
      * Iterate through each of the left refactorings to compare against the right refactorings.
      */
-    public ArrayList<RefactoringObject> runMatrix(ArrayList<RefactoringObject> leftRefactoringList,
-                                             ArrayList<RefactoringObject> rightRefactoringList) {
+    public Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, ArrayList<RefactoringObject>> detectConflicts(
+                                                            ArrayList<RefactoringObject> leftRefactoringList,
+                                                                 ArrayList<RefactoringObject> rightRefactoringList) {
         ArrayList<RefactoringObject> replayObjectList = new ArrayList<>();
-
+        ArrayList<Pair<RefactoringObject, RefactoringObject>> conflictingPairs = new ArrayList<>();
         for(RefactoringObject leftRefactoring : leftRefactoringList) {
-            compareRefactorings(leftRefactoring, rightRefactoringList);
+             conflictingPairs.addAll(compareRefactorings(leftRefactoring, rightRefactoringList));
         }
 
         for(RefactoringObject rightRefactoring : rightRefactoringList) {
@@ -75,22 +77,28 @@ public class Matrix {
                 RefactoringObjectUtils.insertRefactoringObject(leftRefactoring, replayObjectList, true);
             }
         }
-        return replayObjectList;
+
+        return Pair.of(conflictingPairs, replayObjectList);
     }
 
     /*
      * This calls dispatch for each pair of refactorings to check for conflicts.
      */
-    void compareRefactorings(RefactoringObject leftRefactoring, List<RefactoringObject> rightRefactoringList) {
+    List<Pair<RefactoringObject, RefactoringObject>> compareRefactorings(RefactoringObject leftRefactoring,
+                                                                         List<RefactoringObject> rightRefactoringList) {
+        List<Pair<RefactoringObject, RefactoringObject>> pairs = new ArrayList<>();
         for(RefactoringObject rightRefactoring : rightRefactoringList) {
-            dispatch(leftRefactoring, rightRefactoring);
+            if(dispatch(leftRefactoring, rightRefactoring)) {
+                pairs.add(Pair.of(leftRefactoring, rightRefactoring));
+            }
         }
+        return pairs;
     }
 
     /*
      * Perform double dispatch to check if the two refactoring elements conflict.
      */
-    void dispatch(RefactoringObject leftRefactoring, RefactoringObject rightRefactoring) {
+    boolean dispatch(RefactoringObject leftRefactoring, RefactoringObject rightRefactoring) {
         // Get the refactoring types so we can create the corresponding dispatcher and receiver
         int leftValue = getRefactoringValue(leftRefactoring.getRefactoringType());
         int rightValue = getRefactoringValue(rightRefactoring.getRefactoringType());
@@ -106,6 +114,7 @@ public class Matrix {
             receiver = makeReceiver(rightRefactoring);
         }
         dispatcher.dispatch(receiver);
+        return receiver.isConflicting();
     }
 
     /*
@@ -169,7 +178,7 @@ public class Matrix {
     Receiver makeReceiver(RefactoringObject refactoringObject) {
         RefactoringType type = refactoringObject.getRefactoringType();
         Receiver receiver = receiverMap.get(type);
-        receiver.set(refactoringObject);
+        receiver.set(refactoringObject, project);
         return receiver;
     }
 
