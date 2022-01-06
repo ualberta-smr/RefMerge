@@ -66,19 +66,4 @@ patchPluginXml {
 }
 
 
-tasks {
-    runIde {
-        runIde.jvmArgs '-Djava.awt.headless=true', '-Xss40m'
-        if (project.hasProperty("mode")) {
-            Object x = project.findProperty("mode")
-            Object y = project.findProperty("dataPath")
-            Object z = project.findProperty("evaluationProject")
-            runIde.args 'evaluation', x.toString(), y.toString(), z.toString()
-        }
-        else {
-            println "Use gradle runIde -Pmode=x where x= 'replication' or 'comparison'"
-        }
-    }
-}
-tasks.withType(BuildSearchableOptionsTask).forEach { it.enabled(false) }
 
