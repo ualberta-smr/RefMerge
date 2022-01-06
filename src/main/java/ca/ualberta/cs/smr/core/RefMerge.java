@@ -36,6 +36,8 @@ public class RefMerge extends AnAction {
     Git git;
     Project project;
 
+
+
     @Override
     public void update(@NotNull AnActionEvent e) {
         // Using the event, evaluate the context, and enable or disable the action.
@@ -47,8 +49,9 @@ public class RefMerge extends AnAction {
         GitRepositoryManager repoManager = GitRepositoryManager.getInstance(project);
         List<GitRepository> repos = repoManager.getRepositories();
         GitRepository repo = repos.get(0);
-        String rightCommit = "287b1a4275";
-        String leftCommit = "e93bac43b8";
+
+        String leftCommit = System.getenv("LEFT_COMMIT");
+        String rightCommit = System.getenv("RIGHT_COMMIT");
 
         List<Refactoring> detectedRefactorings = new ArrayList<>();
         refMerge(rightCommit, leftCommit, project, repo, detectedRefactorings);
