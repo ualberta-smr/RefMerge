@@ -29,6 +29,11 @@ by checking the path `/home/username/.m2/repository/org/refactoringminer`.
 ### 4. Build the project
 Click on build tab in the IntelliJ IDE and select `Build Project`.
 
+### 5. Set up configuration
+Edit the configuration and under environment variables, set `LEFT_COMMIT` to the respective left
+commit and set `RIGHT_COMMIT` to the respective right commit. In the future we will replace this
+with command line arguments.
+
 ### 5. Run the plugin
 Click `Run 'Plugin'` or `Debug 'Plugin'`. When it's running, click the `Tools` tab and select
 `RunRefMerge`. This will run the plugin. The plugin will do everything else.
@@ -103,4 +108,7 @@ method, undoing the refactoring uses `InlineMethodProcessor` and replaying uses 
 * Use the information in your refactoring object to get the PSI elements necessary to perform
 the refactoring.
 
+## Replicating the refactoring-aware merging comparison findings
 
+The evaluation and instructions for replicating can be found in 
+`https://github.com/ualberta-smr/RefactoringAwareMerging`.
