@@ -15,7 +15,7 @@
     <depends>Git4Idea</depends>
 
     <actions>
-        <action id="RefMerge" class="ca.ualberta.cs.smr.core.RefMerge" text="RunRefMerge"
+        <action id="RefMerge" class="ca.ualberta.cs.smr.refmerge.RefMerge" text="RunRefMerge"
                 description="RunRefMerge will run RefMerge, merging the parent commits while considering the refactoring semantics" >
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>

@@ -1,7 +1,7 @@
 package ca.ualberta.cs.smr.testUtils;
 
 
-import ca.ualberta.cs.smr.core.refactoringObjects.RefactoringObject;
+import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
 import gr.uom.java.xmi.UMLClass;
 import gr.uom.java.xmi.UMLModel;

@@ -1,6 +1,6 @@
 package ca.ualberta.cs.smr.utils;
 
-import ca.ualberta.cs.smr.core.refactoringObjects.*;
+import ca.ualberta.cs.smr.refmerge.refactoringObjects.*;
 import org.refactoringminer.api.Refactoring;
 
 import java.util.ArrayList;

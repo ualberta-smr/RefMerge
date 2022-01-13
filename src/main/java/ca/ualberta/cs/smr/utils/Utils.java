@@ -1,8 +1,8 @@
 package ca.ualberta.cs.smr.utils;
 
-import ca.ualberta.cs.smr.core.refactoringObjects.*;
-import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.MethodSignatureObject;
-import ca.ualberta.cs.smr.core.refactoringObjects.typeObjects.ParameterObject;
+import ca.ualberta.cs.smr.refmerge.refactoringObjects.*;
+import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.MethodSignatureObject;
+import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.ParameterObject;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.application.WriteAction;
