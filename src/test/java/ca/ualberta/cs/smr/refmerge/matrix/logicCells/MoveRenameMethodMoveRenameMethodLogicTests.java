@@ -6,7 +6,7 @@ import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.ParameterObjec
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameMethodObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
-import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
+import ca.ualberta.cs.smr.refmerge.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;

@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.utils;
 
+import ca.ualberta.cs.smr.refmerge.utils.Utils;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
 import com.intellij.openapi.project.Project;

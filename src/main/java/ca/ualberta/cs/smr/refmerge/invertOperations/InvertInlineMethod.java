@@ -4,7 +4,7 @@ import ca.ualberta.cs.smr.refmerge.refactoringObjects.InlineMethodObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.ParameterObject;
-import ca.ualberta.cs.smr.utils.Utils;
+import ca.ualberta.cs.smr.refmerge.utils.Utils;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;

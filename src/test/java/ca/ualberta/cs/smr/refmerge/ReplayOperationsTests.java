@@ -10,7 +10,7 @@ import ca.ualberta.cs.smr.refmerge.replayOperations.ReplayMoveRenameMethod;
 import ca.ualberta.cs.smr.refmerge.invertOperations.InvertExtractMethod;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
-import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
+import ca.ualberta.cs.smr.refmerge.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;

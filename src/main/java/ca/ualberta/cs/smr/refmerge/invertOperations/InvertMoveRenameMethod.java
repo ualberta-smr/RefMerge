@@ -2,7 +2,7 @@ package ca.ualberta.cs.smr.refmerge.invertOperations;
 
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.*;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.MethodSignatureObject;
-import ca.ualberta.cs.smr.utils.Utils;
+import ca.ualberta.cs.smr.refmerge.utils.Utils;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;

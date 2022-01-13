@@ -3,9 +3,9 @@ package ca.ualberta.cs.smr.refmerge;
 import ca.ualberta.cs.smr.refmerge.matrix.Matrix;
 import ca.ualberta.cs.smr.refmerge.replayOperations.*;
 import ca.ualberta.cs.smr.refmerge.invertOperations.*;
-import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
+import ca.ualberta.cs.smr.refmerge.utils.RefactoringObjectUtils;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
-import ca.ualberta.cs.smr.utils.Utils;
+import ca.ualberta.cs.smr.refmerge.utils.Utils;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
@@ -20,7 +20,7 @@ import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringHandler;
 import org.refactoringminer.rm1.GitHistoryRefactoringMinerImpl;
 import org.eclipse.jgit.api.Git;
-import ca.ualberta.cs.smr.utils.GitUtils;
+import ca.ualberta.cs.smr.refmerge.utils.GitUtils;
 
 import java.io.File;
 import java.io.IOException;

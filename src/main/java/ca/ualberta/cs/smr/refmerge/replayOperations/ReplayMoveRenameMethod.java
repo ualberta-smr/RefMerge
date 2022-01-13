@@ -3,7 +3,7 @@ package ca.ualberta.cs.smr.refmerge.replayOperations;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameMethodObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.MethodSignatureObject;
-import ca.ualberta.cs.smr.utils.Utils;
+import ca.ualberta.cs.smr.refmerge.utils.Utils;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.project.Project;

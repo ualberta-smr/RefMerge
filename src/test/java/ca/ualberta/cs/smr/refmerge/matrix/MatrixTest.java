@@ -10,7 +10,7 @@ import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.receivers.Receiver;
 import ca.ualberta.cs.smr.refmerge.matrix.receivers.MoveRenameClassReceiver;
 import ca.ualberta.cs.smr.refmerge.matrix.receivers.MoveRenameMethodReceiver;
-import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
+import ca.ualberta.cs.smr.refmerge.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.apache.commons.lang3.tuple.Pair;

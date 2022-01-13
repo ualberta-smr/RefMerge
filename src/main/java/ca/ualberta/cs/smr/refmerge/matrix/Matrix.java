@@ -3,7 +3,7 @@ package ca.ualberta.cs.smr.refmerge.matrix;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.*;
 import ca.ualberta.cs.smr.refmerge.matrix.receivers.*;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
-import ca.ualberta.cs.smr.utils.RefactoringObjectUtils;
+import ca.ualberta.cs.smr.refmerge.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
 import org.apache.commons.lang3.tuple.Pair;
 import org.refactoringminer.api.RefactoringType;

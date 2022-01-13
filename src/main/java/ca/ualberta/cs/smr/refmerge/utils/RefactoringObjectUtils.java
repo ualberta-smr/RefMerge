@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.utils;
+package ca.ualberta.cs.smr.refmerge.utils;
 
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.*;
 import org.refactoringminer.api.Refactoring;

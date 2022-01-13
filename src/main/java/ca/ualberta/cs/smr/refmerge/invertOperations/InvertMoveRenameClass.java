@@ -2,7 +2,7 @@ package ca.ualberta.cs.smr.refmerge.invertOperations;
 
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameClassObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
-import ca.ualberta.cs.smr.utils.Utils;
+import ca.ualberta.cs.smr.refmerge.utils.Utils;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;

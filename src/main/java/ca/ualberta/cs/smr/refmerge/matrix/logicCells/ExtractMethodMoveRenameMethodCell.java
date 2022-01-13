@@ -4,11 +4,11 @@ import ca.ualberta.cs.smr.refmerge.refactoringObjects.ExtractMethodObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameMethodObject;
-import ca.ualberta.cs.smr.utils.Utils;
+import ca.ualberta.cs.smr.refmerge.utils.Utils;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 
-import static ca.ualberta.cs.smr.utils.MatrixUtils.*;
+import static ca.ualberta.cs.smr.refmerge.utils.MatrixUtils.*;
 
 /*
  * Contains the logic check for extract method/rename method refactoring conflict and ordering dependence checks.

@@ -1,4 +1,4 @@
-package ca.ualberta.cs.smr.utils;
+package ca.ualberta.cs.smr.refmerge.utils;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
