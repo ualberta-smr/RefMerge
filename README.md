@@ -45,6 +45,9 @@ directory gets used for this one. When it merges, the merged content is saved in
 Lastly, the refactorings are replayed in the project directory. When it finishes, you can
 look in the project directory to see the results.
 
+Alternatively, this can be run from the command line by creating a separate Java program that
+calls RefMerge and passes the left and right commit hashes in.
+
 ## Adding new refactoring types
 
 Adding a new refactoring type can be broken down into the following steps. 
