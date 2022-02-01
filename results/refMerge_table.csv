@@ -1,0 +1,14 @@
+Reason,Type,Frequency,,,,FP,FN
+Ordering Conflict,False Positive,68,,,,231,2
+Formatting Conflict,False Positive,11,,,,,
+Unsupported Refactoring,False Positive,88,,,,,
+Undetected Refactoring,False Positive,3,,,,,
+IntelliJ Optimization,False Positive,5,,,,,
+Refactoring-related Ordering Conflict,False Positive,33,,,,,
+Refactoring-related Formatting Conflict,False Positive,21,,,,,
+Fails to Invert Refactoring,False Positive,2,,,,,
+Fails to Replay Refactoring,False Negative,2,,,,,
+,,,,,,,
+,,,,,,,
+,,,,,,,
+,,231,,,,,

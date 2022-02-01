@@ -1,0 +1,11 @@
+Reason,Type,Frequency,,,,,FP,FN
+Ordering Conflict,False Positive,75,,,,,243,12
+Formatting Conflict,False Positive,11,,,,,,
+Refactoring Conflict,False Positive,157,,,,,,
+Partial Conflicting Region,False Negative,1,,,,,,
+Syntax Error,False Negative,11,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,255,,,,,,

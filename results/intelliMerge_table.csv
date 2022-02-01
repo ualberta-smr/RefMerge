@@ -1,0 +1,28 @@
+Reason,Type,Frequency,,,,FP,FN
+Ordering Conflict,False Positive,25,,,,923,178
+Formatting Conflict,False Positive,1,,,,,
+Matching Error,False Positive,814,,,,,
+"Similarity Threshold Misses
+Refactoring",False Positive,74,,,,,
+Missing Additional Invocation,false Positive,7,,,,,
+"Similarity Threshold results in
+Matching non-refactoring
+Incorrectly",False Positive,2,,,,,
+"Similarity Threshold results in
+Matching non-refactoring
+Incorrectly",False Negative,16,,,,,
+Matching Error,False Negative,3,,,,,
+Deletes Conflict Block,False Negative,87,,,,,
+Syntax Error,False Negative,72,,,,,
+,,,,,,,
+,,,,,,,
+,,,,,,,
+,,,,,,,
+,,,,,,,
+,,,,,,,
+,,,,,,,
+,,,,,,,
+,,,,,,,
+,,,,,,,
+,,,,,,,
+,,1101,1101,,,,

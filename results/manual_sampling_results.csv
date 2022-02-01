@@ -1,0 +1,809 @@
+Project Name,Merge Commit Hash,Left Parent,Right Parent,Base Commit,Analysis Time (min),Merge Commit Category,Git Conflicts,RefMerge Conflicts,IntelliMerge Conflicts,Total Conflicts,Git True Positives,RefMerge True Positives,IntelliMerge True Positives,Git False Positives,RefMerge False Positives,IntelliMerge False Positives,Git True Negatives,RefMerge True Negatives,IntelliMerge True Negatives,Git False Negatives,RefMerge False Negatives,IntelliMerge False Negatives,Git Categories,Git Categorical Notes,RefMerge Categories,RefMerge Categorical Notes,IntelliMerge Categories,IntelliMerge Categorical Notes,Insights,
+Error-prone,07559b47674594fd,a5e7730c7dfe1ce59290,80add4f0726d8189,450322e7b8fddf85f22,86,RefMerge reports less conflicting files than and RefMerge,3,3,28,28,0,0,0,3,3,28,26,26,0,0,0,0,"Ordering Conflict (x1)
+Ordering + True Conflict (x1)
+Refactoring + True Conflict (x1)","- 1 import ordering conflict
+- 1 true conflict made more 
+Complicated by ordering conflict
+- 1 true conflict made more 
+Complicated by extract method","Ordering Conflict (x1)
+Ordering + True Conflict (x1)
+Simplified Refactoring Conflict (x1)","- 1 import ordering conflict
+- 1 true conflict made more
+Complicated by ordering conflict
+- 1 true conflict simplified by removing
+Extract method from it","Matching Conflict (x24)
+Ordering Conflict (x3)
+Undetected Refactoring 
++ True Conflict (x1)
+Resolved Ordering Conflict (x1)","- IntelliMerge reports 24 conflicts
+That are strictly comment or annotation
+Related. 
+- IntelliMerge reports 2 conflicts that
+Are caused by matching incorrectly,
+Leading to 2 ordering conflicts.
+- IntelliMerge reports the same import
+Ordering conflict as Git and RefMerge.
+- Catches add parameter refactoring
+But misses extract method refactoring.
+Simplifies but can be simplified further","- RefMerge: Removes extract method from several locations within one conflict which changes the 
+Conflict block, removing a method from within the conflict block. This makes the conflict block a little 
+Easier to understand. 
+- IntelliMerge: Reports a combined 24 comment-related and annotation-related conflicts. I think they are 
+Caused by the matching step. While these seem to be pretty simple to fix (just accept the annotation
+Or comment), it is possible that one developer changed the comment while the other deleted it. This
+Means that whoever is resolving the conflict will still need to investigate the conflict and see if it can 
+Be accepted or if additional action needs to be taken. Furthermore, these are scattered across several
+Files and I think it can distract the developer from more complicated merge conflicts and still be somewhat
+Time consuming. 
+- IntelliMerge: Reports 2 conflicts side-by-side which could be considered as the same ordering conflict.
+Git and RefMerge do not report this conflict and after investigating, this should not be a conflict. I think
+This is caused by the matching step.
+- IntelliMerge: Accepts the changes to the method declaration (add parameter refactoring) causing the 
+Conflict block to only be within the method. It does not handle the extract method refactoring, which
+Could cause the conflict block to be simplified even further. ",
+Error-prone,66a86d1652c383ea,7f4b3090a371c,bf623976e0fbfe9,b0046809dccfb492a,65,IntelliMerge reports less conflicting files than and RefMerge,8,5,1,8,1,2,1,7,3,0,0,3,0,0,0,7,"Formatting Conflict (x2)
+Refactoring Conflict (x3)
+Refactoring + Formatting Conflict (x1)
+Refactoring + True Conflict (x1)","- 3 refactoring conflicts caused by 
+move/rename class refactorings
+- 2 conflicts caused by formatting 
+Differences between branches
+- 1 conflict that has a formatting 
+Conflict and a rename class, move
+Class, and rename method that 
+Make it more complicated
+- 1 true conflict that is made more 
+Complicated by a rename class
+Refactoring","Formatting Conflict (x2)
+Undetected Refactoring + 
+Formatting Conflict (x1)","- 2 formatting conflicts, same as 
+Git. 
+- 1 conflict where RefMiner does 
+Not detect the rename method 
+Refactoring with a formatting 
+Conflict involved. ","Deletes file with conflict block 
+Reported by other tool (x7)","- Deletes a directory that had multiple
+Files moved to it","- RefMerge: Resolves multiple conflicts caused by move and rename class refactorings.
+- RefMerge: RefMiner fails to detect a rename method refactoring, causing RefMerge to not invert/replay
+it. RefMerge would still report a formatting conflict if it were detected but should simplify it. 
+- RefMerge: Simplifies a conflict by inverting the refactorings in the involved region. Still reports a true
+Conflict but it is simpler than Git’s conflicting region. 
+- IntelliMerge: Deletes directory containing 7 conflict blocks reported by Git. The files in the directory were
+All moved from another directory. Deletes multiple other files that do not contain conflicts",
+junit,2238ad20fefadf5,d4755d0db6f3d0ae301,72e10d3ca80ae76af,34d2943cef583ec,20,Both tools resolve,1,0,0,1,0,0,0,1,0,0,0,1,1,0,0,0,Refactoring Conflict (x1),"- One branch extracted a method 
+Causing a merge conflict",Resolves Refactoring Conflict (x1),"- Resolves Extract Method related
+Conflict",Resolved Refactoring Conflict (x1),"- Resolves Extract Method related 
+Conflict","- RefMerge: RefMerge successfully inverts and replays the extract method refactoring, resulting in the
+Expected merge after reviewing the base, left, and right commits.
+- IntelliMerge: Results in the expected merge, handling the refactoring correctly",
+junit,d6ccf5b0fa4e0d62e,9d8bb069f68e2194,e857122bff2a9774c,8ff0b44e3fb0c1c56a1d,47,IntelliMerge reports less conflicting files than and RefMerge,5,6,6,8,3,3,4,2,3,2,2,2,2,0,0,0,"Refactoring Conflict (x1)
+Refactoring + True Conflict (x1)
+","- 1 refactoring conflict caused by 
+Change visibility refactoring
+- 1 true conflict complicated by
+Rename parameter refactoring","Unsupported Refactoring Conflict (x1)
+Unsupported Refactoring 
++ True Conflict (x1)
+Wrong Move + True Conflict (x1)","- 2 refactoring conflicts caused by 
+Unsupported refactorings
+- 1 refactoring conflict caused by 
+Moving a method to the wrong location
+Within the class.","Matching Conflict (x2)
+Simplified Refactoring Conflict (x1)
+Resolved Refactoring Conflict (x1)","- 2 comments within the same file
+Are purely comment-related","- RefMerge: Moves the method to the correct class but wrong location in the file, causing an ordering
+Conflict to occur. 
+- RefMerge: 2 refactoring conflicts are caused by unsupported refactorings. Adding rename parameter and
+Change visibility will resolve 1 conflict and simplify the other.
+- IntelliMerge: Comments are a problem in this merge scenario. 
+- IntelliMerge: Completely resolves 1 refactoring conflict
+- IntelliMerge: Simplifies 1 conflict by handling rename parameter",
+storm,832395a1a88d31e6d4,5d601e8d583fcdcffa700,f9d75d8a38d77ec72,03578ca9961fd1ad1f,128,RefMerge reports less conflicting files than RefMerge,2,2,98,98,0,1,2,2,1,96,1,1,0,0,0,0,"Ordering Conflict (x1)
+Refactoring + True Conflict (x1)","- 1 import ordering conflict
+- 1 true conflict complicated by
+A refactoring conflict (extract method)","Ordering Conflict (x1)
+Simplified Refactoring Conflict (x1)","- 1 import ordering conflict
+- 1 true conflict without refactoring
+Conflict","Matching Conflict (x95)
+Ordering Conflict (x1)
+Simplified Refactoring Conflict (x1)","- 1 true conflict without refactoring 
+Conflict broken up into 2 smaller blocks
+- 95 conflicts that are comment/
+annotation/import-related where 
+It treats 1 side as deletes
+- 1 import ordering conflict","- RefMerge: Dramatically simplifies a conflict block by inverting Extract Method. Removes the extracted
+Method from the conflicting region and causes 21 of the conflicting lines to be identical between left and
+Right branch. There is still a conflict block since there are additional conflicting changes made on each
+Branch. Overall makes the conflict block much easier to understand.
+- IntelliMerge: Dramatically simplifies the conflict block with Extract Method. Handles it correctly and 
+Breaks the conflict block into two smaller conflict blocks, making it easy to understand the conflict.
+- IntelliMerge: Reports 95 conflicts where one branch added a comment, import, or annotation wihle the
+Other branch did not. IntelliMerge treats it as if 1 side changed the import/comment/annotation while
+The other deleted it. What really happened is the developers added the import/comment/annotation on 
+One branch while they did not on the other. I think this is a matching conflict, so I’m going to refer to 
+import/comment/annotation conflicts like this as matching conflicts instead.",
+storm ,5b26e9618942ae1,b272f35bed7688427b,c092cc5cdfc8dfefaa,65e9f0c814b2cddc77,32,RefMerge and IntelliMerge reduce conflicts equally,4,3,3,4,3,3,3,1,0,0,0,1,0,0,0,1,Refactoring Conflict (x1),"- Rename Class causes the 
+Full file to conflict",Resolves Refactoring Conflict (x1),- Resolves refactoring conflict,"Deletes file with conflict block 
+Reported by other tool (x1)","- Deletes the file that has a rename class
+Performed within it","- RefMerge: Resolves the refactoring conflict reported by Git by inverting then replaying rename class.
+- IntelliMerge: Deletes the file containing the refactoring conflict, reporting a false negative",
+javaparser,841d8e51ad0654f3053e,69f7cb397b6d32cc3fb8,74048c4ba3a73428,b494dbd10ad5b60747,88,IntelliMerge reports less conflicting files than and RefMerge,17,16,1,19,13,12,0,4,4,1,2,2,2,1,0,16,"Refactoring Conflict (x2)
+Wrong Merge (x1)
+Ordering Conflict (x1)
+","- Fails to report conflicting region 
+In class where methods were moved
+From
+- Reports lots of moved methods as
+Conflicts, can be simplified
+- 1 import ordering conflict","Wrong Move (x1)
+Ordering Conflict (x2)
+IntelliJ Optimization (x1)","- Moves methods back to original class
+Avoiding missed conflict region, 
+Moves to wrong locations leading to 
+Bigger conflicting region.
+- Simplifies conflict by inverting extract
+Method refactoring, produces ordering
+Conflict that is easy to resolve. 
+- Names the variable incorrectly when
+Inlining leading to a merge conflict. 
+- 1 import ordering conflict","Matching Conflict (x1)
+Deletes file with conflict block 
+Reported by other tool (x17)","- Reports 1 comment-related conflict
+- Deletes most of the merged files
+Within the project","- RefMege:  Avoids a false negative by inverting move method refactorings but makes the conflicting 
+Region more complicated instead of simplifying it by creating a larger ordering conflict.
+- RefMerge: Simplifies a conflict by inverting extract method refactoring, although produces an ordering
+Conflict in the process. This is an easy conflict to resolve, however. 
+- Refmerge: Inverts extract method and leads to a merge conflict that would not ordinarily be a conflit 
+Because of naming the variable to the wrong name. Names root1 instead of root. I’m considering this 
+An intelliJ optimization since I think it is avoidable.
+- IntelliMerge: Reports 1 comment-related (matching) conflict, it is simple to resolve.
+- IntelliMerge: Deletes most of the files in the project, including files containing al 17 merge conflicts
+Reported by Git.",
+javaparser,51733f6aeedefc53d63,57f6e2955c60cb71fa,9c44e26a857bbec,f1cce0ac20c5af34085d,76,IntelliMerge reports less conflicting files than and RefMerge,8,11,8,13,7,7,6,1,4,2,5,2,4,0,0,1,Refactoring + Ordering Conflict (x1) ,- ordering conflict at method level,"Unsupported Refactoring 
++ Ordering Conflict (x1)
+IntelliJ Optimizaiton (x3)
+","- ordering conflict at method level
+- Does not support rename parameter
+- 3 formatting issues caused by IntelliJ
+Optimizations","Resolved Ordering Conflict (x1)
+Matching Conflict (x2)
+Wrong Merge (x1)","- Resolves ordering conflict reported
+By Git and RefMerge
+- 2 Annotation-related conflicts
+- 1 conflict where it merges when it 
+Should report a conflict","- RefMerge: There are 3 conflicts that RefMerge reports that should not be reported. This is caused by 
+Spacing changes that IntelliJ makes after performing a refactoring. The conflicts are trivial to solve but
+I think that developers will rarely run into this issue. If they are using RefMerge, they will have the settings
+For spacings and optimizations to what they prefer. 
+- IntelliMerge:  Reports 2 annotation-related conflicts that are pretty trivial to resolve.
+- IntelliMerge:  Resolves the ordering conflict that Git and RefMerge report
+- IntelliMerge:  Fails to report a conflict when both branches make conflicting changes. There are several
+Constructors that are similar and I think the matching algorithm treats fails to match properly because of this",
+antlr4,35ab203cbaa1160d,90bcfec45682a4af2f88,a753ada1f0ffb40b8a0,019ea15e3f1f87b402f,29,IntelliMerge reports less conflicting lines than RefMerge,2,2,6,7,1,1,1,1,1,5,5,5,1,0,0,0,Refactoring Conflict (x1),"- 1 Rename Method + Change 
+Parameter Type",Unsupported Refactoring Conflict (x1),"- Inverts Rename Method correctly
+But does not support change param",Matching Conflict (x5),"- Resolves refactoring conflict
+- Reports 3 comment related conflicts
+- reports 2 annotation related conflicts","- RefMerge: Successfully inverts the rename method refactoring but does not support change parameter
+Type, failing to resolve the conflict.
+- IntelliMerge: Successfully resolves the change signature refactoring (method rename + parameter type)
+- IntelliMerge: Reports 5 additional matching conflicts ",
+antlr4,e672a7116e545b02,aca3e0ddb226c4afc8,3f1f76df7d44332c637e,dce72dcbfb3a3d5efc,23,IntelliMerge resolves the scenario while RefMerge does not,4,4,0,4,0,0,0,4,4,0,0,0,0,0,0,4,Refactoring Conflict (x4),"- 1 rename class + extract super class
+- 3 move method + several param
+Refactorings",Unsupported Refactoring Conflict (x4),"- Does not support extract superclass
+- Does not support parameter level
+Refactorings","Deletes file with conflict block 
+Reported by other tool (x4)","- Successfully handles all parameter
+Level refactorings. Fails to move 
+Method and deletes destination 
+For move method refactorings.
+- Deletes base and super class in 
+Extract super class refactoring","- RefMerge: Fails to move the methods because it cannot find the PSI signatures due to differences in 
+Parameters (different types, annotations, etc). All of these are caused by unsupported refactorings. 
+Adding parameter level refactorings would allow for params to be inverted then method move to be inverted,
+Resolving the conflicts.
+- IntelliMerge: Deletes several files in this merge scenario. Only counting false negatives for files with 
+Conflict blocks. IntelliMerge is very successful in this merge scenario with the parameter level refactorings,
+Just fails to move the methods to destination classes and deletes destination classes. ",Use this example
+Realm-java,9e8b525df078f9a0735,fb2139ed78d0a494aa,f126c3f596d41795f,ae5d2c7179643e63f6b1,32,IntelliMerge resolves the scenario while RefMerge does not,23,23,0,2,20,20,0,3,3,0,0,0,1,0,0,22,"Ordering Conflict (x2)
+Refactoring + True Conflict (x1)","- add parameter refactoring makes
+Conflict more complicated","Ordering Conflict (x2)
+Unsupported Refactoring 
++ True Conflict (x1)","- add parameter refactoring makes
+Conflict more complicated","Deletes file with conflict block
+ Reported by other tool (x23)",,"- RefMerge: Did not support the add parameter refactoring that caused the refactoring conflict
+- IntelliMerge: Deleted both files that contained conflict blocks",
+Realm-java,8d3f48a6e73d7d9a88c,8d9164b31f85ef738e936,efe5943c08fc312ac81,f3dd2528371c1b454e,35,IntelliMerge reports less conflicts than RefMerge,4,4,3,4,2,2,2,2,2,1,0,0,1,0,0,0,"Refactoring + Formatting Conflict (x1)
+Ordering Conflict (x1)","- Change Attribute Type refactoring
++ formatting differences result in 
+Merge conflict","Unsupported Refactoring 
++ Formatting Conflict (x1)
+Ordering Conflict (x1)","- Change Attribute Type refactoring
+(unsupported) + formatting differences
+Result in conflict","Resolved Refactoring Conflict (x1)
+Ordering Conflict (x1)","- Resolves the conflict caused by 
+Change attribute type + formatting ","- RefMerge: Does not support the refactoring involved in the conflict. Does not cause any conflicts from
+inverting/replaying refactorings
+- IntelliMerge: Successfully resolves Change Attribute Type refactoring conflict without any side effects",
+Realm-java,a0b7a9c850999d5357,2eb1133ae3076c2644a,b899cdbcb471125129,e1da885c6dd51ca906c,65,RefMerge reports less conflicting lines than and IntelliMerge,8,2,4,66,1,1,1,7,1,3,58,64,7,0,0,55,Refactoring Conflict (x7),- 7 Rename Method conflicts,Undetected Refactoring Conflict (x1),"- Resolves most refactoring conflicts
+- RefMiner fails to detect rename method
+Eq -> equalTo","Resolves Refactoring Conflict (x1)
+No Conflict + Syntax Error (x55)
+Matching Conflict (x3)
+","- Resolves refactoring conflict 
+That RefMerge misses
+- Duplicates method declarations 55
+Times + syntax error 
+- 3 comment-related conflicts","- RefMerge: Misses 1 rename method refactoring that combines with a formatting difference that causes
+A conflict. By inverting the method, this conflict would be resolved. RefMiner misses the rename 
+Method refactoring. 
+- RefMerge: Resolves 6 rename method refactoring conflicts
+- IntelliMerge: Resolves the refactoring conflict that RefMerge misses.
+- IntelliMerge: Reports 3 comment-related matching conflicts
+- IntelliMerge: Duplicates 55 method declarations with a syntax error. I think this is a bug with the 
+Matching algorithm. ",
+gradle,390c1ed246decd383,d0c535bae8e33d8b0446,ddee41e905f0c153db,8990c8539feed2e507b,101,RefMerge reports less conflicts than IntelliMerge,10,8,36,39,5,5,7,5,3,29,29,31,3,0,0,0,"Ordering Conflict (x1)
+Refactoring Conflict (x4)","- 2 Move Method conflicts
+- 1 rename variable conflict
+- 1 change parameter type conflict","Ordering Conflict (x1)
+Unsupported Refactoring (x2)","- does not support change parameter
+- does not support rename variable
+- resolves both move method ","Matching Conflict (x28)
+Undetected Refactoring (x1)
+Split (x2)","- resolves rename variable conflict
+- resolves move method conflict x2
+- does not detect change parameter
+- 28 matching conflicts at the comment,
+Annotation, and import level
+- splits 2 conflicts to simplify them","- RefMerge: fails to resolve 2 conflicts caused by unsupported refactorings. Successfully handles the 
+2 move method refactorings that are supported.
+- IntelliMerge: Successfully resolves rename variable + 2 move method conflicts. Fails to detect the 
+Change parameter refactoring, reporting a larger conflict block than RefMerge and Git. This is caused
+By matching the 2 methods as an added method instead of refactored method.
+- IntelliMerge: Reports 28 matching conflicts. They are trivial to resolve but span over 19 files and 
+Are time consuming to make sure they’re actually matching conflicts and not true conflicts.
+- IntelliMerge: splits 2 true conflicts into 4 true conflicts, which is why it reports more true positives than
+Git and RefMerge. These smaller refactorings are easier to resolve.",
+gradle,ea42d642ed85ab7,7cb2b29329425096eb9d,9ab641ccec01431f9d,262421daf1954db,39,both tools increase number of conflicts,4,5,5,5,3,3,4,1,2,1,1,0,0,0,0,1,Refactoring Conflict (x1),- Add Parameter conflict,"Unsupported Refactoring Conflict (x1)
+Wrong Move (x1)","- Does not support Add Parameter 
+Refactoring
+- Moved method to incorrect location,
+Leading to conflict","Deletes file with conflict block 
+Reported by other tool (x1)
+Split Conflict Block (x1)
+Refactoring Conflict (x1)","- Deletes the file that RefMerge 
+Adds a conflict to
+- Splits a conflict block to two smaller
+& simpler conflict blocks
+- fails to resolve Add parameter
+Refactoring conflict","- RefMerge: Does not support Add Parameter so it cannot address the conflict block
+- RefMerge: Inverts the move method refactoring to the wrong location, causing a conflict
+- IntelliMerge: Deletes the file where RefMerge creates the conflict
+- IntelliMerge: Splits a conflict block into two smaller, more understandable conflict blocks based off the 
+Matching algorithm.
+- IntelliMerge: Fails to resolve the add parameter conflict, it seems like the add parameter refactoring 
+Was not detected",
+gradle,243158c6eb3a87ab5e,8684ea810ee73ba34d23,81faf98e752cff3f4d5,a0690a5e9e9409529f,42,Both tools resolve,4,0,0,4,0,0,0,4,0,0,0,4,1,0,0,3,Refactoring Conflict (x4),"- 1 Extract Method/Inline Method
+- 2 Move Class
+- 1 Move + Rename Class",Resolves Refactoring Conflict (x4),"- resolves all refactoring conflicts
+In question","Resolves Refactoring Conflict (x1)
+Deletes file with conflict block 
+Reported by other tool (x2)
+Wrong Merge (x1)","- Handles inline/extract method correctly
+- Deletes 2 files with refactoring 
+Conflicts in them
+- deletes moved inner class + 
+Several methods","- RefMerge: Resolves a conflict caused by inline method on 1 line and extract method on the following
+Line 
+- RefMerge: Resolves 2 conflicts caused by move class
+- RefMerge: resolves 1 conflict caused by moving the class then renaming it in a later commit
+- IntelliMerge: Resolves the conflict caused by inline/extract
+- IntelliMerge: Deletes a file with two conflict blocks caused by move class
+- IntelliMerge: Incorrectly merges a file with a move+rename inner class involved. It deletes the inner 
+Class as well as all surrounding methods except for 1",
+cometd,0abe9500420e54fa,ed2024ce14b04edf,8d037acc1f9e19574a4,810611855509c213d33,13,RefMerge resolves the merge scenario while IntelliMerge does not,3,0,6,9,0,0,0,3,0,6,0,9,0,0,0,3,Refactoring Conflict (x3),"- Move Class + changes cause
+3 conflicts in moved file",,- Resolves 3 refactoring conflicts,"Matching Conflict (x6)
+Deletes file with conflict block
+Reported by other tool (x3)","- Reports 6 comment-related matching
+Conflicts
+- Deletes several files, 3 of which 
+Contain refactoring conflicts reported
+By git","- RefMerge: Inverts the move class refactoring and merges the changes in the original location, causing
+All 3 conflicts to be resolved. Then replays the refactoring, moving all changes to the new location.
+- IntelliMerge: Deletes the whole directory that the move class refactoring happens.
+- IntelliMerge: Reports 6 additional matching conflicts caused by comments",
+cometd,14272758865141d732,f171ed8be81c767d0fb1,d9e490baf3db1e16519c,79c7070299780c06f5fd,10,IntelliMerge reports less conflicts than RefMerge,3,3,2,3,2,2,2,1,1,0,0,0,1,0,0,0,Refactoring Conflict (x1),"- 1 Change Parameter Type involved
+Conflict",Unsupported Refactoring Conflict (x1),"- Does not support Change Parameter
+Type conflict",,"- Resolves Change Param Type 
+Conflict","- RefMerge: reports 1 change parameter type conflict that it does not support. If it supported Change 
+Parameter Type refactorings, it could resolve it.
+- IntelliMerge: resolves the refactoring conflict and does not add any false positives or negatives.",
+cometd,2c9452d096b60a8a121,efe17a56c56a1fa33825,841e6cb100616dd4929,67b83e8639b7b1b70fdf,4,Both tools resolve,1,0,0,1,0,0,0,1,0,0,0,1,1,0,0,0,Refactoring Conflict (x1),- Move Method Conflict,,- Resolves the Move method conflict,,- Resolves the move method conflict,"- RefMerge: resolves the move method conflict by inverting and replaying it correctly.
+- IntelliMerge: detects and matches the move method refactorings correctly",
+ProjectE,c8552fc4765ba5128,bac9e51387663d667a,c96ac4de35b68e0030e,9a90be5ae23f9d3fe,147,IntelliMerge reports less conflicts than RefMerge,25,29,20,38,15,13,10,10,16,10,11,7,12,0,0,4,"Ordering Conflict (x10)
+Refactoring Conflic Tpt (x2)
+
+","- 5 ordering conflicts at the import
+Level and 5 at the method level
+- 2 refactoring conflicts causes
+By conflicting refactorings","Ordering Conflict (x13)
+Detected Refactoring Conflicts (x2)
+Wrong Move (x1)
+","- Reports 8 ordering conflicts at the
+Import level and 5 at the method
+Level
+- Detects 2 refactoring conflicts with
+The logic matrix
+- Creates a conflict by moving 
+Method to wrong location","Ordering Conflict (x3)
+Matching Conflict (x7)
+Wrong Merge (x4)","- Reports 3 ordering conflicts
+- reports 7 matching conflicts
+- Reports the same 2 refactoring 
+Conflicts as Git","- RefMerge: Detects 2 refactoring conflicts caused by rename method/rename method and does not 
+Replay the given refactorings.
+- RefMerge: inverting refactorings causes ordering conflicts at the import level in 3 cases
+- RefMerge: Inverting move method causes an ordering conflict in one case
+- IntelliMerge: Resolves 7 ordering conflicts reported by Git
+- IntelliMerge: Reports 7 matching conflicts (4 annotation and 3 comment). 
+- IntelliMerge: Reports 2 refactoring conflicts where RefMerge detected the rename method/rename method
+Conflicts
+- IntelliMerge: Reports 4 false negatives in a file where the developer messed up a comment block.
+I think this leads to it failing to match properly",
+ProjectE,285f6252236af7854,6714d7943b6d0303d,07aa1678157d43e52e,ec29279d5529925ad,221,both tools increase number of conflicts,26,29,29,47,14,15,10,12,14,19,21,18,13,0,0,6,"Ordering Conflict (x5)
+Refactoring Conflict (x7)","- 1 extract method
+- 2 move method
+- 1 rename variable
+- 2 change availability
+- 1 change return type","Ordering Conflict (x7)
+Undetected Refactoring (x1)
+Unsupported Refactoring (4)
+Optimization (x1)
+Wrong Move (x1)","- Fails to detect Move Method
+- Does not support 1 rename var,
+2 change availability, 1 return type
+- 1 var is renamed in class renaming,
+Causing conflict
+- 1 method is moved to the wrong 
+Location within the class","Matching Conflict (x11)
+Ordering Conflict (x6)
+Undetected Refactoring (x1)
+Performed Wrong 
+Refactoring FP (x1)
+Performs Wrong 
+Refactoring FN (x5)","- 10 matching conflicts at the usual 
+Level
+- 1 matching conflict at statement 
+Level leading to a more difficult
+False positive
+- 6 ordering conflicts
+- Detected a move method ref when
+It was not performed, leading to a 
+False negative + syntax errors
+- failed to detect extract method","- RefMerge: reports the same ordering refactorings as Git, although it reports an additional with an annotation
+Because it successfully inverted the move method. It reports another at the import level because of rearranging imports.
+- RefMerge: RefMiner fails to detect a move method refactoring, leading to the same conflict block as 
+Git.
+- RefMerge: does not support 4 refactorings involved in conflicts.
+- RefMerge: Moves the method to the wrong location within the class, resulting in an ordering conflict.
+- RefMerge: Has another side effect from performing refactorings. IntelliJ renames the variable associated
+With a class that is renamed, resulting in a merge conflict that can be avoided by not renaming the variable.
+I am considering this as an optimizaiton conflict. 
+- IntelliMerge: Reports 11 matching conflicts. 1 of them differs from the usual pattern, resulting in a 
+More complicated false positive at the statement level. 
+- IntelliMerge: Fails to detect an extract method refactoring which results in the same conflict as Git.
+- IntelliMerge: Performs a move method refactoring on a method that is not refactored. This results in 
+A false positive as well as syntax errors since the imports do not exist anymore. 
+- IntelliMerge: Performs an extract method and 4 move method refactorings on code the devs did not 
+Refactor. This results in 5 false negatives as well as some syntax errors as it removes imports still being
+Used by other methods.",
+iFixitAndroid,a056a077b8c99881ab4c,10ae15162d84ec4c98c,b2735b65f13fd4b16562,b2ca743443fb08cba,49,IntelliMerge reports less conflicts than RefMerge,4,20,2,22,2,2,1,2,18,1,17,2,18,1,0,2,"Refactoring Conflict (x2)
+Missing Conflicting Region (x1)","- 1 Extract Method
+- 1 Inline Method
+- 1 Fails to report extracted method
+In conflict region","Formatting Conflict (x15)
+Ordering Conflict (x3)","- Inverting refactorings causes 15
+Formatting conflicts at import +
+Comment levels.
+- Inverting refactorings causes 3 
+Ordering conflicts","Undetected Refactoring (x1)
+Matching Conflict FN (x1)
+Missing Conflicting Region (x1)","- Does not detect an inline method
+Refactoring and fails to resolve the
+Associated conflict.
+- Matches 2 statements that are 
+Conflicting. Might be ref related?","- RefMerge: reports 15 formatting conflicts caused by inverting + replaying refactorings. the formatting 
+Conflicts are no more than 4 lines in size and generally white space vs new line. 
+- RefMerge: reports 3 ordering conflicts caused by inverting refactorings. They are at the statement level
+And at most 3 lines. 
+- RefMerge: inlines and extracts refactorings to resolve 2 conflicts entirely. 
+- RefMerge: Reports a conflict 2x size that of IntelliMerge and Git because of inverting an extract method.
+The changes in the extracted method should be marked as conflicting and this shows it side by side 
+Instead of including the extracted method declaration.
+- IntelliMerge: does not detect an inline method.
+- IntelliMerge: reports a false negative because it matches 2 statements which are conflicting. 
+- IntelliMerge: fails to report the extracted method changes, only reporting the invocation which means 
+The developer needs to find the method and the changes are not side by side.",
+iFixitAndroid,360ef2ac313f5d5d2e,e9e3f2083e72914f,a1770c3bae01bf5de7b0,d58cc6560863048e178,21,RefMerge reports less conflicting lines than and IntelliMerge,2,2,4,4,0,0,0,2,2,4,2,2,0,0,0,0,"Refactoring Conflict (x1)
+Ordering Conflict (x1)","- 1 Add Parameter + Rename Method
+Conflict","Unsupported Refactoring (x1)
+Ordering Conflict (x1)","- Conflict with rename variable +
+Add parameter","Undetected Refactoring (x1)
+Ordering Conflict (x1)
+Matching Conflict (x2)","- Fails to handle rename variable +
+Add parameter
+- 2 matching conflicts at comment level","- RefMerge: reports 1 conflict with 2 unsupported refactorings involved.
+- IntelliMerge: Fails to detect the rename var + add parameter refactorings within the conflict
+- IntelliMerge: Reports 2 matching conflicts at comment level",
+Jackson-core,94afdbd5c2f6be280,21769819d4250f588,2f995a3355dc20f4919,21769819d4250f58825,65,RefMerge reports less conflicting lines than and IntelliMerge,1,1,83,83,0,1,0,1,0,83,82,83,0,0,0,1,"Refactoring Conflict (x1)
+","- 1 Extract Method refactoring 
+Conflict + True positive",,"- Inverts extract method, simplifying
+The conflict","Undetected Refactoring (x1)
+Matching Error (x82)
+Syntax Error (x1)","- Fails to handle extract method 
+Conflict
+- reports 81 annotation/comment-
+Related conflicts. 
+- reports 1 statement matching 
+Conflict","- RefMerge: Inverts 2 extract method refactorings in the same conflicting region reported by Git and
+IntelliMerge, simplifying the conflict to only the true positive.
+- IntelliMerge: Fails to handle the extract method refactorings, resulting in the same merge as Git.
+- IntelliMerge: Reports 81 matching errors that are comment/annotation-related
+- IntelliMerge: Reports 1 statement level matching conflict and some syntax errors caused by matching.",
+Jackson-core,c8308ad216af7419a,e9d0978892a5ffbd6d7,df4f4cb4cf3e2f7a30,77effb50cda826eec,91,IntelliMerge reports less conflicting lines than RefMerge,15,15,66,76,9,9,7,6,6,59,59,59,6,0,0,2,"Refactoring Conflict (x2)
+Ordering Conflict (x4)","- 2 refactoring conflicts with
+Remove attribute annotations","Unsupported Refactoring (x2)
+Ordering Conflict (x4)","- 2 refactoring conflicts with 
+Remove attribute annotations","Matching Conflict (x59)
+Performs Wrong Refactoring FN (x2)","- 59 matching conflicts at the annotation
+Or comment level
+- Deletes 2 methods, I think this happens
+Because it treats them as refactorings","- RefMerge: Fails to resolve 2 refactoring conflicts because they are not supported refactoring types
+- IntelliMerge: Reports 59 comment/annotation-related matching conflicts
+- IntelliMerge: Performs 2 refactorings because of similarity threshold, resulting in an unexpected merge",
+Jackson-core,817961ec880c10f429,768e458dcffaa6a56ec9,c51f5708e955e937bdde,257ec524f1cf1bd7eff,103,RefMerge reports less conflicts than IntelliMerge,6,4,67,67,3,3,5,3,1,62,59,62,0,0,0,0,Refactoring Conflict (x3),"- 1 Change Variable Type involved
+Conflict
+- 2 Move+Rename Class involved
+Conflicts",Unsupported Refactoring Conflict (x1),"- Resolves 2 Move+Rename Class
+Refactorings
+- Does not support Change Variable
+Type refactoring","Undetected Refactoring (x3)
+Matching Conflict (x59)
+Split Conflict (x2)","- Does not detect Move+Rename Class
+Refactorings or Change Variable Type
+Refactoring
+- Reports an addiitonal 59 annotatoin/
+Comment-related conflicts
+- Splits 2 true conflicts into smaller
+Conflicts, making them more 
+Understandable","- RefMerge: Successfully resolves 2 Move+Rename Class refactoring-related conflicts at the statement level.
+- RefMerge: Fails to handle change variable type refactoring as it does not support it.
+- IntelliMerge: Does not detect the move+rename class refactoring or the Change Variable Type refactoring.
+It has the potential to resolve all 3 if it detected them. 
+- IntelliMerge: Reports 59 annotation/comment-related conflicts across 16 different files.
+- IntelliMerge: Splits 2 true positives into 4 smaller true positives, making it easier for the developer 
+To understand the changes.",
+MozeStumbler,2614f553fdf6ef7c,5415d47c1f8d254b,ee62711c28d95e4cd02,602943450cce0b241a,38,RefMerge reports less conflicts than IntelliMerge,7,5,13,15,1,1,4,6,4,9,8,10,2,0,0,0,Refactoring Conflict (x6),"- 1 Move Class Conflict
+- 1 Extract Interface Conflict
+- 1 Change Var Type Conflict
+- 1 Inline Method Conflict
+- 2 Remove Throw Conflict",Unsupported Refactoring Conflict (x4),"- Resolves Move Class and Inline Method
+Conflicts. 
+- Does not support Extract Interface
+- Does not support Change Var Type
+- Does not support Remove Throw","Matching Conflict (x8)
+Undetected Refactoring (x1)","- Fails to detect Move Class Refactoring
+And handle it
+- Handles Inline Method, Extract Interface,
+And Remove Throw (by construct I think)
+- 5 annotation-related conflicts
+- 3 comment-related conflicts","- RefMerge: Resolves the conflicts it supports, both inline method and Move Class.
+- RefMerge: Fails to resolve the for unsupported refactoring involved conflicts. 
+- IntelliMerge: Resolves most of the refactoring conflicts, although the remove throw ones might be by
+The graph-based nature rather than supporting the refactorings (I don’t think it supports those either). 
+- IntelliMerge: Misses 1 move class refactoring conflict.
+- IntelliMerge: Reports 8 matching conflicts in 1 file",
+MozeStumbler,028a37cb7e0aee43,a92345289c35c62c,f20106c8c06cb7af0,3103382ea6f512fd,53,both tools increase number of conflicts,5,6,6,8,3,4,2,2,2,4,3,3,2,0,0,0,refactoring Conflict (x2) ,"- Rename Method + Add Param
+- Rename Method","Refactoring-related Ordering (x1)
+Unsupported Refactoring Conflict (x1)","- Moves a method to the wrong 
+Location in a class
+- Does not support Add parameter","Matching Conflict (x3)
+Misses added invocation (x1)","- 1 comment-related conflict
+- 2 matching/merging conflicts 
+- 1 missed method invocation for rename
+Method","- RefMerge: Causes 1 move method ordering conflict
+- RefMerge: 1 conflict caused by rename method + add parameter, does not support add parameter
+- RefMerge: Resolves rename method refactoring conflict 
+- IntelliMerge: reports 2 conflicts that might be a problem with matching or merging. I’m calling them 
+Matching conflicts because I think the error happens in the matching algorithm, matching several 
+Statements as conflicting statements. These are a lot harder to resolve than the other matching conflicts
+- IntelliMerge: reports 1 other comment-related conflict.
+- IntelliMerge: Successfully handles rename method that RefMerge handles. However, the other branch
+Added an additional invocation and IntelliMerge did not update the new invocation.
+",
+MozeStumbler,1628ff8e30931af,39cbb771d5151e91b,c4fcf524affd130ed00,941b4085fa165c660,35,RefMerge reports less conflicting files than IntelliMerge,5,4,5,7,2,2,3,3,2,2,2,3,2,0,0,0,"Refactoring Conflict (x2)
+Ordering Conflict (x1)","- 2 inline method related conflicts
+","Refactoring-relatd Ordering (x1) 
+Ordering Conflict (x1)","- Extracted inlined method but 
+Extracts it to a different place in the
+Class, causing the entire class to 
+Be part of an ordering conflict",Matching Conflict (x2),,"- RefMerge: Extracts an inlined method to the wrong location within the class which leads to the entire class
+Being part of an ordering conflict. It seems to do well aside from that.
+- IntelliMerge: Resolves the ordering conflict
+- IntelliMerge: Handles the inline method refactoring conflict",
+MinecraftForge,f5781488d9da0d0,3177d55579ae20f142c8,23cdcb96a93f229949e5,ba80ead00560cba6df,131,RefMerge reports less conflicting files than IntelliMerge,8,6,99,104,1,1,0,7,5,99,96,98,4,0,0,1,"Formatting Conflict (x1)
+Refactoring Conflict (x6)",,"Formatting Conflict (x1)
+Unsupported Refactoring Conflict (x4)","- Does not support Change Param 
+Type","Matching Conflict (x85)
+Undetected Refactoring (x13)
+Formatting Conflict (x1)
+Similarity Threshold (x1)","- Splits some conflict blocks into several
+Smaller ones, which is why there are so
+Many more undetected refactorings","- RefMerge: Resolves 2 extract method refactoring-related conflicts. 
+- RefMerge: Does not support Change Parameter Type refactorings, which account for 4 ref conflicts
+- IntelliMerge: Reports 85 matching conflicts at comment/annotation level
+- IntelliMerge: Reports 1 false negative, treating a conflict as a series of refactorings and matching.",
+MinecraftForge,c374ba546393739e,ab39b7e4e00c007b8,c9670d3c1dd97107ad,0e91787efbeed773b,41,IntelliMerge reports less conflicting files than and RefMerge,20,20,19,33,5,5,3,15,15,16,13,13,10,0,0,4,"Ordering Conflict (x11)
+Refactoring Conflict (x4)",,"Ordering Conflict (x11)
+Unsupported Refactoring Conflict (x4)",,"Ordering Conflict (x2)
+Matching Conflict (x14)
+Deletes file with conflict block 
+Reported by other tool (x4)",,,
+MinecraftForge,038fa17ad33aeba2,58a4095f56930cb27,6fd3c12a4a15a5cf38c421,40270c881a27bc31277,208,RefMerge reports less conflicts than IntelliMerge,21,17,33,43,16,16,14,5,1,19,20,24,1,0,0,2,Refactoring Conflict (x5),"- Rename Method + Add Parameter
+- Move Method x2
+- Rename Method x2","Unsupported Refactoring (x1)
+","- Handles both move and rename 
+Method refactorings
+- Does not support Add Parameter
+(Cannot handle Rename method
+Because of add parameter chain)","Matching (x16)
+Undetected Refactoring (x3)
+Matching FN (x2)","- Does not detect Add Parameter
+- Does not detect Move Method x2","- RefMerge: Resolves 4 of the 5 refactoring conflicts and fails to resolve the 5th because it does not
+Support add parameter refactoring.
+- IntelliMerge: Reports 23 matching conflicts at annotation/comment level
+- IntelliMerge: Fails to detect 3 refactorings involved in conflicts
+- IntelliMerge: results in 2 method bodies that are incorrect, this seems to be a problem with matching",
+druid,e9c064413a4c03ac1,2ba8ec08d14cab055ee0,204d94d6f417ebf27b0,2254bcfeb5920a1ea0,15,RefMerge resolves the merge scenario while IntelliMerge does not,1,0,1,2,0,0,0,1,0,1,0,2,0,0,0,0,Refactoring Conflict (x1),- Rename Method Conflict,,"- Resolves the rename method 
+Conflict",Matching Conflict (x1) ,"- Resolves the rename method conflict 
+But reports a comment-related conflict","- RefMerge: Completely resolves the merge scenario without reporting any false negatives. 
+- IntelliMerge: Resolves the refactoring conflict but reports a comment-related conflict. The comment
+-related conflict is pretty trivial to resolve especially compared to the refactoring conflict.",
+druid,cad7e4320a21499,277c8dbd1b30646a7a7,12d28aac5b10f0a6b,a67026f478e03c9c,20,Both tools decrease the number of conflicts,2,1,1,2,0,0,0,2,1,1,0,1,1,0,0,0,Refactoring Conflict (x2),"- Extract Method Conflict
+- Several Parameterize Var
+Refactorings in conflict",Unsupported Refactoring Conflict (x1),"- Does not support parameterize
+Variable refactoring",Undetected Refactoring (x1) ,- Does not detect extract method,"- RefMerge: Handles extract method but does not handle parameterize variable conflict which is not
+Currently supported.
+- IntelliMerge: Handles parameterize variable but does not detect the extract method refactoring",
+druid,1806ab31107a6f860,277c8dbd1b30646a7a,12d28aac5b10f0a6b13c,a67026f478e03c9c,15,Both tools decrease the number of conflicts,2,1,1,2,0,0,0,2,1,1,0,1,1,0,0,0,Refactoring Conflict (x2),"- Extract Method Conflict
+- Several Parameterize Var
+Refactorings in conflict",Unsupported Refactoring Conflict (x1),"- Does not support parameterize
+Variable refactoring",Undetected Refactoring (x1) ,- Does not detect extract method,"- RefMerge: Handles extract method but does not handle parameterize variable conflict which is not
+Currently supported.
+- IntelliMerge: Handles parameterize variable but does not detect the extract method refactoring",
+androidannotations,1c95d7e2e62ff5c33,0ca063891fb87da0873,96c82d369fa3e6ef6340,04995ad320cc4bcad,55,IntelliMerge reports less conflicting lines than RefMerge,11,11,15,24,2,2,1,9,9,14,13,13,7,0,0,2,"Ordering Conflict (x6) 
+Refactoring Conflict (x3)",- 3 Add Param refactorings involved,"Ordering Conflict (x6)
+Refactoring Conflict (x3)","- 3 add parameter refactorings
++ change return type involved","Ordering Conflict (x1)
+Matching Conflict (x13)
+Misses refactoring conflict (x1)
+Performs Wrong refactoring (x1)","- Fails to add parameters and merges 
+When it should either add parameters or
+Report a conflict (FP is better than FN)
+- Similarity score causes IntelliMerge 
+To match non-refactoring as refactoring","- RefMerge: 3 refactoring conflicts have add parameter and RefMerge does not support these
+- IntelliMerge: Matches a non-refactoring change as a series of refactorings which causes it to accept
+The changes from one side, when it should report a conflict
+- IntelliMerge: Performs a refactoring (change return type) but fails to perform Add parameter. This leads
+To it merging without reporting a conflict, while it should also add the parameters to the method signature.
+This results in an unexpected merge.",
+androidannotations,f2af43618502c40fe,07468b234bf0144f,2aa295eed7c89b20d8,ab9642e0b688e89a8a0,71,RefMerge reports less conflicting lines than IntelliMerge,14,14,22,31,3,3,3,11,11,19,17,17,9,0,0,0,"Ordering Conflict (x3)
+Formatting Conflict (x4)
+Refactoring Conflict (x4)","- 2 Extract Superclass
+- 2 Move Method","Ordering Conflict (x5)
+Formatting Conflict (x4)
+Unsupported Refactoring Conflict (x2)","- 2 Extract Superclass
+- resolves 2 move method but 
+Leaves ordering conflict with 1 method","Ordering Conflict (x2)
+Matching Conflict (x17)",- Resolves all refactoring conflicts,"- RefMerge: resolves 2 refactoring conflicts but leaves an ordering conflict in the process
+- RefMerge: Does not support 2 extract superclass refactorings in conflicting regions
+- IntelliMerge: Resolves all refactoring conflicts in the merge scenario
+- IntelliMerge: reports 17 more comment/annotation-related conflicts",
+android,6d4207a06bfa0a1bb,07acad20b58883a1f,fb095ecc714ad72b0e,2fb89a92389c2c,185,RefMerge reports less conflicting files than IntelliMerge,23,19,39,50,4,4,6,19,15,33,27,31,11,10,0,10,"Refactoring Conflict (x7)
+Ordering Conflict (x12)
+Syntax Error (x10)","- 2 rename methods cause Git to
+Merge 2 different files as if they were
+The same file causing 4 conflicts
+As well as a series of syntax errors
+- 3 add parameter","Unsupported Refactoring Conflict (x3)
+Ordering Conflict (x12)","- Does not support Add Parameter 
+Refactoring
+- Several ordering conflicts","Undetected Refactoring (x7)
+Ordering Conflict (x4)
+Matching Conflicts (x22)
+Syntax Error (x10)","- Fails to detect the rename class 
+Refactorings, resulting in a similar merge
+As Git.
+- Does not detect add parameter 
+Refactorings","- RefMerge: Resolves a really complicated refactoring conflict in which a file is renamed on 1 branch
+To the same name of the original class name of a class rename on the other branch. This results in 
+A really nasty merge conflict for Git and IntelliMerge but RefMerge manages to avoid any of the false 
+Positives or negatives.
+- RefMerge: Does not support the 3 rename parameter refactorings involved in 3 conflicts. 
+- RefMerge: Reports the same 12 ordering conflicts as Git. 
+- IntelliMerge: Does not detect or handle the rename class refactorings that cause the really difficult
+Merge conflict. 
+- IntelliMerge: Does not detect any of the rename parameter refactorings that result in a series of conflicts
+- IntelliMerge: results in an additional 22 matching conflicts at annotation/comment level",
+android,9060663f66a4c51,194a7360f88e3096,bb455033763c2fb6bdbd,881727f0504f223e1b,34,RefMerge resolves the merge scenario while IntelliMerge does not,2,0,21,21,0,0,0,2,0,21,19,21,0,0,0,0,Refactoring Conflict (x2),"- Extract Method
+- Rename Method",,- resolves both conflicts,"Undetected Refactoring (x2)
+Matching Conflict (x19)","- fails to detect rename method or extract
+Method","- RefMerge: successfully handles both extract method and rename method refactoring conflicts. 
+- IntelliMerge: Misses 2 refactorings because of similarity score
+- IntelliMerge: reports 19 comment/annotation-related conflicts",
+android,2b5785556e7f7c,c4cd9ef44c48f3976782,73f8797b7572e431,cce7e1247a5b91d682,117,Both tools report less conflicts than Git,21,31,16,37,8,8,7,13,23,9,16,6,20,0,0,1,"Refactoring Conflict (x5)
+Ordering Conflict (x4)
+Formatting Conflict (x4)","- 3 Add Parameter 
+- 1 Move Method
+- Change Variable Type","Unsupported Refactoring Conflict (x4)
+Ordering Conflict (x5)
+Formatting Conflict (x10)
+Fails to Invert (x2)
+Wrong Move (x2)","- Does not support 3 Add Parameter
+Or 1 Change Variable Type
+- Inverting refactorings causes 6
+Formatting conflicts
+Fails to invert 2 refactorings
+Causes more complicated ordering 
+Conflicts for 2 moves","Matching Conflict (x6) 
+Performs Wrong refactoring (x1)
+Undetected Refactoring (x1)
+Ordering Conflict (x1)","- Seems to treat conflicting changes to a 
+Variable as refactoring, causing false 
+Negative.
+- Does not detect a change variable 
+Type refactoring","- RefMerge: Makes 2 refactoring conflicts more complicated that are move method refactorings
+- RefMerge: Fails to invert 2 refactorings, it didn’t seem to properly build the PSI Tree because of an 
+Unsupported refactoring that was chained with the move method refactoring.
+- RefMerge: inverting refactorings causes 6 formatting conflicts. Easy but distracting to resolve
+- RefMerge: Does not support refactorings in 4 conflicts
+- IntelliMerge: Accepts changes from 1 branch instead of reporting a conflict. The only reason I can think
+Of for this is IntelliMerge deciding it was a refactoring.
+- IntelliMerge: Does not detect a change variable type refactoring",
+deeplearning4j,ceeb5226cd6d393c800,98723f4b6aff641,f73f6717aef3642f7077,b4217129a8ee6b93badf,99,IntelliMerge resolves the scenario while RefMerge does not,4,3,0,4,0,0,0,4,3,0,0,1,1,0,0,3,"Refactoring Conflict (x1)
+Ordering Conflict (x3)",- Extract Method,Ordering Conflict (x3),- Resolves extract method conflict,Detects Fake Refactoring (x3),"- Resolves extract method
+- matches 3 non-refs as refs","- RefMerge: resolves 1 extract method refactoring
+- RefMerge: Reports 3 ordering conflicts that look similar to refactorings, this is the main reason why 
+This merge scenario took so long (trying to determine how to categorize these 3 for each tool)
+- IntelliMerge: Resolves the extract method refactoring but seems to match several very similar methods
+As rename method refactorings. At first I thought RefMiner failed to detect rename methods but after investigating,
+The same methods were added on each branch and it seems that all methods should be added, so there
+Are some ordering conflicts reported by RefMerge and Git. IntelliMerge matches them as Rename Method
+Refactorings and merges them",
+deeplearning4j,04946175aa51e72bbbd,37ebb5b67d8d019bd5b,9898e5dd9160e441aa6f161,540c9c0f975bdf3dbea,19,RefMerge resolves the merge scenario while IntelliMerge does not,4,0,10,14,0,0,0,4,0,10,0,14,0,0,0,3,Refactoring Conflict (x4),"- Rename Class (x2)
+- Rename Move Class (x2)",,- Resolves all 4 conflicts,"Matching Conflict (x9) 
+Deletes File (x3)
+Undetected Refactoring (x1)","- Deletes original + destination file for 2
+Conflict blocks
+- deletes destination file for rename class","- RefMerge: Avoids conflicts by inverting rename class and rename + move class refactorings
+- IntelliMerge: Deletes the destination file for 3 conflict blocks as well as the original file for 2 of them
+- IntelliMerge: Fails to resolve 1 rename class related conflict",
+deeplearning4j,c293e84d3a2ad4468,93f67e9114316428ec38,5c11fcbd6dc9b532479639e,1dcd27b64d704fe1ac27,20,IntelliMerge reports less conflicts than RefMerge,10,10,9,14,4,4,4,6,6,5,4,4,5,0,0,0,"Ordering Conflict (x4)
+Refactoring Conflict (x2)","- Add Parameter
+- Move Attribute","Ordering Conflict (x4)
+Unsupported Refactoring Conflict (x2)
+","- Does not support Move Attribute or 
+Add Parameter refactorings","Matching Conflict (x4)
+Undetected refactoring (x1)",- Does not detect Add Parameter refactoring,"- RefMerge: Reports 2 conflicts with unsupported refactorings in the region
+- IntelliMerge: resolves the move attribute conflict but fails to detect the add parameter refactoring",
+platform_frmk_support,7e3fe17cea03a5167,533bde46114bae0432,6e8bd723593cb14b4,218e20c75a0c0da0b,46,RefMerge resolves the merge scenario while IntelliMerge does not,1,0,117,118,0,0,0,1,0,117,117,118,1,0,1,0,Refactoring Conflict (x1),- Extract Method + Rename Method,Fails to replay FN (x1),- Resolves,"Matching Conflict (x116)
+Similarity Treshold FP (x1)","- 88 comment/annotation-related conflicts
+- 28 conflicts that the pipeline didn’t detect
+- Gets tripped up on multiple refs","- RefMerge: Successfully inverts rename method + extract method to resolve conflict. Fails to replay
+Extract method 
+- IntelliMerge: Reports 116 matching (!) conflicts. 29 of them were not detected by the pipeline because
+All 3 markers are on the same line.
+- IntelliMerge: Seems to handle extract method but reports a conflict block in the extracted method 
+With part of the original method that was renamed (IntelliMerge does not rename it)",
+platform_frmk_support,73e530814fd39f8b57,de36f86f561d192004c1,480c099026e136b78f,4d73eef0ca60b73a1,55,IntelliMerge reports less conflicting lines than RefMerge,4,3,12,16,1,1,0,3,2,12,11,11,2,0,1,2,Refactoring Conflict (x3),"- Move Rename Method
+- Move Method
+- Move Inline Method","Move-related Ordering Conflict (x1)
+Fails to replay FN (x1)
+Unsupported Refactoring Conflict (x1)","- Simplifies true positive by inverting
+Move method
+- Fails to replay Move Method
+- Does not support move/inline method
+- Resolves conflict but causes 
+Move-related ordering conflict","Matching Conflict (x11)
+Undetected Refactoring (x1)
+Deletes Classes (x2) Similarity?","- Reports 1 silent matching conflict 
+(not detected by evaluation pipeline)
+- Does not detect Move+Rename 
+- Deletes 2 classes part of inline + move
+Refactorings","- RefMerge: Simplifies 1 conflict that is related to move+rename method
+- RefMerge: resolves a move method conflict but fails to replay the move method, resulting in a false
+Negative 
+- RefMerge: Resolves a move method related conflict but causes an ordering conflict in the process.
+- RefMerge: Does not support Move+Inline refactoring
+- IntelliMerge: Reports 11 matchingconflicts, 1 of which is not detected in the pipeline because all 3
+Markers are on the same line 
+- IntelliMerge: Does not detect move+rename method, resulting in a conflict
+- IntelliMerge: Deletes 2 classes that have large refactorings performed inside them. ",
+platform_frmk_support,7a88183c4aa4b92a5c,b3b8b9117126408be,4fbc7e203aab365a56a,927eb847cb53330816,17,IntelliMerge resolves the scenario while RefMerge does not,7,8,0,9,4,6,0,3,2,0,0,1,0,0,0,9,"Refactoring Conflict (x1)
+Ordering Conflict (x2)",- Rename Method,Ordering Conflict (x2),"- Resolves Rename Method part of
+Conflict, simplifying it and splitting it
+Into 2 conflict blocks",Deletes Class (x9),"- Deletes a class containing all 9
+Reported conflicts","- RefMerge: inverts rename method which splits the conflict into 2 smaller conflict blocks which are 
+True conflicts and easier to understand
+- RefMerge: reports the same 2 ordering conflicts as Git
+- IntelliMerge: deletes 2 classes containing 9 conflict blocks reported by Git and RefMerge",
+elasticsearch,f766dfca827a915833,e9bb8d8b38c5ec,4231aa4feb0361015cfc,ef83dbfbe68eff4b7257,71,RefMerge reports less conflicts than IntelliMerge,6,4,23,24,5,1,4,1,3,19,20,19,3,0,0,0,Refactoring Conflict (x1),- Rename Variable,"Unsupported Refactoring Conflict (x1)
+Move-related ordering conflict (x2)","- Does not support Rename Variable
+- Causes 3 ordering conflicts from moves
+- reports larger conflict region
+Containing both of Gits additional
+TP’s","Undetected Refactoring (x1)
+Matching Conflict (x17)
+Similarity Threshold FP (x1)","- Does not detect rename variable refactoring
+- 1 matching conflict that results in 
+Complicated merge conflict
+- 1 conflict caused by performing fake 
+Refactoring
+- 1 silent matching conflict
+- 15 comment/annotation-related conflicts","- RefMerge: 2 move-related ordering conflicts that could have been avoided by not inverting the refactoring
+Or by moving it to the correct location.
+- RefMerge: Does not support rename variable refactoring
+- IntelliMerge: Does not detect rename variable
+- IntelliMerge: 1 matching conflict that’s more complicated than the typical matching conflict
+- IntelliMerge: 1 additional silent same line matching conflict
+- IntelliMerge: 1 conflict caused by detecting an add parameter that was never performed",
+elasticsearch,c0eb813e109036e2f39,4e454439bb3d9b9,ce9b36590aa884c9bcabe,cfe555d216120818b48,431,IntelliMerge reports less conflicting lines than RefMerge,59,59,101,106,27,28,25,32,31,76,46,47,5,0,0,3,Refactoring Conflict (x32),"- Move Method x1
+- Rename Parameter x4
+- Add Parameter x27",Unsupported Refactoring Conflict (x31),"- Resolves the move method part of 
+A true conflict, simplifying it and only
+Reporting the true conflict
+- 31 unsupported refactorings","Undetected Refactoring (x30)
+Matching Conflict (x40)
+Deletes Class (x3)
+Missing Additional Invocation (x6)","- Resolves Move Method refactoring
+- Does not detect 30 parameter level
+Refactorings
+- splits 4 conflicts into 9 which inflates
+The number of reported conflicts but
+Makes the conflicts more understandable
+- Deletes 3 classes that are parts of 
+Conflicts
+- Reports 40 matching conflicts, some of 
+Which are not the typical comment-
+Related conflicts
+- Misses 6 additional method invocations
+Added by the other branch when handling
+Some refactorings","- RefMerge: Does not support 31 refactorings at the parameter level. It simplifies 1 true positive that has
+A move method refactoring involved in the conflict. This merge scenario was incredibly complicated
+And I firmly believe the other 28 conflicts are true positives. 
+- IntelliMerge: Deletes 3 classes with conflicts involved
+- IntelliMerge: Results in 40 matching conflicts. 7 of them are more complicated matching conflicts 
+With multiple statements on both sides matching in the conflicting region. I think this is a symptom of
+Many methods being pretty similar. 
+- IntelliMerge: Fails to detect 30 parameter level refactorings. There are a lot of similar method signatures
+Which could cause a weird problem with the similarity score. It does resolve the same conflicting region
+As RefMerge.
+- IntelliMerge: successfully refactors some method signatures, however the other branch adds method
+Invocations in 6 locations that result in conflicts because they were not updated
+- This was a pretty complicated merge scenario with over 50 conflicts reported by each tool and over 
+100 unique conflicts, with over 800 refactorings. All of this combined for this merge scenario to take as
+Long as it did.",
+cassandra,ec9ce3dfba0030015c5,2836a644a357c0992ba8,5484bd1acc95e17a2,e711929e74e70b6696,13,IntelliMerge resolves the scenario while RefMerge does not,10,10,0,10,8,8,0,2,2,0,0,0,0,0,0,10,Refactoring Conflict (x2),"- Change Variable Type
+- Add Parameter",Unsupported Refactoring (x2),"- Change Variable Type
+- Add Parameter",Deletes Class (x10),- deletes all files with conflicts in them,"- RefMerge: Does not support Change Variable Type or Add Parameter
+- IntelliMerge: Deletes all files with conflicts within the files",
+cassandra,fa592a46bda084c7ec5,42582ecd4bb69998ec,47863bc32d4273978,e711929e74e70b669,18,RefMerge reports less conflicting files than IntelliMerge,1,1,24,25,0,0,0,1,1,24,24,24,1,0,0,0,Refactoring Conflict (x1),- Rename Parameter,Unsupported Refactoring Conflict (x1),- Does not support rename parameter,Matching Conflict (x24),- 24 annotation/comment-related conflicts,"- RefMerge: does not support rename parameter, should be able to resolve if it did
+- IntelliMerge: Resolves the refactoring conflict but adds 24 matching conflicts",
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,198,199,142,,,,,,,,,,,,,,,,,
+,,,,,3439,,,,,,,,,243,231,923,,,,12,2,178,,,,,,,,
+,,,,,68.78,,441,430,1065,1379,,,,,,,,,,,,,,,,,,,,
