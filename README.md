@@ -1,6 +1,6 @@
 # RefMerge
 
-This project is a refactoring-aware merging IntelliJ plugin. 
+RefMerge is a refactoring-aware merging IntelliJ plugin. RefMerge relies on RefactoringMiner to detect the refactorings and works by undoing refactorings, merging, and then replaying the refactorings. More in-depth details about the technique can be found in "A Systematic Comparison of Two Refactoring-aware Merging Techniques" (http://arxiv.org/abs/2112.10370).
 
 ## System requirements
 * Linux
@@ -10,40 +10,42 @@ This project is a refactoring-aware merging IntelliJ plugin.
 
 ## How to run
 
-### 1. Create a temp directory in user.home
-Go to your user.home (/home/username) and add a temporary director "temp". 
-The base commit and changes to the right commit will be saved here.
-
-For example, my temp is located at /home/max/temp.
-
-### 2. Clone and build RefactoringMiner 
+### 1. Clone and build RefactoringMiner 
 Use `Git Clone https://github.com/tsantalis/RefactoringMiner.git` to clone RefactoringMiner. 
 Then build RefactoringMiner with `./gradlew distzip`. It will be under build/distributions.
 
-### 3. Add RefactoringMiner to your local maven repository
+### 2. Add RefactoringMiner to your local maven repository
 You will need to add RefactoringMiner to your local maven repository to
 use it in the build.gradle. You can use `mvn install:install-file -Dfile=<path-to-file>`
 to add it to your local maven repository. You can verify that it's been installed 
 by checking the path `/home/username/.m2/repository/org/refactoringminer`.
 
-### 4. Build the project
-Click on build tab in the IntelliJ IDE and select `Build Project`.
+### 3. Build the project
+Click on build tab in the IntelliJ IDE and select `Build Project` to build RefMerge.
 
-### 5. Set up configuration
+### 4. Set up configuration
 Edit the configuration and under environment variables, set `LEFT_COMMIT` to the respective left
-commit and set `RIGHT_COMMIT` to the respective right commit. In the future we will replace this
-with command line arguments.
+commit and set `RIGHT_COMMIT` to the respective right commit. RefMerge will merge the two commits provided when ran. This works for any merge commit in history.
+In the future we will replace this with command line arguments.
 
 ### 5. Run the plugin
 Click `Run 'Plugin'` or `Debug 'Plugin'`. When it's running, click the `Tools` tab and select
-`RunRefMerge`. This will run the plugin. The plugin will do everything else.
-The matrix will print true/false for each handled operation, then the plugin will checkout 
-the base commit and copy it to `home/username/temp/base`. After this, it checks
-out the right commit and undoes handled refactorings. The content gets copied to 
-`home/username/temp/right`. The same happens for the left commit, however the project
-directory gets used for this one. When it merges, the merged content is saved in the project directory.
-Lastly, the refactorings are replayed in the project directory. When it finishes, you can
-look in the project directory to see the results.
+`RunRefMerge`. This will run the plugin. The plugin will do everything else. RefMerge performs the following steps: 
+
+1. Detects refactorings on the left and right branch with RefactoringMiner.
+
+2. Checks the detected refactorings for transitive relationships and refactoring chains and simplifies them.
+
+3. Inverts the refactorings in the left and right parent commits.
+
+4. Textually merges the branches with git.
+
+5. Detects refactoring conflicts and refactoring relationships between the left and right branches.
+
+6. Adds conflicting refactorings to a conflicting refactoring list and prints conflicting refactoring pairs.
+
+7. Replays the non-conflicting refactorings on the textually merged code. 
+
 
 Alternatively, this can be run from the command line by creating a separate Java program that
 calls RefMerge and passes the left and right commit hashes in.
@@ -54,8 +56,8 @@ Adding a new refactoring type can be broken down into the following steps.
 
 ### 1. Create refactoring object
 
-* Create a new `RefactoringObject` in the refactoringObjects folder. For example, when 
-adding extract method, we create `ExtractMethodObject`. 
+* Create a new `RefactoringObject` class that implements `RefactoringObject` in the `src/main/java/ca/ualberta/cs/smr/refMerge/refactoringObjects`. For example, when 
+adding extract method, we create `ExtractMethodObject` which implements `RefactoringObject`. The `RefactoringObject` class will store lal of the necessary information about the refactored program element, such as its signature.
 
 * Add it to `RefactoringObjectUtils` to create it from the RefMiner object.
 
@@ -65,7 +67,7 @@ adding extract method, we create `ExtractMethodObject`.
 when we add extract method, extract method should be undone after rename class and 
 rename method.
 
-* Add it to the `RefactoringOrder` enum.
+* Add the new `RefactoringObject` class to the `RefactoringOrder` enum. The `RefactoringObject` class needs to be put in its respective position in the top-down order. For example, `Move Method` will come before `Rename Variable` and after `Move Class`.
 
 * Add the associated logic cells. The logic cells will be the combination of the new refactoring
 type and the currently covered types. When adding extract method, that gives us the extract method/
