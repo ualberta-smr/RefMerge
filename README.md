@@ -25,8 +25,8 @@ Click on build tab in the IntelliJ IDE and select `Build Project` to build RefMe
 
 ### 4. Set up configuration
 Edit the configuration and under environment variables, set `LEFT_COMMIT` to the respective left
-commit and set `RIGHT_COMMIT` to the respective right commit. RefMerge will merge the two commits provided when ran. This works for any merge commit in history.
-In the future we will replace this with command line arguments.
+commit and set `RIGHT_COMMIT` to the respective right commit. RefMerge will merge the two commits provided for a single merge scenario. This works for any merge scenario in history. We need to add the commits in the configuration under environment variables because RefMerge is currently designed as `AnAction` which cannot retrieve command line variables. This works when running the evaluation pipeline because an `ApplicationStarter` calls RefMerge supplying the commits.
+
 
 ### 5. Run the plugin
 Click `Run 'Plugin'` or `Debug 'Plugin'`. When it's running, click the `Tools` tab and select
@@ -46,9 +46,6 @@ Click `Run 'Plugin'` or `Debug 'Plugin'`. When it's running, click the `Tools` t
 
 7. Replays the non-conflicting refactorings on the textually merged code. 
 
-
-Alternatively, this can be run from the command line by creating a separate Java program that
-calls RefMerge and passes the left and right commit hashes in.
 
 ## Adding new refactoring types
 
@@ -88,7 +85,8 @@ method on the left branch has the same name as the renamed method on the right b
 class. They can also conflict if the extracted method and renamed method have the same signature
 in classes with an inheritance relationship.
 
-* Add each logic check to the associated logic cell.
+* Add each logic check to the associated logic cell in `src/main/java/ca/ualberta/cs/smr/refmerge/matrix/logicCells`. For example, if we add `Rename Variable`, 
+we would create `RenameVariableRenameVariableCell.java` with the conflict and dependence logic. The wiki with the currently implemented logic is located [here](https://github.com/ualberta-smr/RefMerge/wiki/Matrix-Logic) 
 
 ### 4. Update logic matrix 
 
