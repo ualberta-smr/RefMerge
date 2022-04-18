@@ -1,9 +1,6 @@
 package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.ExtractMethodDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.InlineMethodDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameClassDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameMethodDispatcher;
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.*;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 import com.intellij.openapi.project.Project;
 
@@ -66,6 +63,13 @@ public class Receiver {
      */
     public void receive(InlineMethodDispatcher dispatcher) {
         // This is empty because subclasses will override this to dispatch to the correct logic cell.
+    }
+
+    /*
+     * Any method that overrides this will dispatch to a logic cell containing a rename field refactoring.
+     */
+    public void receive(RenameFieldDispatcher dispatcher) {
+        // This is empty because subclasses that receive a rename field dispatcher will override this method.
     }
 
 }
