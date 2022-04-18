@@ -103,13 +103,13 @@ public class MoveRenameMethodMoveRenameMethodLogicTests extends LightJavaCodeIns
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring leftRefactoring = refactorings.get(1);
-        Refactoring rightRefactoring = refactorings.get(2);
+        Refactoring rightRefactoring = refactorings.get(0);
         RefactoringObject leftRefactoringObject = RefactoringObjectUtils.createRefactoringObject(leftRefactoring);
         RefactoringObject rightRefactoringObject = RefactoringObjectUtils.createRefactoringObject(rightRefactoring);
         MoveRenameMethodMoveRenameMethodCell moveRenameMethodMoveRenameMethodCell = new MoveRenameMethodMoveRenameMethodCell(project);
         boolean expectedFalse = moveRenameMethodMoveRenameMethodCell.checkMethodNamingConflict(leftRefactoringObject, rightRefactoringObject);
         Assert.assertFalse("Methods in different classes should not have naming conflicts", expectedFalse);
-        rightRefactoring = refactorings.get(0);
+        rightRefactoring = refactorings.get(2);
         rightRefactoringObject = RefactoringObjectUtils.createRefactoringObject(rightRefactoring);
         boolean expectedTrue = moveRenameMethodMoveRenameMethodCell.checkMethodNamingConflict(leftRefactoringObject, rightRefactoringObject);
         Assert.assertTrue("Methods renamed to the same name in the same class should return true", expectedTrue);
@@ -128,8 +128,8 @@ public class MoveRenameMethodMoveRenameMethodLogicTests extends LightJavaCodeIns
         List<Refactoring> classRefactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert methodRefactorings != null;
         assert classRefactorings != null;
-        Refactoring dispatcherRef = methodRefactorings.get(0);
-        Refactoring rightRef = methodRefactorings.get(3);
+        Refactoring dispatcherRef = methodRefactorings.get(1);
+        Refactoring rightRef = methodRefactorings.get(0);
         Refactoring classRef = classRefactorings.get(0);
 
         ArrayList<RefactoringObject> rightList = new ArrayList<>();

@@ -85,9 +85,9 @@ public class MoveRenameMethodReceiverTests extends LightJavaCodeInsightFixtureTe
         String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodNamingConflict/refactored";
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
         assert refactorings != null;
-        Refactoring leftRef = refactorings.get(0);
+        Refactoring leftRef = refactorings.get(1);
         RefactoringObject leftRefactoring = RefactoringObjectUtils.createRefactoringObject(leftRef);
-        Refactoring rightRef = refactorings.get(1);
+        Refactoring rightRef = refactorings.get(2);
         RefactoringObject rightRefactoring = RefactoringObjectUtils.createRefactoringObject(rightRef);
         MoveRenameMethodDispatcher dispatcher = new MoveRenameMethodDispatcher();
         dispatcher.set(leftRefactoring, project, false);

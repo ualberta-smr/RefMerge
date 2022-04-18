@@ -58,8 +58,8 @@ public class MoveRenameClassReceiverTests extends LightJavaCodeInsightFixtureTes
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_CLASS", originalPath, refactoredPath);
         assert refactorings != null && refactorings.size() == 3;
         Refactoring foo = refactorings.get(0);
-        Refactoring foo2 = refactorings.get(1);
-        Refactoring bar = refactorings.get(2);
+        Refactoring bar = refactorings.get(1);
+        Refactoring foo2 = refactorings.get(2);
         RefactoringObject leftRefactoring = RefactoringObjectUtils.createRefactoringObject(foo);
         RefactoringObject rightRefactoring = RefactoringObjectUtils.createRefactoringObject(foo2);
         leftRefactoring.setDestinationFilePath("File.java");
