@@ -4,7 +4,7 @@ import ca.ualberta.cs.smr.refmerge.matrix.receivers.Receiver;
 
 
 /*
- * Dispatches the rename method refactoring to the corresponding receiver.
+ * Dispatches the rename+move method refactoring to the corresponding receiver.
  */
 public class MoveRenameMethodDispatcher extends RefactoringDispatcher {
     @Override
