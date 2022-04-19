@@ -3,10 +3,7 @@ package ca.ualberta.cs.smr.refmerge;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.*;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.ParameterObject;
-import ca.ualberta.cs.smr.refmerge.replayOperations.ReplayExtractMethod;
-import ca.ualberta.cs.smr.refmerge.replayOperations.ReplayInlineMethod;
-import ca.ualberta.cs.smr.refmerge.replayOperations.ReplayMoveRenameClass;
-import ca.ualberta.cs.smr.refmerge.replayOperations.ReplayMoveRenameMethod;
+import ca.ualberta.cs.smr.refmerge.replayOperations.*;
 import ca.ualberta.cs.smr.refmerge.invertOperations.InvertExtractMethod;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
@@ -354,4 +351,42 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         LightJavaCodeInsightFixtureTestCase.assertEquals(content1, content2);
 
     }
+
+    public void testReplayRenameField() {
+        Project project = myFixture.getProject();
+        String testDir = "renameField/";
+        String testDataRenamed = testDir + "renamed/";
+        String testDataOriginal = testDir + "original/";
+        String testResult = testDir + "expectedReplayResults/";
+        String testFile ="Main.java";
+        PsiFile[] psiFiles = myFixture.configureByFiles(testDataOriginal + testFile, testResult + testFile);
+        String basePath = System.getProperty("user.dir");
+        String refactoredPath = basePath + "/" + getTestDataPath() + "/" + testDataRenamed;
+        String originalPath = basePath + "/" + getTestDataPath() + "/" + testDataOriginal;
+
+        PsiField[] oldFields = TestUtils.getPsiFieldsFromFile(psiFiles[0]);
+        PsiField[] newFields = TestUtils.getPsiFieldsFromFile(psiFiles[1]);
+
+        List<String> list1 = TestUtils.getFieldNames(oldFields);
+        List<String> list2 = TestUtils.getFieldNames(newFields);
+
+        LightJavaCodeInsightFixtureTestCase.assertNotSame(list1, list2);
+
+
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_ATTRIBUTE", originalPath, refactoredPath);
+        assert refactorings != null;
+        Refactoring ref = refactorings.get(0);
+        ReplayRenameField replay = new ReplayRenameField(project);
+        RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
+        replay.replayRenameField(refactoringObject);
+
+        list1 = TestUtils.getFieldNames(oldFields);
+        list2 = TestUtils.getFieldNames(newFields);
+
+        LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
+        Assert.assertNotEquals(newFields[0].getName(),"originalField");
+        Assert.assertNotEquals(oldFields[0].getName(), "originalField");
+    }
+
+
 }
