@@ -1,6 +1,5 @@
 package ca.ualberta.cs.smr.refmerge.refactoringObjects;
 
-import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.ClassObject;
 import gr.uom.java.xmi.UMLAttribute;
 import gr.uom.java.xmi.diff.RenameAttributeRefactoring;
 import org.refactoringminer.api.Refactoring;
@@ -12,18 +11,15 @@ public class RenameFieldObject implements RefactoringObject {
     private final String refactoringDetail;
     private String originalFilePath;
     private String destinationFilePath;
-    private ClassObject originalClassObject;
-    private ClassObject destinationClassObject;
-    private int startOffset;
+    private String originalName;
+    private String destinationName;
     private boolean isReplay;
-    private boolean isRenameMethod;
-    private boolean isMoveMethod;
-    private boolean isSameFile;
-    private boolean isMoveInner;
-    private boolean isMoveInnerToInner;
-    private boolean isMoveOuter;
+
+    private String originalClass;
+
     private int startLine;
     private int endLine;
+    private boolean isRename;
 
 
     /*
@@ -35,11 +31,28 @@ public class RenameFieldObject implements RefactoringObject {
         this.refactoringDetail = ref.toString();
         this.originalFilePath = ref.getClassNameBefore();
         this.destinationFilePath = ref.getClassNameAfter();
+        UMLAttribute originalAttribute = ref.getOriginalAttribute();
+        UMLAttribute destinationAttribute = ref.getRenamedAttribute();
+        this.originalName = originalAttribute.getName();
+        this.destinationName = destinationAttribute.getName();
+        this.originalClass = originalAttribute.getClassName();
 
+        this.isRename = true;
 
         this.isReplay = false;
     }
 
+    public String getOriginalName() {
+        return originalName;
+    }
+
+    public String getDestinationName() {
+        return destinationName;
+    }
+
+    public String getOriginalClass() {
+        return originalClass;
+    }
 
     @Override
     public void setStartLine(int startLine) {
@@ -104,5 +117,9 @@ public class RenameFieldObject implements RefactoringObject {
     @Override
     public boolean isReplay() {
         return isReplay;
+    }
+
+    public boolean isRename() {
+        return isRename;
     }
 }
