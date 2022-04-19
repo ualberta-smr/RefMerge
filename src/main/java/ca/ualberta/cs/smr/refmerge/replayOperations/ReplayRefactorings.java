@@ -50,6 +50,13 @@ public class ReplayRefactorings {
                         exception.printStackTrace();
                     }
                     break;
+                case RENAME_ATTRIBUTE:
+                    try {
+                        ReplayRenameField replayRenameField = new ReplayRenameField(project);
+                        replayRenameField.replayRenameField(refactoringObject);
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                    }
             }
 
         }
