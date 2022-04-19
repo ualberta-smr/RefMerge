@@ -25,6 +25,8 @@ public class RefactoringObjectUtils {
                 return new ExtractMethodObject(refactoring);
             case INLINE_OPERATION:
                 return new InlineMethodObject(refactoring);
+            case RENAME_ATTRIBUTE:
+                return new RenameFieldObject(refactoring);
 
         }
         return null;
