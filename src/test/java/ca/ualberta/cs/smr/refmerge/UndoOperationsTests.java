@@ -369,6 +369,8 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         list2 = TestUtils.getFieldNames(newFields);
 
         LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
+        Assert.assertNotEquals(newFields[0].getName(),"renamedField");
+        Assert.assertNotEquals(oldFields[0].getName(), "renamedField");
     }
 
 }
