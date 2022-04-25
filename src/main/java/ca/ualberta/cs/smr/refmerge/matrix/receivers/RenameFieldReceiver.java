@@ -1,28 +1,40 @@
 package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.ExtractMethodDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.InlineMethodDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameClassDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameMethodDispatcher;
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.*;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenameFieldMoveRenameClassCell;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenameFieldRenameFieldCell;
+import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 
 
 public class RenameFieldReceiver extends Receiver {
+
     @Override
-    public void receive(MoveRenameMethodDispatcher dispatcher) {
-        // Placeholder for if rename field/R+M method can result in conflicts/dependence
+    public void receive(RenameFieldDispatcher dispatcher) {
+        RefactoringObject dispatcherObject = dispatcher.getRefactoringObject();
+        RenameFieldRenameFieldCell cell = new RenameFieldRenameFieldCell(project);
+        // If checking for transitivity instead of conflicts
+        if(dispatcher.isSimplify()) {
+            this.isTransitive = cell.checkTransitivity(this.refactoringObject, dispatcherObject);
+            // Update dispatcher refactoring
+            dispatcher.setRefactoringObject(dispatcherObject);
+        }
+        // Otherwise check for conflicts
+        else {
+            this.isConflicting = cell.renameFieldRenameFieldConflictCell(this.refactoringObject, dispatcherObject);
+            if(isConflicting) {
+                dispatcherObject.setReplayFlag(false);
+                this.refactoringObject.setReplayFlag(false);
+            }
+            System.out.println("Rename Field/Rename Field conflict: " + isConflicting);
+        }
     }
 
     @Override
     public void receive(MoveRenameClassDispatcher dispatcher) {
-        // Placeholder for if rename field/R+M class can result in conflicts/dependence
+        RefactoringObject classObject = dispatcher.getRefactoringObject();
+        if(dispatcher.isSimplify()) {
+            RenameFieldMoveRenameClassCell.checkCombination(classObject, this.refactoringObject);
+            dispatcher.setRefactoringObject(classObject);
+        }
     }
-
-    @Override
-    public void receive(ExtractMethodDispatcher dispatcher) {
-        // Placeholder for if rename field/extract method can result in conflicts/dependence
-    }
-
-    @Override
-    public void receive(InlineMethodDispatcher dispatcher) {
-        // Placeholder for if rename field/inline method can result in conflicts/dependence
-    }}
+}
