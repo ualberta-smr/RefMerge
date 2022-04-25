@@ -47,4 +47,20 @@ public class RenameFieldRenameFieldLogicTests extends LightJavaCodeInsightFixtur
         Assert.assertTrue(isTransitive);
         Assert.assertEquals(leftRenameFieldObject.getDestinationName(), rightRenameFieldObject1.getDestinationName());
     }
+
+    public void testNotFoundTransitivity() {
+        // A.foo -> A.bar
+        RenameFieldObject leftRenameFieldObject = new RenameFieldObject("A.java", "A",
+                "foo", "A.java", "A", "bar");
+        leftRenameFieldObject.setType(RefactoringType.RENAME_ATTRIBUTE);
+        // A.foobar -> A.foobar
+        RenameFieldObject rightRenameFieldObject1 = new RenameFieldObject("A.java", "A",
+                "foobar", "A.java", "A", "foobar");
+        rightRenameFieldObject1.setType(RefactoringType.RENAME_ATTRIBUTE);
+
+        RenameFieldRenameFieldCell cell = new RenameFieldRenameFieldCell(getProject());
+        boolean isTransitive = cell.checkTransitivity(leftRenameFieldObject, rightRenameFieldObject1);
+        Assert.assertFalse(isTransitive);
+        Assert.assertNotEquals(leftRenameFieldObject.getDestinationName(), rightRenameFieldObject1.getDestinationName());
+    }
 }
