@@ -7,7 +7,7 @@ import org.refactoringminer.api.RefactoringType;
 
 public class RenameFieldObject implements RefactoringObject {
 
-    private final RefactoringType refactoringType;
+    private RefactoringType refactoringType;
     private final String refactoringDetail;
     private String originalFilePath;
     private String destinationFilePath;
@@ -23,6 +23,19 @@ public class RenameFieldObject implements RefactoringObject {
     private int endLine;
     private boolean isRename;
 
+    /*
+     * Initialize for testing
+     */
+    public RenameFieldObject(String originalFile, String originalClass, String originalname,
+                             String newFile, String newClass, String newName) {
+        this.originalFilePath = originalFile;
+        this.originalClass = originalClass;
+        this.originalName = originalname;
+        this.destinationFilePath = newFile;
+        this.destinationClass = newClass;
+        this.destinationName = newName;
+        this.refactoringDetail = "";
+    }
 
     /*
      * Initialize the fields for RenameFieldObject for inverting, replaying, and checking for refactoring conflicts.
@@ -126,5 +139,12 @@ public class RenameFieldObject implements RefactoringObject {
 
     public boolean isRename() {
         return isRename;
+    }
+
+    public void setType(RefactoringType refactoringType) {
+        this.refactoringType = refactoringType;
+        if(refactoringType.equals(RefactoringType.RENAME_ATTRIBUTE)) {
+            this.isRename = true;
+        }
     }
 }
