@@ -141,6 +141,10 @@ public class RenameFieldObject implements RefactoringObject {
         return isRename;
     }
 
+    public void setOriginalClassName(String originalClass) {
+        this.originalClass = originalClass;
+    }
+
     public void setDestinationClassName(String destinationClass) {
         this.destinationClass = destinationClass;
     }
