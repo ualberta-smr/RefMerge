@@ -141,6 +141,14 @@ public class RenameFieldObject implements RefactoringObject {
         return isRename;
     }
 
+    public void setDestinationClassName(String destinationClass) {
+        this.destinationClass = destinationClass;
+    }
+
+    public void setDestinationFieldName(String destinationName) {
+        this.destinationName = destinationName;
+    }
+
     public void setType(RefactoringType refactoringType) {
         this.refactoringType = refactoringType;
         if(refactoringType.equals(RefactoringType.RENAME_ATTRIBUTE)) {

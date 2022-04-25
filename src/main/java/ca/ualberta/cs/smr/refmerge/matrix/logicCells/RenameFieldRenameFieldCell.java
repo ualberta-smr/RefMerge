@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.refmerge.matrix.logicCells;
 
+import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameMethodObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RenameFieldObject;
 import com.intellij.openapi.project.Project;
@@ -58,6 +59,35 @@ public class RenameFieldRenameFieldCell {
                 }
             }
         }
+        return false;
+    }
+
+    public boolean checkTransitivity(RefactoringObject firstRefactoring, RefactoringObject secondRefactoring) {
+        RenameFieldObject firstObject = (RenameFieldObject) firstRefactoring;
+        RenameFieldObject secondObject = (RenameFieldObject) secondRefactoring;
+
+        // Get field information
+        String oldFirstName = firstObject.getOriginalName();
+        String newFirstName = firstObject.getDestinationName();
+        String oldSecondName = secondObject.getOriginalName();
+        String newSecondName = secondObject.getDestinationName();
+
+        // Get class information
+        String oldFirstClass = firstObject.getOriginalClass();
+        String newFirstClass = firstObject.getDestinationClass();
+        String oldSecondClass = secondObject.getOriginalClass();
+        String newSecondClass = secondObject.getDestinationClass();
+
+        // If c2 == c3 and f2 == f3 where c1.f1 -> c2.f2 and c3.f3 -> c4.f4, then they can be combined to c1.f1 -> c4.f4
+        if(newFirstClass.equals(oldSecondClass) && newFirstName.equals(oldSecondName)) {
+            firstRefactoring.setDestinationFilePath(secondObject.getDestinationFilePath());
+            ((RenameFieldObject) firstRefactoring).setDestinationClassName(newSecondClass);
+            ((RenameFieldObject) firstRefactoring).setDestinationFieldName(newSecondName);
+            return true;
+        }
+
+
+
         return false;
     }
 }
