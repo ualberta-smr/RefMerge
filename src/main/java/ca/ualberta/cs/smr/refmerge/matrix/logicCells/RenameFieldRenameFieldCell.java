@@ -3,7 +3,12 @@ package ca.ualberta.cs.smr.refmerge.matrix.logicCells;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameMethodObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RenameFieldObject;
+import ca.ualberta.cs.smr.refmerge.utils.Utils;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiClass;
+
+import static ca.ualberta.cs.smr.refmerge.utils.MatrixUtils.ifClassExtends;
+import static ca.ualberta.cs.smr.refmerge.utils.MatrixUtils.isSameName;
 
 public class RenameFieldRenameFieldCell {
 
@@ -21,12 +26,50 @@ public class RenameFieldRenameFieldCell {
     public boolean renameFieldRenameFieldConflictCell(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
         RenameFieldRenameFieldCell cell = new RenameFieldRenameFieldCell(project);
         // Check for shadowing conflict
-
+        if(cell.checkShadowConflict(dispatcherObject, receiverObject)) {
+            System.out.println("Shadow Conflict");
+            return true;
+        }
         // Check for naming conflict
-        if(cell.checkFieldNamingConflict(dispatcherObject, receiverObject)) {
+        else if(cell.checkFieldNamingConflict(dispatcherObject, receiverObject)) {
+            System.out.println("Naming Conflict");
             return true;
         }
         return false;
+    }
+
+    public boolean checkShadowConflict(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
+        RenameFieldObject dispatcherField = (RenameFieldObject)  dispatcherObject;
+        RenameFieldObject receiverField = (RenameFieldObject) receiverObject;
+
+        String newDispatcherClass = dispatcherField.getDestinationClass();
+        String newReceiverClass = receiverField.getDestinationClass();
+
+        // Cannot have shadow conflict in same class
+        if(newDispatcherClass.equals(newReceiverClass)) {
+            return false;
+        }
+
+        String dispatcherFile = dispatcherField.getDestinationFilePath();
+        String receiverFile = receiverField.getDestinationFilePath();
+        Utils utils = new Utils(project);
+        PsiClass psiDispatcher = utils.getPsiClassByFilePath(dispatcherFile, newDispatcherClass);
+        PsiClass psiReceiver = utils.getPsiClassByFilePath(receiverFile, newReceiverClass);
+        if(psiReceiver != null && psiDispatcher != null) {
+            // If there is no inheritance relationship, there is no shadow conflict
+            if (!ifClassExtends(psiDispatcher, psiReceiver)) {
+                return false;
+            }
+        }
+
+        String originalDispatcherField = dispatcherField.getOriginalName();
+        String originalReceiverField = receiverField.getOriginalName();
+        String newDispatcherField = dispatcherField.getDestinationName();
+        String newReceiverField = receiverField.getDestinationName();
+
+        return !isSameName(originalDispatcherField, originalReceiverField) &&
+                isSameName(newDispatcherField, newReceiverField);
+
     }
 
     public boolean checkFieldNamingConflict(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
@@ -67,13 +110,11 @@ public class RenameFieldRenameFieldCell {
         RenameFieldObject secondObject = (RenameFieldObject) secondRefactoring;
 
         // Get field information
-        String oldFirstName = firstObject.getOriginalName();
         String newFirstName = firstObject.getDestinationName();
         String oldSecondName = secondObject.getOriginalName();
         String newSecondName = secondObject.getDestinationName();
 
         // Get class information
-        String oldFirstClass = firstObject.getOriginalClass();
         String newFirstClass = firstObject.getDestinationClass();
         String oldSecondClass = secondObject.getOriginalClass();
         String newSecondClass = secondObject.getDestinationClass();
