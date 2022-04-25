@@ -17,6 +17,8 @@ public class RenameFieldObject implements RefactoringObject {
 
     private String originalClass;
 
+    private String destinationClass;
+
     private int startLine;
     private int endLine;
     private boolean isRename;
@@ -36,6 +38,7 @@ public class RenameFieldObject implements RefactoringObject {
         this.originalName = originalAttribute.getName();
         this.destinationName = destinationAttribute.getName();
         this.originalClass = originalAttribute.getClassName();
+        this.destinationClass = destinationAttribute.getClassName();
 
         this.isRename = true;
 
@@ -53,6 +56,8 @@ public class RenameFieldObject implements RefactoringObject {
     public String getOriginalClass() {
         return originalClass;
     }
+
+    public String getDestinationClass() { return destinationClass; }
 
     @Override
     public void setStartLine(int startLine) {
