@@ -31,4 +31,20 @@ public class RenameFieldRenameFieldLogicTests extends LightJavaCodeInsightFixtur
         isConflicting = cell.checkFieldNamingConflict(leftRenameFieldObject, rightRenameFieldObject2);
         Assert.assertFalse(isConflicting);
     }
+
+    public void testFoundTransitivity() {
+        // A.foo -> A.bar
+        RenameFieldObject leftRenameFieldObject = new RenameFieldObject("A.java", "A",
+                "foo", "A.java", "A", "bar");
+        leftRenameFieldObject.setType(RefactoringType.RENAME_ATTRIBUTE);
+        // A.bar -> A.foobar
+        RenameFieldObject rightRenameFieldObject1 = new RenameFieldObject("A.java", "A",
+                "bar", "A.java", "A", "foobar");
+        rightRenameFieldObject1.setType(RefactoringType.RENAME_ATTRIBUTE);
+
+        RenameFieldRenameFieldCell cell = new RenameFieldRenameFieldCell(getProject());
+        boolean isTransitive = cell.checkTransitivity(leftRenameFieldObject, rightRenameFieldObject1);
+        Assert.assertTrue(isTransitive);
+        Assert.assertEquals(leftRenameFieldObject.getDestinationName(), rightRenameFieldObject1.getDestinationName());
+    }
 }
