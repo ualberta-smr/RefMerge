@@ -20,6 +20,8 @@ public class MoveRenameFieldObject implements RefactoringObject {
 
     private String destinationClass;
 
+    private String visibility;
+
     private int startLine;
     private int endLine;
     private boolean isRename;
@@ -74,6 +76,7 @@ public class MoveRenameFieldObject implements RefactoringObject {
             this.originalFilePath = originalAttribute.getLocationInfo().getFilePath();
             this.destinationFilePath = destinationAttribute.getLocationInfo().getFilePath();
             setType(refactoringType);
+            this.visibility = originalAttribute.getVisibility();
         }
 
 
@@ -163,6 +166,14 @@ public class MoveRenameFieldObject implements RefactoringObject {
         return isRename;
     }
 
+    public String getVisibility() {
+        return visibility;
+    }
+
+    public boolean isMove() {
+        return isMove;
+    }
+
     public void setOriginalClassName(String originalClass) {
         this.originalClass = originalClass;
     }
@@ -185,6 +196,10 @@ public class MoveRenameFieldObject implements RefactoringObject {
         }
         if(isRename && isMove) {
             this.refactoringType = RefactoringType.MOVE_RENAME_ATTRIBUTE;
+        }
+        else if(refactoringType.equals(RefactoringType.MOVE_RENAME_ATTRIBUTE)) {
+            this.isRename = true;
+            this.isMove = true;
         }
     }
 }
