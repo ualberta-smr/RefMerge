@@ -51,6 +51,8 @@ public class ReplayRefactorings {
                     }
                     break;
                 case RENAME_ATTRIBUTE:
+                case MOVE_ATTRIBUTE:
+                case MOVE_RENAME_ATTRIBUTE:
                     try {
                         ReplayMoveRenameField replayMoveRenameField = new ReplayMoveRenameField(project);
                         replayMoveRenameField.replayRenameField(refactoringObject);
