@@ -1,6 +1,7 @@
 package ca.ualberta.cs.smr.refmerge.refactoringObjects;
 
 import gr.uom.java.xmi.UMLAttribute;
+import gr.uom.java.xmi.diff.MoveAttributeRefactoring;
 import gr.uom.java.xmi.diff.RenameAttributeRefactoring;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
@@ -23,6 +24,8 @@ public class MoveRenameFieldObject implements RefactoringObject {
     private int endLine;
     private boolean isRename;
 
+    private boolean isMove;
+
     /*
      * Initialize for testing
      */
@@ -41,21 +44,40 @@ public class MoveRenameFieldObject implements RefactoringObject {
      * Initialize the fields for RenameFieldObject for inverting, replaying, and checking for refactoring conflicts.
      */
     public MoveRenameFieldObject(Refactoring refactoring) {
-        RenameAttributeRefactoring ref = (RenameAttributeRefactoring) refactoring;
-        this.refactoringType = ref.getRefactoringType();
-        this.refactoringDetail = ref.toString();
-        this.originalFilePath = ref.getClassNameBefore();
-        this.destinationFilePath = ref.getClassNameAfter();
-        UMLAttribute originalAttribute = ref.getOriginalAttribute();
-        UMLAttribute destinationAttribute = ref.getRenamedAttribute();
-        this.originalName = originalAttribute.getName();
-        this.destinationName = destinationAttribute.getName();
-        this.originalClass = originalAttribute.getClassName();
-        this.destinationClass = destinationAttribute.getClassName();
+        this.isMove = false;
+        this.isRename = false;
+        if(refactoring instanceof RenameAttributeRefactoring) {
+            RenameAttributeRefactoring ref = (RenameAttributeRefactoring) refactoring;
+            this.refactoringType = ref.getRefactoringType();
+            this.refactoringDetail = ref.toString();
+            this.originalFilePath = ref.getClassNameBefore();
+            this.destinationFilePath = ref.getClassNameAfter();
+            UMLAttribute originalAttribute = ref.getOriginalAttribute();
+            UMLAttribute destinationAttribute = ref.getRenamedAttribute();
+            this.originalName = originalAttribute.getName();
+            this.destinationName = destinationAttribute.getName();
+            this.originalClass = originalAttribute.getClassName();
+            this.destinationClass = destinationAttribute.getClassName();
+            setType(refactoringType);
+        }
+        // MoveAndRenameAttributeRefactoring is a subclass of MoveAttributeRefactoring so this should cover both cases
+        else  {
+            MoveAttributeRefactoring ref = (MoveAttributeRefactoring) refactoring;
+            this.refactoringType = ref.getRefactoringType();
+            this.refactoringDetail = ref.toString();
+            this.originalClass = ref.getSourceClassName();
+            this.destinationClass = ref.getTargetClassName();
+            UMLAttribute originalAttribute = ref.getOriginalAttribute();
+            UMLAttribute destinationAttribute = ref.getMovedAttribute();
+            this.originalName = originalAttribute.getName();
+            this.destinationName = destinationAttribute.getName();
+            this.originalFilePath = originalAttribute.getLocationInfo().getFilePath();
+            this.destinationFilePath = destinationAttribute.getLocationInfo().getFilePath();
+            setType(refactoringType);
+        }
 
-        this.isRename = true;
 
-        this.isReplay = false;
+        this.isReplay = true;
     }
 
     public String getOriginalName() {
@@ -157,6 +179,12 @@ public class MoveRenameFieldObject implements RefactoringObject {
         this.refactoringType = refactoringType;
         if(refactoringType.equals(RefactoringType.RENAME_ATTRIBUTE)) {
             this.isRename = true;
+        }
+        if(refactoringType.equals(RefactoringType.MOVE_ATTRIBUTE)) {
+            this.isMove = true;
+        }
+        if(isRename && isMove) {
+            this.refactoringType = RefactoringType.MOVE_RENAME_ATTRIBUTE;
         }
     }
 }
