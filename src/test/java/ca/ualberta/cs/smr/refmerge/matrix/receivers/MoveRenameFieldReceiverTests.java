@@ -1,6 +1,6 @@
 package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.RenameFieldDispatcher;
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameFieldDispatcher;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameFieldObject;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
@@ -25,7 +25,7 @@ public class MoveRenameFieldReceiverTests extends LightJavaCodeInsightFixtureTes
                 "bar", "A.java", "A", "foobar");
         rightRenameFieldObject1.setType(RefactoringType.RENAME_ATTRIBUTE);
         rightRenameFieldObject1.setType(RefactoringType.RENAME_ATTRIBUTE);
-        RenameFieldDispatcher dispatcher = new RenameFieldDispatcher();
+        MoveRenameFieldDispatcher dispatcher = new MoveRenameFieldDispatcher();
         dispatcher.set(rightRenameFieldObject1, project, true);
         MoveRenameFieldReceiver receiver = new MoveRenameFieldReceiver();
         receiver.set(leftRenameFieldObject, project);

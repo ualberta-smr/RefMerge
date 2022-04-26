@@ -68,7 +68,7 @@ public class Receiver {
     /*
      * Any method that overrides this will dispatch to a logic cell containing a rename field refactoring.
      */
-    public void receive(RenameFieldDispatcher dispatcher) {
+    public void receive(MoveRenameFieldDispatcher dispatcher) {
         // This is empty because subclasses that receive a rename field dispatcher will override this method.
     }
 

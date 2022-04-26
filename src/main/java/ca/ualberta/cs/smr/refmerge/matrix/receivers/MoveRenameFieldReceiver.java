@@ -9,7 +9,7 @@ import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 public class MoveRenameFieldReceiver extends Receiver {
 
     @Override
-    public void receive(RenameFieldDispatcher dispatcher) {
+    public void receive(MoveRenameFieldDispatcher dispatcher) {
         RefactoringObject dispatcherObject = dispatcher.getRefactoringObject();
         RenameFieldRenameFieldCell cell = new RenameFieldRenameFieldCell(project);
         // If checking for transitivity instead of conflicts
