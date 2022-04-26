@@ -129,7 +129,7 @@ public class MoveRenameFieldObject implements RefactoringObject {
 
     @Override
     public RefactoringOrder getRefactoringOrder() {
-        return RefactoringOrder.RENAME_FIELD;
+        return RefactoringOrder.MOVE_RENAME_FIELD;
     }
 
     @Override
@@ -187,19 +187,18 @@ public class MoveRenameFieldObject implements RefactoringObject {
     }
 
     public void setType(RefactoringType refactoringType) {
-        this.refactoringType = refactoringType;
         if(refactoringType.equals(RefactoringType.RENAME_ATTRIBUTE)) {
             this.isRename = true;
         }
         if(refactoringType.equals(RefactoringType.MOVE_ATTRIBUTE)) {
             this.isMove = true;
         }
-        if(isRename && isMove) {
-            this.refactoringType = RefactoringType.MOVE_RENAME_ATTRIBUTE;
-        }
-        else if(refactoringType.equals(RefactoringType.MOVE_RENAME_ATTRIBUTE)) {
+        else {
             this.isRename = true;
             this.isMove = true;
+        }
+        if(isRename && isMove) {
+            this.refactoringType = RefactoringType.MOVE_RENAME_ATTRIBUTE;
         }
     }
 }
