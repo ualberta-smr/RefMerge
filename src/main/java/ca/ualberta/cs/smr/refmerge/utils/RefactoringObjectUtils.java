@@ -26,6 +26,8 @@ public class RefactoringObjectUtils {
             case INLINE_OPERATION:
                 return new InlineMethodObject(refactoring);
             case RENAME_ATTRIBUTE:
+            case MOVE_ATTRIBUTE:
+            case MOVE_RENAME_ATTRIBUTE:
                 return new MoveRenameFieldObject(refactoring);
 
         }
