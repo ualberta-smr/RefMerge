@@ -373,4 +373,80 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         Assert.assertNotEquals(oldFields[0].getName(), "renamedField");
     }
 
+    public void testUndoMoveField() {
+        Project project = myFixture.getProject();
+        String testDir = "renameMoveFieldFiles/";
+        String testDataRefactored = testDir + "refactored/";
+        String testDataOriginal = testDir + "original/";
+        String testResult = testDir + "expectedAfterInvert/";
+        String testFile ="Main.java";
+        String testFile2 = "Second.java";
+        PsiFile[] psiFiles = myFixture.configureByFiles(testDataRefactored + testFile, testDataRefactored + testFile2,
+                testResult + testFile, testResult + testFile2);
+        String basePath = System.getProperty("user.dir");
+
+        PsiField[] oldFields = null;
+        PsiField[] newFields = null;
+
+        PsiFile file1 = null;
+        PsiFile file2 = null;
+
+        for(PsiFile file : psiFiles) {
+            if(file.getVirtualFile().getCanonicalPath().contains("expected")) {
+                if(file.getName().contains("Main")) {
+                    oldFields = TestUtils.getPsiFieldsFromFile((file));
+                    file1 = file;
+                }
+            }
+            if(file.getVirtualFile().getCanonicalPath().contains("refactored")) {
+                if(file.getName().contains("Main")) {
+                    newFields = TestUtils.getPsiFieldsFromFile(file);
+                    file2 = file;
+                }
+            }
+        }
+
+        String refactoredPath = basePath + "/" + getTestDataPath() + "/" + testDataRefactored;
+        String originalPath = basePath + "/" + getTestDataPath() + "/" + testDataOriginal;
+
+
+        List<String> list1 = TestUtils.getFieldNames(oldFields);
+        List<String> list2 = TestUtils.getFieldNames(newFields);
+
+        LightJavaCodeInsightFixtureTestCase.assertNotSame(list1, list2);
+
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("MOVE_ATTRIBUTE", originalPath, refactoredPath);
+        assert refactorings != null;
+        Refactoring ref = refactorings.get(0);
+        InvertMoveRenameField undo = new InvertMoveRenameField(project);
+        RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
+        undo.invertRenameField(refactoringObject);
+
+        MoveRenameFieldObject fieldObject = new MoveRenameFieldObject("Main.java", "Main",
+                "firstFieldName", "Second.java", "Second", "firstFieldName2");
+        fieldObject.setType(RefactoringType.MOVE_RENAME_ATTRIBUTE);
+        undo.invertRenameField(fieldObject);
+
+        for(PsiFile file : psiFiles) {
+            if(file.getVirtualFile().getCanonicalPath().contains("expected")) {
+                if(file.getName().contains("Main")) {
+                    oldFields = TestUtils.getPsiFieldsFromFile((file));
+                    file1 = file;
+                }
+            }
+            if(file.getVirtualFile().getCanonicalPath().contains("refactored")) {
+                if(file.getName().contains("Main")) {
+                    newFields = TestUtils.getPsiFieldsFromFile(file);
+                    file2 = file;
+                }
+            }
+        }
+
+        list1 = TestUtils.getFieldNames(oldFields);
+        list2 = TestUtils.getFieldNames(newFields);
+        System.out.println(file1.getText());
+        System.out.println(file2.getText());
+        LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
+    }
+
 }
