@@ -388,20 +388,16 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         PsiField[] oldFields = null;
         PsiField[] newFields = null;
 
-        PsiFile file1 = null;
-        PsiFile file2 = null;
 
         for(PsiFile file : psiFiles) {
             if(file.getVirtualFile().getCanonicalPath().contains("expected")) {
                 if(file.getName().contains("Main")) {
                     oldFields = TestUtils.getPsiFieldsFromFile((file));
-                    file1 = file;
                 }
             }
             if(file.getVirtualFile().getCanonicalPath().contains("refactored")) {
                 if(file.getName().contains("Main")) {
                     newFields = TestUtils.getPsiFieldsFromFile(file);
-                    file2 = file;
                 }
             }
         }
@@ -431,21 +427,17 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
             if(file.getVirtualFile().getCanonicalPath().contains("expected")) {
                 if(file.getName().contains("Main")) {
                     oldFields = TestUtils.getPsiFieldsFromFile((file));
-                    file1 = file;
                 }
             }
             if(file.getVirtualFile().getCanonicalPath().contains("refactored")) {
                 if(file.getName().contains("Main")) {
                     newFields = TestUtils.getPsiFieldsFromFile(file);
-                    file2 = file;
                 }
             }
         }
 
         list1 = TestUtils.getFieldNames(oldFields);
         list2 = TestUtils.getFieldNames(newFields);
-        System.out.println(file1.getText());
-        System.out.println(file2.getText());
         LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
     }
 
