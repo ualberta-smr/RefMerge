@@ -1,8 +1,7 @@
 package ca.ualberta.cs.smr.refmerge.matrix.logicCells;
 
-import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameMethodObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
-import ca.ualberta.cs.smr.refmerge.refactoringObjects.RenameFieldObject;
+import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameFieldObject;
 import ca.ualberta.cs.smr.refmerge.utils.Utils;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
@@ -39,8 +38,8 @@ public class RenameFieldRenameFieldCell {
     }
 
     public boolean checkShadowConflict(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
-        RenameFieldObject dispatcherField = (RenameFieldObject)  dispatcherObject;
-        RenameFieldObject receiverField = (RenameFieldObject) receiverObject;
+        MoveRenameFieldObject dispatcherField = (MoveRenameFieldObject)  dispatcherObject;
+        MoveRenameFieldObject receiverField = (MoveRenameFieldObject) receiverObject;
 
         String newDispatcherClass = dispatcherField.getDestinationClass();
         String newReceiverClass = receiverField.getDestinationClass();
@@ -73,8 +72,8 @@ public class RenameFieldRenameFieldCell {
     }
 
     public boolean checkFieldNamingConflict(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
-        RenameFieldObject dispatcherField = (RenameFieldObject) dispatcherObject;
-        RenameFieldObject receiverField = (RenameFieldObject) receiverObject;
+        MoveRenameFieldObject dispatcherField = (MoveRenameFieldObject) dispatcherObject;
+        MoveRenameFieldObject receiverField = (MoveRenameFieldObject) receiverObject;
 
         // Get the field names
         String originalDispatcherField = dispatcherField.getOriginalName();
@@ -106,8 +105,8 @@ public class RenameFieldRenameFieldCell {
     }
 
     public boolean checkTransitivity(RefactoringObject firstRefactoring, RefactoringObject secondRefactoring) {
-        RenameFieldObject firstObject = (RenameFieldObject) firstRefactoring;
-        RenameFieldObject secondObject = (RenameFieldObject) secondRefactoring;
+        MoveRenameFieldObject firstObject = (MoveRenameFieldObject) firstRefactoring;
+        MoveRenameFieldObject secondObject = (MoveRenameFieldObject) secondRefactoring;
 
         // Get field information
         String newFirstName = firstObject.getDestinationName();
@@ -122,8 +121,8 @@ public class RenameFieldRenameFieldCell {
         // If c2 == c3 and f2 == f3 where c1.f1 -> c2.f2 and c3.f3 -> c4.f4, then they can be combined to c1.f1 -> c4.f4
         if(newFirstClass.equals(oldSecondClass) && newFirstName.equals(oldSecondName)) {
             firstRefactoring.setDestinationFilePath(secondObject.getDestinationFilePath());
-            ((RenameFieldObject) firstRefactoring).setDestinationClassName(newSecondClass);
-            ((RenameFieldObject) firstRefactoring).setDestinationFieldName(newSecondName);
+            ((MoveRenameFieldObject) firstRefactoring).setDestinationClassName(newSecondClass);
+            ((MoveRenameFieldObject) firstRefactoring).setDestinationFieldName(newSecondName);
             return true;
         }
 

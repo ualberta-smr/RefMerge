@@ -1,7 +1,7 @@
 package ca.ualberta.cs.smr.refmerge.matrix.logicCells;
 
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameClassObject;
-import ca.ualberta.cs.smr.refmerge.refactoringObjects.RenameFieldObject;
+import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameFieldObject;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 
@@ -15,9 +15,9 @@ public class RenameFieldMoveRenameClassLogicTests extends LightJavaCodeInsightFi
     public void testCheckCombination() {
         MoveRenameClassObject classObject = new MoveRenameClassObject("A.java", "A", "package",
                 "B.java", "B", "package");
-        RenameFieldObject fieldObject = new RenameFieldObject("A.java", "A", "foo",
+        MoveRenameFieldObject fieldObject = new MoveRenameFieldObject("A.java", "A", "foo",
                 "A.java", "A", "bar");
-        RenameFieldObject fieldObject2 = new RenameFieldObject("B.java", "B", "foo",
+        MoveRenameFieldObject fieldObject2 = new MoveRenameFieldObject("B.java", "B", "foo",
                 "B.java", "B", "bar");
 
         RenameFieldMoveRenameClassCell.checkCombination(classObject, fieldObject);

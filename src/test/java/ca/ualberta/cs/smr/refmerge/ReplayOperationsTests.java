@@ -376,7 +376,7 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_ATTRIBUTE", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
-        ReplayRenameField replay = new ReplayRenameField(project);
+        ReplayMoveRenameField replay = new ReplayMoveRenameField(project);
         RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
         replay.replayRenameField(refactoringObject);
 

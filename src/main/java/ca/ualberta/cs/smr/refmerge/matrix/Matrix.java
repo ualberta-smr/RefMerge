@@ -49,7 +49,7 @@ public class Matrix {
         put(RefactoringType.MOVE_RENAME_CLASS, new MoveRenameClassReceiver());
         put(RefactoringType.EXTRACT_OPERATION, new ExtractMethodReceiver());
         put(RefactoringType.INLINE_OPERATION, new InlineMethodReceiver());
-        put(RefactoringType.RENAME_ATTRIBUTE, new RenameFieldReceiver());
+        put(RefactoringType.RENAME_ATTRIBUTE, new MoveRenameFieldReceiver());
     }};
 
     public Matrix(Project project) {

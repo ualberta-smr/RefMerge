@@ -1,7 +1,7 @@
-package ca.ualberta.cs.smr.refmerge.invertOperations;
+package ca.ualberta.cs.smr.refmerge.replayOperations;
 
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
-import ca.ualberta.cs.smr.refmerge.refactoringObjects.RenameFieldObject;
+import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameFieldObject;
 import ca.ualberta.cs.smr.refmerge.utils.Utils;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -14,26 +14,23 @@ import com.intellij.usageView.UsageInfo;
 import com.intellij.usages.UsageView;
 import com.intellij.usages.UsageViewManager;
 
-public class InvertRenameField {
+public class ReplayMoveRenameField {
 
     Project project;
 
-    public InvertRenameField(Project project) {
+    public ReplayMoveRenameField(Project project) {
         this.project = project;
     }
 
-    /*
-     * Invert the rename field refactoring that was performed in the commit
-     */
-    public void invertRenameField(RefactoringObject ref) {
-        RenameFieldObject renameFieldObject = (RenameFieldObject) ref;
+    public void replayRenameField(RefactoringObject ref) {
+        MoveRenameFieldObject renameFieldObject = (MoveRenameFieldObject) ref;
         // The field name we are inverting to
         String originalField = renameFieldObject.getOriginalName();
         // The field name we are inverting
         String renamedField = renameFieldObject.getDestinationName();
 
         // The file and class that we are inverting the refactoring in. We use the original instead of the destination
-        // because the class refactorings were already inverted.
+        // because we replay the field refactorings before the class refactorings.
         String originalFile = renameFieldObject.getOriginalFilePath();
         String originalClass = renameFieldObject.getOriginalClass();
 
@@ -54,11 +51,13 @@ public class InvertRenameField {
         // Get the virtual file, so we can update the virtual file after performing the refactoring
         VirtualFile virtualFile = psiClass.getContainingFile().getVirtualFile();
 
-        PsiField psiField = Utils.getPsiField(psiClass, renamedField);
+        // Get the PSI Field for the original field
+        PsiField psiField = Utils.getPsiField(psiClass, originalField);
 
         RefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
         assert psiField != null;
-        RenameRefactoring renameRefactoring = factory.createRename(psiField, originalField, true, true);
+        // Rename the original field back to the refactored field
+        RenameRefactoring renameRefactoring = factory.createRename(psiField, renamedField, true, true);
         UsageInfo[] refactoringUsages = renameRefactoring.findUsages();
         renameRefactoring.doRefactoring(refactoringUsages);
         // Check if there is a usage view. if so, close the usage view and do not perform the refactoring.
@@ -71,6 +70,5 @@ public class InvertRenameField {
 
         // Update the virtual file that contains the refactoring
         virtualFile.refresh(false, true);
-
     }
 }

@@ -1,6 +1,6 @@
 package ca.ualberta.cs.smr.refmerge.matrix.logicCells;
 
-import ca.ualberta.cs.smr.refmerge.refactoringObjects.RenameFieldObject;
+import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameFieldObject;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 import org.refactoringminer.api.RefactoringType;
@@ -14,15 +14,15 @@ public class RenameFieldRenameFieldLogicTests extends LightJavaCodeInsightFixtur
 
     public void testNamingConflict() {
         // A.foo -> A.bar
-        RenameFieldObject leftRenameFieldObject = new RenameFieldObject("A.java", "A",
+        MoveRenameFieldObject leftRenameFieldObject = new MoveRenameFieldObject("A.java", "A",
                 "foo", "A.java", "A", "bar");
         leftRenameFieldObject.setType(RefactoringType.RENAME_ATTRIBUTE);
         // A.foo -> A.foobar (conflicts with 1)
-        RenameFieldObject rightRenameFieldObject1 = new RenameFieldObject("A.java", "A",
+        MoveRenameFieldObject rightRenameFieldObject1 = new MoveRenameFieldObject("A.java", "A",
                 "foo", "A.java", "A", "foobar");
         rightRenameFieldObject1.setType(RefactoringType.RENAME_ATTRIBUTE);
         // B.foo -> B.foobar (no conflict)
-        RenameFieldObject rightRenameFieldObject2 = new RenameFieldObject("B.java", "B",
+        MoveRenameFieldObject rightRenameFieldObject2 = new MoveRenameFieldObject("B.java", "B",
                 "foo", "B.java", "B", "foobar");
         rightRenameFieldObject2.setType(RefactoringType.RENAME_ATTRIBUTE);
         RenameFieldRenameFieldCell cell = new RenameFieldRenameFieldCell(getProject());
@@ -34,11 +34,11 @@ public class RenameFieldRenameFieldLogicTests extends LightJavaCodeInsightFixtur
 
     public void testFoundTransitivity() {
         // A.foo -> A.bar
-        RenameFieldObject leftRenameFieldObject = new RenameFieldObject("A.java", "A",
+        MoveRenameFieldObject leftRenameFieldObject = new MoveRenameFieldObject("A.java", "A",
                 "foo", "A.java", "A", "bar");
         leftRenameFieldObject.setType(RefactoringType.RENAME_ATTRIBUTE);
         // A.bar -> A.foobar
-        RenameFieldObject rightRenameFieldObject1 = new RenameFieldObject("A.java", "A",
+        MoveRenameFieldObject rightRenameFieldObject1 = new MoveRenameFieldObject("A.java", "A",
                 "bar", "A.java", "A", "foobar");
         rightRenameFieldObject1.setType(RefactoringType.RENAME_ATTRIBUTE);
 
@@ -50,11 +50,11 @@ public class RenameFieldRenameFieldLogicTests extends LightJavaCodeInsightFixtur
 
     public void testNotFoundTransitivity() {
         // A.foo -> A.bar
-        RenameFieldObject leftRenameFieldObject = new RenameFieldObject("A.java", "A",
+        MoveRenameFieldObject leftRenameFieldObject = new MoveRenameFieldObject("A.java", "A",
                 "foo", "A.java", "A", "bar");
         leftRenameFieldObject.setType(RefactoringType.RENAME_ATTRIBUTE);
         // A.foobar -> A.foobar
-        RenameFieldObject rightRenameFieldObject1 = new RenameFieldObject("A.java", "A",
+        MoveRenameFieldObject rightRenameFieldObject1 = new MoveRenameFieldObject("A.java", "A",
                 "foobar", "A.java", "A", "foobar");
         rightRenameFieldObject1.setType(RefactoringType.RENAME_ATTRIBUTE);
 

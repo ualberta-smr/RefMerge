@@ -62,8 +62,8 @@ public class InvertRefactorings {
                     break;
                 case RENAME_ATTRIBUTE:
                     try {
-                        InvertRenameField invertRenameField = new InvertRenameField(project);
-                        invertRenameField.invertRenameField(refactoringObject);
+                        InvertMoveRenameField invertMoveRenameField = new InvertMoveRenameField(project);
+                        invertMoveRenameField.invertRenameField(refactoringObject);
                     } catch (Exception exception) {
                         exception.printStackTrace();
                     }

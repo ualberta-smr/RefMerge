@@ -6,7 +6,7 @@ import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenameFieldRenameFieldCell;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 
 
-public class RenameFieldReceiver extends Receiver {
+public class MoveRenameFieldReceiver extends Receiver {
 
     @Override
     public void receive(RenameFieldDispatcher dispatcher) {

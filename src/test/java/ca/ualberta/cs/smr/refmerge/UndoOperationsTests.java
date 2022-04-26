@@ -361,7 +361,7 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_ATTRIBUTE", originalPath, refactoredPath);
         assert refactorings != null;
         Refactoring ref = refactorings.get(0);
-        InvertRenameField undo = new InvertRenameField(project);
+        InvertMoveRenameField undo = new InvertMoveRenameField(project);
         RefactoringObject refactoringObject = RefactoringObjectUtils.createRefactoringObject(ref);
         undo.invertRenameField(refactoringObject);
 

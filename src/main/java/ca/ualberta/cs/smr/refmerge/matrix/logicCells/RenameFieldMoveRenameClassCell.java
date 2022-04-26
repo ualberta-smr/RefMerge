@@ -2,7 +2,7 @@ package ca.ualberta.cs.smr.refmerge.matrix.logicCells;
 
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameClassObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
-import ca.ualberta.cs.smr.refmerge.refactoringObjects.RenameFieldObject;
+import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameFieldObject;
 
 public class RenameFieldMoveRenameClassCell {
 
@@ -12,7 +12,7 @@ public class RenameFieldMoveRenameClassCell {
     // p1.c1.f1 -> p2.c2.f2 and p1.c1 -> p2.c2
     public static boolean checkCombination(RefactoringObject classObject, RefactoringObject fieldObject) {
         MoveRenameClassObject mRCObject = (MoveRenameClassObject) classObject;
-        RenameFieldObject fObject = (RenameFieldObject) fieldObject;
+        MoveRenameFieldObject fObject = (MoveRenameFieldObject) fieldObject;
 
         String originalMRClassName = mRCObject.getOriginalClassObject().getClassName();
         String destinationMRClassName = mRCObject.getDestinationClassObject().getClassName();
@@ -25,12 +25,12 @@ public class RenameFieldMoveRenameClassCell {
         if((originalMRClassName.equals(originalFieldClassName) && !destinationFieldClassName.equals(destinationMRClassName))
             || (destinationFieldClassName.equals(originalMRClassName) && !originalFieldClassName.equals(originalMRClassName))) {
             fieldObject.setDestinationFilePath(classObject.getDestinationFilePath());
-            ((RenameFieldObject) fieldObject).setDestinationClassName(destinationMRClassName);
+            ((MoveRenameFieldObject) fieldObject).setDestinationClassName(destinationMRClassName);
         }
         // If the original classes are different but the destination classes are the same, update the original class for the field
         else if(!originalMRClassName.equals(originalFieldClassName) && destinationFieldClassName.equals(destinationMRClassName)) {
             fieldObject.setOriginalFilePath(classObject.getOriginalFilePath());
-            ((RenameFieldObject) fieldObject).setOriginalClassName(originalMRClassName);
+            ((MoveRenameFieldObject) fieldObject).setOriginalClassName(originalMRClassName);
         }
 
         return false;

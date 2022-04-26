@@ -5,7 +5,7 @@ import gr.uom.java.xmi.diff.RenameAttributeRefactoring;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
 
-public class RenameFieldObject implements RefactoringObject {
+public class MoveRenameFieldObject implements RefactoringObject {
 
     private RefactoringType refactoringType;
     private final String refactoringDetail;
@@ -26,8 +26,8 @@ public class RenameFieldObject implements RefactoringObject {
     /*
      * Initialize for testing
      */
-    public RenameFieldObject(String originalFile, String originalClass, String originalname,
-                             String newFile, String newClass, String newName) {
+    public MoveRenameFieldObject(String originalFile, String originalClass, String originalname,
+                                 String newFile, String newClass, String newName) {
         this.originalFilePath = originalFile;
         this.originalClass = originalClass;
         this.originalName = originalname;
@@ -40,7 +40,7 @@ public class RenameFieldObject implements RefactoringObject {
     /*
      * Initialize the fields for RenameFieldObject for inverting, replaying, and checking for refactoring conflicts.
      */
-    public RenameFieldObject(Refactoring refactoring) {
+    public MoveRenameFieldObject(Refactoring refactoring) {
         RenameAttributeRefactoring ref = (RenameAttributeRefactoring) refactoring;
         this.refactoringType = ref.getRefactoringType();
         this.refactoringDetail = ref.toString();
