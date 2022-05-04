@@ -120,6 +120,31 @@ public class MoveRenameFieldMoveRenameFieldCell {
         return false;
     }
 
+    public boolean checkDependence(RefactoringObject firstRefactoring, RefactoringObject secondRefactoring) {
+        MoveRenameFieldObject firstObject = (MoveRenameFieldObject) firstRefactoring;
+        MoveRenameFieldObject secondObject = (MoveRenameFieldObject) secondRefactoring;
+
+        String firstOriginalClass = firstObject.getOriginalClass();
+        String firstOriginalField = firstObject.getOriginalName();
+        String secondOriginalClass = secondObject.getOriginalClass();
+        String secondOriginalField = secondObject.getOriginalName();
+
+        // If the same field is not being moved and renamed, then there cannot be dependence
+        if(!(firstOriginalClass.equals(secondOriginalClass) && firstOriginalField.equals(secondOriginalField))) {
+            return false;
+        }
+        // If both refactorings are rename, then there is no dependence
+        if(firstObject.isRename() && secondObject.isRename()) {
+            return false;
+        }
+        // If both refactorings are move related refactorings, there is no dependence
+        if(firstObject.isMove() && secondObject.isMove()) {
+            return false;
+        }
+        // One refactoring must be move and the other must be rename at this stage
+        return true;
+    }
+
     public boolean checkTransitivity(RefactoringObject firstRefactoring, RefactoringObject secondRefactoring) {
         MoveRenameFieldObject firstObject = (MoveRenameFieldObject) firstRefactoring;
         MoveRenameFieldObject secondObject = (MoveRenameFieldObject) secondRefactoring;

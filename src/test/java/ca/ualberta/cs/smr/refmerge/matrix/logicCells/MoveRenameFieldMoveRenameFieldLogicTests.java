@@ -78,6 +78,32 @@ public class MoveRenameFieldMoveRenameFieldLogicTests extends LightJavaCodeInsig
         Assert.assertFalse(isConflicting);
     }
 
+    public void testDependence() {
+        // A.foo -> A.bar
+        MoveRenameFieldObject leftRenameFieldObject = new MoveRenameFieldObject("A.java", "A",
+                "foo", "A.java", "A", "bar");
+        leftRenameFieldObject.setType(RefactoringType.RENAME_ATTRIBUTE);
+        // A.foo -> B.foobar (conflicts with 1)
+        MoveRenameFieldObject rightRenameFieldObject1 = new MoveRenameFieldObject("A.java", "A",
+                "foo", "B.java", "B", "foobar");
+        rightRenameFieldObject1.setType(RefactoringType.MOVE_RENAME_ATTRIBUTE);
+        // B.bar -> A.bar (conflicts with 1)
+        MoveRenameFieldObject rightRenameFieldObject2 = new MoveRenameFieldObject("B.java", "B",
+                "bar", "A.java", "A", "bar");
+        rightRenameFieldObject2.setType(RefactoringType.MOVE_ATTRIBUTE);
+        // A.foo -> B.foo (Dependent with 1)
+        MoveRenameFieldObject rightRenameFieldObject3 = new MoveRenameFieldObject("A.java", "A",
+                "foo", "B.java", "B", "foo");
+        rightRenameFieldObject2.setType(RefactoringType.MOVE_ATTRIBUTE);
+        MoveRenameFieldMoveRenameFieldCell cell = new MoveRenameFieldMoveRenameFieldCell(getProject());
+        boolean isDependent = cell.checkDependence(leftRenameFieldObject, rightRenameFieldObject1);
+        Assert.assertFalse(isDependent);
+        isDependent = cell.checkDependence(leftRenameFieldObject, rightRenameFieldObject2);
+        Assert.assertFalse(isDependent);
+        isDependent = cell.checkDependence(leftRenameFieldObject, rightRenameFieldObject3);
+        Assert.assertTrue(isDependent);
+    }
+
     public void testFoundTransitivity() {
         // A.foo -> A.bar
         MoveRenameFieldObject leftRenameFieldObject = new MoveRenameFieldObject("A.java", "A",
