@@ -5,7 +5,7 @@ import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameFieldObject;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 
-public class RenameFieldMoveRenameClassLogicTests extends LightJavaCodeInsightFixtureTestCase {
+public class MoveRenameFieldMoveRenameClassLogicTests extends LightJavaCodeInsightFixtureTestCase {
 
     @Override
     protected String getTestDataPath() {
@@ -20,8 +20,8 @@ public class RenameFieldMoveRenameClassLogicTests extends LightJavaCodeInsightFi
         MoveRenameFieldObject fieldObject2 = new MoveRenameFieldObject("B.java", "B", "foo",
                 "B.java", "B", "bar");
 
-        RenameFieldMoveRenameClassCell.checkCombination(classObject, fieldObject);
-        RenameFieldMoveRenameClassCell.checkCombination(classObject, fieldObject2);
+        MoveRenameFieldMoveRenameClassCell.checkCombination(classObject, fieldObject);
+        MoveRenameFieldMoveRenameClassCell.checkCombination(classObject, fieldObject2);
         Assert.assertEquals(fieldObject.getOriginalClass(), fieldObject2.getOriginalClass());
         Assert.assertEquals(fieldObject.getDestinationClass(), fieldObject2.getDestinationClass());
 

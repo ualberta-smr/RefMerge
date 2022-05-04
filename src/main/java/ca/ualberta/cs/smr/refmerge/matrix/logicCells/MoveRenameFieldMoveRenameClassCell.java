@@ -4,7 +4,7 @@ import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameClassObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameFieldObject;
 
-public class RenameFieldMoveRenameClassCell {
+public class MoveRenameFieldMoveRenameClassCell {
 
     // Given p1.c1 -> p2.c2 and p2.c2.f1 -> p2.c2.f2
     // p1.c1 -> p2.c2 and p1.c1.f1 -> .2.c2.f2

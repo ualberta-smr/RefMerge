@@ -9,11 +9,11 @@ import com.intellij.psi.PsiClass;
 import static ca.ualberta.cs.smr.refmerge.utils.MatrixUtils.ifClassExtends;
 import static ca.ualberta.cs.smr.refmerge.utils.MatrixUtils.isSameName;
 
-public class RenameFieldRenameFieldCell {
+public class MoveRenameFieldMoveRenameFieldCell {
 
     Project project;
 
-    public RenameFieldRenameFieldCell(Project project) {
+    public MoveRenameFieldMoveRenameFieldCell(Project project) {
         this.project = project;
     }
 
@@ -23,7 +23,7 @@ public class RenameFieldRenameFieldCell {
      * can result in a naming or shadowing conflict.
      */
     public boolean renameFieldRenameFieldConflictCell(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
-        RenameFieldRenameFieldCell cell = new RenameFieldRenameFieldCell(project);
+        MoveRenameFieldMoveRenameFieldCell cell = new MoveRenameFieldMoveRenameFieldCell(project);
         // Check for shadowing conflict
         if(cell.checkShadowConflict(dispatcherObject, receiverObject)) {
             System.out.println("Shadow Conflict");

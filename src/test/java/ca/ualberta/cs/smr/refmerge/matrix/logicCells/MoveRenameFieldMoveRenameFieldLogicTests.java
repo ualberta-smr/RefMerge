@@ -5,7 +5,7 @@ import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 import org.refactoringminer.api.RefactoringType;
 
-public class RenameFieldRenameFieldLogicTests extends LightJavaCodeInsightFixtureTestCase {
+public class MoveRenameFieldMoveRenameFieldLogicTests extends LightJavaCodeInsightFixtureTestCase {
 
     @Override
     protected String getTestDataPath() {
@@ -25,7 +25,7 @@ public class RenameFieldRenameFieldLogicTests extends LightJavaCodeInsightFixtur
         MoveRenameFieldObject rightRenameFieldObject2 = new MoveRenameFieldObject("B.java", "B",
                 "foo", "B.java", "B", "foobar");
         rightRenameFieldObject2.setType(RefactoringType.RENAME_ATTRIBUTE);
-        RenameFieldRenameFieldCell cell = new RenameFieldRenameFieldCell(getProject());
+        MoveRenameFieldMoveRenameFieldCell cell = new MoveRenameFieldMoveRenameFieldCell(getProject());
         boolean isConflicting = cell.checkFieldNamingConflict(leftRenameFieldObject, rightRenameFieldObject1);
         Assert.assertTrue(isConflicting);
         isConflicting = cell.checkFieldNamingConflict(leftRenameFieldObject, rightRenameFieldObject2);
@@ -42,7 +42,7 @@ public class RenameFieldRenameFieldLogicTests extends LightJavaCodeInsightFixtur
                 "bar", "A.java", "A", "foobar");
         rightRenameFieldObject1.setType(RefactoringType.RENAME_ATTRIBUTE);
 
-        RenameFieldRenameFieldCell cell = new RenameFieldRenameFieldCell(getProject());
+        MoveRenameFieldMoveRenameFieldCell cell = new MoveRenameFieldMoveRenameFieldCell(getProject());
         boolean isTransitive = cell.checkTransitivity(leftRenameFieldObject, rightRenameFieldObject1);
         Assert.assertTrue(isTransitive);
         Assert.assertEquals(leftRenameFieldObject.getDestinationName(), rightRenameFieldObject1.getDestinationName());
@@ -58,7 +58,7 @@ public class RenameFieldRenameFieldLogicTests extends LightJavaCodeInsightFixtur
                 "foobar", "A.java", "A", "foobar");
         rightRenameFieldObject1.setType(RefactoringType.RENAME_ATTRIBUTE);
 
-        RenameFieldRenameFieldCell cell = new RenameFieldRenameFieldCell(getProject());
+        MoveRenameFieldMoveRenameFieldCell cell = new MoveRenameFieldMoveRenameFieldCell(getProject());
         boolean isTransitive = cell.checkTransitivity(leftRenameFieldObject, rightRenameFieldObject1);
         Assert.assertFalse(isTransitive);
         Assert.assertNotEquals(leftRenameFieldObject.getDestinationName(), rightRenameFieldObject1.getDestinationName());

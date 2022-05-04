@@ -1,8 +1,8 @@
 package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.*;
-import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenameFieldMoveRenameClassCell;
-import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenameFieldRenameFieldCell;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.MoveRenameFieldMoveRenameClassCell;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.MoveRenameFieldMoveRenameFieldCell;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 
 
@@ -11,7 +11,7 @@ public class MoveRenameFieldReceiver extends Receiver {
     @Override
     public void receive(MoveRenameFieldDispatcher dispatcher) {
         RefactoringObject dispatcherObject = dispatcher.getRefactoringObject();
-        RenameFieldRenameFieldCell cell = new RenameFieldRenameFieldCell(project);
+        MoveRenameFieldMoveRenameFieldCell cell = new MoveRenameFieldMoveRenameFieldCell(project);
         // If checking for transitivity instead of conflicts
         if(dispatcher.isSimplify()) {
             this.isTransitive = cell.checkTransitivity(this.refactoringObject, dispatcherObject);
@@ -33,7 +33,7 @@ public class MoveRenameFieldReceiver extends Receiver {
     public void receive(MoveRenameClassDispatcher dispatcher) {
         RefactoringObject classObject = dispatcher.getRefactoringObject();
         if(dispatcher.isSimplify()) {
-            RenameFieldMoveRenameClassCell.checkCombination(classObject, this.refactoringObject);
+            MoveRenameFieldMoveRenameClassCell.checkCombination(classObject, this.refactoringObject);
             dispatcher.setRefactoringObject(classObject);
         }
     }
