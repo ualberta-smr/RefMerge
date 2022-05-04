@@ -58,6 +58,26 @@ public class MoveRenameFieldMoveRenameFieldLogicTests extends LightJavaCodeInsig
         Assert.assertTrue(isConflicting);
     }
 
+    public void testMoveRenameNamingConflict() {
+        // A.foo -> A.bar
+        MoveRenameFieldObject leftRenameFieldObject = new MoveRenameFieldObject("A.java", "A",
+                "foo", "A.java", "A", "bar");
+        leftRenameFieldObject.setType(RefactoringType.RENAME_ATTRIBUTE);
+        // A.foo -> B.foobar (conflicts with 1)
+        MoveRenameFieldObject rightRenameFieldObject1 = new MoveRenameFieldObject("A.java", "A",
+                "foo", "B.java", "B", "foobar");
+        rightRenameFieldObject1.setType(RefactoringType.MOVE_RENAME_ATTRIBUTE);
+        // B.bar -> A.bar (conflicts with 1)
+        MoveRenameFieldObject rightRenameFieldObject2 = new MoveRenameFieldObject("B.java", "B",
+                "bar", "A.java", "A", "bar");
+        rightRenameFieldObject2.setType(RefactoringType.MOVE_ATTRIBUTE);
+        MoveRenameFieldMoveRenameFieldCell cell = new MoveRenameFieldMoveRenameFieldCell(getProject());
+        boolean isConflicting = cell.checkFieldNamingConflict(leftRenameFieldObject, rightRenameFieldObject1);
+        Assert.assertTrue(isConflicting);
+        isConflicting = cell.checkFieldNamingConflict(leftRenameFieldObject, rightRenameFieldObject2);
+        Assert.assertFalse(isConflicting);
+    }
+
     public void testFoundTransitivity() {
         // A.foo -> A.bar
         MoveRenameFieldObject leftRenameFieldObject = new MoveRenameFieldObject("A.java", "A",
