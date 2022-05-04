@@ -427,6 +427,17 @@ public class Utils {
         return null;
     }
 
+    public static PsiField getPsiField(PsiClass psiClass, String fieldName) {
+        PsiField[] fields = psiClass.getFields();
+        for(PsiField field : fields) {
+            if(field.getName().equals(fieldName)) {
+                return field;
+            }
+        }
+        return null;
+    }
+
+
     /*
      * Format the text to remove new lines and spaces for comparing code fragments
      */

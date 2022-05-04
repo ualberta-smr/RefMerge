@@ -1,9 +1,6 @@
 package ca.ualberta.cs.smr.testUtils;
 
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiJavaFile;
-import com.intellij.psi.PsiMethod;
+import com.intellij.psi.*;
 import gr.uom.java.xmi.UMLClass;
 
 import java.util.ArrayList;
@@ -16,6 +13,14 @@ public class TestUtils {
         ArrayList<String> names = new ArrayList<>();
         for (PsiMethod method : methods) {
             names.add(method.getName());
+        }
+        return names;
+    }
+
+    public static List<String> getFieldNames(PsiField[] fields) {
+        ArrayList<String> names = new ArrayList<>();
+        for (PsiField field : fields) {
+            names.add(field.getName());
         }
         return names;
     }
@@ -41,6 +46,20 @@ public class TestUtils {
             methodArray[i] = psiMethods.get(i);
         }
         return methodArray;
+    }
+
+    public static PsiField[] getPsiFieldsFromFile(PsiFile psiFile) {
+        ArrayList<PsiField> psiFields = new ArrayList<>();
+        PsiClass[] psiClasses = getPsiClassesFromFile(psiFile);
+        for(PsiClass psiClass : psiClasses) {
+            PsiField[] fields = psiClass.getFields();
+            psiFields.addAll(Arrays.asList(fields));
+        }
+        PsiField[] fieldArray = new PsiField[psiFields.size()];
+        for(int i = 0; i < psiFields.size(); i++) {
+            fieldArray[i] = psiFields.get(i);
+        }
+        return fieldArray;
     }
 
     public static PsiClass[] getPsiClassesFromFile(PsiFile psiFile) {

@@ -146,7 +146,7 @@ public class RefMerge extends AnAction {
         Pair<ArrayList<Pair<RefactoringObject, RefactoringObject>>, ArrayList<RefactoringObject>> pair = matrix.detectConflicts(leftRefs, rightRefs);
 
         time2 = System.currentTimeMillis();
-        // If it has been 14 minutes, it will take more than 30 minutes to complete RefMerge
+        // If it has been 14 minutes, it will take more than 15 minutes to complete RefMerge
         if((time - time2) > 780000) {
             System.out.println("RefMerge Timed Out");
             return null;
