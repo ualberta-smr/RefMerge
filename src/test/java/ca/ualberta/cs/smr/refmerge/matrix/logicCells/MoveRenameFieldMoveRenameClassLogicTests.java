@@ -25,6 +25,19 @@ public class MoveRenameFieldMoveRenameClassLogicTests extends LightJavaCodeInsig
         Assert.assertEquals(fieldObject.getOriginalClass(), fieldObject2.getOriginalClass());
         Assert.assertEquals(fieldObject.getDestinationClass(), fieldObject2.getDestinationClass());
 
+    }
+
+    public void testCheckCombination2() {
+
+        MoveRenameClassObject classObject2 = new MoveRenameClassObject("A.java", "A", "package",
+                "B.java", "B", "package");
+        MoveRenameFieldObject fieldObject = new MoveRenameFieldObject("A.java", "A", "foo",
+                "A.java", "A", "bar");
+
+        MoveRenameFieldMoveRenameClassCell.checkCombination(classObject2, fieldObject);
+        Assert.assertEquals(classObject2.getOriginalClassObject().getClassName(), fieldObject.getOriginalClass());
+        Assert.assertEquals(classObject2.getDestinationClassObject().getClassName(), fieldObject.getDestinationClass());
+
 
     }
 
