@@ -74,6 +74,36 @@ public class MoveRenameFieldMoveRenameFieldLogicTests extends LightJavaCodeInsig
         Assert.assertEquals(leftRenameFieldObject.getDestinationName(), rightRenameFieldObject1.getDestinationName());
     }
 
+    public void testFoundTransitivity2() {
+        // A.foo -> A.bar
+        MoveRenameFieldObject leftRenameFieldObject = new MoveRenameFieldObject("A.java", "A",
+                "foo", "A.java", "A", "bar");
+        leftRenameFieldObject.setType(RefactoringType.RENAME_ATTRIBUTE);
+        // A.bar -> A.foobar
+        MoveRenameFieldObject rightRenameFieldObject1 = new MoveRenameFieldObject("A.java", "A",
+                "bar", "A.java", "A", "foobar");
+        rightRenameFieldObject1.setType(RefactoringType.RENAME_ATTRIBUTE);
+        // A.foobar -> B.foobar
+        MoveRenameFieldObject rightRenameFieldObject2 = new MoveRenameFieldObject("A.java", "A",
+                "foobar", "B.java", "B", "foobar");
+        rightRenameFieldObject1.setType(RefactoringType.MOVE_ATTRIBUTE);
+        // B.foobar -> C.barfoo
+        MoveRenameFieldObject rightRenameFieldObject3 = new MoveRenameFieldObject("B.java", "B",
+                "foobar", "C.java", "C", "barfoo");
+        rightRenameFieldObject1.setType(RefactoringType.MOVE_RENAME_ATTRIBUTE);
+        MoveRenameFieldMoveRenameFieldCell cell = new MoveRenameFieldMoveRenameFieldCell(getProject());
+        boolean isTransitive = cell.checkTransitivity(leftRenameFieldObject, rightRenameFieldObject1);
+        Assert.assertTrue(isTransitive);
+        Assert.assertEquals(leftRenameFieldObject.getDestinationName(), rightRenameFieldObject1.getDestinationName());
+        isTransitive = cell.checkTransitivity(rightRenameFieldObject1, rightRenameFieldObject2);
+        Assert.assertTrue(isTransitive);
+        Assert.assertEquals(rightRenameFieldObject1.getDestinationName(), rightRenameFieldObject2.getDestinationName());
+        isTransitive = cell.checkTransitivity(rightRenameFieldObject2, rightRenameFieldObject3);
+        Assert.assertTrue(isTransitive);
+        Assert.assertEquals(rightRenameFieldObject2.getDestinationName(), rightRenameFieldObject3.getDestinationName());
+        Assert.assertEquals(rightRenameFieldObject2.getDestinationClass(), rightRenameFieldObject3.getDestinationClass());
+    }
+
     public void testNotFoundTransitivity() {
         // A.foo -> A.bar
         MoveRenameFieldObject leftRenameFieldObject = new MoveRenameFieldObject("A.java", "A",
