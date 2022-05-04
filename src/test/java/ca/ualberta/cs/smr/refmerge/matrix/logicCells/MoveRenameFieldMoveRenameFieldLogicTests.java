@@ -12,7 +12,7 @@ public class MoveRenameFieldMoveRenameFieldLogicTests extends LightJavaCodeInsig
         return "src/test/resources";
     }
 
-    public void testNamingConflict() {
+    public void testRenameNamingConflict() {
         // A.foo -> A.bar
         MoveRenameFieldObject leftRenameFieldObject = new MoveRenameFieldObject("A.java", "A",
                 "foo", "A.java", "A", "bar");
@@ -30,6 +30,32 @@ public class MoveRenameFieldMoveRenameFieldLogicTests extends LightJavaCodeInsig
         Assert.assertTrue(isConflicting);
         isConflicting = cell.checkFieldNamingConflict(leftRenameFieldObject, rightRenameFieldObject2);
         Assert.assertFalse(isConflicting);
+    }
+
+    public void testMoveNamingConflict() {
+        // A.foo -> B.foo
+        MoveRenameFieldObject leftRenameFieldObject = new MoveRenameFieldObject("A.java", "A",
+                "foo", "B.java", "B", "foo");
+        leftRenameFieldObject.setType(RefactoringType.MOVE_ATTRIBUTE);
+        // A.foo -> C.foo (conflicts with 1)
+        MoveRenameFieldObject rightRenameFieldObject1 = new MoveRenameFieldObject("A.java", "A",
+                "foo", "C.java", "C", "foo");
+        rightRenameFieldObject1.setType(RefactoringType.MOVE_ATTRIBUTE);
+        // A.foo -> B.foo (no conflict)
+        MoveRenameFieldObject rightRenameFieldObject2 = new MoveRenameFieldObject("A.java", "A",
+                "foo", "B.java", "B", "foo");
+        rightRenameFieldObject2.setType(RefactoringType.MOVE_ATTRIBUTE);
+        // C.foo -> B.foo (conflicts with 1)
+        MoveRenameFieldObject rightRenameFieldObject3 = new MoveRenameFieldObject("C.java", "C",
+                "foo", "B.java", "B", "foo");
+        rightRenameFieldObject3.setType(RefactoringType.MOVE_ATTRIBUTE);
+        MoveRenameFieldMoveRenameFieldCell cell = new MoveRenameFieldMoveRenameFieldCell(getProject());
+        boolean isConflicting = cell.checkFieldNamingConflict(leftRenameFieldObject, rightRenameFieldObject1);
+        Assert.assertTrue(isConflicting);
+        isConflicting = cell.checkFieldNamingConflict(leftRenameFieldObject, rightRenameFieldObject2);
+        Assert.assertFalse(isConflicting);
+        isConflicting = cell.checkFieldNamingConflict(leftRenameFieldObject, rightRenameFieldObject3);
+        Assert.assertTrue(isConflicting);
     }
 
     public void testFoundTransitivity() {

@@ -88,6 +88,7 @@ public class MoveRenameFieldMoveRenameFieldCell {
         String newReceiverClass = receiverField.getDestinationClass();
 
         // If both refactorings are rename field refactorings
+        // The logic in rename field and move field conflict checks encapsulate the logic in move & rename conflict
         if(dispatcherField.isRename() && receiverField.isRename()) {
             // Check that the rename refactorings occur in the same class
             if(originalDispatcherClass.equals(originalReceiverClass)) {
@@ -97,6 +98,21 @@ public class MoveRenameFieldMoveRenameFieldCell {
                 }
                 // Otherwise, if two fields are renamed to the same name in the same class, it is conflicting
                 else if(!originalDispatcherField.equals(originalReceiverField) && newDispatcherField.equals(newReceiverField)) {
+                    return true;
+                }
+            }
+        }
+        // If they are both move field
+        else if(dispatcherField.isMove() && receiverField.isMove()) {
+            if(originalDispatcherClass.equals(originalReceiverClass)) {
+                // If it is the same original field in the same original class and the new classes differ
+                if(originalDispatcherField.equals(originalReceiverField) && !newDispatcherClass.equals(newReceiverClass)) {
+                    return true;
+                }
+            }
+            // Otherwise if the fields originate from different classes but are moved to the same class
+            else {
+                if(originalDispatcherField.equals(originalReceiverField) && newDispatcherClass.equals(newReceiverClass)) {
                     return true;
                 }
             }
