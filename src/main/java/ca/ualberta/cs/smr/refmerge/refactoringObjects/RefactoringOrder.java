@@ -5,8 +5,8 @@ public enum RefactoringOrder {
     INLINE_METHOD(2),
     MOVE_RENAME_METHOD(3),
     EXTRACT_METHOD(4),
-
-    MOVE_RENAME_FIELD(5);
+    PULL_UP_METHOD(5),
+    MOVE_RENAME_FIELD(6);
 
     private final int order;
 
