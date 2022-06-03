@@ -1,10 +1,14 @@
 package ca.ualberta.cs.smr.refmerge.refactoringObjects;
 
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.MethodSignatureObject;
+import com.intellij.openapi.util.Pair;
 import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.diff.PullUpOperationRefactoring;
 import org.refactoringminer.api.Refactoring;
 import org.refactoringminer.api.RefactoringType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PullUpMethodObject implements RefactoringObject {
     private final RefactoringType refactoringType;
@@ -16,7 +20,8 @@ public class PullUpMethodObject implements RefactoringObject {
     private String refactoredFileName;
     private MethodSignatureObject originalMethodSignature;
     private MethodSignatureObject destinationMethodSignature;
-    private String refactoringDetail;
+    private List<Pair<String, String>> subClasses;
+    private final String refactoringDetail;
     private boolean isReplay;
 
     public PullUpMethodObject(Refactoring refactoring) {
@@ -35,6 +40,8 @@ public class PullUpMethodObject implements RefactoringObject {
         this.destinationMethodSignature = new MethodSignatureObject(refactoredOperation.getName(), refactoredOperation.getParameters(),
                 originalOperation.isConstructor(), originalOperation.getVisibility(), originalOperation.isStatic());
         this.refactoringDetail = refactoring.toString();
+        this.subClasses = new ArrayList<>();
+        this.subClasses.add(new Pair<>(originalClass, originalFileName));
         this.isReplay = true;
 
     }
@@ -111,6 +118,22 @@ public class PullUpMethodObject implements RefactoringObject {
         this.destinationMethodSignature = destinationMethodSignature;
     }
 
+    public String getOriginalClass() {
+        return originalClass;
+    }
+
+    public void setOriginalClass(String originalClass) {
+        this.originalClass = originalClass;
+    }
+
+    public String getTargetClass() {
+        return newClass;
+    }
+
+    public void setTargetClass(String newClass) {
+        this.newClass = newClass;
+    }
+
     @Override
     public void setReplayFlag(boolean isReplay) {
         this.isReplay = isReplay;
@@ -120,4 +143,17 @@ public class PullUpMethodObject implements RefactoringObject {
     public boolean isReplay() {
         return isReplay;
     }
+
+    public List<Pair<String, String>> getSubClasses() {
+        return this.subClasses;
+    }
+
+    public void addSubClass(String className, String fileName) {
+        subClasses.add(new Pair<>(className, fileName));
+    }
+
+    public void addSubClass(Pair<String, String> pair) {
+        subClasses.add(pair);
+    }
+
 }
