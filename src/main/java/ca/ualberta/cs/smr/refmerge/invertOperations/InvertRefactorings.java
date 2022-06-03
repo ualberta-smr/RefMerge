@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project;
 
 import java.util.ArrayList;
 
+// To Do: Refactor to call invert/replay from objects
 public class InvertRefactorings {
     /*
      * invertRefactorings takes a list of refactorings and performs the inverse for each one.
@@ -70,6 +71,14 @@ public class InvertRefactorings {
                         exception.printStackTrace();
                     }
                     break;
+                case PULL_UP_OPERATION:
+                    try {
+                        InvertPullUpMethod invertPullUpMethod = new InvertPullUpMethod(project);
+                        invertPullUpMethod.invertPullUpMethod(refactoringObject);
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                    }
+
 
             }
 
