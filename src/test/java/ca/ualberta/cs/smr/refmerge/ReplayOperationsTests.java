@@ -389,7 +389,7 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         Assert.assertNotEquals(oldFields[0].getName(), "originalField");
     }
 
-    public void testInvertMoveField() {
+    public void testReplayMoveField() {
         Project project = myFixture.getProject();
         String testDir = "renameMoveFieldFiles/";
         String testDataRefactored = testDir + "refactored/";
