@@ -59,6 +59,13 @@ public class ReplayRefactorings {
                     } catch (Exception exception) {
                         exception.printStackTrace();
                     }
+                case PULL_UP_OPERATION:
+                    try {
+                        ReplayPullUpMethod replayPullUpMethod = new ReplayPullUpMethod(project);
+                        replayPullUpMethod.replayPullUpMethod(refactoringObject);
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                    }
             }
 
         }
