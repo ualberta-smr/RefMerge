@@ -83,4 +83,45 @@ public class PullUpMethodMoveRenameMethodTest extends LightJavaCodeInsightFixtur
         Assert.assertTrue(isConflict);
     }
 
+    public void testOverloadConflict() {
+        Project project = myFixture.getProject();
+        String basePath = System.getProperty("user.dir");
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
+        String configurePath = "renameMethodRenameMethodFiles/methodOverloadConflict/original/OverloadClasses.java";
+        myFixture.configureByFiles(configurePath);
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
+        assert refactorings != null;
+        assert refactorings.size() == 3;
+
+        MoveRenameMethodObject moveRenameObject = null;
+        MoveRenameMethodObject pullUpObject = null;
+
+        for(Refactoring refactoring : refactorings) {
+            String originalName = ((RenameOperationRefactoring) refactoring).getOriginalOperation().getName();
+            String newName = ((RenameOperationRefactoring) refactoring).getRenamedOperation().getName();
+            if(originalName.equals("sumNumbers") && newName.equals("numbers")) {
+                moveRenameObject = new MoveRenameMethodObject(refactoring);
+            }
+            if(originalName.equals("multNumbers") && newName.equals("numbers")) {
+                pullUpObject = new MoveRenameMethodObject(refactoring);
+            }
+        }
+
+        PullUpMethodObject pullUpMethodObject = new PullUpMethodObject("Foo",
+                "multNumbers", "Foo", "numbers");
+
+        assert pullUpObject != null;
+        pullUpMethodObject.setDestinationFilePath(pullUpObject.getDestinationFilePath());
+        pullUpMethodObject.setOriginalMethodSignature(pullUpObject.getOriginalMethodSignature());
+        pullUpMethodObject.setDestinationMethodSignature(pullUpObject.getDestinationMethodSignature());
+        pullUpMethodObject.setOriginalFilePath(pullUpObject.getOriginalFilePath());
+
+        PullUpMethodMoveRenameMethodCell cell = new PullUpMethodMoveRenameMethodCell(project);
+
+        assert moveRenameObject != null;
+        boolean isConflicting = cell.overloadConflict(moveRenameObject, pullUpMethodObject);
+        Assert.assertTrue(isConflicting);
+    }
+
 }

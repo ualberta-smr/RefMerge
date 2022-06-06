@@ -27,9 +27,11 @@ public class PullUpMethodMoveRenameMethodCell {
         PullUpMethodObject receiverObject = (PullUpMethodObject) receiver;
 
         // Check for override conflict
-
-        // Check for overload conflict
         if(overrideConflict(dispatcherObject, receiverObject)) {
+            return true;
+        }
+        // Check for overload conflict
+        if(overloadConflict(dispatcherObject, receiverObject)) {
             return true;
         }
         // Check for naming conflict
@@ -72,6 +74,41 @@ public class PullUpMethodMoveRenameMethodCell {
         return !isSameName(dispatcherOriginalMethodName, receiverOriginalMethodName) &&
                 isSameName(dispatcherNewMethodName, receiverNewMethodName) &&
                 dispatcherDestinationMethod.equalsSignature(receiverDestinationMethod);
+
+    }
+
+    public boolean overloadConflict(MoveRenameMethodObject dispatcher, PullUpMethodObject receiver) {
+
+        // Get the original operations
+        MethodSignatureObject dispatcherOriginalMethod = dispatcher.getOriginalMethodSignature();
+        MethodSignatureObject receiverOriginalMethod = receiver.getOriginalMethodSignature();
+        // Get the refactored operations
+        MethodSignatureObject dispatcherDestinationMethod = dispatcher.getDestinationMethodSignature();
+        MethodSignatureObject receiverDestinationMethod = receiver.getDestinationMethodSignature();
+        // Get class names
+        String dispatcherClassName = dispatcher.getOriginalClassName();
+        String receiverClassName = receiver.getOriginalClass();
+        // If the methods are in different classes, no overloading happens
+        if (!dispatcherClassName.equals(receiverClassName)) {
+            Utils utils = new Utils(project);
+            String dispatcherFile = dispatcher.getOriginalFilePath();
+            String receiverFile = receiver.getOriginalFilePath();
+            PsiClass psiDispatcher = utils.getPsiClassByFilePath(dispatcherFile, dispatcherClassName);
+            PsiClass psiReceiver = utils.getPsiClassByFilePath(receiverFile, receiverClassName);
+            if(psiReceiver != null && psiDispatcher != null) {
+                if (!ifClassExtends(psiDispatcher, psiReceiver)) {
+                    return false;
+                }
+            }
+        }
+        String dispatcherOriginalMethodName = dispatcherOriginalMethod.getName();
+        String dispatcherDestinationMethodName = dispatcherDestinationMethod.getName();
+        String receiverOriginalMethodName = receiverOriginalMethod.getName();
+        String receiverDestinationMethodname = receiverDestinationMethod.getName();
+        // If two methods with different signatures are refactored to the same method name, this overloading conflict
+        return (!dispatcherOriginalMethodName.equals(receiverOriginalMethodName) &&
+                dispatcherDestinationMethodName.equals(receiverDestinationMethodname)) &&
+                !dispatcherDestinationMethod.equalsSignature(receiverDestinationMethod);
 
     }
 
