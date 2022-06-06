@@ -35,7 +35,7 @@ public class PushDownFieldObject implements RefactoringObject {
         this.refactoredFileName = refactoredAttribute.getLocationInfo().getFilePath();
         this.refactoringDetail = refactoring.toString();
         this.subClasses = new ArrayList<>();
-        this.subClasses.add(new Pair<>(originalClass, originalFileName));
+        this.subClasses.add(new Pair<>(newClass, refactoredFileName));
         this.isReplay = true;
 
     }

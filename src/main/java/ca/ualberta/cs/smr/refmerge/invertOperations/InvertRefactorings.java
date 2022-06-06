@@ -92,6 +92,13 @@ public class InvertRefactorings {
                     } catch(Exception exception) {
                         exception.printStackTrace();
                     }
+                case PUSH_DOWN_ATTRIBUTE:
+                    try {
+                        InvertPushDownField invertPushDownField = new InvertPushDownField(project);
+                        invertPushDownField.invertPushDownField(refactoringObject);
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                    }
 
 
             }
