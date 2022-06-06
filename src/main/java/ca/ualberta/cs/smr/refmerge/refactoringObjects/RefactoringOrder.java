@@ -9,7 +9,7 @@ public enum RefactoringOrder {
     PUSH_DOWN_METHOD(6),
     MOVE_RENAME_FIELD(7),
     PULL_UP_FIELD(8),
-    PUSH_UP_FIELD(9);
+    PUSH_DOWN_FIELD(9);
 
 
     private final int order;
