@@ -533,5 +533,93 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
     }
 
+    public void testUndoPushDownMethod() {
+        Project project = myFixture.getProject();
+        String testDir = "pullUpMethodFiles/";
+        String testDataOriginal = testDir + "refactored/";
+        String testDataRefactored = testDir + "original/";
+        String testResult = testDir + "expectedAfterInvert/";
+        String testFile ="Main.java";
+        PsiFile[] psiFiles = myFixture.configureByFiles(testDataRefactored + testFile, testDataOriginal + testFile);
+        String basePath = System.getProperty("user.dir");
+
+        PsiMethod[] oldMethods = null;
+        PsiMethod[] newMethods = null;
+
+        List<Pair<String, String>> list1 = new ArrayList<>();
+        List<Pair<String, String>> list2 = new ArrayList<>();
+
+        for(PsiFile file : psiFiles) {
+            if(file.getVirtualFile().getCanonicalPath().contains("original")) {
+                if(file.getName().contains("Main")) {
+                    oldMethods = TestUtils.getPsiMethodsFromFile((file));
+                    for(PsiMethod method : oldMethods) {
+                        String methodName = method.getName();
+                        String className = method.getContainingClass().getName();
+                        list1.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+            if(file.getVirtualFile().getCanonicalPath().contains("refactored")) {
+                if(file.getName().contains("Main")) {
+                    newMethods = TestUtils.getPsiMethodsFromFile(file);
+                    for(PsiMethod method : newMethods) {
+                        String methodName = method.getName();
+                        String className = method.getContainingClass().getName();
+                        list2.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+        }
+
+        String refactoredPath = basePath + "/" + getTestDataPath() + "/" + testDataRefactored;
+        String originalPath = basePath + "/" + getTestDataPath() + "/" + testDataOriginal;
+
+
+        LightJavaCodeInsightFixtureTestCase.assertNotSame(list1, list2);
+
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("PUSH_DOWN_OPERATION", originalPath, refactoredPath);
+        assert refactorings != null;
+        Refactoring ref = refactorings.get(0);
+        Refactoring ref2 = refactorings.get(1);
+        InvertPushDownMethod undo = new InvertPushDownMethod(project);
+        RefactoringObject refactoringObject1 = RefactoringObjectUtils.createRefactoringObject(ref);
+        // Get the second subclass to add to first ref object
+        PushDownMethodObject refactoringObject2 = (PushDownMethodObject) RefactoringObjectUtils.createRefactoringObject(ref2);
+        assert refactoringObject2 != null;
+        List<Pair<String, String>> subClasses = refactoringObject2.getSubClasses();
+        assert refactoringObject1 != null;
+        ((PushDownMethodObject) refactoringObject1).addSubClass(subClasses.get(0));
+        undo.invertPushDownMethod(refactoringObject1);
+
+        list1 = new ArrayList<>();
+        list2 = new ArrayList<>();
+
+        for(PsiFile file : psiFiles) {
+            if(file.getVirtualFile().getCanonicalPath().contains("original")) {
+                if(file.getName().contains("Main")) {
+                    oldMethods = TestUtils.getPsiMethodsFromFile((file));
+                    for(PsiMethod method : oldMethods) {
+                        String methodName = method.getName();
+                        String className = method.getContainingClass().getName();
+                        list1.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+            if(file.getVirtualFile().getCanonicalPath().contains("refactored")) {
+                if(file.getName().contains("Main")) {
+                    newMethods = TestUtils.getPsiMethodsFromFile(file);
+                    for(PsiMethod method : newMethods) {
+                        String methodName = method.getName();
+                        String className = method.getContainingClass().getName();
+                        list2.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+        }
+
+        LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
+    }
+
 
 }

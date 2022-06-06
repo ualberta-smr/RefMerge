@@ -78,6 +78,13 @@ public class InvertRefactorings {
                     } catch (Exception exception) {
                         exception.printStackTrace();
                     }
+                case PUSH_DOWN_OPERATION:
+                    try {
+                        InvertPushDownMethod invertPushDownMethod = new InvertPushDownMethod(project);
+                        invertPushDownMethod.invertPushDownMethod(refactoringObject);
+                    } catch(Exception exception) {
+                        exception.printStackTrace();
+                    }
 
 
             }
