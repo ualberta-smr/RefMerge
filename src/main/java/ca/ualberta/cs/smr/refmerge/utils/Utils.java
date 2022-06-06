@@ -3,12 +3,14 @@ package ca.ualberta.cs.smr.refmerge.utils;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.*;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.ParameterObject;
+import com.intellij.analysis.AnalysisScope;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.project.Project;
@@ -23,10 +25,15 @@ import com.intellij.psi.*;
 import com.intellij.psi.impl.JavaPsiFacadeImpl;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.refactoring.JavaRefactoringFactory;
 import com.intellij.refactoring.RefactoringFactory;
 import com.intellij.refactoring.RenameRefactoring;
+import com.intellij.refactoring.memberPullUp.PullUpProcessor;
+import com.intellij.refactoring.util.classMembers.MemberInfo;
+import com.intellij.refactoring.util.duplicates.MethodDuplicatesHandler;
 import com.intellij.usageView.UsageInfo;
+import com.intellij.util.Query;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.jps.model.serialization.PathMacroUtil;
 
@@ -586,6 +593,57 @@ public class Utils {
             return;
         }
     }
+
+    public MemberInfo[] getMembersToPullUp(List<com.intellij.openapi.util.Pair<String, String>> subClasses, MethodSignatureObject methodObject) {
+        MemberInfo[] psiMembers = new MemberInfo[subClasses.size()];
+
+        int i = 0;
+        for(com.intellij.openapi.util.Pair<String, String> subClass : subClasses) {
+            String className = subClass.getFirst();
+            String fileName = subClass.getSecond();
+            PsiClass psiClass = getPsiClassFromClassAndFileNames(className, fileName);
+            if(psiClass == null) {
+                continue;
+            }
+            PsiMethod psiMethod = getPsiMethod(psiClass, methodObject);
+            if(psiMethod == null) {
+                continue;
+            }
+            psiMembers[i] = new MemberInfo(psiMethod);
+            i++;
+        }
+
+        return  psiMembers;
+    }
+
+
+    public void processMethodsDuplicates(PullUpProcessor pullUpProcessor) {
+        PsiClass myTargetSuperClass = pullUpProcessor.getTargetClass();
+        Set<PsiMember> myMembersAfterMove = pullUpProcessor.getMovedMembers();
+        ProgressManager.getInstance().runProcessWithProgressSynchronously(() -> ApplicationManager.getApplication().runReadAction(() -> {
+            if (!myTargetSuperClass.isValid()) return;
+            final Query<PsiClass> search = ClassInheritorsSearch.search(myTargetSuperClass);
+            final Set<VirtualFile> hierarchyFiles = new HashSet<>();
+            for (PsiClass aClass : search) {
+                final PsiFile containingFile = aClass.getContainingFile();
+                if (containingFile != null) {
+                    final VirtualFile virtualFile = containingFile.getVirtualFile();
+                    if (virtualFile != null) {
+                        hierarchyFiles.add(virtualFile);
+                    }
+                }
+            }
+            final Set<PsiMember> methodsToSearchDuplicates = new HashSet<>();
+            for (PsiMember psiMember : myMembersAfterMove) {
+                if (psiMember instanceof PsiMethod && psiMember.isValid() && ((PsiMethod)psiMember).getBody() != null) {
+                    methodsToSearchDuplicates.add(psiMember);
+                }
+            }
+
+            MethodDuplicatesHandler.invokeOnScope(project, methodsToSearchDuplicates, new AnalysisScope(project, hierarchyFiles), true);
+        }), MethodDuplicatesHandler.getRefactoringName(), true, project);
+    }
+
 
 }
 
