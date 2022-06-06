@@ -76,4 +76,8 @@ public class Receiver {
         // This is empty because subclasses that receive a pull up method dispatcher will override this method.
     }
 
+    public void receive(PushDownMethodDispatcher dispatcher) {
+        // This is empty because subclasses that receive a push down method dispatcher will override this method.
+    }
+
 }
