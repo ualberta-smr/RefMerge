@@ -31,7 +31,7 @@ public class InvertPullUpField {
         PullUpFieldObject pullUpFieldObject = (PullUpFieldObject) refactoringObject;
         String superClassName = pullUpFieldObject.getTargetClass();
         String superClassFile = pullUpFieldObject.getDestinationFilePath();
-        String refactored = pullUpFieldObject.getRefactoredFieldName();
+        String refactored = pullUpFieldObject.getOriginalFieldName();
 
         Utils utils = new Utils(project);
         utils.addSourceRoot(superClassFile, superClassName);

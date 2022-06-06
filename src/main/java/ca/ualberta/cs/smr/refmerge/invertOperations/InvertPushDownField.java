@@ -31,7 +31,7 @@ public class InvertPushDownField {
         PushDownFieldObject pushDownFieldObject = (PushDownFieldObject) refactoringObject;
         String targetSubClass = pushDownFieldObject.getTargetSubClass();
         String targetFile = pushDownFieldObject.getDestinationFilePath();
-        String movedFieldName = pushDownFieldObject.getRefactoredFieldName();
+        String movedFieldName = pushDownFieldObject.getOriginalFieldName();
 
         Utils utils = new Utils(project);
         utils.addSourceRoot(targetFile, targetSubClass);

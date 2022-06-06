@@ -35,7 +35,7 @@ public class InvertPullUpMethod {
         PullUpMethodObject pullUpMethodObject = (PullUpMethodObject) refactoringObject;
         String superClassName = pullUpMethodObject.getTargetClass();
         String superClassFile = pullUpMethodObject.getDestinationFilePath();
-        MethodSignatureObject refactored = pullUpMethodObject.getDestinationMethodSignature();
+        MethodSignatureObject refactored = pullUpMethodObject.getOriginalMethodSignature();
 
         Utils utils = new Utils(project);
         utils.addSourceRoot(superClassFile, superClassName);

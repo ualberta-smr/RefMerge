@@ -29,7 +29,7 @@ public class InvertPushDownMethod {
         PushDownMethodObject pushDownMethodObject = (PushDownMethodObject) refactoringObject;
         String targetClassName = pushDownMethodObject.getTargetBaseClass();
         String targetClassFilePath = pushDownMethodObject.getDestinationFilePath();
-        MethodSignatureObject pushedDownMethodObject = pushDownMethodObject.getDestinationMethodSignature();
+        MethodSignatureObject pushedDownMethodObject = pushDownMethodObject.getOriginalMethodSignature();
 
         Utils utils = new Utils(project);
         utils.addSourceRoot(targetClassFilePath, targetClassName);
