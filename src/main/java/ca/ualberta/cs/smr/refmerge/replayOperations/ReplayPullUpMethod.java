@@ -49,7 +49,7 @@ public class ReplayPullUpMethod {
 
         List<Pair<String, String>> subClasses = pullUpMethodObject.getSubClasses();
         MemberInfo[] memberInfos;
-        // Get member for each class that method is pulled up from
+        // Get member for each class that method is pushed down to
         memberInfos = utils.getMembersToPullUp(subClasses, originalMethodObject);
 
 
