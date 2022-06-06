@@ -85,6 +85,13 @@ public class InvertRefactorings {
                     } catch(Exception exception) {
                         exception.printStackTrace();
                     }
+                case PULL_UP_ATTRIBUTE:
+                    try {
+                        InvertPullUpField invertPullUpField = new InvertPullUpField(project);
+                        invertPullUpField.invertPullUpField(refactoringObject);
+                    } catch(Exception exception) {
+                        exception.printStackTrace();
+                    }
 
 
             }

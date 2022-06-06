@@ -33,6 +33,8 @@ public class RefactoringObjectUtils {
                 return new PullUpMethodObject(refactoring);
             case PUSH_DOWN_OPERATION:
                 return new PushDownMethodObject(refactoring);
+            case PULL_UP_ATTRIBUTE:
+                return new PullUpFieldObject(refactoring);
 
         }
         return null;
