@@ -20,7 +20,7 @@ import java.util.List;
 
 public class InvertPullUpField {
 
-    private Project project;
+    private final Project project;
 
     public InvertPullUpField(Project project) {
         this.project = project;
@@ -37,7 +37,7 @@ public class InvertPullUpField {
         utils.addSourceRoot(superClassFile, superClassName);
 
         PsiClass superClass;
-        // Use super class name and super class file path to get the class that the method is pulled up to
+        // Use super class name and super class file path to get the class that the field is pulled up to
         superClass = utils.getPsiClassFromClassAndFileNames(superClassName, superClassFile);
 
         // If we cannot find the PSI class, do not try to invert the refactoring
@@ -63,7 +63,7 @@ public class InvertPullUpField {
 
         List<Pair<String,String>> subClasses = pullUpFieldObject.getSubClasses();
         UsageInfo[] usageInfos = new UsageInfo[subClasses.size()];
-        // Get the list of subclasses that the method is pulled up from
+        // Get the list of subclasses that the field is pulled up from
         for(int i = 0; i < usageInfos.length; i++) {
             Pair<String, String> subClass = subClasses.get(i);
             String className = subClass.getFirst();
@@ -76,9 +76,9 @@ public class InvertPullUpField {
             UsageInfo usageInfo = new UsageInfo(psiSubClass, false);
             usageInfos[i] = usageInfo;
         }
-        // Push down the method to the classes it was pulled up from
+        // Push down the field to the classes it was pulled up from
         WriteCommandAction.runWriteCommandAction(project, () -> pushDownProcessor.pushDownToClasses(usageInfos));
-        // Delete target method
+        // Delete target field
         WriteCommandAction.runWriteCommandAction(project, psiField::delete);
 
 
