@@ -66,6 +66,13 @@ public class ReplayRefactorings {
                     } catch (Exception exception) {
                         exception.printStackTrace();
                     }
+                case PUSH_DOWN_OPERATION:
+                    try {
+                        ReplayPushDownMethod replayPushDownMethod = new ReplayPushDownMethod(project);
+                        replayPushDownMethod.replayPushDownMethod(refactoringObject);
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                    }
             }
 
         }
