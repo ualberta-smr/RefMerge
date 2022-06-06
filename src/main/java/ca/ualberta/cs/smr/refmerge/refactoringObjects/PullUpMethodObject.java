@@ -24,6 +24,27 @@ public class PullUpMethodObject implements RefactoringObject {
     private final String refactoringDetail;
     private boolean isReplay;
 
+    public PullUpMethodObject(String originalClass, String originalMethodName, String newClass, String refactoredMethodName) {
+        this.refactoringType = RefactoringType.PULL_UP_OPERATION;
+        this.originalClass = originalClass;
+        this.newClass = newClass;
+        this.originalMethodName = originalMethodName;
+        this.refactoredMethodName = refactoredMethodName;
+        this.originalFileName = originalClass;
+        this.refactoredFileName = newClass;
+
+        this.originalMethodSignature = new MethodSignatureObject(originalMethodName, new ArrayList<>(),
+                false, "", true);
+        this.destinationMethodSignature = new MethodSignatureObject(refactoredMethodName, new ArrayList<>(),
+                false, "", true);
+
+        this.subClasses = new ArrayList<>();
+        this.subClasses.add(new Pair<>(originalClass, originalFileName));
+        this.isReplay = true;
+        this.refactoringDetail = "";
+
+    }
+
     public PullUpMethodObject(Refactoring refactoring) {
         PullUpOperationRefactoring pullUpOperation = (PullUpOperationRefactoring) refactoring;
         this.refactoringType = refactoring.getRefactoringType();
