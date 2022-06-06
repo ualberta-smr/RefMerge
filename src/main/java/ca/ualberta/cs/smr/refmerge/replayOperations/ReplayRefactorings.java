@@ -73,6 +73,13 @@ public class ReplayRefactorings {
                     } catch (Exception exception) {
                         exception.printStackTrace();
                     }
+                case PULL_UP_ATTRIBUTE:
+                    try {
+                        ReplayPullUpField replayPullUpField = new ReplayPullUpField(project);
+                        replayPullUpField.replayPullUpField(refactoringObject);
+                    } catch(Exception exception) {
+                        exception.printStackTrace();
+                    }
             }
 
         }
