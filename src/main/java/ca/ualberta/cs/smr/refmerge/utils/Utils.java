@@ -616,6 +616,29 @@ public class Utils {
         return  psiMembers;
     }
 
+    public MemberInfo[] getFieldsToPullUp(List<com.intellij.openapi.util.Pair<String, String>> subClasses, String fieldName) {
+        MemberInfo[] psiMembers = new MemberInfo[subClasses.size()];
+
+        int i = 0;
+        for(com.intellij.openapi.util.Pair<String, String> subClass : subClasses) {
+            String className = subClass.getFirst();
+            String fileName = subClass.getSecond();
+            PsiClass psiClass = getPsiClassFromClassAndFileNames(className, fileName);
+            if(psiClass == null) {
+                continue;
+            }
+            PsiField psiField = getPsiField(psiClass, fieldName);
+            if(psiField == null) {
+                continue;
+            }
+            psiMembers[i] = new MemberInfo(psiField);
+            i++;
+        }
+
+        return  psiMembers;
+    }
+
+
 
     public void processMethodsDuplicates(PullUpProcessor pullUpProcessor) {
         PsiClass myTargetSuperClass = pullUpProcessor.getTargetClass();
