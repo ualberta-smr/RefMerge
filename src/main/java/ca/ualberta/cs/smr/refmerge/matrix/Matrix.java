@@ -38,6 +38,7 @@ public class Matrix {
        put(RefactoringType.PULL_UP_OPERATION, new PullUpMethodDispatcher());
        put(RefactoringType.PUSH_DOWN_OPERATION, new PushDownMethodDispatcher());
        put(RefactoringType.PULL_UP_ATTRIBUTE, new PullUpFieldDispatcher());
+       put(RefactoringType.PUSH_DOWN_ATTRIBUTE, new PushDownFieldDispatcher());
     }};
 
     /*
@@ -60,6 +61,7 @@ public class Matrix {
         put(RefactoringType.PULL_UP_OPERATION, new PullUpMethodReceiver());
         put(RefactoringType.PUSH_DOWN_OPERATION, new PushDownMethodReceiver());
         put(RefactoringType.PULL_UP_ATTRIBUTE, new PullUpFieldReceiver());
+        put(RefactoringType.PUSH_DOWN_ATTRIBUTE, new PushDownFieldReceiver());
     }};
 
     public Matrix(Project project) {
@@ -215,6 +217,7 @@ public class Matrix {
         vector.add(RefactoringType.PULL_UP_OPERATION);
         vector.add(RefactoringType.PUSH_DOWN_OPERATION);
         vector.add(RefactoringType.PULL_UP_ATTRIBUTE);
+        vector.add(RefactoringType.PUSH_DOWN_ATTRIBUTE);
 
         Enumeration<RefactoringType> enumeration = vector.elements();
         int value = 0;
