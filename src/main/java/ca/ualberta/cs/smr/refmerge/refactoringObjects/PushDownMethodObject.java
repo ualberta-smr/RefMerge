@@ -80,7 +80,7 @@ public class PushDownMethodObject implements RefactoringObject {
 
     @Override
     public RefactoringOrder getRefactoringOrder() {
-        return RefactoringOrder.PULL_UP_METHOD;
+        return RefactoringOrder.PUSH_DOWN_METHOD;
     }
 
     @Override
