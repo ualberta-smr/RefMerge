@@ -80,6 +80,13 @@ public class ReplayRefactorings {
                     } catch(Exception exception) {
                         exception.printStackTrace();
                     }
+                case PUSH_DOWN_ATTRIBUTE:
+                    try {
+                        ReplayPushDownField replayPushDownField = new ReplayPushDownField(project);
+                        replayPushDownField.replayPushDownField(refactoringObject);
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                    }
             }
 
         }
