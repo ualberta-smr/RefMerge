@@ -89,5 +89,53 @@ public class PullUpMethodExtractMethodTest extends LightJavaCodeInsightFixtureTe
         boolean isConflicting = cell.overloadConflict(extractMethodObject, pullUpMethodObject);
         Assert.assertTrue(isConflicting);
     }
+    public void testOverrideConflict() {
+        Project project = myFixture.getProject();
+        String basePath = System.getProperty("user.dir");
+        // Reuse rename method files to get PSI structure for override test
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverrideConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverrideConflict/refactored";
+        String configurePath = "renameMethodRenameMethodFiles/methodOverrideConflict/original/Override.java";
+        myFixture.configureByFiles(configurePath);
+
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
+        assert refactorings != null;
+        assert refactorings.size() == 5;
+        MoveRenameMethodObject extractObject = null;
+        MoveRenameMethodObject pullUpObject = null;
+        for(Refactoring refactoring : refactorings) {
+            String originalName = ((RenameOperationRefactoring) refactoring).getOriginalOperation().getName();
+            String newName = ((RenameOperationRefactoring) refactoring).getRenamedOperation().getName();
+            if(originalName.equals("addNumbers") && newName.equals("numbers")) {
+                extractObject = new MoveRenameMethodObject(refactoring);
+            }
+            if(originalName.equals("doNumbers") && newName.equals("numbers")) {
+                pullUpObject = new MoveRenameMethodObject(refactoring);
+            }
+        }
+
+        assert extractObject != null;
+        String originalFilePath = extractObject.getOriginalFilePath();
+        String newFilePath = extractObject.getDestinationFilePath();
+        String originalClassName = extractObject.getOriginalClassName();
+        String newClassName = extractObject.getDestinationClassName();
+        MethodSignatureObject originalSignature = extractObject.getOriginalMethodSignature();
+        MethodSignatureObject extractedSignature = extractObject.getDestinationMethodSignature();
+        ExtractMethodObject extractMethodObject = new ExtractMethodObject(originalFilePath, originalClassName,
+                originalSignature, newFilePath, newClassName, extractedSignature);
+
+        PullUpMethodObject pullUpMethodObject = new PullUpMethodObject("ChildClass", "doNumbers", "ChildClass", "numbers");
+
+        assert pullUpObject != null;
+        pullUpMethodObject.setDestinationFilePath(pullUpObject.getDestinationFilePath());
+        pullUpMethodObject.setOriginalMethodSignature(pullUpObject.getOriginalMethodSignature());
+        pullUpMethodObject.setDestinationMethodSignature(pullUpObject.getDestinationMethodSignature());
+        pullUpMethodObject.setOriginalFilePath(pullUpObject.getOriginalFilePath());
+
+        PullUpMethodExtractMethodCell cell = new PullUpMethodExtractMethodCell(project);
+        boolean isConflict = cell.overrideConflict(extractMethodObject, pullUpMethodObject);
+        Assert.assertTrue(isConflict);
+
+    }
 
 }
