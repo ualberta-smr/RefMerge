@@ -133,5 +133,57 @@ public class PullUpMethodMoveRenameMethodCell {
                 && dispatcherDestinationMethod.equalsSignature(receiverDestinationMethod);
     }
 
+    public void checkCombination(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
+        MoveRenameMethodObject dispatcher = (MoveRenameMethodObject) dispatcherObject;
+        PullUpMethodObject receiver = (PullUpMethodObject) receiverObject;
+        String dispatcherOriginalClass = dispatcher.getOriginalClassName();
+        String dispatcherDestinationClass = dispatcher.getDestinationClassName();
+        String receiverOriginalClass = receiver.getOriginalClass();
+        String receiverDestinationClass = receiver.getTargetClass();
+
+        MethodSignatureObject dispatcherOriginalMethod = dispatcher.getOriginalMethodSignature();
+        MethodSignatureObject dispatcherDestinationMethod = dispatcher.getDestinationMethodSignature();
+        MethodSignatureObject receiverOriginalMethod = receiver.getOriginalMethodSignature();
+        MethodSignatureObject receiverDestinationMethod = receiver.getDestinationMethodSignature();
+
+        // If the move+rename method refactoring happens before the pull up method refactoring,
+        // The refactored name+class will equal the pull up method's original name+class
+        if(dispatcherDestinationClass.equals(receiverOriginalClass)
+                && dispatcherDestinationMethod.equalsSignature(receiverOriginalMethod)) {
+            // Update the original method signature for pull up method to check for conflicts
+            ((PullUpMethodObject) receiverObject).setOriginalMethodSignature(dispatcherOriginalMethod);
+            // Update the original class for pull up method to check for conflicts
+            receiverObject.setOriginalFilePath(dispatcherObject.getOriginalFilePath());
+            ((PullUpMethodObject) receiverObject).setOriginalClass(dispatcherOriginalClass);
+            // Update the refactored method signature and class name for move+rename method so we can find future
+            // refactorings that might change the same program element
+            ((MoveRenameMethodObject) dispatcherObject).setDestinationMethodSignature(receiverDestinationMethod);
+            dispatcherObject.setDestinationFilePath(receiverObject.getDestinationFilePath());
+            ((MoveRenameMethodObject) dispatcherObject).setDestinationClassName(receiverDestinationClass);
+
+
+
+        }
+
+
+        // If the pull up method happens before the move+rename method, the refactored pull up method's name+class
+        // will equal the move+rename method's original name+class
+        if(dispatcherOriginalClass.equals(receiverDestinationClass)
+                && dispatcherOriginalMethod.equalsSignature(receiverDestinationMethod)) {
+            // Update the destination method and class for the pull up method refactoring
+            ((PullUpMethodObject) receiverObject).setDestinationMethodSignature(dispatcherDestinationMethod);
+            receiverObject.setDestinationFilePath(dispatcherObject.getDestinationFilePath());
+            ((PullUpMethodObject) receiverObject).setTargetClass(dispatcherDestinationClass);
+            // Update the original method and class for the move+rename method refactoring
+            ((MoveRenameMethodObject) dispatcherObject).setOriginalMethodSignature(receiverOriginalMethod);
+            dispatcherObject.setOriginalFilePath(receiverObject.getOriginalFilePath());
+            ((MoveRenameMethodObject) dispatcherObject).setOriginalClassName(receiverOriginalClass);
+
+        }
+
+
+
+    }
+
 
 }
