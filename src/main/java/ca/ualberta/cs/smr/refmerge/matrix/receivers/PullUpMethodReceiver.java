@@ -1,7 +1,9 @@
 package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.ExtractMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.PullUpMethodDispatcher;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PullUpMethodExtractMethodCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PullUpMethodMoveRenameMethodCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PullUpMethodPullUpMethodCell;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
@@ -9,7 +11,7 @@ import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 public class PullUpMethodReceiver extends Receiver {
 
     /*
-     * Checks for pull up method/pull up method conflicts
+     * Checks for pull up method/pull up method conflicts and transitivity
      */
     @Override
     public void receive(PullUpMethodDispatcher dispatcher) {
@@ -18,6 +20,7 @@ public class PullUpMethodReceiver extends Receiver {
         if(dispatcher.isSimplify()) {
             // Dispatcher refactoring is always the second refactoring when dealing with two refactorings of the same type
             this.isTransitive = cell.checkTransitivity(this.refactoringObject, dispatcherRefactoring);
+            dispatcher.setRefactoringObject(dispatcherRefactoring);
         }
 
         if(!dispatcher.isSimplify()) {
@@ -35,7 +38,6 @@ public class PullUpMethodReceiver extends Receiver {
     @Override
     public void receive(MoveRenameMethodDispatcher dispatcher) {
 
-        // No simplification in this case
         if(dispatcher.isSimplify()) {
             RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
             PullUpMethodMoveRenameMethodCell cell = new PullUpMethodMoveRenameMethodCell(project);
@@ -56,6 +58,20 @@ public class PullUpMethodReceiver extends Receiver {
 
     }
 
+    /*
+     * Check for pull up method/extract method conflicts and combination
+     */
+    public void receive(ExtractMethodDispatcher dispatcher) {
+        PullUpMethodExtractMethodCell cell = new PullUpMethodExtractMethodCell(project);
+        RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+        if(!dispatcher.isSimplify()) {
+            boolean isConflicting = cell.conflictCell(dispatcherRefactoring, this.refactoringObject);
+            if(isConflicting) {
+                dispatcherRefactoring.setReplayFlag(false);
+                this.refactoringObject.setReplayFlag(false);
+            }
+        }
 
+    }
 
 }
