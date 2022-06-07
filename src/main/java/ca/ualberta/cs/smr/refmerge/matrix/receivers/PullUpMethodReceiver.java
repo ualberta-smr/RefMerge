@@ -1,9 +1,11 @@
 package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.ExtractMethodDispatcher;
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.InlineMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.PullUpMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PullUpMethodExtractMethodCell;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PullUpMethodInlineMethodCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PullUpMethodMoveRenameMethodCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PullUpMethodPullUpMethodCell;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
@@ -71,6 +73,20 @@ public class PullUpMethodReceiver extends Receiver {
             dispatcher.setRefactoringObject(dispatcherRefactoring);
         }
         else {
+            boolean isConflicting = cell.conflictCell(dispatcherRefactoring, this.refactoringObject);
+            if(isConflicting) {
+                dispatcherRefactoring.setReplayFlag(false);
+                this.refactoringObject.setReplayFlag(false);
+            }
+        }
+
+    }
+
+    public void receive(InlineMethodDispatcher dispatcher) {
+        PullUpMethodInlineMethodCell cell = new PullUpMethodInlineMethodCell(project);
+        RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+        // No combination to be done at this time
+        if(!dispatcher.isSimplify()) {
             boolean isConflicting = cell.conflictCell(dispatcherRefactoring, this.refactoringObject);
             if(isConflicting) {
                 dispatcherRefactoring.setReplayFlag(false);
