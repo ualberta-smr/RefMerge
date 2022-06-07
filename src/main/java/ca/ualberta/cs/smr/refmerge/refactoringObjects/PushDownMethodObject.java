@@ -25,6 +25,26 @@ public class PushDownMethodObject implements RefactoringObject {
     private final String refactoringDetail;
     private boolean isReplay;
 
+    public PushDownMethodObject(String originalClass, String originalMethodName, String newClass, String refactoredMethodName) {
+        this.refactoringType = RefactoringType.PUSH_DOWN_OPERATION;
+        this.originalClass = originalClass;
+        this.targetBaseClass = newClass;
+        this.originalMethodName = originalMethodName;
+        this.refactoredMethodName = refactoredMethodName;
+        this.originalFileName = originalClass;
+        this.refactoredFileName = newClass;
+
+        this.originalMethodSignature = new MethodSignatureObject(originalMethodName, new ArrayList<>(),
+                false, "", true);
+        this.destinationMethodSignature = new MethodSignatureObject(refactoredMethodName, new ArrayList<>(),
+                false, "", true);
+
+        this.subClasses = new ArrayList<>();
+        this.subClasses.add(new Pair<>(targetBaseClass, refactoredFileName));
+        this.isReplay = true;
+        this.refactoringDetail = "";
+
+    }
 
     public PushDownMethodObject(Refactoring refactoring) {
         PushDownOperationRefactoring pushDownOperation = (PushDownOperationRefactoring) refactoring;
