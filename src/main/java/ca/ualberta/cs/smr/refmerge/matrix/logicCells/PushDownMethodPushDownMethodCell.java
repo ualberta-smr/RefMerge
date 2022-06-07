@@ -19,10 +19,6 @@ public class PushDownMethodPushDownMethodCell {
     public boolean conflictCell(RefactoringObject dispatcher, RefactoringObject receiver) {
         PushDownMethodObject dispatcherObject = (PushDownMethodObject) dispatcher;
         PushDownMethodObject receiverObject = (PushDownMethodObject) receiver;
-        // Override conflict
-
-        // Overload conflict
-
         // Naming Conflict
         return namingConflict(dispatcherObject, receiverObject);
 
