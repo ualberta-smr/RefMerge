@@ -1,12 +1,18 @@
 package ca.ualberta.cs.smr.refmerge.matrix.logicCells;
 
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.ExtractMethodObject;
+import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameMethodObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.PullUpMethodObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.MethodSignatureObject;
+import ca.ualberta.cs.smr.testUtils.GetDataForTests;
+import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
+import gr.uom.java.xmi.diff.RenameOperationRefactoring;
 import org.junit.Assert;
+import org.refactoringminer.api.Refactoring;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class PullUpMethodExtractMethodTest extends LightJavaCodeInsightFixtureTestCase {
 
@@ -32,6 +38,56 @@ public class PullUpMethodExtractMethodTest extends LightJavaCodeInsightFixtureTe
         isConflicting = cell.conflictCell(extractMethodObject2, pullUpMethodObject1);
         Assert.assertFalse(isConflicting);
 
+    }
+
+    public void testOverloadConflict() {
+        Project project = myFixture.getProject();
+        String basePath = System.getProperty("user.dir");
+        //Reuse the existing overload files to get PSI structure
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverloadConflict/refactored";
+        String configurePath = "renameMethodRenameMethodFiles/methodOverloadConflict/original/OverloadClasses.java";
+        myFixture.configureByFiles(configurePath);
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
+        assert refactorings != null;
+        assert refactorings.size() == 3;
+
+        MoveRenameMethodObject extractObject = null;
+        MoveRenameMethodObject pullUpObject = null;
+
+        for(Refactoring refactoring : refactorings) {
+            String originalName = ((RenameOperationRefactoring) refactoring).getOriginalOperation().getName();
+            String newName = ((RenameOperationRefactoring) refactoring).getRenamedOperation().getName();
+            if(originalName.equals("sumNumbers") && newName.equals("numbers")) {
+                extractObject = new MoveRenameMethodObject(refactoring);
+            }
+            if(originalName.equals("multNumbers") && newName.equals("numbers")) {
+                pullUpObject = new MoveRenameMethodObject(refactoring);
+            }
+        }
+
+        PullUpMethodObject pullUpMethodObject = new PullUpMethodObject("Foo",
+                "multNumbers", "Foo", "numbers");
+        assert extractObject != null;
+        String originalFilePath = extractObject.getOriginalFilePath();
+        String newFilePath = extractObject.getDestinationFilePath();
+        String originalClassName = extractObject.getOriginalClassName();
+        String newClassName = extractObject.getDestinationClassName();
+        MethodSignatureObject originalSignature = extractObject.getOriginalMethodSignature();
+        MethodSignatureObject extractedSignature = extractObject.getDestinationMethodSignature();
+        ExtractMethodObject extractMethodObject = new ExtractMethodObject(originalFilePath, originalClassName,
+                originalSignature, newFilePath, newClassName, extractedSignature);
+
+        assert pullUpObject != null;
+        pullUpMethodObject.setDestinationFilePath(pullUpObject.getDestinationFilePath());
+        pullUpMethodObject.setOriginalMethodSignature(pullUpObject.getOriginalMethodSignature());
+        pullUpMethodObject.setDestinationMethodSignature(pullUpObject.getDestinationMethodSignature());
+        pullUpMethodObject.setOriginalFilePath(pullUpObject.getOriginalFilePath());
+
+        PullUpMethodExtractMethodCell cell = new PullUpMethodExtractMethodCell(project);
+
+        boolean isConflicting = cell.overloadConflict(extractMethodObject, pullUpMethodObject);
+        Assert.assertTrue(isConflicting);
     }
 
 }
