@@ -13,11 +13,14 @@ public class PullUpMethodReceiver extends Receiver {
      */
     @Override
     public void receive(PullUpMethodDispatcher dispatcher) {
+        RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+        PullUpMethodPullUpMethodCell cell = new PullUpMethodPullUpMethodCell(project);
+        if(dispatcher.isSimplify()) {
+            // Dispatcher refactoring is always the second refactoring when dealing with two refactorings of the same type
+            this.isTransitive = cell.checkTransitivity(this.refactoringObject, dispatcherRefactoring);
+        }
 
-        // No simplification in this case
         if(!dispatcher.isSimplify()) {
-            RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
-            PullUpMethodPullUpMethodCell cell = new PullUpMethodPullUpMethodCell(project);
             boolean isConflicting = cell.conflictCell(dispatcherRefactoring, this.refactoringObject);
             if(isConflicting) {
                 dispatcherRefactoring.setReplayFlag(false);
@@ -52,6 +55,7 @@ public class PullUpMethodReceiver extends Receiver {
         }
 
     }
+
 
 
 }

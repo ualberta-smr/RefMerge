@@ -4,6 +4,9 @@ import ca.ualberta.cs.smr.refmerge.refactoringObjects.PullUpMethodObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.MethodSignatureObject;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Pair;
+
+import java.util.List;
 
 public class PullUpMethodPullUpMethodCell {
 
@@ -58,6 +61,48 @@ public class PullUpMethodPullUpMethodCell {
         // If the same method is pulled up to two different classes, report a naming conflict
         return dispatcherOriginalMethod.equalsSignature(receiverOriginalMethod)
                 && !dispatcherTargetClass.equals(receiverTargetClass);
+    }
+
+    public boolean checkTransitivity(RefactoringObject receiverObject, RefactoringObject dispatcherObject) {
+        PullUpMethodObject dispatcher = (PullUpMethodObject) dispatcherObject;
+        PullUpMethodObject receiver = (PullUpMethodObject) receiverObject;
+
+
+        String dispatcherTargetClass = dispatcher.getTargetClass();
+        String receiverTargetClass = receiver.getTargetClass();
+
+        MethodSignatureObject dispatcherOriginalMethod = dispatcher.getOriginalMethodSignature();
+        MethodSignatureObject receiverOriginalMethod = receiver.getOriginalMethodSignature();
+
+
+        // If the two pull up method refactorings are targeting different super classes, there is no transitivity
+        if(!dispatcherTargetClass.equals(receiverTargetClass)) {
+            return false;
+        }
+
+        // If the target class is the same and the method signatures are the same, then it is transitive
+        // and we need to combine their subclass lists
+        if(dispatcherOriginalMethod.equalsSignature(receiverOriginalMethod)) {
+            List<Pair<String, String>> dispatcherSubClasses = dispatcher.getSubClasses();
+            List<Pair<String, String>> receiverSubClasses = receiver.getSubClasses();
+            for(Pair<String, String> subClass : dispatcherSubClasses) {
+                if(receiverSubClasses.contains(subClass)) {
+                    continue;
+                }
+                ((PullUpMethodObject) receiverObject).addSubClass(subClass);
+            }
+            for(Pair<String, String> subClass: receiverSubClasses) {
+                boolean found = false;
+                if(dispatcherSubClasses.contains(subClass)) {
+                    continue;
+                }
+                ((PullUpMethodObject) dispatcherObject).addSubClass(subClass);
+
+            }
+            return true;
+        }
+        return false;
+
     }
 
 }

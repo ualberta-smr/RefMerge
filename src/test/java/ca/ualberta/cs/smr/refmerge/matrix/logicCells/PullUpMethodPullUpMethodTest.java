@@ -22,4 +22,20 @@ public class PullUpMethodPullUpMethodTest extends LightJavaCodeInsightFixtureTes
         Assert.assertFalse(isConflicting);
     }
 
+    public void testCheckTransitivity() {
+        // Ref 1: A.foo pulled up to B.foo
+        PullUpMethodObject pullUpMethodObject1 = new PullUpMethodObject("A", "foo", "B", "foo");
+        // Ref 2: C.foo pulled up to B.foo
+        PullUpMethodObject pullUpMethodObject2 = new PullUpMethodObject("C", "foo", "B", "foo");
+        pullUpMethodObject2.addSubClass("D", "D");
+        pullUpMethodObject1.addSubClass("D", "D");
+
+        PullUpMethodPullUpMethodCell cell = new PullUpMethodPullUpMethodCell(getProject());
+
+        boolean isTransitive= cell.checkTransitivity(pullUpMethodObject1, pullUpMethodObject2);
+        Assert.assertTrue(isTransitive);
+        Assert.assertEquals(pullUpMethodObject1.getSubClasses().size(), 3);
+        Assert.assertEquals(pullUpMethodObject2.getSubClasses().size(), 3);
+    }
+
 }
