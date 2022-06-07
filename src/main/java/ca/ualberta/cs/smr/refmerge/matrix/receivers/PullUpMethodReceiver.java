@@ -64,7 +64,13 @@ public class PullUpMethodReceiver extends Receiver {
     public void receive(ExtractMethodDispatcher dispatcher) {
         PullUpMethodExtractMethodCell cell = new PullUpMethodExtractMethodCell(project);
         RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
-        if(!dispatcher.isSimplify()) {
+        if(dispatcher.isSimplify()) {
+            this.isTransitive = false;
+            // There is no opportunity for transitivity in this case. There is only a combination case that can occur
+            cell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            dispatcher.setRefactoringObject(dispatcherRefactoring);
+        }
+        else {
             boolean isConflicting = cell.conflictCell(dispatcherRefactoring, this.refactoringObject);
             if(isConflicting) {
                 dispatcherRefactoring.setReplayFlag(false);

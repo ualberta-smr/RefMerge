@@ -106,4 +106,22 @@ public class PullUpMethodExtractMethodCell {
         return dispatcherDestinationClass.equals(receiverDestinationClass)
                 && dispatcherDestinationMethod.equalsSignature(receiverDestinationMethod);
     }
+
+    public void checkCombination(RefactoringObject dispatcher, RefactoringObject receiver) {
+        ExtractMethodObject dispatcherObject = (ExtractMethodObject) dispatcher;
+        PullUpMethodObject receiverObject = (PullUpMethodObject) receiver;
+
+        MethodSignatureObject sourceMethod = dispatcherObject.getOriginalMethodSignature();
+        MethodSignatureObject pulledUpMethod = receiverObject.getDestinationMethodSignature();
+        String sourceClass = dispatcherObject.getOriginalClassName();
+        String destinationClass = receiverObject.getTargetClass();
+
+        // If the method is pulled up before the extract method refactoring happens, update the original location (class and file) of
+        // the source method since we replay extract method first
+        if(sourceClass.equals(destinationClass) && sourceMethod.equalsSignature(pulledUpMethod)) {
+            dispatcher.setOriginalFilePath(receiver.getOriginalFilePath());
+            ((ExtractMethodObject) dispatcher).setOriginalClassName(receiverObject.getOriginalClass());
+        }
+
+    }
 }
