@@ -4,6 +4,9 @@ import ca.ualberta.cs.smr.refmerge.refactoringObjects.PushDownMethodObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.MethodSignatureObject;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Pair;
+
+import java.util.List;
 
 public class PushDownMethodPushDownMethodCell {
 
@@ -60,6 +63,49 @@ public class PushDownMethodPushDownMethodCell {
         // If the same method is pushed down from two different classes, report a naming conflict
         return dispatcherRefactoredMethod.equalsSignature(receiverRefactoredMethod)
                 && dispatcherTargetClass.equals(receiverTargetClass);
+    }
+
+    public boolean checkTransitivity(RefactoringObject receiverObject, RefactoringObject dispatcherObject) {
+        PushDownMethodObject receiver = (PushDownMethodObject) receiverObject;
+        PushDownMethodObject dispatcher = (PushDownMethodObject) dispatcherObject;
+
+
+        String dispatcherOriginalClass = dispatcher.getOriginalClass();
+        String receiverOriginalClass = receiver.getOriginalClass();
+
+        MethodSignatureObject dispatcherOriginalMethod = dispatcher.getOriginalMethodSignature();
+        MethodSignatureObject receiverOriginalMethod = receiver.getOriginalMethodSignature();
+
+
+        // If the two push down method refactorings are from different super classes, there is no transitivity
+        if(!dispatcherOriginalClass.equals(receiverOriginalClass)) {
+            return false;
+        }
+
+        // If the original class is the same and the method signatures are the same, then it is transitive
+        // and we need to combine their subclass lists
+        if(dispatcherOriginalMethod.equalsSignature(receiverOriginalMethod)) {
+            List<Pair<String, String>> dispatcherSubClasses = dispatcher.getSubClasses();
+            List<Pair<String, String>> receiverSubClasses = receiver.getSubClasses();
+            for(Pair<String, String> subClass : dispatcherSubClasses) {
+                if(receiverSubClasses.contains(subClass)) {
+                    continue;
+                }
+                ((PushDownMethodObject) receiverObject).addSubClass(subClass);
+            }
+            for(Pair<String, String> subClass: receiverSubClasses) {
+                if(dispatcherSubClasses.contains(subClass)) {
+                    continue;
+                }
+                ((PushDownMethodObject) dispatcherObject).addSubClass(subClass);
+
+            }
+            return true;
+        }
+        return false;
+
+
+
     }
 
 }

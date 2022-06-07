@@ -1,6 +1,5 @@
 package ca.ualberta.cs.smr.refmerge.matrix.logicCells;
 
-import ca.ualberta.cs.smr.refmerge.refactoringObjects.PullUpMethodObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.PushDownMethodObject;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
@@ -21,6 +20,22 @@ public class PushDownMethodPushDownMethodTest extends LightJavaCodeInsightFixtur
         Assert.assertTrue(isConflicting);
         isConflicting = cell.conflictCell(pushDownMethodObject1, pushDownMethodObject2);
         Assert.assertFalse(isConflicting);
+    }
+
+    public void testCheckTransitivity() {
+        // Ref 1: A.foo pulled up to B.foo
+        PushDownMethodObject pushDownMethodObject1 = new PushDownMethodObject("A", "foo", "C", "foo");
+        // Ref 2: C.foo pulled up to B.foo
+        PushDownMethodObject pushDownMethodObject2 = new PushDownMethodObject("A", "foo", "B", "foo");
+        pushDownMethodObject2.addSubClass("D", "D");
+        pushDownMethodObject1.addSubClass("D", "D");
+
+        PushDownMethodPushDownMethodCell cell = new PushDownMethodPushDownMethodCell(getProject());
+
+        boolean isTransitive= cell.checkTransitivity(pushDownMethodObject1, pushDownMethodObject2);
+        Assert.assertTrue(isTransitive);
+        Assert.assertEquals(pushDownMethodObject1.getSubClasses().size(), 3);
+        Assert.assertEquals(pushDownMethodObject2.getSubClasses().size(), 3);
     }
 
 }
