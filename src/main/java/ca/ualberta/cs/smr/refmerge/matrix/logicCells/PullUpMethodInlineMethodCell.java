@@ -26,9 +26,8 @@ public class PullUpMethodInlineMethodCell {
         String dispatcherOriginalClass = dispatcher.getOriginalClassName();
         String receiverOriginalClass = receiver.getOriginalClass();
 
-        // Only need to get the destination signatures because the extract method refactoring creates a new
-        // program element. The original signature for extract method is the signature the extract method
-        // refactoring comes from
+        // Only need to get the original signatures because the inline method refactoring destroys the program element when
+        // the refactoring is performed.
         MethodSignatureObject dispatcherOriginalMethod = dispatcher.getOriginalMethodSignature();
         MethodSignatureObject receiverOriginalMethod = receiver.getOriginalMethodSignature();
 
