@@ -1,7 +1,8 @@
 package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.PullUpMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.PushDownMethodDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PullUpMethodPullUpMethodCell;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PushDownMethodPullUpMethodCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PushDownMethodPushDownMethodCell;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 
@@ -18,6 +19,19 @@ public class PushDownMethodReceiver extends Receiver {
         }
 
         else {
+            boolean isConflicting = cell.conflictCell(dispatcherRefactoring, this.refactoringObject);
+            if(isConflicting) {
+                dispatcherRefactoring.setReplayFlag(false);
+                this.refactoringObject.setReplayFlag(false);
+            }
+        }
+    }
+
+    @Override
+    public void receive(PullUpMethodDispatcher dispatcher) {
+        RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+        PushDownMethodPullUpMethodCell cell = new PushDownMethodPullUpMethodCell(project);
+        if(!dispatcher.isSimplify()) {
             boolean isConflicting = cell.conflictCell(dispatcherRefactoring, this.refactoringObject);
             if(isConflicting) {
                 dispatcherRefactoring.setReplayFlag(false);
