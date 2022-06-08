@@ -3,6 +3,7 @@ package ca.ualberta.cs.smr.refmerge.matrix.logicCells;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameMethodObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.PushDownMethodObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.MethodSignatureObject;
+import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.ParameterObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
@@ -123,4 +124,38 @@ public class PushDownMethodMoveRenameMethodTest extends LightJavaCodeInsightFixt
         isConflicting = cell.conflictCell(moveRenameMethodObject3, pushDownMethodObject1);
         Assert.assertFalse(isConflicting);
     }
+
+    public void testCheckCombination() {
+        List<ParameterObject> originalParameters = new ArrayList<>();
+        MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
+        MethodSignatureObject bar = new MethodSignatureObject(originalParameters, "bar");
+        // Push down method A.foo -> B.foo
+        PushDownMethodObject pushDownMethodObject = new PushDownMethodObject("A", "foo", "B", "foo");
+        // Rename and move B.foo -> C.bar
+        MoveRenameMethodObject moveRenameMethodObject = new MoveRenameMethodObject("B.java",
+                "B", foo, "C.java", "C", bar);
+        PushDownMethodMoveRenameMethodCell cell = new PushDownMethodMoveRenameMethodCell(null);
+        cell.checkCombination(moveRenameMethodObject, pushDownMethodObject);
+
+        Assert.assertEquals(pushDownMethodObject.getDestinationFilePath(), moveRenameMethodObject.getDestinationFilePath());
+        Assert.assertEquals(pushDownMethodObject.getOriginalFilePath(), moveRenameMethodObject.getOriginalFilePath());
+        Assert.assertEquals(pushDownMethodObject.getOriginalMethodSignature(), moveRenameMethodObject.getOriginalMethodSignature());
+        Assert.assertEquals(pushDownMethodObject.getDestinationMethodSignature(), moveRenameMethodObject.getDestinationMethodSignature());
+        Assert.assertEquals(pushDownMethodObject.getOriginalClass(), moveRenameMethodObject.getOriginalClassName());
+
+        // Push down method A.foo -> B.foo
+        pushDownMethodObject = new PushDownMethodObject("A", "foo", "B", "foo");
+        // Rename and move Z.bar -> A.foo
+        moveRenameMethodObject = new MoveRenameMethodObject("Z.java",
+                "Z", bar, "A.java", "A", foo);
+        cell.checkCombination(moveRenameMethodObject, pushDownMethodObject);
+
+        Assert.assertEquals(pushDownMethodObject.getDestinationFilePath(), moveRenameMethodObject.getDestinationFilePath());
+        Assert.assertEquals(pushDownMethodObject.getOriginalFilePath(), moveRenameMethodObject.getOriginalFilePath());
+        Assert.assertEquals(pushDownMethodObject.getOriginalMethodSignature(), moveRenameMethodObject.getOriginalMethodSignature());
+        Assert.assertEquals(pushDownMethodObject.getDestinationMethodSignature(), moveRenameMethodObject.getDestinationMethodSignature());
+        Assert.assertEquals(pushDownMethodObject.getOriginalClass(), moveRenameMethodObject.getOriginalClassName());
+
+    }
+
 }
