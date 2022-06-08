@@ -1,9 +1,6 @@
 package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.ExtractMethodDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameMethodDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.PullUpMethodDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.PushDownMethodDispatcher;
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.*;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.*;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 
@@ -86,6 +83,21 @@ public class PushDownMethodReceiver extends Receiver {
         }
 
     }
+
+    public void receive(InlineMethodDispatcher dispatcher) {
+        PushDownMethodInlineMethodCell cell = new PushDownMethodInlineMethodCell(project);
+        RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+        // No combination to be done at this time
+        if(!dispatcher.isSimplify()) {
+            boolean isConflicting = cell.conflictCell(dispatcherRefactoring, this.refactoringObject);
+            if(isConflicting) {
+                dispatcherRefactoring.setReplayFlag(false);
+                this.refactoringObject.setReplayFlag(false);
+            }
+        }
+
+    }
+
 
 
 }
