@@ -20,6 +20,54 @@ public class PushDownMethodExtractMethodTest extends LightJavaCodeInsightFixture
         return "src/test/resources";
     }
 
+    public void testOverrideConflict() {
+        Project project = myFixture.getProject();
+        String basePath = System.getProperty("user.dir");
+        // Reuse rename method files to get PSI structure for override test
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverrideConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverrideConflict/refactored";
+        String configurePath = "renameMethodRenameMethodFiles/methodOverrideConflict/original/Override.java";
+        myFixture.configureByFiles(configurePath);
+
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
+        assert refactorings != null;
+        assert refactorings.size() == 5;
+        MoveRenameMethodObject extractObject = null;
+        MoveRenameMethodObject pushDownObject = null;
+        for(Refactoring refactoring : refactorings) {
+            String originalName = ((RenameOperationRefactoring) refactoring).getOriginalOperation().getName();
+            String newName = ((RenameOperationRefactoring) refactoring).getRenamedOperation().getName();
+            if(originalName.equals("addNumbers") && newName.equals("numbers")) {
+                extractObject = new MoveRenameMethodObject(refactoring);
+            }
+            if(originalName.equals("doNumbers") && newName.equals("numbers")) {
+                pushDownObject = new MoveRenameMethodObject(refactoring);
+            }
+        }
+
+        assert extractObject != null;
+        String originalFilePath = extractObject.getOriginalFilePath();
+        String newFilePath = extractObject.getDestinationFilePath();
+        String originalClassName = extractObject.getOriginalClassName();
+        String newClassName = extractObject.getDestinationClassName();
+        MethodSignatureObject originalSignature = extractObject.getOriginalMethodSignature();
+        MethodSignatureObject extractedSignature = extractObject.getDestinationMethodSignature();
+        ExtractMethodObject extractMethodObject = new ExtractMethodObject(originalFilePath, originalClassName,
+                originalSignature, newFilePath, newClassName, extractedSignature);
+
+        PushDownMethodObject pushDownMethodObject = new PushDownMethodObject("ChildClass", "doNumbers", "ChildClass", "numbers");
+
+        assert pushDownObject != null;
+        pushDownMethodObject.setDestinationFilePath(pushDownObject.getDestinationFilePath());
+        pushDownMethodObject.setOriginalMethodSignature(pushDownObject.getOriginalMethodSignature());
+        pushDownMethodObject.setDestinationMethodSignature(pushDownObject.getDestinationMethodSignature());
+        pushDownMethodObject.setOriginalFilePath(pushDownObject.getOriginalFilePath());
+
+        PushDownMethodExtractMethodCell cell = new PushDownMethodExtractMethodCell(project);
+        boolean isConflict = cell.overrideConflict(extractMethodObject, pushDownMethodObject);
+        Assert.assertTrue(isConflict);
+
+    }
 
     public void testOverloadConflict() {
         Project project = myFixture.getProject();

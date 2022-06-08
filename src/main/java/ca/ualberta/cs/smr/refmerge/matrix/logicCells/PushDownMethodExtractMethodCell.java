@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 
 import static ca.ualberta.cs.smr.refmerge.utils.MatrixUtils.ifClassExtends;
+import static ca.ualberta.cs.smr.refmerge.utils.MatrixUtils.isSameName;
 
 public class PushDownMethodExtractMethodCell {
 
@@ -22,13 +23,46 @@ public class PushDownMethodExtractMethodCell {
         ExtractMethodObject extractMethodObject = (ExtractMethodObject) dispatcher;
         PushDownMethodObject pushDownMethodObject = (PushDownMethodObject) receiver;
         // Override conflict
-
+        if(overrideConflict(extractMethodObject, pushDownMethodObject)) {
+            return true;
+        }
         // Overload conflict
         if(overloadConflict(extractMethodObject, pushDownMethodObject)) {
             return true;
         }
         // Naming conflict
         return namingConflict(extractMethodObject, pushDownMethodObject);
+    }
+
+    public boolean overrideConflict(ExtractMethodObject dispatcher, PushDownMethodObject receiver) {
+        // Get the refactored operations
+        MethodSignatureObject dispatcherDestinationMethod = dispatcher.getDestinationMethodSignature();
+        MethodSignatureObject receiverDestinationMethod = receiver.getDestinationMethodSignature();
+        // Use the destination class names to see if pushed down method has override relationship with extracted method
+        String dispatcherClassName = dispatcher.getDestinationClassName();
+        String receiverClassName = receiver.getTargetBaseClass();
+
+        // If the rename methods happen in the same class then there is no override conflict
+        if(dispatcherClassName.equals(receiverClassName)) {
+            return false;
+        }
+        String dispatcherFile = dispatcher.getDestinationFilePath();
+        String receiverFile = receiver.getDestinationFilePath();
+        Utils utils = new Utils(project);
+        PsiClass psiDispatcher = utils.getPsiClassByFilePath(dispatcherFile, dispatcherClassName);
+        PsiClass psiReceiver = utils.getPsiClassByFilePath(receiverFile, receiverClassName);
+        if(psiReceiver != null && psiDispatcher != null) {
+            if (!ifClassExtends(psiDispatcher, psiReceiver)) {
+                return false;
+            }
+        }
+        // get new method names
+        String dispatcherNewMethodName = dispatcherDestinationMethod.getName();
+        String receiverNewMethodName = receiverDestinationMethod.getName();
+        // Check if the methods end with the same name and start with different names.
+        // If they do, then there's a likely override conflict.
+        return isSameName(dispatcherNewMethodName, receiverNewMethodName) &&
+                dispatcherDestinationMethod.equalsSignature(receiverDestinationMethod);
     }
 
     public  boolean overloadConflict(ExtractMethodObject dispatcher, PushDownMethodObject receiver) {
