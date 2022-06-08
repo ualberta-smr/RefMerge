@@ -1,7 +1,9 @@
 package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.PullUpMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.PushDownMethodDispatcher;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PushDownMethodMoveRenameMethodCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PushDownMethodPullUpMethodCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PushDownMethodPushDownMethodCell;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
@@ -39,4 +41,29 @@ public class PushDownMethodReceiver extends Receiver {
             }
         }
     }
+
+    /*
+     * Checks for push down method/ move + rename Method conflicts and simplification
+     */
+    @Override
+    public void receive(MoveRenameMethodDispatcher dispatcher) {
+        PushDownMethodMoveRenameMethodCell cell = new PushDownMethodMoveRenameMethodCell(project);
+        if(dispatcher.isSimplify()) {
+            RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+            this.isTransitive = false;
+            // There is no opportunity for transitivity in this case. There is only a combination case that can occur
+            cell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            dispatcher.setRefactoringObject(dispatcherRefactoring);
+        }
+        else {
+            RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+            boolean isConflicting = cell.conflictCell(dispatcherRefactoring, this.refactoringObject);
+            if(isConflicting) {
+                dispatcherRefactoring.setReplayFlag(false);
+                this.refactoringObject.setReplayFlag(false);
+            }
+        }
+
+    }
+
 }
