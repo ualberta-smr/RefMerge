@@ -19,6 +19,44 @@ public class PushDownMethodMoveRenameMethodTest extends LightJavaCodeInsightFixt
         return "src/test/resources";
     }
 
+    public void testOverrideConflict() {
+        Project project = myFixture.getProject();
+        String basePath = System.getProperty("user.dir");
+        // Reuse rename method files to get PSI structure for override test
+        String originalPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverrideConflict/original";
+        String refactoredPath = basePath + "/src/test/resources/renameMethodRenameMethodFiles/methodOverrideConflict/refactored";
+        String configurePath = "renameMethodRenameMethodFiles/methodOverrideConflict/original/Override.java";
+        myFixture.configureByFiles(configurePath);
+
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_METHOD", originalPath, refactoredPath);
+        assert refactorings != null;
+        assert refactorings.size() == 5;
+        MoveRenameMethodObject renameObject = null;
+        MoveRenameMethodObject pushDownObject = null;
+        for(Refactoring refactoring : refactorings) {
+            String originalName = ((RenameOperationRefactoring) refactoring).getOriginalOperation().getName();
+            String newName = ((RenameOperationRefactoring) refactoring).getRenamedOperation().getName();
+            if(originalName.equals("addNumbers") && newName.equals("numbers")) {
+                renameObject = new MoveRenameMethodObject(refactoring);
+            }
+            if(originalName.equals("doNumbers") && newName.equals("numbers")) {
+                pushDownObject = new MoveRenameMethodObject(refactoring);
+            }
+        }
+
+        PushDownMethodObject pushDownMethodObject = new PushDownMethodObject("ChildClass", "doNumbers", "ChildClass", "numbers");
+
+        assert pushDownObject != null;
+        pushDownMethodObject.setDestinationFilePath(pushDownObject.getDestinationFilePath());
+        pushDownMethodObject.setOriginalMethodSignature(pushDownObject.getOriginalMethodSignature());
+        pushDownMethodObject.setDestinationMethodSignature(pushDownObject.getDestinationMethodSignature());
+        pushDownMethodObject.setOriginalFilePath(pushDownObject.getOriginalFilePath());
+
+        PushDownMethodMoveRenameMethodCell cell = new PushDownMethodMoveRenameMethodCell(project);
+        assert renameObject != null;
+        boolean isConflict = cell.overrideConflict(renameObject, pushDownMethodObject);
+        Assert.assertTrue(isConflict);
+    }
 
     public void testOverloadConflict() {
         Project project = myFixture.getProject();
@@ -32,7 +70,7 @@ public class PushDownMethodMoveRenameMethodTest extends LightJavaCodeInsightFixt
         assert refactorings.size() == 3;
 
         MoveRenameMethodObject moveRenameObject = null;
-        MoveRenameMethodObject pullUpObject = null;
+        MoveRenameMethodObject pushDownObject = null;
 
         for(Refactoring refactoring : refactorings) {
             String originalName = ((RenameOperationRefactoring) refactoring).getOriginalOperation().getName();
@@ -41,18 +79,18 @@ public class PushDownMethodMoveRenameMethodTest extends LightJavaCodeInsightFixt
                 moveRenameObject = new MoveRenameMethodObject(refactoring);
             }
             if(originalName.equals("multNumbers") && newName.equals("numbers")) {
-                pullUpObject = new MoveRenameMethodObject(refactoring);
+                pushDownObject = new MoveRenameMethodObject(refactoring);
             }
         }
 
         PushDownMethodObject pushDownMethodObject = new PushDownMethodObject("Foo",
                 "multNumbers", "Foo", "numbers");
 
-        assert pullUpObject != null;
-        pushDownMethodObject.setDestinationFilePath(pullUpObject.getDestinationFilePath());
-        pushDownMethodObject.setOriginalMethodSignature(pullUpObject.getOriginalMethodSignature());
-        pushDownMethodObject.setDestinationMethodSignature(pullUpObject.getDestinationMethodSignature());
-        pushDownMethodObject.setOriginalFilePath(pullUpObject.getOriginalFilePath());
+        assert pushDownObject != null;
+        pushDownMethodObject.setDestinationFilePath(pushDownObject.getDestinationFilePath());
+        pushDownMethodObject.setOriginalMethodSignature(pushDownObject.getOriginalMethodSignature());
+        pushDownMethodObject.setDestinationMethodSignature(pushDownObject.getDestinationMethodSignature());
+        pushDownMethodObject.setOriginalFilePath(pushDownObject.getOriginalFilePath());
 
         PushDownMethodMoveRenameMethodCell cell = new PushDownMethodMoveRenameMethodCell(project);
 
