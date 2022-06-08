@@ -1,11 +1,10 @@
 package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.ExtractMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.PullUpMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.PushDownMethodDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PushDownMethodMoveRenameMethodCell;
-import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PushDownMethodPullUpMethodCell;
-import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PushDownMethodPushDownMethodCell;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.*;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 
 public class PushDownMethodReceiver extends Receiver {
@@ -65,5 +64,28 @@ public class PushDownMethodReceiver extends Receiver {
         }
 
     }
+
+    /*
+     * Check for push up method/extract method conflicts and combination
+     */
+    public void receive(ExtractMethodDispatcher dispatcher) {
+        PushDownMethodExtractMethodCell cell = new PushDownMethodExtractMethodCell(project);
+        RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+        if(dispatcher.isSimplify()) {
+            this.isTransitive = false;
+            // There is no opportunity for transitivity in this case. There is only a combination case that can occur
+            cell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            dispatcher.setRefactoringObject(dispatcherRefactoring);
+        }
+        else {
+            boolean isConflicting = cell.conflictCell(dispatcherRefactoring, this.refactoringObject);
+            if(isConflicting) {
+                dispatcherRefactoring.setReplayFlag(false);
+                this.refactoringObject.setReplayFlag(false);
+            }
+        }
+
+    }
+
 
 }
