@@ -2,8 +2,10 @@ package ca.ualberta.cs.smr.refmerge.matrix.logicCells;
 
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.ExtractMethodObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameMethodObject;
+import ca.ualberta.cs.smr.refmerge.refactoringObjects.PullUpMethodObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.PushDownMethodObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.MethodSignatureObject;
+import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.ParameterObject;
 import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
@@ -138,4 +140,22 @@ public class PushDownMethodExtractMethodTest extends LightJavaCodeInsightFixture
         Assert.assertFalse(isConflicting);
 
     }
+
+    public void testCheckCombination() {
+        List<ParameterObject> originalParameters = new ArrayList<>();
+        MethodSignatureObject foo = new MethodSignatureObject(originalParameters, "foo");
+        MethodSignatureObject bar = new MethodSignatureObject(originalParameters, "bar");
+        // Pull up method A.foo -> B.foo
+        PushDownMethodObject pushDownMethodObject = new PushDownMethodObject("A", "foo", "B", "foo");
+        // Extract method B.bar from B.foo
+        ExtractMethodObject extractMethodObject =
+                new ExtractMethodObject("B.java", "B", foo, "B.java", "B", bar);
+        PushDownMethodExtractMethodCell cell = new PushDownMethodExtractMethodCell(null);
+        cell.checkCombination(extractMethodObject, pushDownMethodObject);
+
+        Assert.assertEquals(pushDownMethodObject.getOriginalClass(), extractMethodObject.getOriginalClassName());
+        Assert.assertEquals(pushDownMethodObject.getOriginalFilePath(), extractMethodObject.getOriginalFilePath());
+
+    }
+
 }

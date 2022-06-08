@@ -108,5 +108,24 @@ public class PushDownMethodExtractMethodCell {
                 && dispatcherDestinationMethod.equalsSignature(receiverDestinationMethod);
     }
 
+    public void checkCombination(RefactoringObject dispatcher, RefactoringObject receiver) {
+        ExtractMethodObject dispatcherObject = (ExtractMethodObject) dispatcher;
+        PushDownMethodObject receiverObject = (PushDownMethodObject) receiver;
+
+        MethodSignatureObject sourceMethod = dispatcherObject.getOriginalMethodSignature();
+        MethodSignatureObject pulledUpMethod = receiverObject.getDestinationMethodSignature();
+        String sourceClass = dispatcherObject.getOriginalClassName();
+        String destinationClass = receiverObject.getTargetBaseClass();
+
+        // If the method is pushed down before the extract method refactoring happens, update the original location (class and file) of
+        // the source method
+        if(sourceClass.equals(destinationClass) && sourceMethod.equalsSignature(pulledUpMethod)) {
+            dispatcher.setOriginalFilePath(receiver.getOriginalFilePath());
+            ((ExtractMethodObject) dispatcher).setOriginalClassName(receiverObject.getOriginalClass());
+        }
+
+    }
+
+
 
 }
