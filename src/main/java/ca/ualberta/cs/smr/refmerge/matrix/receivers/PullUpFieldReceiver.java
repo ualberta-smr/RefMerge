@@ -55,7 +55,7 @@ public class PullUpFieldReceiver extends Receiver {
     }
 
     /*
-     * Checks for pull up field/move + rename clas conflicts and combination
+     * Checks for pull up field/move + rename class conflicts and combination
      */
     public void receive(MoveRenameClassDispatcher dispatcher) {
         PullUpFieldMoveRenameClassCell cell = new PullUpFieldMoveRenameClassCell(project);
