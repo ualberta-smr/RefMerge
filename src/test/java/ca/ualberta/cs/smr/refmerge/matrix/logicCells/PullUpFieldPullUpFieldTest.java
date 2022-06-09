@@ -45,6 +45,12 @@ public class PullUpFieldPullUpFieldTest extends LightJavaCodeInsightFixtureTestC
         PullUpFieldPullUpFieldCell cell = new PullUpFieldPullUpFieldCell(project);
         boolean isConflict = cell.shadowConflict(pullUpFieldObject, pullUpFieldObject2);
         Assert.assertTrue(isConflict);
+
+        pullUpFieldObject = new PullUpFieldObject("Main", "doubleField", "Main", "doubleField");
+        pullUpFieldObject.setOriginalFilePath(configurePath);
+        pullUpFieldObject.setDestinationFilePath(configurePath);
+        isConflict = cell.shadowConflict(pullUpFieldObject, pullUpFieldObject2);
+        Assert.assertFalse(isConflict);
     }
 
 }
