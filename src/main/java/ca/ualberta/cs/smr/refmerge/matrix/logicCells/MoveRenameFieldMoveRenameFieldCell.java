@@ -18,8 +18,8 @@ public class MoveRenameFieldMoveRenameFieldCell {
     }
 
     /*
-     * Check if a ename field refactoring conflicts with a rename field refactoring on the other branch.
-     * While a field cannot override another field, it can shadow it. Rename Field/Rename Field
+     * Check if a rename + move field refactoring conflicts with a rename + move field refactoring on the other branch.
+     * While a field cannot override another field, it can shadow it. Rename+Move Field/Rename+Move Field
      * can result in a naming or shadowing conflict.
      */
     public boolean renameFieldRenameFieldConflictCell(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {

@@ -59,6 +59,34 @@ public class ReplayRefactorings {
                     } catch (Exception exception) {
                         exception.printStackTrace();
                     }
+                case PULL_UP_OPERATION:
+                    try {
+                        ReplayPullUpMethod replayPullUpMethod = new ReplayPullUpMethod(project);
+                        replayPullUpMethod.replayPullUpMethod(refactoringObject);
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                    }
+                case PUSH_DOWN_OPERATION:
+                    try {
+                        ReplayPushDownMethod replayPushDownMethod = new ReplayPushDownMethod(project);
+                        replayPushDownMethod.replayPushDownMethod(refactoringObject);
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                    }
+                case PULL_UP_ATTRIBUTE:
+                    try {
+                        ReplayPullUpField replayPullUpField = new ReplayPullUpField(project);
+                        replayPullUpField.replayPullUpField(refactoringObject);
+                    } catch(Exception exception) {
+                        exception.printStackTrace();
+                    }
+                case PUSH_DOWN_ATTRIBUTE:
+                    try {
+                        ReplayPushDownField replayPushDownField = new ReplayPushDownField(project);
+                        replayPushDownField.replayPushDownField(refactoringObject);
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                    }
             }
 
         }

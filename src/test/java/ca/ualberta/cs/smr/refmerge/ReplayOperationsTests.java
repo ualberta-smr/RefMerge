@@ -1,6 +1,5 @@
 package ca.ualberta.cs.smr.refmerge;
 
-import ca.ualberta.cs.smr.refmerge.invertOperations.InvertMoveRenameField;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.*;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.MethodSignatureObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.ParameterObject;
@@ -10,6 +9,7 @@ import ca.ualberta.cs.smr.testUtils.GetDataForTests;
 import ca.ualberta.cs.smr.testUtils.TestUtils;
 import ca.ualberta.cs.smr.refmerge.utils.RefactoringObjectUtils;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Pair;
 import com.intellij.psi.*;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
@@ -18,6 +18,7 @@ import org.refactoringminer.api.RefactoringType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
 
@@ -389,16 +390,15 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         Assert.assertNotEquals(oldFields[0].getName(), "originalField");
     }
 
-    public void testInvertMoveField() {
+    public void testReplayMoveField() {
         Project project = myFixture.getProject();
         String testDir = "renameMoveFieldFiles/";
         String testDataRefactored = testDir + "refactored/";
         String testDataOriginal = testDir + "original/";
-        String testResult = testDataRefactored;
         String testFile ="Main.java";
         String testFile2 = "Second.java";
         PsiFile[] psiFiles = myFixture.configureByFiles(testDataOriginal + testFile, testDataOriginal + testFile2,
-                testResult + testFile, testResult + testFile2);
+                testDataRefactored + testFile, testDataRefactored + testFile2);
         String basePath = System.getProperty("user.dir");
 
         PsiField[] oldFields = null;
@@ -406,7 +406,7 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
 
 
         for(PsiFile file : psiFiles) {
-            if(file.getVirtualFile().getCanonicalPath().contains("original")) {
+            if(Objects.requireNonNull(file.getVirtualFile().getCanonicalPath()).contains("original")) {
                 if(file.getName().contains("Second")) {
                     oldFields = TestUtils.getPsiFieldsFromFile((file));
                 }
@@ -422,7 +422,9 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         String originalPath = basePath + "/" + getTestDataPath() + "/" + testDataOriginal;
 
 
+        assert oldFields != null;
         List<String> list1 = TestUtils.getFieldNames(oldFields);
+        assert newFields != null;
         List<String> list2 = TestUtils.getFieldNames(newFields);
 
         LightJavaCodeInsightFixtureTestCase.assertNotSame(list1, list2);
@@ -440,7 +442,7 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         replay.replayRenameField(fieldObject);
 
         for(PsiFile file : psiFiles) {
-            if(file.getVirtualFile().getCanonicalPath().contains("original")) {
+            if(Objects.requireNonNull(file.getVirtualFile().getCanonicalPath()).contains("original")) {
                 if(file.getName().contains("Second")) {
                     oldFields = TestUtils.getPsiFieldsFromFile((file));
                 }
@@ -456,5 +458,360 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         list2 = TestUtils.getFieldNames(newFields);
         LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
     }
+
+    public void testReplayPullUpMethod() {
+        Project project = myFixture.getProject();
+        String testDir = "pullUpMethodFiles/";
+        String testDataRefactored = testDir + "refactored/";
+        String testDataOriginal = testDir + "original/";
+        String testFile ="Main.java";
+        PsiFile[] psiFiles = myFixture.configureByFiles(testDataOriginal+ testFile, testDataRefactored + testFile);
+        String basePath = System.getProperty("user.dir");
+
+        PsiMethod[] oldMethods;
+        PsiMethod[] newMethods;
+
+        List<Pair<String, String>> list1 = new ArrayList<>();
+        List<Pair<String, String>> list2 = new ArrayList<>();
+
+        for(PsiFile file : psiFiles) {
+            if(Objects.requireNonNull(file.getVirtualFile().getCanonicalPath()).contains("original")) {
+                if(file.getName().contains("Main")) {
+                    oldMethods = TestUtils.getPsiMethodsFromFile((file));
+                    for(PsiMethod method : oldMethods) {
+                        String methodName = method.getName();
+                        String className = Objects.requireNonNull(method.getContainingClass()).getName();
+                        list1.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+            if(file.getVirtualFile().getCanonicalPath().contains("refactored")) {
+                if(file.getName().contains("Main")) {
+                    newMethods = TestUtils.getPsiMethodsFromFile(file);
+                    for(PsiMethod method : newMethods) {
+                        String methodName = method.getName();
+                        String className = Objects.requireNonNull(method.getContainingClass()).getName();
+                        list2.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+        }
+
+        String refactoredPath = basePath + "/" + getTestDataPath() + "/" + testDataRefactored;
+        String originalPath = basePath + "/" + getTestDataPath() + "/" + testDataOriginal;
+
+
+
+
+        LightJavaCodeInsightFixtureTestCase.assertNotSame(list1, list2);
+
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("PULL_UP_OPERATION", originalPath, refactoredPath);
+        assert refactorings != null;
+        Refactoring ref = refactorings.get(0);
+        Refactoring ref2 = refactorings.get(1);
+        ReplayPullUpMethod replay = new ReplayPullUpMethod(project);
+        RefactoringObject refactoringObject1 = RefactoringObjectUtils.createRefactoringObject(ref);
+        // Get the second subclass to add to first ref object
+        PullUpMethodObject refactoringObject2 = (PullUpMethodObject) RefactoringObjectUtils.createRefactoringObject(ref2);
+        assert refactoringObject2 != null;
+        List<Pair<String, String>> subClasses = refactoringObject2.getSubClasses();
+        assert refactoringObject1 != null;
+        ((PullUpMethodObject) refactoringObject1).addSubClass(subClasses.get(0));
+        replay.replayPullUpMethod(refactoringObject1);
+
+        list1 = new ArrayList<>();
+        list2 = new ArrayList<>();
+
+        for(PsiFile file : psiFiles) {
+            if(Objects.requireNonNull(file.getVirtualFile().getCanonicalPath()).contains("original")) {
+                if(file.getName().contains("Main")) {
+                    oldMethods = TestUtils.getPsiMethodsFromFile((file));
+                    for(PsiMethod method : oldMethods) {
+                        String methodName = method.getName();
+                        String className = Objects.requireNonNull(method.getContainingClass()).getName();
+                        list1.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+            if(file.getVirtualFile().getCanonicalPath().contains("refactored")) {
+                if(file.getName().contains("Main")) {
+                    newMethods = TestUtils.getPsiMethodsFromFile(file);
+                    for(PsiMethod method : newMethods) {
+                        String methodName = method.getName();
+                        String className = Objects.requireNonNull(method.getContainingClass()).getName();
+                        list2.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+        }
+
+        LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
+    }
+
+    public void testReplayPushDownMethod() {
+        Project project = myFixture.getProject();
+        String testDir = "pullUpMethodFiles/";
+        String testDataOriginal = testDir + "refactored/";
+        String testDataRefactored = testDir + "original/";
+        String testFile ="Main.java";
+        PsiFile[] psiFiles = myFixture.configureByFiles(testDataOriginal + testFile, testDataRefactored + testFile);
+        String basePath = System.getProperty("user.dir");
+
+        PsiMethod[] oldMethods;
+        PsiMethod[] newMethods;
+
+        List<Pair<String, String>> list1 = new ArrayList<>();
+        List<Pair<String, String>> list2 = new ArrayList<>();
+
+        for(PsiFile file : psiFiles) {
+            if(Objects.requireNonNull(file.getVirtualFile().getCanonicalPath()).contains("original")) {
+                if(file.getName().contains("Main")) {
+                    oldMethods = TestUtils.getPsiMethodsFromFile((file));
+                    for(PsiMethod method : oldMethods) {
+                        String methodName = method.getName();
+                        String className = Objects.requireNonNull(method.getContainingClass()).getName();
+                        list1.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+            if(file.getVirtualFile().getCanonicalPath().contains("refactored")) {
+                if(file.getName().contains("Main")) {
+                    newMethods = TestUtils.getPsiMethodsFromFile(file);
+                    for(PsiMethod method : newMethods) {
+                        String methodName = method.getName();
+                        String className = Objects.requireNonNull(method.getContainingClass()).getName();
+                        list2.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+        }
+
+        String refactoredPath = basePath + "/" + getTestDataPath() + "/" + testDataRefactored;
+        String originalPath = basePath + "/" + getTestDataPath() + "/" + testDataOriginal;
+
+
+
+
+        LightJavaCodeInsightFixtureTestCase.assertNotSame(list1, list2);
+
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("PUSH_DOWN_OPERATION", originalPath, refactoredPath);
+        assert refactorings != null;
+        Refactoring ref = refactorings.get(0);
+        Refactoring ref2 = refactorings.get(1);
+        ReplayPushDownMethod replay = new ReplayPushDownMethod(project);
+        RefactoringObject refactoringObject1 = RefactoringObjectUtils.createRefactoringObject(ref);
+        // Get the second subclass to add to first ref object
+        PushDownMethodObject refactoringObject2 = (PushDownMethodObject) RefactoringObjectUtils.createRefactoringObject(ref2);
+        assert refactoringObject2 != null;
+        List<Pair<String, String>> subClasses = refactoringObject2.getSubClasses();
+        assert refactoringObject1 != null;
+        ((PushDownMethodObject) refactoringObject1).addSubClass(subClasses.get(0));
+        replay.replayPushDownMethod(refactoringObject1);
+
+        list1 = new ArrayList<>();
+        list2 = new ArrayList<>();
+
+        for(PsiFile file : psiFiles) {
+            if(Objects.requireNonNull(file.getVirtualFile().getCanonicalPath()).contains("original")) {
+                if(file.getName().contains("Main")) {
+                    oldMethods = TestUtils.getPsiMethodsFromFile((file));
+                    for(PsiMethod method : oldMethods) {
+                        String methodName = method.getName();
+                        String className = Objects.requireNonNull(method.getContainingClass()).getName();
+                        list1.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+            if(file.getVirtualFile().getCanonicalPath().contains("refactored")) {
+                if(file.getName().contains("Main")) {
+                    newMethods = TestUtils.getPsiMethodsFromFile(file);
+                    for(PsiMethod method : newMethods) {
+                        String methodName = method.getName();
+                        String className = Objects.requireNonNull(method.getContainingClass()).getName();
+                        list2.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+        }
+
+        LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
+    }
+
+    public void testReplayPullUpField() {
+        Project project = myFixture.getProject();
+        String testDir = "pullUpFieldFiles/";
+        String testDataRefactored = testDir + "refactored/";
+        String testDataOriginal = testDir + "original/";
+        String testFile ="Main.java";
+        PsiFile[] psiFiles = myFixture.configureByFiles(testDataOriginal + testFile, testDataRefactored + testFile);
+        String basePath = System.getProperty("user.dir");
+
+        PsiField[] oldFields;
+        PsiField[] newFields;
+
+        List<Pair<String, String>> list1 = new ArrayList<>();
+        List<Pair<String, String>> list2 = new ArrayList<>();
+
+        for(PsiFile file : psiFiles) {
+            if(Objects.requireNonNull(file.getVirtualFile().getCanonicalPath()).contains("original")) {
+                if(file.getName().contains("Main")) {
+                    oldFields = TestUtils.getPsiFieldsFromFile(file);
+                    for(PsiField field : oldFields) {
+                        String methodName = field.getName();
+                        String className = Objects.requireNonNull(field.getContainingClass()).getName();
+                        list1.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+            if(file.getVirtualFile().getCanonicalPath().contains("refactored")) {
+                if(file.getName().contains("Main")) {
+                    newFields = TestUtils.getPsiFieldsFromFile(file);
+                    for(PsiField field : newFields) {
+                        String methodName = field.getName();
+                        String className = Objects.requireNonNull(field.getContainingClass()).getName();
+                        list2.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+        }
+
+        String refactoredPath = basePath + "/" + getTestDataPath() + "/" + testDataRefactored;
+        String originalPath = basePath + "/" + getTestDataPath() + "/" + testDataOriginal;
+
+
+
+        LightJavaCodeInsightFixtureTestCase.assertNotSame(list1, list2);
+
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("PULL_UP_ATTRIBUTE", originalPath, refactoredPath);
+        assert refactorings != null;
+        Refactoring ref = refactorings.get(0);
+        Refactoring ref2 = refactorings.get(1);
+        ReplayPullUpField replay = new ReplayPullUpField(project);
+        RefactoringObject refactoringObject1 = RefactoringObjectUtils.createRefactoringObject(ref);
+        // Get the second subclass to add to first ref object
+        PullUpFieldObject refactoringObject2 = (PullUpFieldObject) RefactoringObjectUtils.createRefactoringObject(ref2);
+        assert refactoringObject2 != null;
+        List<Pair<String, String>> subClasses = refactoringObject2.getSubClasses();
+        assert refactoringObject1 != null;
+        ((PullUpFieldObject) refactoringObject1).addSubClass(subClasses.get(0));
+        replay.replayPullUpField(refactoringObject1);
+
+        list1 = new ArrayList<>();
+        list2 = new ArrayList<>();
+
+        for(PsiFile file : psiFiles) {
+            if(Objects.requireNonNull(file.getVirtualFile().getCanonicalPath()).contains("original")) {
+                if(file.getName().contains("Main")) {
+                    oldFields = TestUtils.getPsiFieldsFromFile(file);
+                    for(PsiField field : oldFields) {
+                        String methodName = field.getName();
+                        String className = Objects.requireNonNull(field.getContainingClass()).getName();
+                        list1.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+            if(file.getVirtualFile().getCanonicalPath().contains("refactored")) {
+                if(file.getName().contains("Main")) {
+                    newFields = TestUtils.getPsiFieldsFromFile(file);
+                    for(PsiField field : newFields) {
+                        String methodName = field.getName();
+                        String className = Objects.requireNonNull(field.getContainingClass()).getName();
+                        list2.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+        }
+
+        LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
+    }
+
+    public void testReplayPushDownField() {
+        Project project = myFixture.getProject();
+        String testDir = "pullUpFieldFiles/";
+        String testDataOriginal = testDir + "refactored/";
+        String testDataRefactored = testDir + "original/";
+        String testFile ="Main.java";
+        PsiFile[] psiFiles = myFixture.configureByFiles(testDataOriginal + testFile, testDataRefactored + testFile);
+        String basePath = System.getProperty("user.dir");
+
+        PsiField[] oldFields;
+        PsiField[] newFields;
+
+        List<Pair<String, String>> list1 = new ArrayList<>();
+        List<Pair<String, String>> list2 = new ArrayList<>();
+
+        for(PsiFile file : psiFiles) {
+            if(Objects.requireNonNull(file.getVirtualFile().getCanonicalPath()).contains("original")) {
+                if(file.getName().contains("Main")) {
+                    oldFields = TestUtils.getPsiFieldsFromFile(file);
+                    for(PsiField field : oldFields) {
+                        String methodName = field.getName();
+                        String className = Objects.requireNonNull(field.getContainingClass()).getName();
+                        list1.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+            if(file.getVirtualFile().getCanonicalPath().contains("refactored")) {
+                if(file.getName().contains("Main")) {
+                    newFields = TestUtils.getPsiFieldsFromFile(file);
+                    for(PsiField field : newFields) {
+                        String methodName = field.getName();
+                        String className = Objects.requireNonNull(field.getContainingClass()).getName();
+                        list2.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+        }
+
+        String refactoredPath = basePath + "/" + getTestDataPath() + "/" + testDataRefactored;
+        String originalPath = basePath + "/" + getTestDataPath() + "/" + testDataOriginal;
+
+
+
+        LightJavaCodeInsightFixtureTestCase.assertNotSame(list1, list2);
+
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("PUSH_DOWN_ATTRIBUTE", originalPath, refactoredPath);
+        assert refactorings != null;
+        Refactoring ref = refactorings.get(0);
+        Refactoring ref2 = refactorings.get(1);
+        ReplayPushDownField replay = new ReplayPushDownField(project);
+        RefactoringObject refactoringObject1 = RefactoringObjectUtils.createRefactoringObject(ref);
+        // Get the second subclass to add to first ref object
+        PushDownFieldObject refactoringObject2 = (PushDownFieldObject) RefactoringObjectUtils.createRefactoringObject(ref2);
+        assert refactoringObject2 != null;
+        List<Pair<String, String>> subClasses = refactoringObject2.getSubClasses();
+        assert refactoringObject1 != null;
+        ((PushDownFieldObject) refactoringObject1).addSubClass(subClasses.get(0));
+        replay.replayPushDownField(refactoringObject1);
+
+        list1 = new ArrayList<>();
+        list2 = new ArrayList<>();
+
+        for(PsiFile file : psiFiles) {
+            if(Objects.requireNonNull(file.getVirtualFile().getCanonicalPath()).contains("original")) {
+                if(file.getName().contains("Main")) {
+                    oldFields = TestUtils.getPsiFieldsFromFile(file);
+                    for(PsiField field : oldFields) {
+                        String methodName = field.getName();
+                        String className = Objects.requireNonNull(field.getContainingClass()).getName();
+                        list1.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+            if(file.getVirtualFile().getCanonicalPath().contains("refactored")) {
+                if(file.getName().contains("Main")) {
+                    newFields = TestUtils.getPsiFieldsFromFile(file);
+                    for(PsiField field : newFields) {
+                        String methodName = field.getName();
+                        String className = Objects.requireNonNull(field.getContainingClass()).getName();
+                        list2.add(new Pair<>(className, methodName));
+                    }
+                }
+            }
+        }
+
+        LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
+    }
+
 
 }

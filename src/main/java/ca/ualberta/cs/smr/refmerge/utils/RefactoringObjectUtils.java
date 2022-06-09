@@ -29,6 +29,14 @@ public class RefactoringObjectUtils {
             case MOVE_ATTRIBUTE:
             case MOVE_RENAME_ATTRIBUTE:
                 return new MoveRenameFieldObject(refactoring);
+            case PULL_UP_OPERATION:
+                return new PullUpMethodObject(refactoring);
+            case PUSH_DOWN_OPERATION:
+                return new PushDownMethodObject(refactoring);
+            case PULL_UP_ATTRIBUTE:
+                return new PullUpFieldObject(refactoring);
+            case PUSH_DOWN_ATTRIBUTE:
+                return new PushDownFieldObject(refactoring);
 
         }
         return null;
