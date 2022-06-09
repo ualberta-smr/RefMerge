@@ -22,6 +22,23 @@ public class PullUpFieldObject implements RefactoringObject {
     private final String refactoringDetail;
     private boolean isReplay;
 
+
+    public PullUpFieldObject(String originalClass, String originalMethodName, String newClass, String refactoredMethodName) {
+        this.refactoringType = RefactoringType.PULL_UP_OPERATION;
+        this.originalClass = originalClass;
+        this.newClass = newClass;
+        this.originalFieldName = originalMethodName;
+        this.refactoredFieldName = refactoredMethodName;
+        this.originalFileName = originalClass;
+        this.refactoredFileName = newClass;
+
+        this.subClasses = new ArrayList<>();
+        this.subClasses.add(new Pair<>(originalClass, originalFileName));
+        this.isReplay = true;
+        this.refactoringDetail = "";
+
+    }
+
     public PullUpFieldObject(Refactoring refactoring) {
         PullUpAttributeRefactoring pullUpAttributeRefactoring = (PullUpAttributeRefactoring) refactoring;
         this.refactoringType = refactoring.getRefactoringType();
