@@ -1,7 +1,11 @@
 package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameFieldDispatcher;
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.PullUpFieldDispatcher;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PullUpFieldMoveRenameFieldCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PullUpFieldPullUpFieldCell;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PullUpMethodMoveRenameMethodCell;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 
 public class PullUpFieldReceiver extends Receiver {
@@ -27,6 +31,29 @@ public class PullUpFieldReceiver extends Receiver {
                 this.refactoringObject.setReplayFlag(false);
             }
         }
+    }
+
+    /*
+     * Checks for pull up field/move + rename field conflicts and combination
+     */
+    @Override
+    public void receive(MoveRenameFieldDispatcher dispatcher) {
+        PullUpFieldMoveRenameFieldCell cell = new PullUpFieldMoveRenameFieldCell(project);
+        RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+        if(dispatcher.isSimplify()) {
+            this.isTransitive = false;
+            // There is no opportunity for transitivity in this case. There is only a combination case that can occur
+            cell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            dispatcher.setRefactoringObject(dispatcherRefactoring);
+        }
+        else {
+            boolean isConflicting = cell.conflictCell(dispatcherRefactoring, this.refactoringObject);
+            if(isConflicting) {
+                dispatcherRefactoring.setReplayFlag(false);
+                this.refactoringObject.setReplayFlag(false);
+            }
+        }
+
     }
 
 }
