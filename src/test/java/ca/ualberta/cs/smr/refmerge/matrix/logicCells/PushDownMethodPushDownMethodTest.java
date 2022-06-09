@@ -23,9 +23,9 @@ public class PushDownMethodPushDownMethodTest extends LightJavaCodeInsightFixtur
     }
 
     public void testCheckTransitivity() {
-        // Ref 1: A.foo pulled up to B.foo
+        // Ref 1: A.foo pushed down to B.foo
         PushDownMethodObject pushDownMethodObject1 = new PushDownMethodObject("A", "foo", "C", "foo");
-        // Ref 2: C.foo pulled up to B.foo
+        // Ref 2: C.foo pushed down to B.foo
         PushDownMethodObject pushDownMethodObject2 = new PushDownMethodObject("A", "foo", "B", "foo");
         pushDownMethodObject2.addSubClass("D", "D");
         pushDownMethodObject1.addSubClass("D", "D");
