@@ -87,6 +87,10 @@ public class MoveRenameFieldObject implements RefactoringObject {
         return originalName;
     }
 
+    public void setOriginalFieldName(String originalFieldName) {
+        this.originalName = originalFieldName;
+    }
+
     public String getDestinationName() {
         return destinationName;
     }
