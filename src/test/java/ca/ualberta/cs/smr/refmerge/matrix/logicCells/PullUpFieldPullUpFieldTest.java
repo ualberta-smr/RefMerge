@@ -53,4 +53,20 @@ public class PullUpFieldPullUpFieldTest extends LightJavaCodeInsightFixtureTestC
         Assert.assertFalse(isConflict);
     }
 
+    public void testCheckTransitivity() {
+        // Ref 1: Field A.foo pulled up to B.foo
+        PullUpFieldObject pullUpFieldObject = new PullUpFieldObject("A", "foo", "B", "foo");
+        // Ref 2: Field C.foo pulled up to B.foo
+        PullUpFieldObject pullUpFieldObject1 = new PullUpFieldObject("C", "foo", "B", "foo");
+        pullUpFieldObject1.addSubClass("D", "D");
+        pullUpFieldObject.addSubClass("D", "D");
+
+        PullUpFieldPullUpFieldCell cell = new PullUpFieldPullUpFieldCell(getProject());
+
+        boolean isTransitive= cell.checkTransitivity(pullUpFieldObject, pullUpFieldObject1);
+        Assert.assertTrue(isTransitive);
+        Assert.assertEquals(pullUpFieldObject.getSubClasses().size(), 3);
+        Assert.assertEquals(pullUpFieldObject1.getSubClasses().size(), 3);
+    }
+
 }

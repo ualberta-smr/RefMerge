@@ -4,7 +4,10 @@ import ca.ualberta.cs.smr.refmerge.refactoringObjects.PullUpFieldObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.refmerge.utils.Utils;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiClass;
+
+import java.util.List;
 
 import static ca.ualberta.cs.smr.refmerge.utils.MatrixUtils.ifClassExtends;
 import static ca.ualberta.cs.smr.refmerge.utils.MatrixUtils.isSameName;
@@ -95,6 +98,47 @@ public class PullUpFieldPullUpFieldCell {
         // If the same field is pulled up to two different classes, report a naming conflict
         return dispatcherOriginalFieldName.equals(receiverOriginalFieldName)
                 && !dispatcherTargetClass.equals(receiverTargetClass);
+    }
+
+    public boolean checkTransitivity(RefactoringObject receiverObject, RefactoringObject dispatcherObject) {
+        PullUpFieldObject dispatcher = (PullUpFieldObject) dispatcherObject;
+        PullUpFieldObject receiver = (PullUpFieldObject) receiverObject;
+
+
+        String dispatcherTargetClass = dispatcher.getTargetClass();
+        String receiverTargetClass = receiver.getTargetClass();
+
+        String dispatcherOriginalFieldName = dispatcher.getOriginalFieldName();
+        String receiverOriginalFieldName = receiver.getOriginalFieldName();
+
+
+        // If the two pull up field refactorings are targeting different super classes, there is no transitivity
+        if(!dispatcherTargetClass.equals(receiverTargetClass)) {
+            return false;
+        }
+
+        // If the target class is the same and the fields are the same, then it is transitive
+        // and we need to combine their subclass lists
+        if(dispatcherOriginalFieldName.equals(receiverOriginalFieldName)) {
+            List<Pair<String, String>> dispatcherSubClasses = dispatcher.getSubClasses();
+            List<Pair<String, String>> receiverSubClasses = receiver.getSubClasses();
+            for(Pair<String, String> subClass : dispatcherSubClasses) {
+                if(receiverSubClasses.contains(subClass)) {
+                    continue;
+                }
+                ((PullUpFieldObject) receiverObject).addSubClass(subClass);
+            }
+            for(Pair<String, String> subClass: receiverSubClasses) {
+                if(dispatcherSubClasses.contains(subClass)) {
+                    continue;
+                }
+                ((PullUpFieldObject) dispatcherObject).addSubClass(subClass);
+
+            }
+            return true;
+        }
+        return false;
+
     }
 
 }
