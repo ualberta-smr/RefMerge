@@ -1,6 +1,8 @@
 package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.PullUpFieldDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.PushDownFieldDispatcher;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PushDownFieldPullUpFieldCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PushDownFieldPushDownFieldCell;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 
@@ -20,6 +22,22 @@ public class PushDownFieldReceiver extends Receiver {
             dispatcher.setRefactoringObject(dispatcherRefactoring);
         }
 
+        if(!dispatcher.isSimplify()) {
+            boolean isConflicting = cell.conflictCell(dispatcherRefactoring, this.refactoringObject);
+            if(isConflicting) {
+                dispatcherRefactoring.setReplayFlag(false);
+                this.refactoringObject.setReplayFlag(false);
+            }
+        }
+    }
+
+    /*
+     * Check for push down field / pull up field naming and shadow conflicts
+     */
+    @Override
+    public void receive(PullUpFieldDispatcher dispatcher) {
+        RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+        PushDownFieldPullUpFieldCell cell = new PushDownFieldPullUpFieldCell(project);
         if(!dispatcher.isSimplify()) {
             boolean isConflicting = cell.conflictCell(dispatcherRefactoring, this.refactoringObject);
             if(isConflicting) {
