@@ -2,6 +2,7 @@ package ca.ualberta.cs.smr.refmerge.matrix.logicCells;
 
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameFieldObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.PushDownFieldObject;
+import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 
@@ -11,6 +12,31 @@ public class PushDownFieldMoveRenameFieldTest extends LightJavaCodeInsightFixtur
         return "src/test/resources";
     }
 
+    public void testShadowConflict() {
+        Project project = myFixture.getProject();
+        // Reuse field shadowing files to get PSI structure for shadow test
+        String configurePath = "fieldShadowingFiles/Main.java";
+        myFixture.configureByFiles(configurePath);
+
+        PushDownFieldObject pushDownFieldObject = new PushDownFieldObject("Main", "aField", "Main", "aField");
+        pushDownFieldObject.setOriginalFilePath(configurePath);
+        pushDownFieldObject.setDestinationFilePath(configurePath);
+        MoveRenameFieldObject moveRenameFieldObject =
+                new MoveRenameFieldObject("", "SubClass", "aField", "", "SubClass", "aField");
+        moveRenameFieldObject.setOriginalFilePath(configurePath);
+        moveRenameFieldObject.setDestinationFilePath(configurePath);
+
+        PushDownFieldMoveRenameFieldCell cell = new PushDownFieldMoveRenameFieldCell(project);
+        boolean isConflict = cell.shadowConflict(moveRenameFieldObject, pushDownFieldObject);
+        Assert.assertTrue(isConflict);
+
+        pushDownFieldObject = new PushDownFieldObject("Main", "doubleField", "Main", "doubleField");
+        pushDownFieldObject.setOriginalFilePath(configurePath);
+        pushDownFieldObject.setDestinationFilePath(configurePath);
+        isConflict = cell.shadowConflict(moveRenameFieldObject, pushDownFieldObject);
+        Assert.assertFalse(isConflict);
+
+    }
 
     public void testNamingConflict() {
         // Ref 1: A.foo moved and renamed to B.bar
