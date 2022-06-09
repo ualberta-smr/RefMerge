@@ -2,10 +2,39 @@ package ca.ualberta.cs.smr.refmerge.matrix.logicCells;
 
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.PullUpFieldObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.PushDownFieldObject;
+import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 
 public class PushDownFieldPullUpFieldTest extends LightJavaCodeInsightFixtureTestCase {
+
+    protected String getTestDataPath() {
+        return "src/test/resources";
+    }
+
+    public void testShadowConflict() {
+        Project project = myFixture.getProject();
+        // Reuse field shadowing files to get PSI structure for shadow test
+        String configurePath = "fieldShadowingFiles/Main.java";
+        myFixture.configureByFiles(configurePath);
+
+        PullUpFieldObject pullUpFieldObject = new PullUpFieldObject("Main", "aField", "Main", "aField");
+        pullUpFieldObject.setOriginalFilePath(configurePath);
+        pullUpFieldObject.setDestinationFilePath(configurePath);
+        PushDownFieldObject pushDownFieldObject1 = new PushDownFieldObject("SubClass", "aField", "SubClass", "aField");
+        pushDownFieldObject1.setOriginalFilePath(configurePath);
+        pushDownFieldObject1.setDestinationFilePath(configurePath);
+
+        PushDownFieldPullUpFieldCell cell = new PushDownFieldPullUpFieldCell(project);
+        boolean isConflict = cell.shadowConflict(pullUpFieldObject, pushDownFieldObject1);
+        Assert.assertTrue(isConflict);
+
+        pullUpFieldObject = new PullUpFieldObject("Main", "doubleField", "Main", "doubleField");
+        pullUpFieldObject.setOriginalFilePath(configurePath);
+        pullUpFieldObject.setDestinationFilePath(configurePath);
+        isConflict = cell.shadowConflict(pullUpFieldObject, pushDownFieldObject1);
+        Assert.assertFalse(isConflict);
+    }
 
     public void testNamingConflict() {
         // Ref 1: A.foo pulled up to B.foo
