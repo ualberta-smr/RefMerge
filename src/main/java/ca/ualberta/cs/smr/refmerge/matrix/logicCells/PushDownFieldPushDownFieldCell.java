@@ -4,7 +4,10 @@ import ca.ualberta.cs.smr.refmerge.refactoringObjects.PushDownFieldObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 import ca.ualberta.cs.smr.refmerge.utils.Utils;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiClass;
+
+import java.util.List;
 
 import static ca.ualberta.cs.smr.refmerge.utils.MatrixUtils.ifClassExtends;
 import static ca.ualberta.cs.smr.refmerge.utils.MatrixUtils.isSameName;
@@ -85,5 +88,49 @@ public class PushDownFieldPushDownFieldCell {
         return dispatcherOriginalFieldName.equals(receiverOriginalFieldName)
                 && !dispatcherOriginalClass.equals(receiverOriginalClass);
     }
+
+    public boolean checkTransitivity(RefactoringObject receiverObject, RefactoringObject dispatcherObject) {
+        PushDownFieldObject receiver = (PushDownFieldObject) receiverObject;
+        PushDownFieldObject dispatcher = (PushDownFieldObject) dispatcherObject;
+
+
+        String dispatcherOriginalClass = dispatcher.getOriginalClass();
+        String receiverOriginalClass = receiver.getOriginalClass();
+
+        String dispatcherOriginalField = dispatcher.getOriginalFieldName();
+        String receiverOriginalField = receiver.getOriginalFieldName();
+
+
+        // If the two push down field refactorings are from different super classes, there is no transitivity
+        if(!dispatcherOriginalClass.equals(receiverOriginalClass)) {
+            return false;
+        }
+
+        // If the original class is the same and the fields are the same, then it is transitive
+        // and we need to combine their subclass lists
+        if(dispatcherOriginalField.equals(receiverOriginalField)) {
+            List<Pair<String, String>> dispatcherSubClasses = dispatcher.getSubClasses();
+            List<Pair<String, String>> receiverSubClasses = receiver.getSubClasses();
+            for(Pair<String, String> subClass : dispatcherSubClasses) {
+                if(receiverSubClasses.contains(subClass)) {
+                    continue;
+                }
+                ((PushDownFieldObject) receiverObject).addSubClass(subClass);
+            }
+            for(Pair<String, String> subClass: receiverSubClasses) {
+                if(dispatcherSubClasses.contains(subClass)) {
+                    continue;
+                }
+                ((PushDownFieldObject) dispatcherObject).addSubClass(subClass);
+
+            }
+            return true;
+        }
+        return false;
+
+
+
+    }
+
 
 }

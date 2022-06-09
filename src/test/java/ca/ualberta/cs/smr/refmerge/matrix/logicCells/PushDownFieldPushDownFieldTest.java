@@ -50,4 +50,20 @@ public class PushDownFieldPushDownFieldTest extends LightJavaCodeInsightFixtureT
         isConflicting = cell.conflictCell(pushDownMethodObject1, pushDownMethodObject2);
         Assert.assertFalse(isConflicting);
     }
+
+    public void testCheckTransitivity() {
+        // Ref 1: Field A.foo pushed down to B.foo
+        PushDownFieldObject pushDownFieldObject1 = new PushDownFieldObject("A", "foo", "C", "foo");
+        // Ref 2: Field C.foo pushed down to B.foo
+        PushDownFieldObject pushDownFieldObject2 = new PushDownFieldObject("A", "foo", "B", "foo");
+        pushDownFieldObject2.addSubClass("D", "D");
+        pushDownFieldObject1.addSubClass("D", "D");
+
+        PushDownFieldPushDownFieldCell cell = new PushDownFieldPushDownFieldCell(getProject());
+
+        boolean isTransitive= cell.checkTransitivity(pushDownFieldObject1, pushDownFieldObject2);
+        Assert.assertTrue(isTransitive);
+        Assert.assertEquals(pushDownFieldObject1.getSubClasses().size(), 3);
+        Assert.assertEquals(pushDownFieldObject2.getSubClasses().size(), 3);
+    }
 }
