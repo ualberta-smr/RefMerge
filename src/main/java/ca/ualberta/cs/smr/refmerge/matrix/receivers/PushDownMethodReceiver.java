@@ -98,6 +98,20 @@ public class PushDownMethodReceiver extends Receiver {
 
     }
 
+    public void receive(MoveRenameClassDispatcher dispatcher) {
+        PushDownMethodMoveRenameClassCell cell = new PushDownMethodMoveRenameClassCell(project);
+        RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+        if(dispatcher.isSimplify()) {
+            this.isTransitive = false;
+            // There is no opportunity for transitivity in this case. There is only a combination case that can occur
+            cell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            dispatcher.setRefactoringObject(dispatcherRefactoring);
+        }
+        // No conflicts possible between class + method levels
+
+    }
+
+
 
 
 }
