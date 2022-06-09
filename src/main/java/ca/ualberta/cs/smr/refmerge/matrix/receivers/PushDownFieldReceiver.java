@@ -1,7 +1,9 @@
 package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameFieldDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.PullUpFieldDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.PushDownFieldDispatcher;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PushDownFieldMoveRenameFieldCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PushDownFieldPullUpFieldCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.PushDownFieldPushDownFieldCell;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
@@ -45,6 +47,30 @@ public class PushDownFieldReceiver extends Receiver {
                 this.refactoringObject.setReplayFlag(false);
             }
         }
+    }
+
+    /*
+     * Checks for push down field / move + rename field naming and shadow conflicts as well as combination
+     */
+    @Override
+    public void receive(MoveRenameFieldDispatcher dispatcher) {
+        PushDownFieldMoveRenameFieldCell cell = new PushDownFieldMoveRenameFieldCell(project);
+        if(dispatcher.isSimplify()) {
+            RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+            this.isTransitive = false;
+            // There is no opportunity for transitivity in this case. There is only a combination case that can occur
+            cell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            dispatcher.setRefactoringObject(dispatcherRefactoring);
+        }
+        else {
+            RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+            boolean isConflicting = cell.conflictCell(dispatcherRefactoring, this.refactoringObject);
+            if(isConflicting) {
+                dispatcherRefactoring.setReplayFlag(false);
+                this.refactoringObject.setReplayFlag(false);
+            }
+        }
+
     }
 
 }
