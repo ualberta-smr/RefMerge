@@ -1,8 +1,6 @@
 package ca.ualberta.cs.smr.refmerge.matrix.logicCells;
 
-import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameFieldObject;
-import ca.ualberta.cs.smr.refmerge.refactoringObjects.PushDownFieldObject;
-import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
+import ca.ualberta.cs.smr.refmerge.refactoringObjects.*;
 import ca.ualberta.cs.smr.refmerge.utils.Utils;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
@@ -78,6 +76,58 @@ public class PushDownFieldMoveRenameFieldCell {
         // If two fields are pushed down to and moved or renamed to the same field, it is conflicting
         return dispatcherDestinationClass.equals(receiverDestinationClass)
                 && dispatcherDestinationFieldName.equals(receiverDestinationFieldName);
+    }
+
+    public void checkCombination(RefactoringObject dispatcherObject, RefactoringObject receiverObject) {
+        MoveRenameFieldObject dispatcher = (MoveRenameFieldObject) dispatcherObject;
+        PushDownFieldObject receiver = (PushDownFieldObject) receiverObject;
+
+        String dispatcherOriginalClass = dispatcher.getOriginalClass();
+        String dispatcherDestinationClass = dispatcher.getDestinationClass();
+        String receiverOriginalClass = receiver.getOriginalClass();
+        String receiverDestinationClass = receiver.getTargetSubClass();
+
+        String dispatcherOriginalField = dispatcher.getOriginalName();
+        String dispatcherDestinationField = dispatcher.getDestinationName();
+        String receiverOriginalField = receiver.getOriginalFieldName();
+        String receiverDestinationField = receiver.getRefactoredFieldName();
+
+        // If the move+rename field refactoring happens before the push down field refactoring,
+        // The refactored name+class will equal the push down field's original name+class
+        if(dispatcherDestinationClass.equals(receiverOriginalClass)
+                && dispatcherDestinationField.equals(receiverOriginalField)) {
+            // Update the original field for push down field to check for conflicts
+            ((PushDownFieldObject) receiverObject).setOriginalFieldName(dispatcherOriginalField);
+            // Update the original class for push down field to check for conflicts
+            receiverObject.setOriginalFilePath(dispatcherObject.getOriginalFilePath());
+            ((PushDownFieldObject) receiverObject).setOriginalClass(dispatcherOriginalClass);
+            // Update the refactored field and class name for move+rename field so we can find future
+            // refactorings that might change the same program element
+            ((MoveRenameFieldObject) dispatcherObject).setDestinationFieldName(receiverDestinationField);
+            dispatcherObject.setDestinationFilePath(receiverObject.getDestinationFilePath());
+            ((MoveRenameFieldObject) dispatcherObject).setDestinationClassName(receiverDestinationClass);
+
+
+
+        }
+
+
+        // If the push down field happens before the move+rename field, the refactored push down field's name+class
+        // will equal the move+rename field's original name+class
+        if(dispatcherOriginalClass.equals(receiverDestinationClass)
+                && dispatcherOriginalField.equals(receiverDestinationField)) {
+            // Update the destination field and class for the push down field refactoring
+            ((PushDownFieldObject) receiverObject).setRefactoredFieldName(dispatcherDestinationField);
+            receiverObject.setDestinationFilePath(dispatcherObject.getDestinationFilePath());
+            ((PushDownFieldObject) receiverObject).setTargetSubClass(dispatcherDestinationClass);
+            // Update the original field and class for the move+rename field refactoring
+            ((MoveRenameFieldObject) dispatcherObject).setOriginalFieldName(receiverOriginalField);
+            dispatcherObject.setOriginalFilePath(receiverObject.getOriginalFilePath());
+            ((MoveRenameFieldObject) dispatcherObject).setOriginalClassName(receiverOriginalClass);
+
+        }
+
+
     }
 
 }

@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 
+
 public class PushDownFieldMoveRenameFieldTest extends LightJavaCodeInsightFixtureTestCase {
 
     protected String getTestDataPath() {
@@ -59,4 +60,35 @@ public class PushDownFieldMoveRenameFieldTest extends LightJavaCodeInsightFixtur
         isConflicting = cell.conflictCell(moveRenameFieldObject, pushDownFieldObject4);
         Assert.assertFalse(isConflicting);
     }
+
+    public void testCheckCombination() {
+        // Push down method A.foo -> B.foo
+        PushDownFieldObject pushDownFieldObject = new PushDownFieldObject("A", "foo", "B", "foo");
+        // Rename and move B.foo -> C.bar
+        MoveRenameFieldObject moveRenameFieldObject = new MoveRenameFieldObject("B.java",
+                "B", "foo", "C.java", "C", "bar");
+        PushDownFieldMoveRenameFieldCell cell = new PushDownFieldMoveRenameFieldCell(null);
+        cell.checkCombination(moveRenameFieldObject, pushDownFieldObject);
+
+        Assert.assertEquals(pushDownFieldObject.getDestinationFilePath(), moveRenameFieldObject.getDestinationFilePath());
+        Assert.assertEquals(pushDownFieldObject.getOriginalFilePath(), moveRenameFieldObject.getOriginalFilePath());
+        Assert.assertEquals(pushDownFieldObject.getOriginalFieldName(), moveRenameFieldObject.getOriginalName());
+        Assert.assertEquals(pushDownFieldObject.getRefactoredFieldName(), moveRenameFieldObject.getDestinationName());
+        Assert.assertEquals(pushDownFieldObject.getOriginalClass(), moveRenameFieldObject.getOriginalClass());
+
+        // Push down method A.foo -> B.foo
+        pushDownFieldObject = new PushDownFieldObject("A", "foo", "B", "foo");
+        // Rename and move Z.bar -> A.foo
+        moveRenameFieldObject = new MoveRenameFieldObject("Z.java",
+                "Z", "bar", "A.java", "A", "foo");
+        cell.checkCombination(moveRenameFieldObject, pushDownFieldObject);
+
+        Assert.assertEquals(pushDownFieldObject.getDestinationFilePath(), moveRenameFieldObject.getDestinationFilePath());
+        Assert.assertEquals(pushDownFieldObject.getOriginalFilePath(), moveRenameFieldObject.getOriginalFilePath());
+        Assert.assertEquals(pushDownFieldObject.getOriginalFieldName(), moveRenameFieldObject.getOriginalName());
+        Assert.assertEquals(pushDownFieldObject.getRefactoredFieldName(), moveRenameFieldObject.getDestinationName());
+        Assert.assertEquals(pushDownFieldObject.getOriginalClass(), moveRenameFieldObject.getOriginalClass());
+
+    }
+
 }
