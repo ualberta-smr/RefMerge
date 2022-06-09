@@ -22,6 +22,22 @@ public class PushDownFieldObject implements RefactoringObject {
     private final String refactoringDetail;
     private boolean isReplay;
 
+    public PushDownFieldObject(String originalClass, String originalMethodName, String newClass, String refactoredMethodName) {
+        this.refactoringType = RefactoringType.PUSH_DOWN_OPERATION;
+        this.originalClass = originalClass;
+        this.newClass = newClass;
+        this.originalFieldName = originalMethodName;
+        this.refactoredFieldName = refactoredMethodName;
+        this.originalFileName = originalClass;
+        this.refactoredFileName = newClass;
+
+        this.subClasses = new ArrayList<>();
+        this.subClasses.add(new Pair<>(newClass, refactoredFileName));
+        this.isReplay = true;
+        this.refactoringDetail = "";
+
+    }
+
     public PushDownFieldObject(Refactoring refactoring) {
         PushDownAttributeRefactoring pushDownAttributeRefactoring = (PushDownAttributeRefactoring) refactoring;
         this.refactoringType = refactoring.getRefactoringType();
