@@ -1,6 +1,8 @@
 package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.RenamePackageDispatcher;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenamePackageMoveRenameMethodCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenamePackageRenamePackageCell;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 
@@ -30,6 +32,19 @@ public class RenamePackageReceiver extends Receiver {
                 this.refactoringObject.setReplayFlag(false);
             }
 
+        }
+    }
+
+    /*
+     * If simplify is true, check for rename package / move + rename method combination. There are no possible conflicts
+     * between package and method level.
+     */
+    @Override
+    public void receive(MoveRenameMethodDispatcher dispatcher) {
+        if(dispatcher.isSimplify()) {
+            RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+            this.isTransitive = RenamePackageMoveRenameMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            dispatcher.setRefactoringObject(dispatcherRefactoring);
         }
     }
 
