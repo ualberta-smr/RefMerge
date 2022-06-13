@@ -87,6 +87,13 @@ public class ReplayRefactorings {
                     } catch (Exception exception) {
                         exception.printStackTrace();
                     }
+                case RENAME_PACKAGE:
+                    try {
+                        ReplayRenamePackage replayRenamePackage = new ReplayRenamePackage(project);
+                        replayRenamePackage.replayRenamePackage(refactoringObject);
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                    }
             }
 
         }

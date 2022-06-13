@@ -813,5 +813,36 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         LightJavaCodeInsightFixtureTestCase.assertSameElements(list1, list2);
     }
 
+    public void testReplayRenamePackage() {
+        Project project = myFixture.getProject();
+        String testDir = "renamePackageFiles/";
+        String testDataOriginal = testDir + "original/";
+        String testFile ="Main.java";
+        myFixture.configureByFiles(testDataOriginal + testFile);
+
+        RenamePackageObject refactoringObject =
+                new RenamePackageObject("renamePackageFiles.original", "renamePackageFiles.expectedPackageName");
+        String originalPackage = refactoringObject.getOriginalName();
+
+        PsiPackage originalPsiPackage = JavaPsiFacade.getInstance(project).findPackage(originalPackage);
+        assert originalPsiPackage != null;
+
+        String psiPackageName = originalPsiPackage.getName();
+        Assert.assertNotEquals(psiPackageName, "expectedPackageName");
+
+        ReplayRenamePackage replay = new ReplayRenamePackage(project);
+        replay.replayRenamePackage(refactoringObject);
+
+
+        originalPsiPackage = JavaPsiFacade.getInstance(project).findPackage(originalPackage);
+        assert originalPsiPackage == null;
+
+        String destinationPackage = refactoringObject.getDestinationName();
+        PsiPackage destinationPsiPackage= JavaPsiFacade.getInstance(project).findPackage(destinationPackage);
+        assert destinationPsiPackage != null;
+        psiPackageName = destinationPsiPackage.getName();
+        Assert.assertEquals(psiPackageName, "expectedPackageName");
+    }
+
 
 }
