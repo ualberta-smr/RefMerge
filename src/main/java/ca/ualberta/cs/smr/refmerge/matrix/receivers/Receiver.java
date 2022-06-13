@@ -88,4 +88,8 @@ public class Receiver {
         // This is empty because subclasses that receive a push down field dispatcher will override this method.
     }
 
+    public void receive(RenamePackageDispatcher dispatcher) {
+        // This is empty because subclasses that receive a rename package dispatcher will override this method.
+    }
+
 }
