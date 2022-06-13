@@ -1,13 +1,7 @@
 package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.ExtractMethodDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.InlineMethodDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameMethodDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.RenamePackageDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenamePackageExtractMethodCell;
-import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenamePackageInlineMethodCell;
-import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenamePackageMoveRenameMethodCell;
-import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenamePackageRenamePackageCell;
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.*;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.*;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 
 public class RenamePackageReceiver extends Receiver {
@@ -74,6 +68,19 @@ public class RenamePackageReceiver extends Receiver {
         if(dispatcher.isSimplify()) {
             RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
             this.isTransitive = RenamePackageInlineMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            dispatcher.setRefactoringObject(dispatcherRefactoring);
+        }
+    }
+
+    /*
+     * If simplify is true, check for rename package / move+rename class combination. There are no possible conflicts
+     * between package and class level.
+     */
+    @Override
+    public void receive(MoveRenameClassDispatcher dispatcher) {
+        if(dispatcher.isSimplify()) {
+            RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+            this.isTransitive = RenamePackageMoveRenameClassCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
             dispatcher.setRefactoringObject(dispatcherRefactoring);
         }
     }
