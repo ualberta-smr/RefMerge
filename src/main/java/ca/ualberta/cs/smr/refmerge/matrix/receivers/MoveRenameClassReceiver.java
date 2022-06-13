@@ -63,7 +63,7 @@ public class MoveRenameClassReceiver extends Receiver {
                     if(((MoveRenameClassObject) dispatcherRefactoring).isMoveMethod()) {
                         // Rename the class in the move class refactoring
                         ((MoveRenameClassObject) this.refactoringObject)
-                                .getDestinationClassObject().updateClassName(((MoveRenameClassObject) dispatcherRefactoring)
+                                .getDestinationClassObject().setClassName(((MoveRenameClassObject) dispatcherRefactoring)
                                 .getDestinationClassObject().getClassName());
                         ((MoveRenameClassObject) this.refactoringObject).setType(RefactoringType.MOVE_RENAME_CLASS);
                         // Set the dispatcher refactoring to the updated move+rename receiver refactoring
@@ -75,7 +75,7 @@ public class MoveRenameClassReceiver extends Receiver {
                     // If the receiver refactoring is the rename class refactoring
                     else {
                         ((MoveRenameClassObject) dispatcherRefactoring)
-                                .getDestinationClassObject().updateClassName(((MoveRenameClassObject) this.refactoringObject)
+                                .getDestinationClassObject().setClassName(((MoveRenameClassObject) this.refactoringObject)
                                 .getDestinationClassObject().getClassName());
                         ((MoveRenameClassObject) dispatcherRefactoring).setType(RefactoringType.MOVE_RENAME_CLASS);
                         ((MoveRenameClassObject) this.refactoringObject)
