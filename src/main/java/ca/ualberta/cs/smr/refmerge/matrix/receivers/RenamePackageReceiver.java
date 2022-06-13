@@ -1,7 +1,9 @@
 package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.ExtractMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.RenamePackageDispatcher;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenamePackageExtractMethodCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenamePackageMoveRenameMethodCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenamePackageRenamePackageCell;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
@@ -44,6 +46,15 @@ public class RenamePackageReceiver extends Receiver {
         if(dispatcher.isSimplify()) {
             RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
             this.isTransitive = RenamePackageMoveRenameMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            dispatcher.setRefactoringObject(dispatcherRefactoring);
+        }
+    }
+
+    @Override
+    public void receive(ExtractMethodDispatcher dispatcher) {
+        if(dispatcher.isSimplify()) {
+            RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+            this.isTransitive = RenamePackageExtractMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
             dispatcher.setRefactoringObject(dispatcherRefactoring);
         }
     }
