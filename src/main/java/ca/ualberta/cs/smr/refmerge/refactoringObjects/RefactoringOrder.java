@@ -1,15 +1,16 @@
 package ca.ualberta.cs.smr.refmerge.refactoringObjects;
 
 public enum RefactoringOrder {
-    MOVE_RENAME_CLASS(1),
-    INLINE_METHOD(2),
-    MOVE_RENAME_METHOD(3),
-    PULL_UP_METHOD(4),
-    PUSH_DOWN_METHOD(5),
-    EXTRACT_METHOD(6),
-    MOVE_RENAME_FIELD(7),
-    PULL_UP_FIELD(8),
-    PUSH_DOWN_FIELD(9);
+    RENAME_PACKAGE(1),
+    MOVE_RENAME_CLASS(2),
+    INLINE_METHOD(3),
+    MOVE_RENAME_METHOD(4),
+    PULL_UP_METHOD(5),
+    PUSH_DOWN_METHOD(6),
+    EXTRACT_METHOD(7),
+    MOVE_RENAME_FIELD(8),
+    PULL_UP_FIELD(9),
+    PUSH_DOWN_FIELD(10);
 
 
     private final int order;
