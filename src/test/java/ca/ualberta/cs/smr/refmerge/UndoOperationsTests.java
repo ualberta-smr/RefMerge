@@ -799,4 +799,35 @@ public class UndoOperationsTests extends LightJavaCodeInsightFixtureTestCase {
     }
 
 
+    public void testInvertRenamePackage() {
+        Project project = myFixture.getProject();
+        String testDir = "renamePackageFiles/";
+        String testDataOriginal = testDir + "refactored/";
+        String testFile ="Main.java";
+        myFixture.configureByFiles(testDataOriginal + testFile);
+
+        RenamePackageObject refactoringObject = new RenamePackageObject("renamePackageFiles.expectedPackageName", "renamePackageFiles.refactored");
+        String destinationPackage = refactoringObject.getDestinationName();
+
+        PsiPackage destinationPsiPackage = JavaPsiFacade.getInstance(project).findPackage(destinationPackage);
+        assert destinationPsiPackage != null;
+
+        String psiPackageName = destinationPsiPackage.getName();
+        Assert.assertNotEquals(psiPackageName, "expectedPackageName");
+
+        InvertRenamePackage invert = new InvertRenamePackage(project);
+        invert.invertRenamePackage(refactoringObject);
+
+
+        destinationPsiPackage = JavaPsiFacade.getInstance(project).findPackage(destinationPackage);
+        assert destinationPsiPackage == null;
+
+        String originalPackage = refactoringObject.getOriginalName();
+        PsiPackage originalPsiPackage = JavaPsiFacade.getInstance(project).findPackage(originalPackage);
+        assert originalPsiPackage != null;
+        psiPackageName = originalPsiPackage.getName();
+        Assert.assertEquals(psiPackageName, "expectedPackageName");
+    }
+
+
 }
