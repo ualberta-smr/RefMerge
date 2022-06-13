@@ -37,6 +37,8 @@ public class RefactoringObjectUtils {
                 return new PullUpFieldObject(refactoring);
             case PUSH_DOWN_ATTRIBUTE:
                 return new PushDownFieldObject(refactoring);
+            case RENAME_PACKAGE:
+                return new RenamePackageObject(refactoring);
 
         }
         return null;
