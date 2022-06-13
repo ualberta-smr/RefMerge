@@ -32,4 +32,22 @@ public class RenamePackageRenamePackageCell {
         else return dispatcherRefactoredName.equals(receiverRefactoredName);
     }
 
+    public static boolean checkTransitivity(RefactoringObject firstObject, RefactoringObject secondObject) {
+        RenamePackageObject firstPackage = (RenamePackageObject) firstObject;
+        RenamePackageObject secondPackage = (RenamePackageObject) secondObject;
+
+        String firstOriginalName = firstPackage.getOriginalName();
+        String firstRefactoredName = firstPackage.getDestinationName();
+        String secondOriginalName = secondPackage.getOriginalName();
+        String secondRefactoredName = secondPackage.getDestinationName();
+
+        // If p1 -> p2 and p2 -> p3
+        if(firstRefactoredName.equals(secondOriginalName)) {
+            ((RenamePackageObject) firstObject).setDestinationName(secondRefactoredName);
+            ((RenamePackageObject) secondObject).setOriginalName(firstOriginalName);
+            return true;
+        }
+        return false;
+    }
+
 }

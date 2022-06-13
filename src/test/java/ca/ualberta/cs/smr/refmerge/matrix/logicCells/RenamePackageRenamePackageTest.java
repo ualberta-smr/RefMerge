@@ -27,4 +27,24 @@ public class RenamePackageRenamePackageTest extends LightJavaCodeInsightFixtureT
 
     }
 
+    public void testTransitivity() {
+        // Rename package A -> B
+        RenamePackageObject receiver = new RenamePackageObject("A", "B");
+        // Rename package B -> C
+        RenamePackageObject dispatcher = new RenamePackageObject("B", "C");
+
+        boolean isTransitive = RenamePackageRenamePackageCell.checkTransitivity(receiver, dispatcher);
+        Assert.assertTrue(isTransitive);
+        Assert.assertEquals(receiver.getDestinationName(), dispatcher.getDestinationName());
+        Assert.assertEquals(dispatcher.getOriginalName(), receiver.getOriginalName());
+
+        // Rename package A -> B
+        receiver = new RenamePackageObject("A", "B");
+        // Rename package B -> C
+        dispatcher = new RenamePackageObject("B", "C");
+
+        isTransitive = RenamePackageRenamePackageCell.checkTransitivity(dispatcher, receiver);
+        Assert.assertFalse(isTransitive);
+    }
+
 }
