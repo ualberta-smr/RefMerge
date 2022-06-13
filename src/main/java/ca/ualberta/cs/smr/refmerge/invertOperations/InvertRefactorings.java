@@ -99,6 +99,13 @@ public class InvertRefactorings {
                     } catch (Exception exception) {
                         exception.printStackTrace();
                     }
+                case RENAME_PACKAGE:
+                    try {
+                        InvertRenamePackage invertRenamePackage = new InvertRenamePackage(project);
+                        invertRenamePackage.invertRenamePackage(refactoringObject);
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                    }
 
 
             }
