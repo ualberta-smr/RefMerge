@@ -29,7 +29,7 @@ public class RenameParameterRenamePackageCell {
         // If the package refactoring happens before the parameter refactoring
         // p1.C1.m1.pm1 -> p2.C1.m1.pm1 & p2.C1.m1.pm1 -> p2.C1.m1.pm2
         // Update the parameter's original class path / package
-        if(originalQClassName.contains(destinationPackageName)) {
+        else if(originalQClassName.contains(destinationPackageName)) {
             String originalClassName = originalQClassName.substring(originalQClassName.lastIndexOf("."));
             // Update the class's package
             ((RenameParameterObject) renameParameterObject).setOriginalClassName(originalPackageName + originalClassName);
