@@ -2,6 +2,7 @@ package ca.ualberta.cs.smr.refmerge.replayOperations;
 
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameClassObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
+import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.ClassObject;
 import ca.ualberta.cs.smr.refmerge.utils.Utils;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
@@ -29,9 +30,9 @@ public class ReplayMoveRenameClass {
 
     public void replayMoveRenameClass(RefactoringObject ref) {
         MoveRenameClassObject moveRenameClassObject = (MoveRenameClassObject) ref;
-        String srcQualifiedClass = moveRenameClassObject.getOriginalClassObject().getClassName();
-        String destQualifiedClass = moveRenameClassObject.getDestinationClassObject().getClassName();
-        String destClassName = destQualifiedClass.substring(destQualifiedClass.lastIndexOf(".") + 1);
+        ClassObject classObject = moveRenameClassObject.getOriginalClassObject();
+        String srcQualifiedClass = classObject.getPackageName() + "." +  classObject.getClassName();
+        String destClassName = moveRenameClassObject.getDestinationClassObject().getClassName();
         Utils utils = new Utils(project);
         String filePath = moveRenameClassObject.getOriginalFilePath();
         PsiClass psiClass = utils.getPsiClassFromClassAndFileNames(srcQualifiedClass, filePath);
