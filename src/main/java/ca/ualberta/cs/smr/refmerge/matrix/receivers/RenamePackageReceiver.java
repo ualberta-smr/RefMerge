@@ -85,4 +85,17 @@ public class RenamePackageReceiver extends Receiver {
         }
     }
 
+    /*
+     * If simplify is true, check for rename package / move+rename field combination. There are no possible conflicts
+     * between package and field level.
+     */
+    @Override
+    public void receive(MoveRenameFieldDispatcher dispatcher) {
+        if(dispatcher.isSimplify()) {
+            RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+            this.isTransitive = RenamePackageMoveRenameFieldCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            dispatcher.setRefactoringObject(dispatcherRefactoring);
+        }
+    }
+
 }
