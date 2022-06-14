@@ -40,6 +40,7 @@ public class Matrix {
        put(RefactoringType.PULL_UP_ATTRIBUTE, new PullUpFieldDispatcher());
        put(RefactoringType.PUSH_DOWN_ATTRIBUTE, new PushDownFieldDispatcher());
        put(RefactoringType.RENAME_PACKAGE, new RenamePackageDispatcher());
+       put(RefactoringType.RENAME_PARAMETER, new RenameParameterDispatcher());
     }};
 
     /*
@@ -64,6 +65,7 @@ public class Matrix {
         put(RefactoringType.PULL_UP_ATTRIBUTE, new PullUpFieldReceiver());
         put(RefactoringType.PUSH_DOWN_ATTRIBUTE, new PushDownFieldReceiver());
         put(RefactoringType.RENAME_PACKAGE, new RenamePackageReceiver());
+        put(RefactoringType.RENAME_PARAMETER, new RenameParameterReceiver());
     }};
 
     public Matrix(Project project) {
@@ -221,6 +223,7 @@ public class Matrix {
         vector.add(RefactoringType.PULL_UP_ATTRIBUTE);
         vector.add(RefactoringType.PUSH_DOWN_ATTRIBUTE);
         vector.add(RefactoringType.RENAME_PACKAGE);
+        vector.add(RefactoringType.RENAME_PARAMETER);
 
         Enumeration<RefactoringType> enumeration = vector.elements();
         int value = 0;
