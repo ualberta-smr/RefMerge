@@ -106,6 +106,13 @@ public class InvertRefactorings {
                     } catch (Exception exception) {
                         exception.printStackTrace();
                     }
+                case RENAME_PARAMETER:
+                    try {
+                        InvertRenameParameter invertRenameParameter = new InvertRenameParameter(project);
+                        invertRenameParameter.invertRenameParameter(refactoringObject);
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                    }
 
 
             }
