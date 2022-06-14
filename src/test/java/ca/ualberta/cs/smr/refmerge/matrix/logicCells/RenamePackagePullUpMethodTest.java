@@ -15,33 +15,29 @@ public class RenamePackagePullUpMethodTest extends LightJavaCodeInsightFixtureTe
         PullUpMethodObject pullUpMethodObject = new PullUpMethodObject("p.subP1.C1",
                 null, "p.subP1.C1", null);
 
-        boolean isCombination = RenamePackagePullUpMethodCell.checkCombination(pullUpMethodObject, renamePackageObject);
-        Assert.assertTrue(isCombination);
+        RenamePackagePullUpMethodCell.checkCombination(pullUpMethodObject, renamePackageObject);
         Assert.assertEquals("p.subP2.C1", pullUpMethodObject.getOriginalClass());
         Assert.assertEquals("p.subP2.C1", pullUpMethodObject.getTargetClass());
         // p.subP3.m1 pulled up to p.subP1.m2
         pullUpMethodObject = new PullUpMethodObject("p.subP1.C1",
                 null, "p.subP3.C1", null);
 
-        isCombination = RenamePackagePullUpMethodCell.checkCombination(pullUpMethodObject, renamePackageObject);
-        Assert.assertTrue(isCombination);
+        RenamePackagePullUpMethodCell.checkCombination(pullUpMethodObject, renamePackageObject);
         Assert.assertEquals("p.subP2.C1", pullUpMethodObject.getOriginalClass());
         Assert.assertNotEquals("p.subP2.C1", pullUpMethodObject.getTargetClass());
         // p.subP1.m1 pulled up to p.subP3.m2
         pullUpMethodObject = new PullUpMethodObject("p.subP3.C1",
                 null, "p.subP1.C1", null);
 
-        isCombination = RenamePackagePullUpMethodCell.checkCombination(pullUpMethodObject, renamePackageObject);
-        Assert.assertTrue(isCombination);
+        RenamePackagePullUpMethodCell.checkCombination(pullUpMethodObject, renamePackageObject);
         Assert.assertNotEquals("p.subP2.C1", pullUpMethodObject.getOriginalClass());
         Assert.assertEquals("p.subP2.C1", pullUpMethodObject.getTargetClass());
 
-        isCombination = RenamePackagePullUpMethodCell.checkCombination(pullUpMethodObject, renamePackageObject);
+        RenamePackagePullUpMethodCell.checkCombination(pullUpMethodObject, renamePackageObject);
         // p.subP3.m1 pulled up to p.subP3.m2
         pullUpMethodObject = new PullUpMethodObject("p.subP3.C1",
                 null, "p.subP1.C3", null);
 
-        Assert.assertFalse(isCombination);
         Assert.assertNotEquals("p.subP2.C1", pullUpMethodObject.getOriginalClass());
         Assert.assertNotEquals("p.subP2.C1", pullUpMethodObject.getTargetClass());
 

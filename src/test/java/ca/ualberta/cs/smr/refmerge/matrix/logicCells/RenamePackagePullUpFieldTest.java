@@ -15,33 +15,29 @@ public class RenamePackagePullUpFieldTest extends LightJavaCodeInsightFixtureTes
         PullUpFieldObject pullUpFieldObject = new PullUpFieldObject("p.subP1.C1",
                 null, "p.subP1.C1", null);
 
-        boolean isCombination = RenamePackagePullUpFieldCell.checkCombination(pullUpFieldObject, renamePackageObject);
-        Assert.assertTrue(isCombination);
+        RenamePackagePullUpFieldCell.checkCombination(pullUpFieldObject, renamePackageObject);
         Assert.assertEquals("p.subP2.C1", pullUpFieldObject.getOriginalClass());
         Assert.assertEquals("p.subP2.C1", pullUpFieldObject.getTargetClass());
         // p.subP3.f1 pulled up to p.subP1.f2
         pullUpFieldObject = new PullUpFieldObject("p.subP1.C1",
                 null, "p.subP3.C1", null);
 
-        isCombination = RenamePackagePullUpFieldCell.checkCombination(pullUpFieldObject, renamePackageObject);
-        Assert.assertTrue(isCombination);
+        RenamePackagePullUpFieldCell.checkCombination(pullUpFieldObject, renamePackageObject);
         Assert.assertEquals("p.subP2.C1", pullUpFieldObject.getOriginalClass());
         Assert.assertNotEquals("p.subP2.C1", pullUpFieldObject.getTargetClass());
         // p.subP1.f1 pulled up to p.subP3.f2
         pullUpFieldObject = new PullUpFieldObject("p.subP3.C1",
                 null, "p.subP1.C1", null);
 
-        isCombination = RenamePackagePullUpFieldCell.checkCombination(pullUpFieldObject, renamePackageObject);
-        Assert.assertTrue(isCombination);
+        RenamePackagePullUpFieldCell.checkCombination(pullUpFieldObject, renamePackageObject);
         Assert.assertNotEquals("p.subP2.C1", pullUpFieldObject.getOriginalClass());
         Assert.assertEquals("p.subP2.C1", pullUpFieldObject.getTargetClass());
 
-        isCombination = RenamePackagePullUpFieldCell.checkCombination(pullUpFieldObject, renamePackageObject);
+        RenamePackagePullUpFieldCell.checkCombination(pullUpFieldObject, renamePackageObject);
         // p.subP3.f1 pulled up to p.subP3.f2
         pullUpFieldObject = new PullUpFieldObject("p.subP3.C1",
                 null, "p.subP1.C3", null);
 
-        Assert.assertFalse(isCombination);
         Assert.assertNotEquals("p.subP2.C1", pullUpFieldObject.getOriginalClass());
         Assert.assertNotEquals("p.subP2.C1", pullUpFieldObject.getTargetClass());
 

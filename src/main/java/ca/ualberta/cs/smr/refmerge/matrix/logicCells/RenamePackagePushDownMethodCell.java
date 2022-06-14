@@ -6,7 +6,7 @@ import ca.ualberta.cs.smr.refmerge.refactoringObjects.RenamePackageObject;
 
 public class RenamePackagePushDownMethodCell {
 
-    public static boolean checkCombination(RefactoringObject dispatcher, RefactoringObject receiver) {
+    public static void checkCombination(RefactoringObject dispatcher, RefactoringObject receiver) {
         PushDownMethodObject dispatcherObject = (PushDownMethodObject) dispatcher;
         RenamePackageObject receiverObject = (RenamePackageObject) receiver;
 
@@ -16,13 +16,11 @@ public class RenamePackagePushDownMethodCell {
         String receiverDestinationPackageName = receiverObject.getDestinationName();
 
         // Need to check both cases
-        boolean isCombination = false;
         // If the source method's package is renamed after the push down method refactoring
         if(dispatcherOriginalClassName.contains(receiverOriginalPackageName)) {
             String refactoredClassName = dispatcherRefactoredClassName.substring(dispatcherOriginalClassName.lastIndexOf("."));
             // Update the classes package
             ((PushDownMethodObject) dispatcher).setOriginalClass(receiverDestinationPackageName + refactoredClassName);
-            isCombination = true;
         }
 
         // If the pulled up method's package is renamed after the push down method refactoring
@@ -30,9 +28,7 @@ public class RenamePackagePushDownMethodCell {
             String refactoredClassName = dispatcherRefactoredClassName.substring(dispatcherRefactoredClassName.lastIndexOf("."));
             // Update the classes package
             ((PushDownMethodObject) dispatcher).setTargetBaseClass(receiverDestinationPackageName + refactoredClassName);
-            isCombination = true;
         }
-        return isCombination;
     }
 
 }

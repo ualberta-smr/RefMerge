@@ -15,33 +15,30 @@ public class RenamePackageInlineMethodTest extends LightJavaCodeInsightFixtureTe
         InlineMethodObject inlineMethodObject = new InlineMethodObject("", "p.subP1.C1",
                 null, "", "p.subP1.C1", null);
 
-        boolean isCombination = RenamePackageInlineMethodCell.checkCombination(inlineMethodObject, renamePackageObject);
-        Assert.assertTrue(isCombination);
+        RenamePackageInlineMethodCell.checkCombination(inlineMethodObject, renamePackageObject);
         Assert.assertEquals("p.subP2.C1", inlineMethodObject.getOriginalClassName());
         Assert.assertEquals("p.subP2.C1", inlineMethodObject.getDestinationClassName());
         // p.subP3.m1 inlined to p.subP1.m2
         inlineMethodObject = new InlineMethodObject("", "p.subP1.C1",
                 null, "", "p.subP3.C1", null);
 
-        isCombination = RenamePackageInlineMethodCell.checkCombination(inlineMethodObject, renamePackageObject);
-        Assert.assertTrue(isCombination);
+        RenamePackageInlineMethodCell.checkCombination(inlineMethodObject, renamePackageObject);
+
         Assert.assertEquals("p.subP2.C1", inlineMethodObject.getOriginalClassName());
         Assert.assertNotEquals("p.subP2.C1", inlineMethodObject.getDestinationClassName());
         // p.subP1.m1 inlined to p.subP3.m2
         inlineMethodObject = new InlineMethodObject("", "p.subP3.C1",
                 null, "", "p.subP1.C1", null);
 
-        isCombination = RenamePackageInlineMethodCell.checkCombination(inlineMethodObject, renamePackageObject);
-        Assert.assertTrue(isCombination);
+        RenamePackageInlineMethodCell.checkCombination(inlineMethodObject, renamePackageObject);
         Assert.assertNotEquals("p.subP2.C1", inlineMethodObject.getOriginalClassName());
         Assert.assertEquals("p.subP2.C1", inlineMethodObject.getDestinationClassName());
 
-        isCombination = RenamePackageInlineMethodCell.checkCombination(inlineMethodObject, renamePackageObject);
+        RenamePackageInlineMethodCell.checkCombination(inlineMethodObject, renamePackageObject);
         // p.subP3.m1 inlined to p.subP3.m2
         inlineMethodObject = new InlineMethodObject("", "p.subP3.C1",
                 null, "", "p.subP1.C3", null);
 
-        Assert.assertFalse(isCombination);
         Assert.assertNotEquals("p.subP2.C1", inlineMethodObject.getOriginalClassName());
         Assert.assertNotEquals("p.subP2.C1", inlineMethodObject.getDestinationClassName());
 

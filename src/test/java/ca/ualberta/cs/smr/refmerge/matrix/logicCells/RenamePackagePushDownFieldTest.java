@@ -15,33 +15,29 @@ public class RenamePackagePushDownFieldTest extends LightJavaCodeInsightFixtureT
         PushDownFieldObject pushDownField = new PushDownFieldObject("p.subP1.C1",
                 null, "p.subP1.C1", null);
 
-        boolean isCombination = RenamePackagePushDownFieldCell.checkCombination(pushDownField, renamePackageObject);
-        Assert.assertTrue(isCombination);
+        RenamePackagePushDownFieldCell.checkCombination(pushDownField, renamePackageObject);
         Assert.assertEquals("p.subP2.C1", pushDownField.getOriginalClass());
         Assert.assertEquals("p.subP2.C1", pushDownField.getTargetSubClass());
         // p.subP3.f1 pushed down to p.subP1.f2
         pushDownField = new PushDownFieldObject("p.subP1.C1",
                 null, "p.subP3.C1", null);
 
-        isCombination = RenamePackagePushDownFieldCell.checkCombination(pushDownField, renamePackageObject);
-        Assert.assertTrue(isCombination);
+        RenamePackagePushDownFieldCell.checkCombination(pushDownField, renamePackageObject);
         Assert.assertEquals("p.subP2.C1", pushDownField.getOriginalClass());
         Assert.assertNotEquals("p.subP2.C1", pushDownField.getTargetSubClass());
         // p.subP1.f1 pushed down to p.subP3.f2
         pushDownField = new PushDownFieldObject("p.subP3.C1",
                 null, "p.subP1.C1", null);
 
-        isCombination = RenamePackagePushDownFieldCell.checkCombination(pushDownField, renamePackageObject);
-        Assert.assertTrue(isCombination);
+        RenamePackagePushDownFieldCell.checkCombination(pushDownField, renamePackageObject);
         Assert.assertNotEquals("p.subP2.C1", pushDownField.getOriginalClass());
         Assert.assertEquals("p.subP2.C1", pushDownField.getTargetSubClass());
 
-        isCombination = RenamePackagePushDownFieldCell.checkCombination(pushDownField, renamePackageObject);
+        RenamePackagePushDownFieldCell.checkCombination(pushDownField, renamePackageObject);
         // p.subP3.f1 pushed down to p.subP3.f2
         pushDownField = new PushDownFieldObject("p.subP3.C1",
                 null, "p.subP1.C3", null);
 
-        Assert.assertFalse(isCombination);
         Assert.assertNotEquals("p.subP2.C1", pushDownField.getOriginalClass());
         Assert.assertNotEquals("p.subP2.C1", pushDownField.getTargetSubClass());
 

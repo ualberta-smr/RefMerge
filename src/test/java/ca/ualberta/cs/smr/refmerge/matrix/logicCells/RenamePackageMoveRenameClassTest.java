@@ -14,8 +14,7 @@ public class RenamePackageMoveRenameClassTest extends LightJavaCodeInsightFixtur
         MoveRenameClassObject moveRenameClassObject = new MoveRenameClassObject("", "C1",
                 "p.subP", "", "C2", "p.subP2");
 
-        boolean isCombination = RenamePackageMoveRenameClassCell.checkCombination(moveRenameClassObject, renamePackageObject);
-        Assert.assertTrue(isCombination);
+        RenamePackageMoveRenameClassCell.checkCombination(moveRenameClassObject, renamePackageObject);
         Assert.assertEquals(moveRenameClassObject.getDestinationClassObject().getPackageName(), "p.subP3");
     }
 }

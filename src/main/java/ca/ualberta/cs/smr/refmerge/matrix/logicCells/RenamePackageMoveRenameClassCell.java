@@ -7,7 +7,7 @@ import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.ClassObject;
 
 public class RenamePackageMoveRenameClassCell {
 
-    public static boolean checkCombination(RefactoringObject dispatcher, RefactoringObject receiver) {
+    public static void checkCombination(RefactoringObject dispatcher, RefactoringObject receiver) {
         MoveRenameClassObject dispatcherObject = (MoveRenameClassObject) dispatcher;
         RenamePackageObject receiverObject = (RenamePackageObject) receiver;
 
@@ -23,9 +23,7 @@ public class RenamePackageMoveRenameClassCell {
             classObject.setPackageName(receiverDestinationPackageName);
             // Update the destination package
             ((MoveRenameClassObject) dispatcher).setDestinationClassObject(classObject);
-            return true;
         }
-        return false;
     }
 
 }

@@ -7,7 +7,7 @@ import ca.ualberta.cs.smr.refmerge.refactoringObjects.RenamePackageObject;
 
 public class RenamePackagePullUpMethodCell {
 
-    public static boolean checkCombination(RefactoringObject dispatcher, RefactoringObject receiver) {
+    public static void checkCombination(RefactoringObject dispatcher, RefactoringObject receiver) {
         PullUpMethodObject dispatcherObject = (PullUpMethodObject) dispatcher;
         RenamePackageObject receiverObject = (RenamePackageObject) receiver;
 
@@ -17,13 +17,11 @@ public class RenamePackagePullUpMethodCell {
         String receiverDestinationPackageName = receiverObject.getDestinationName();
 
         // Need to check both cases
-        boolean isCombination = false;
         // If the source method's package is renamed after the pull up method refactoring
         if(dispatcherOriginalClassName.contains(receiverOriginalPackageName)) {
             String refactoredClassName = dispatcherRefactoredClassName.substring(dispatcherOriginalClassName.lastIndexOf("."));
             // Update the classes package
             ((PullUpMethodObject) dispatcher).setOriginalClass(receiverDestinationPackageName + refactoredClassName);
-            isCombination = true;
         }
 
         // If the pulled up method's package is renamed after the pull up method refactoring
@@ -31,9 +29,7 @@ public class RenamePackagePullUpMethodCell {
             String refactoredClassName = dispatcherRefactoredClassName.substring(dispatcherRefactoredClassName.lastIndexOf("."));
             // Update the classes package
             ((PullUpMethodObject) dispatcher).setTargetClass(receiverDestinationPackageName + refactoredClassName);
-            isCombination = true;
         }
-        return isCombination;
     }
 
 }

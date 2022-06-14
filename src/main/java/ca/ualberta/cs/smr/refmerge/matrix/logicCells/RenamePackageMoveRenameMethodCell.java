@@ -6,7 +6,7 @@ import ca.ualberta.cs.smr.refmerge.refactoringObjects.RenamePackageObject;
 
 public class RenamePackageMoveRenameMethodCell {
 
-    public static boolean checkCombination(RefactoringObject dispatcher, RefactoringObject receiver) {
+    public static void checkCombination(RefactoringObject dispatcher, RefactoringObject receiver) {
         MoveRenameMethodObject dispatcherObject = (MoveRenameMethodObject) dispatcher;
         RenamePackageObject receiverObject = (RenamePackageObject) receiver;
 
@@ -19,9 +19,7 @@ public class RenamePackageMoveRenameMethodCell {
             String refactoredClassName = dispatcherRefactoredClassName.substring(dispatcherRefactoredClassName.lastIndexOf("."));
             // Update the classes package
             ((MoveRenameMethodObject) dispatcher).setDestinationClassName(receiverDestinationPackageName + refactoredClassName);
-            return true;
         }
-        return false;
     }
 
 }

@@ -15,33 +15,32 @@ public class RenamePackagePushDownMethodTest extends LightJavaCodeInsightFixture
         PushDownMethodObject pushDownMethod = new PushDownMethodObject("p.subP1.C1",
                 null, "p.subP1.C1", null);
 
-        boolean isCombination = RenamePackagePushDownMethodCell.checkCombination(pushDownMethod, renamePackageObject);
-        Assert.assertTrue(isCombination);
+        RenamePackagePushDownMethodCell.checkCombination(pushDownMethod, renamePackageObject);
+
         Assert.assertEquals("p.subP2.C1", pushDownMethod.getOriginalClass());
         Assert.assertEquals("p.subP2.C1", pushDownMethod.getTargetBaseClass());
         // p.subP3.m1 pushed down to p.subP1.m2
         pushDownMethod = new PushDownMethodObject("p.subP1.C1",
                 null, "p.subP3.C1", null);
 
-        isCombination = RenamePackagePushDownMethodCell.checkCombination(pushDownMethod, renamePackageObject);
-        Assert.assertTrue(isCombination);
+        RenamePackagePushDownMethodCell.checkCombination(pushDownMethod, renamePackageObject);
+
         Assert.assertEquals("p.subP2.C1", pushDownMethod.getOriginalClass());
         Assert.assertNotEquals("p.subP2.C1", pushDownMethod.getTargetBaseClass());
         // p.subP1.m1 pushed down to p.subP3.m2
         pushDownMethod = new PushDownMethodObject("p.subP3.C1",
                 null, "p.subP1.C1", null);
 
-        isCombination = RenamePackagePushDownMethodCell.checkCombination(pushDownMethod, renamePackageObject);
-        Assert.assertTrue(isCombination);
+        RenamePackagePushDownMethodCell.checkCombination(pushDownMethod, renamePackageObject);
+
         Assert.assertNotEquals("p.subP2.C1", pushDownMethod.getOriginalClass());
         Assert.assertEquals("p.subP2.C1", pushDownMethod.getTargetBaseClass());
 
-        isCombination = RenamePackagePushDownMethodCell.checkCombination(pushDownMethod, renamePackageObject);
+        RenamePackagePushDownMethodCell.checkCombination(pushDownMethod, renamePackageObject);
         // p.subP3.m1 pushed down to p.subP3.m2
         pushDownMethod = new PushDownMethodObject("p.subP3.C1",
                 null, "p.subP1.C3", null);
 
-        Assert.assertFalse(isCombination);
         Assert.assertNotEquals("p.subP2.C1", pushDownMethod.getOriginalClass());
         Assert.assertNotEquals("p.subP2.C1", pushDownMethod.getTargetBaseClass());
 

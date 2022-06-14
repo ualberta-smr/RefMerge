@@ -41,7 +41,7 @@ public class RenamePackageReceiver extends Receiver {
     public void receive(MoveRenameMethodDispatcher dispatcher) {
         if(dispatcher.isSimplify()) {
             RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
-            this.isTransitive = RenamePackageMoveRenameMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            RenamePackageMoveRenameMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
             dispatcher.setRefactoringObject(dispatcherRefactoring);
         }
     }
@@ -54,7 +54,7 @@ public class RenamePackageReceiver extends Receiver {
     public void receive(ExtractMethodDispatcher dispatcher) {
         if(dispatcher.isSimplify()) {
             RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
-            this.isTransitive = RenamePackageExtractMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            RenamePackageExtractMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
             dispatcher.setRefactoringObject(dispatcherRefactoring);
         }
     }
@@ -67,7 +67,7 @@ public class RenamePackageReceiver extends Receiver {
     public void receive(InlineMethodDispatcher dispatcher) {
         if(dispatcher.isSimplify()) {
             RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
-            this.isTransitive = RenamePackageInlineMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            RenamePackageInlineMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
             dispatcher.setRefactoringObject(dispatcherRefactoring);
         }
     }
@@ -80,7 +80,7 @@ public class RenamePackageReceiver extends Receiver {
     public void receive(MoveRenameClassDispatcher dispatcher) {
         if(dispatcher.isSimplify()) {
             RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
-            this.isTransitive = RenamePackageMoveRenameClassCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            RenamePackageMoveRenameClassCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
             dispatcher.setRefactoringObject(dispatcherRefactoring);
         }
     }
@@ -93,7 +93,7 @@ public class RenamePackageReceiver extends Receiver {
     public void receive(MoveRenameFieldDispatcher dispatcher) {
         if(dispatcher.isSimplify()) {
             RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
-            this.isTransitive = RenamePackageMoveRenameFieldCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            RenamePackageMoveRenameFieldCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
             dispatcher.setRefactoringObject(dispatcherRefactoring);
         }
     }
@@ -106,7 +106,7 @@ public class RenamePackageReceiver extends Receiver {
     public void receive(PullUpMethodDispatcher dispatcher) {
         if(dispatcher.isSimplify()) {
             RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
-            this.isTransitive = RenamePackagePullUpMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            RenamePackagePullUpMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
             dispatcher.setRefactoringObject(dispatcherRefactoring);
         }
     }
@@ -119,7 +119,7 @@ public class RenamePackageReceiver extends Receiver {
     public void receive(PushDownMethodDispatcher dispatcher) {
         if(dispatcher.isSimplify()) {
             RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
-            this.isTransitive = RenamePackagePushDownMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            RenamePackagePushDownMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
             dispatcher.setRefactoringObject(dispatcherRefactoring);
         }
     }
@@ -132,7 +132,7 @@ public class RenamePackageReceiver extends Receiver {
     public void receive(PullUpFieldDispatcher dispatcher) {
         if(dispatcher.isSimplify()) {
             RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
-            this.isTransitive = RenamePackagePushDownMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            RenamePackagePushDownMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
             dispatcher.setRefactoringObject(dispatcherRefactoring);
         }
     }
@@ -145,7 +145,7 @@ public class RenamePackageReceiver extends Receiver {
     public void receive(PushDownFieldDispatcher dispatcher) {
         if(dispatcher.isSimplify()) {
             RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
-            this.isTransitive = RenamePackagePushDownMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            RenamePackagePushDownMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
             dispatcher.setRefactoringObject(dispatcherRefactoring);
         }
     }

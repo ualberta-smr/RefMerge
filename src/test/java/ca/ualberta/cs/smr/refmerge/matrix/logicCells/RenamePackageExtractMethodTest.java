@@ -15,33 +15,31 @@ public class RenamePackageExtractMethodTest extends LightJavaCodeInsightFixtureT
         ExtractMethodObject extractMethodObject = new ExtractMethodObject("", "p.subP1.C1",
                 null, "", "p.subP1.C1", null);
 
-        boolean isCombination = RenamePackageExtractMethodCell.checkCombination(extractMethodObject, renamePackageObject);
-        Assert.assertTrue(isCombination);
+        RenamePackageExtractMethodCell.checkCombination(extractMethodObject, renamePackageObject);
         Assert.assertEquals("p.subP2.C1", extractMethodObject.getOriginalClassName());
         Assert.assertEquals("p.subP2.C1", extractMethodObject.getDestinationClassName());
         // p.subP3.m1 extracted from p.subP1.m2
         extractMethodObject = new ExtractMethodObject("", "p.subP1.C1",
                 null, "", "p.subP3.C1", null);
 
-        isCombination = RenamePackageExtractMethodCell.checkCombination(extractMethodObject, renamePackageObject);
-        Assert.assertTrue(isCombination);
+        RenamePackageExtractMethodCell.checkCombination(extractMethodObject, renamePackageObject);
+
         Assert.assertEquals("p.subP2.C1", extractMethodObject.getOriginalClassName());
         Assert.assertNotEquals("p.subP2.C1", extractMethodObject.getDestinationClassName());
         // p.subP1.m1 extracted from p.subP3.m2
         extractMethodObject = new ExtractMethodObject("", "p.subP3.C1",
                 null, "", "p.subP1.C1", null);
 
-        isCombination = RenamePackageExtractMethodCell.checkCombination(extractMethodObject, renamePackageObject);
-        Assert.assertTrue(isCombination);
+        RenamePackageExtractMethodCell.checkCombination(extractMethodObject, renamePackageObject);
+
         Assert.assertNotEquals("p.subP2.C1", extractMethodObject.getOriginalClassName());
         Assert.assertEquals("p.subP2.C1", extractMethodObject.getDestinationClassName());
 
-        isCombination = RenamePackageExtractMethodCell.checkCombination(extractMethodObject, renamePackageObject);
+        RenamePackageExtractMethodCell.checkCombination(extractMethodObject, renamePackageObject);
         // p.subP3.m1 extracted from p.subP3.m2
         extractMethodObject = new ExtractMethodObject("", "p.subP3.C1",
                 null, "", "p.subP1.C3", null);
 
-        Assert.assertFalse(isCombination);
         Assert.assertNotEquals("p.subP2.C1", extractMethodObject.getOriginalClassName());
         Assert.assertNotEquals("p.subP2.C1", extractMethodObject.getDestinationClassName());
 
