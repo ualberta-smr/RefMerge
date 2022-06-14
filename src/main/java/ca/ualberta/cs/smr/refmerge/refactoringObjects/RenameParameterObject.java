@@ -22,6 +22,21 @@ public class RenameParameterObject implements RefactoringObject {
     private String refactoredFilePath;
     private Boolean isReplay;
 
+    public RenameParameterObject(String originalClassName, String refactoredClassName,
+                                 MethodSignatureObject originalMethodSignature, MethodSignatureObject destinationMethodSignature,
+                                 ParameterObject originalParameterObject, ParameterObject refactoredParameterObject) {
+        this.refactoringType = RefactoringType.RENAME_PARAMETER;
+        this.refactoringDetail = "";
+        this.originalMethodSignature = originalMethodSignature;
+        this.refactoredMethodSignature = destinationMethodSignature;
+        this.originalClassName = originalClassName;
+        this.refactoredClassName = refactoredClassName;
+        this.originalFilePath = "";
+        this.refactoredFilePath = "";
+        this.originalParameterObject = originalParameterObject;
+        this.refactoredParameterObject = refactoredParameterObject;
+    }
+
     public RenameParameterObject(Refactoring refactoring) {
         this.refactoringType = refactoring.getRefactoringType();
         this.refactoringDetail = refactoring.toString();
