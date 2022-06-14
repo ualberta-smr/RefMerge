@@ -137,4 +137,18 @@ public class RenamePackageReceiver extends Receiver {
         }
     }
 
+    /*
+     * If simplify is true, check for rename package / push down field combination. There are no possible conflicts
+     * between package and method level.
+     */
+    @Override
+    public void receive(PushDownFieldDispatcher dispatcher) {
+        if(dispatcher.isSimplify()) {
+            RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+            this.isTransitive = RenamePackagePushDownMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            dispatcher.setRefactoringObject(dispatcherRefactoring);
+        }
+    }
+
+
 }
