@@ -7,10 +7,11 @@ public enum RefactoringOrder {
     MOVE_RENAME_METHOD(4),
     PULL_UP_METHOD(5),
     PUSH_DOWN_METHOD(6),
-    EXTRACT_METHOD(7),
-    MOVE_RENAME_FIELD(8),
-    PULL_UP_FIELD(9),
-    PUSH_DOWN_FIELD(10);
+    RENAME_PARAMETER(7),
+    EXTRACT_METHOD(8),
+    MOVE_RENAME_FIELD(9),
+    PULL_UP_FIELD(10),
+    PUSH_DOWN_FIELD(11);
 
 
     private final int order;
