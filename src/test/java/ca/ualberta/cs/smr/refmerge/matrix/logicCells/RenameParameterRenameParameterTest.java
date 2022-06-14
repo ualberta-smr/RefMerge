@@ -29,7 +29,7 @@ public class RenameParameterRenameParameterTest extends LightJavaCodeInsightFixt
         parameterList.add(parameterObject4);
         MethodSignatureObject foo3 = new MethodSignatureObject(parameterList, "foo");
         String originalClass = "A";
-        String refactoredClass = "B";
+        String refactoredClass = "A";
         // Rename parameter A.foo.number -> A.foo.number1
         RenameParameterObject renameParameterObject1 =
                 new RenameParameterObject(originalClass, refactoredClass, foo, foo2, parameterObject2, parameterObject3);
@@ -58,7 +58,7 @@ public class RenameParameterRenameParameterTest extends LightJavaCodeInsightFixt
         parameterList.add(parameterObject3);
         MethodSignatureObject foo3 = new MethodSignatureObject(parameterList, "foo");
         String originalClass = "A";
-        String refactoredClass = "B";
+        String refactoredClass = "A";
         // Rename parameter A.foo.value -> A.foo.number1
         RenameParameterObject renameParameterObject1 =
                 new RenameParameterObject(originalClass, refactoredClass, foo, foo2, parameterObject, parameterObject3);
@@ -83,7 +83,7 @@ public class RenameParameterRenameParameterTest extends LightJavaCodeInsightFixt
         parameterList.add(parameterObject3);
         MethodSignatureObject foo2 = new MethodSignatureObject(parameterList, "foo");
         String originalClass = "A";
-        String refactoredClass = "B";
+        String refactoredClass = "A";
         // Rename parameter A.foo.value -> A.foo.number1
         RenameParameterObject renameParameterObject1 =
                 new RenameParameterObject(originalClass, refactoredClass, foo, foo2, parameterObject, parameterObject3);
@@ -117,7 +117,7 @@ public class RenameParameterRenameParameterTest extends LightJavaCodeInsightFixt
         parameterList.add(parameterObject3);
         MethodSignatureObject foo3 = new MethodSignatureObject(parameterList, "foo");
         String originalClass = "A";
-        String refactoredClass = "B";
+        String refactoredClass = "A";
         // Rename parameter A.foo.value -> A.foo.number1
         RenameParameterObject renameParameterObject1 =
                 new RenameParameterObject(originalClass, refactoredClass, foo, foo2, parameterObject, parameterObject3);
@@ -128,6 +128,37 @@ public class RenameParameterRenameParameterTest extends LightJavaCodeInsightFixt
         // Should be false because of different method signatures
         boolean isConflicting = RenameParameterRenameParameterCell.conflictCell(renameParameterObject1, renameParameterObject2);
         Assert.assertFalse(isConflicting);
+    }
+
+    public void testTransitivity() {
+        ParameterObject parameterObject = new ParameterObject("int", "value");
+        ParameterObject parameterObject2 = new ParameterObject("int", "number");
+        List<ParameterObject> parameterList = new ArrayList<>();
+        parameterList.add(parameterObject);
+        parameterList.add(parameterObject2);
+        MethodSignatureObject foo = new MethodSignatureObject(parameterList, "foo");
+        ParameterObject parameterObject3 = new ParameterObject("int", "number1");
+        parameterList = new ArrayList<>();
+        parameterList.add(parameterObject);
+        parameterList.add(parameterObject3);
+        MethodSignatureObject foo2 = new MethodSignatureObject(parameterList, "foo");
+        ParameterObject parameterObject4 = new ParameterObject("int", "number2");
+        parameterList = new ArrayList<>();
+        parameterList.add(parameterObject);
+        parameterList.add(parameterObject4);
+        MethodSignatureObject foo3 = new MethodSignatureObject(parameterList, "foo");
+        String originalClass = "A";
+        String refactoredClass = "A";
+        // Rename parameter A.foo.number -> A.foo.number1
+        RenameParameterObject renameParameterObject1 =
+                new RenameParameterObject(originalClass, refactoredClass, foo, foo2, parameterObject2, parameterObject3);
+        // Rename parameter A.foo.number1 -> A.foo.number2
+        RenameParameterObject renameParameterObject2 =
+                new RenameParameterObject(originalClass, refactoredClass, foo2, foo3, parameterObject2, parameterObject4);
+
+        boolean isTransitive = RenameParameterRenameParameterCell.checkTransitivity(renameParameterObject1, renameParameterObject2);
+        Assert.assertTrue(isTransitive);
+        Assert.assertEquals(renameParameterObject1.getRefactoredParameterObject().getName(), renameParameterObject2.getRefactoredParameterObject().getName());
     }
 
 

@@ -73,4 +73,36 @@ public class RenameParameterRenameParameterCell {
         return false;
     }
 
+    public static boolean checkTransitivity(RefactoringObject first, RefactoringObject second) {
+        RenameParameterObject firstObject = (RenameParameterObject) first;
+        RenameParameterObject secondObject = (RenameParameterObject) second;
+
+        String firstDestinationClass = firstObject.getRefactoredClassName();
+        String secondOriginalClass = secondObject.getOriginalClassName();
+        String secondDestinationClass = secondObject.getRefactoredClassName();
+
+        MethodSignatureObject firstDestinationSignature = firstObject.getRefactoredMethodSignature();
+        MethodSignatureObject secondOriginalSignature = secondObject.getOriginalMethodSignature();
+        MethodSignatureObject secondDestinationSignature = secondObject.getRefactoredMethodSignature();
+
+        String firstDestinationParameterName = firstObject.getOriginalParameterObject().getName();
+        String secondOriginalParameterName = secondObject.getOriginalParameterObject().getName();
+        ParameterObject secondDestinationParameter = secondObject.getRefactoredParameterObject();
+        String secondType = secondDestinationParameter.getType();
+        String secondName = secondDestinationParameter.getName();
+        // If C1.m1.p1 -> C2.m2.p2 & C2.m2.p2 -> C3.m3.p3
+        if(firstDestinationClass.equals(secondOriginalClass)
+                && firstDestinationSignature.equalsSignature(secondOriginalSignature)
+                && firstDestinationParameterName.equals(secondOriginalParameterName)) {
+            // Set destination class, method signature, and parameter of the first refactoring to the destination
+            // of the second
+            first.setDestinationFilePath(secondObject.getDestinationFilePath());
+            ((RenameParameterObject) first).setRefactoredClassName(secondDestinationClass);
+            ((RenameParameterObject) first).setRefactoredMethodSignature(secondDestinationSignature);
+            ((RenameParameterObject) first).setRefactoredParameterObject(secondType, secondName);
+            return true;
+        }
+        return false;
+    }
+
 }
