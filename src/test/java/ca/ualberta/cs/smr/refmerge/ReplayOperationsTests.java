@@ -844,5 +844,62 @@ public class ReplayOperationsTests extends LightJavaCodeInsightFixtureTestCase {
         Assert.assertEquals(psiPackageName, "expectedPackageName");
     }
 
+    public void testInvertRenameParameter() {
+        Project project = myFixture.getProject();
+        String testDir = "parameterFiles/renameFiles/";
+        String testDataOriginal = testDir + "original/";
+        String testDataRefactored = testDir + "expected/";
+        String testFile ="Main.java";
+        PsiFile[] psiFiles = myFixture.configureByFiles(testDataRefactored + testFile, testDataOriginal + testFile);
+        String basePath = System.getProperty("user.dir");
+
+        String refactoredPath = basePath + "/" + getTestDataPath() + "/" + testDataRefactored;
+        String originalPath = basePath + "/" + getTestDataPath() + "/" + testDataOriginal;
+
+        PsiParameterList oldList;
+        PsiParameterList newList;
+
+        List<Refactoring> refactorings = GetDataForTests.getRefactorings("RENAME_PARAMETER", originalPath, refactoredPath);
+        assert refactorings != null;
+        Refactoring ref = refactorings.get(0);
+        RefactoringObject object = new RenameParameterObject(ref);
+        ReplayRenameParameter replay = new ReplayRenameParameter(project);
+        replay.replayRenameParameter(object);
+
+        oldList = null;
+        newList = null;
+
+        for(PsiFile file : psiFiles) {
+            if (Objects.requireNonNull(file.getVirtualFile().getCanonicalPath()).contains("original")) {
+                PsiMethod[] methods = TestUtils.getPsiMethodsFromFile((file));
+                for (PsiMethod method : methods) {
+                    if (method.getName().equals("addNumbers")) {
+                        oldList = method.getParameterList();
+                    }
+                }
+
+            }
+            if (file.getVirtualFile().getCanonicalPath().contains("expected")) {
+                PsiMethod[] methods = TestUtils.getPsiMethodsFromFile((file));
+                for (PsiMethod method : methods) {
+                    if (method.getName().equals("addNumbers")) {
+                        newList = method.getParameterList();
+                    }
+                }
+            }
+        }
+        assert oldList != null;
+        PsiParameter[] oldParameters = oldList.getParameters();
+        assert newList != null;
+        PsiParameter[] newParameters = newList.getParameters();
+        for(int i = 0; i < oldParameters.length; i++) {
+            PsiParameter oldParameter = oldParameters[i];
+            PsiParameter newParameter = newParameters[i];
+            String oldName = oldParameter.getName();
+            String newName = newParameter.getName();
+            Assert.assertEquals(oldName, newName);
+        }
+
+    }
 
 }

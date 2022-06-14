@@ -94,6 +94,13 @@ public class ReplayRefactorings {
                     } catch (Exception exception) {
                         exception.printStackTrace();
                     }
+                case RENAME_PARAMETER:
+                    try {
+                        ReplayRenameParameter replayRenameParameter = new ReplayRenameParameter(project);
+                        replayRenameParameter.replayRenameParameter(refactoringObject);
+                    } catch(Exception exception) {
+                        exception.printStackTrace();
+                    }
             }
 
         }
