@@ -18,14 +18,13 @@ public class AddParameterExtractMethodCell {
 
         MethodSignatureObject originalParameterMethodSignature = parameter.getOriginalMethod();
         MethodSignatureObject originalMethodSignature = method.getOriginalMethodSignature();
-        MethodSignatureObject destinationParameterMethodSignature = parameter.getDestinationMethod();
         MethodSignatureObject destinationMethodSignature = method.getDestinationMethodSignature();
 
         ParameterObject addedParameter = parameter.getParameterObject();
 
         // If the add parameter refactoring happens in the source method
         if(originalMethodClass.equals(originalParameterClass)
-                && destinationMethodSignature.equalsSignature(originalParameterMethodSignature)) {
+                && originalMethodSignature.equalsSignature(originalParameterMethodSignature)) {
             originalMethodSignature.updateParameterAtLocation(-1, addedParameter);
             ((ExtractMethodObject) methodObject).setOriginalMethodSignature(originalMethodSignature);
 
@@ -33,7 +32,7 @@ public class AddParameterExtractMethodCell {
 
         // If the add parameter refactoring happens in the extracted method
         else if(originalMethodClass.equals(destinationParameterClass)
-                && originalMethodSignature.equalsSignature(destinationParameterMethodSignature)) {
+                && destinationMethodSignature.equalsSignature(originalParameterMethodSignature)) {
             destinationMethodSignature.updateParameterAtLocation(-1, addedParameter);
             ((ExtractMethodObject) methodObject).setDestinationMethodSignature(destinationMethodSignature);
         }
