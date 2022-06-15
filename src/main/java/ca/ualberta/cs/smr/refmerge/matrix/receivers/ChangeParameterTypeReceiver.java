@@ -2,8 +2,10 @@ package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.PullUpMethodDispatcher;
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.PushDownMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.ChangeParameterTypeMoveRenameMethodCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.ChangeParameterTypePullUpMethodCell;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.ChangeParameterTypePushDownMethodCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.ReorderParameterMoveRenameMethodCell;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 
@@ -35,6 +37,20 @@ public class ChangeParameterTypeReceiver extends Receiver {
             this.isTransitive = false;
             // There is no opportunity for transitivity in this case. There is only a combination case that can occur
             ChangeParameterTypePullUpMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            dispatcher.setRefactoringObject(dispatcherRefactoring);
+        }
+    }
+
+    /*
+     * Check for change parameter type / push down method combination only to add to push down method resilience
+     */
+    @Override
+    public void receive(PushDownMethodDispatcher dispatcher) {
+        RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+        if(dispatcher.isSimplify()) {
+            this.isTransitive = false;
+            // There is no opportunity for transitivity in this case. There is only a combination case that can occur
+            ChangeParameterTypePushDownMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
             dispatcher.setRefactoringObject(dispatcherRefactoring);
         }
     }
