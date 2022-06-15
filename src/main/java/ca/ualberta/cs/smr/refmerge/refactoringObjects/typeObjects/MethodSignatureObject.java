@@ -1,5 +1,6 @@
 package ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects;
 
+import gr.uom.java.xmi.UMLOperation;
 import gr.uom.java.xmi.UMLParameter;
 
 import java.util.ArrayList;
@@ -25,6 +26,18 @@ public class MethodSignatureObject {
         this.isConstructor = false;
         this.visibility = "public";
         this.isStatic = false;
+    }
+
+    public MethodSignatureObject(UMLOperation method) {
+        this.name = method.getName();
+        this.parameterList = new ArrayList<>();
+        List<UMLParameter> parameters = method.getParameters();
+        for(UMLParameter parameter : parameters) {
+            this.parameterList.add(new ParameterObject(parameter.getType().toString(), parameter.getName()));
+        }
+        this.visibility = method.getVisibility();
+        this.isConstructor = method.isConstructor();
+        this.isStatic = method.isStatic();
     }
 
     /*
@@ -109,7 +122,13 @@ public class MethodSignatureObject {
     }
 
     public void updateParameterAtLocation(int location, ParameterObject parameterObject) {
-        this.parameterList.set(location, parameterObject);
+        if(location > -1) {
+            this.parameterList.set(location, parameterObject);
+        }
+        // If location == -1, add parameter to end
+        else {
+            this.parameterList.add(parameterObject);
+        }
     }
 
     public ParameterObject getReturnParameter() {
