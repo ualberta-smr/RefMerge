@@ -100,4 +100,8 @@ public class Receiver {
         // This is empty because subclasses that receive an add parameter dispatcher will override this method.
     }
 
+    public void receive(RemoveParameterDispatcher dispatcher) {
+        // This is empty because subclasses that receive an add parameter dispatcher will override this method.
+    }
+
 }
