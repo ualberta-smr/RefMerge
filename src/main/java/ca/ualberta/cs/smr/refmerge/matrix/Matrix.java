@@ -71,7 +71,7 @@ public class Matrix {
         put(RefactoringType.ADD_PARAMETER, new AddParameterReceiver());
         put(RefactoringType.REMOVE_PARAMETER, new RemoveParameterReceiver());
         put(RefactoringType.REORDER_PARAMETER, new ReorderParameterReceiver());
-        put(RefactoringType.CHANGE_PARAMETER_TYPE, new ReorderParameterReceiver());
+        put(RefactoringType.CHANGE_PARAMETER_TYPE, new ChangeParameterTypeReceiver());
     }};
 
     public Matrix(Project project) {
