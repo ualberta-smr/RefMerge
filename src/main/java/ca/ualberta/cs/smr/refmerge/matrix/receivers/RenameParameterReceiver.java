@@ -98,6 +98,19 @@ public class RenameParameterReceiver extends Receiver {
         }
     }
 
+    /*
+     * If simplify is true, check for rename parameter / move + rename class. If it is false, there shouldn't be
+     * any conflicts.
+     */
+    @Override
+    public void receive(MoveRenameClassDispatcher dispatcher) {
+        RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+        if(dispatcher.isSimplify()) {
+            RenameParameterMoveRenameClassCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            dispatcher.setRefactoringObject(dispatcherRefactoring);
+        }
+    }
+
 
     /*
      * If simplify is true, check for rename parameter / rename package combination. If it is false, there is no
