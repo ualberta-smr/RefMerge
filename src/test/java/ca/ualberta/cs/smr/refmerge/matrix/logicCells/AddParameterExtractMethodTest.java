@@ -26,7 +26,7 @@ public class AddParameterExtractMethodTest extends LightJavaCodeInsightFixtureTe
         parameterList2.add(parameterObject1);
         parameterList2.add(parameterObject);
         MethodSignatureObject foo2 = new MethodSignatureObject(parameterList2, "foo");
-        MethodSignatureObject bar4 = new MethodSignatureObject(parameterList2, "bar");
+        MethodSignatureObject bar4 = new MethodSignatureObject(parameterList, "bar");
         String originalClass = "A";
         AddParameterObject addParameterObject = new AddParameterObject(originalClass, originalClass, foo1, foo2, parameterObject);
 
