@@ -1,8 +1,10 @@
 package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.ExtractMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.RenamePackageDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.RenameParameterDispatcher;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenameParameterExtractMethodCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenameParameterMoveRenameMethodCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenameParameterRenamePackageCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenameParameterRenameParameterCell;
@@ -46,6 +48,21 @@ public class RenameParameterReceiver extends Receiver {
         }
 
     }
+
+    /*
+     * If simplify is true, check for rename parameter / extract method. If it is false, there shouldn't be
+     * any conflicts.
+     */
+    @Override
+    public void receive(ExtractMethodDispatcher dispatcher) {
+        RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+        if(dispatcher.isSimplify()) {
+            RenameParameterExtractMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            dispatcher.setRefactoringObject(dispatcherRefactoring);
+        }
+
+    }
+
 
     /*
      * If simplify is true, check for rename parameter / rename package combination. If it is false, there is no
