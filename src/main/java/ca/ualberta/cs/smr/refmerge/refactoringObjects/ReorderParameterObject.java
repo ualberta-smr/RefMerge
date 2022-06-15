@@ -24,6 +24,25 @@ public class ReorderParameterObject implements RefactoringObject {
     private List<ParameterObject> originalParameterList;
     private List<ParameterObject> reorderedParameterList;
 
+
+    public ReorderParameterObject(String originalClass, String destinationClass, MethodSignatureObject originalMethod,
+                                  MethodSignatureObject destinationMethod) {
+        this.refactoringType = RefactoringType.REORDER_PARAMETER;
+        this.refactoringDetail = "";
+
+        this.originalParameterList = new ArrayList<>();
+        this.reorderedParameterList = new ArrayList<>();
+
+        this.originalParameterList = originalMethod.getParameterList();
+        this.reorderedParameterList = destinationMethod.getParameterList();
+
+        this.originalMethod = originalMethod;
+        this.destinationMethod = destinationMethod;
+        this.originalClass = originalClass;
+        this.destinationClass = destinationClass;
+
+    }
+
     public ReorderParameterObject(Refactoring refactoring) {
         this.refactoringType = refactoring.getRefactoringType();
         this.refactoringDetail = refactoring.toString();

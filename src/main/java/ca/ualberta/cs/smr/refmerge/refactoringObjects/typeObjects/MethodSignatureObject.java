@@ -154,4 +154,8 @@ public class MethodSignatureObject {
         }
         return null;
     }
+
+    public void replaceParameterList(List<ParameterObject> parameterList) {
+        this.parameterList = parameterList;
+    }
 }
