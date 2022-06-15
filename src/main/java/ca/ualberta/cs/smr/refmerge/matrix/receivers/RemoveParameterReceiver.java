@@ -1,13 +1,7 @@
 package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.ExtractMethodDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.InlineMethodDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameMethodDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.PullUpMethodDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RemoveParameterExtractMethodCell;
-import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RemoveParameterInlineMethodCell;
-import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RemoveParameterMoveRenameMethodCell;
-import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RemoveParameterPullUpMethodCell;
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.*;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.*;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 
 public class RemoveParameterReceiver extends Receiver {
@@ -64,6 +58,20 @@ public class RemoveParameterReceiver extends Receiver {
             this.isTransitive = false;
             // There is no opportunity for transitivity in this case. There is only a combination case that can occur
             RemoveParameterPullUpMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            dispatcher.setRefactoringObject(dispatcherRefactoring);
+        }
+    }
+
+    /*
+     * Check for remove parameter / push down method combination only to add to push down method resilience
+     */
+    @Override
+    public void receive(PushDownMethodDispatcher dispatcher) {
+        RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+        if(dispatcher.isSimplify()) {
+            this.isTransitive = false;
+            // There is no opportunity for transitivity in this case. There is only a combination case that can occur
+            RemoveParameterPushDownMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
             dispatcher.setRefactoringObject(dispatcherRefactoring);
         }
     }
