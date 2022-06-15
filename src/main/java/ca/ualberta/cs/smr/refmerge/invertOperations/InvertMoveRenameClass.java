@@ -2,6 +2,7 @@ package ca.ualberta.cs.smr.refmerge.invertOperations;
 
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.MoveRenameClassObject;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
+import ca.ualberta.cs.smr.refmerge.refactoringObjects.typeObjects.ClassObject;
 import ca.ualberta.cs.smr.refmerge.utils.Utils;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
@@ -37,9 +38,9 @@ public class InvertMoveRenameClass {
      */
     public void invertMoveRenameClass(RefactoringObject ref) {
         MoveRenameClassObject moveRenameClassObject = (MoveRenameClassObject) ref;
-        String srcQualifiedClass = moveRenameClassObject.getOriginalClassObject().getClassName();
-        String destQualifiedClass = moveRenameClassObject.getDestinationClassObject().getClassName();
-        String srcClassName = srcQualifiedClass.substring(srcQualifiedClass.lastIndexOf(".") + 1);
+        ClassObject classObject = moveRenameClassObject.getDestinationClassObject();
+        String destQualifiedClass = classObject.getPackageName() + "." + classObject.getClassName();
+        String srcClassName = moveRenameClassObject.getOriginalClassObject().getClassName();
         String filePath = moveRenameClassObject.getDestinationFilePath();
         Utils utils = new Utils(project);
 

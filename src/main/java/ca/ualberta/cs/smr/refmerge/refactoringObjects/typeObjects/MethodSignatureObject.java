@@ -42,12 +42,16 @@ public class MethodSignatureObject {
         this.isStatic = isStatic;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getName() {
-        return this.name;
+        return name;
     }
 
     public List<ParameterObject> getParameterList() {
-        return this.parameterList;
+        return parameterList;
     }
 
     public boolean isConstructor() {
@@ -79,6 +83,33 @@ public class MethodSignatureObject {
         }
 
         return true;
+    }
+
+    public boolean equalsSignatureExcludingParameterNames(MethodSignatureObject otherSignature) {
+        if(!this.name.equals(otherSignature.getName())) {
+            return false;
+        }
+        if(this.parameterList.size() != otherSignature.getParameterList().size()) {
+            return false;
+        }
+        List<ParameterObject> otherParameterList = otherSignature.getParameterList();
+        for(int i = 0; i < this.parameterList.size(); i++) {
+            String thisType = parameterList.get(i).getType();
+            String otherType = otherParameterList.get(i).getType();
+            if(!thisType.equals(otherType)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public int getParameterLocation(ParameterObject parameterObject) {
+        return parameterList.indexOf(parameterObject);
+    }
+
+    public void updateParameterAtLocation(int location, ParameterObject parameterObject) {
+        this.parameterList.set(location, parameterObject);
     }
 
     public ParameterObject getReturnParameter() {

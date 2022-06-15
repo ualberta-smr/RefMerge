@@ -110,35 +110,7 @@ public class Utils {
         }
     }
 
-    public static void writeContent(String path, String content) {
-        try {
-            Files.write(Paths.get(path), Arrays.asList(content),
-                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-    }
-
-    /*
-     * Save the content of one directory to another. Return the path
-     */
-    public static String saveContent(Project project, String path) {
-        File file = new File(path);
-        file.mkdirs();
-        runSystemCommand("cp", "-r", project.getBasePath() + "/.", path);
-        return path;
-    }
-
-    /*
-     * Remove the temp files
-     */
-    public static void clearTemp(String dir) {
-        //String path = System.getProperty("user.home") + "/temp/" + dir;
-        File file = new File(dir);
-        file.mkdirs();
-        runSystemCommand("rm", "-rf", dir);
-    }
 
     public static void dumbServiceHandler(Project project) {
         if(DumbService.isDumb(project)) {
@@ -391,7 +363,7 @@ public class Utils {
                 }
                 // Need to update tests to remove this
                 if (ApplicationManager.getApplication().isUnitTestMode()) {
-                    if(qualifiedClass.contains(it.getName())) {
+                    if(qualifiedClass.contains(Objects.requireNonNull(it.getName()))) {
                         return it;
                     }
                 }
@@ -404,6 +376,7 @@ public class Utils {
             }
             for(PsiClass it : jClasses) {
                 String qName = it.getQualifiedName();
+                assert qName != null;
                 qName = qName.substring(qName.lastIndexOf(".") + 1);
                 String otherName = qualifiedClass.substring(qualifiedClass.lastIndexOf(".") + 1);
                 if(Objects.equals(qName, otherName)) {
@@ -429,6 +402,31 @@ public class Utils {
         for(PsiMethod method : methods) {
             if(Utils.ifSameMethods(method, methodSignatureObject)) {
                 return method;
+            }
+        }
+        return null;
+    }
+
+    public static PsiParameter getPsiParameter(PsiMethod psiMethod, ParameterObject parameterObject) {
+        String parameterType = parameterObject.getType();
+        String parameterName = parameterObject.getName();
+        PsiParameter[] parameters = psiMethod.getParameterList().getParameters();
+        for(PsiParameter parameter : parameters) {
+            String psiParameterType = parameter.getType().getPresentableText();
+            String psiParameterName = parameter.getName();
+            if (!psiParameterType.equals(parameterType)) {
+                // Check if UML type is class type
+                if (parameterType.contains(".")) {
+                    parameterType = parameterType.substring(parameterType.lastIndexOf(".") + 1);
+                    if (!parameterType.equals(psiParameterType)) {
+                        continue;
+                    }
+                } else {
+                    continue;
+                }
+            }
+            if(psiParameterName.equals(parameterName)) {
+                return parameter;
             }
         }
         return null;
@@ -590,7 +588,6 @@ public class Utils {
         }
         catch(NullPointerException e) {
             e.printStackTrace();
-            return;
         }
     }
 
