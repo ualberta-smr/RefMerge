@@ -13,9 +13,9 @@ public class MethodSignatureObject {
 
     private String name;
     private List<ParameterObject> parameterList;
-    private String visibility;
-    private boolean isConstructor;
-    private boolean isStatic;
+    private final String visibility;
+    private final boolean isConstructor;
+    private final boolean isStatic;
 
     /*
      * Create the method signature from the name and the given parameter object list
@@ -129,6 +129,21 @@ public class MethodSignatureObject {
         else {
             this.parameterList.add(parameterObject);
         }
+    }
+
+    public void addParameterAtLocation(int location, ParameterObject parameterObject) {
+        if(location > -1) {
+            this.parameterList.add(location, parameterObject);
+        }
+        // If location == -1, add parameter to end
+        else {
+            this.parameterList.add(parameterObject);
+        }
+    }
+
+
+    public void removeParameterAtLocation(int location) {
+        this.parameterList.remove(location);
     }
 
     public ParameterObject getReturnParameter() {
