@@ -70,6 +70,7 @@ public class Matrix {
         put(RefactoringType.RENAME_PARAMETER, new RenameParameterReceiver());
         put(RefactoringType.ADD_PARAMETER, new AddParameterReceiver());
         put(RefactoringType.REMOVE_PARAMETER, new RemoveParameterReceiver());
+        put(RefactoringType.REORDER_PARAMETER, new ReorderParameterReceiver());
     }};
 
     public Matrix(Project project) {
@@ -228,8 +229,6 @@ public class Matrix {
         vector.add(RefactoringType.PUSH_DOWN_ATTRIBUTE);
         vector.add(RefactoringType.RENAME_PACKAGE);
         vector.add(RefactoringType.RENAME_PARAMETER);
-        vector.add(RefactoringType.ADD_PARAMETER);
-        vector.add(RefactoringType.REMOVE_PARAMETER);
 
         Enumeration<RefactoringType> enumeration = vector.elements();
         int value = 0;
