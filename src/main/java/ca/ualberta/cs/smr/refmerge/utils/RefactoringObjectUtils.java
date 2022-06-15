@@ -47,6 +47,9 @@ public class RefactoringObjectUtils {
             // Only used for simplification logic currently. Needed for improving method level refactoring resilience
             case REMOVE_PARAMETER:
                 return new RemoveParameterObject(refactoring);
+            // Only used for simplification logic currently. Needed for improving method level refactoring resilience
+            case REORDER_PARAMETER:
+                return new ReorderParameterObject(refactoring);
 
         }
         return null;
