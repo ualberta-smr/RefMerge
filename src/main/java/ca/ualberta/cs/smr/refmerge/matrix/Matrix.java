@@ -41,6 +41,8 @@ public class Matrix {
        put(RefactoringType.PUSH_DOWN_ATTRIBUTE, new PushDownFieldDispatcher());
        put(RefactoringType.RENAME_PACKAGE, new RenamePackageDispatcher());
        put(RefactoringType.RENAME_PARAMETER, new RenameParameterDispatcher());
+       put(RefactoringType.ADD_PARAMETER, new RenameParameterDispatcher());
+       put(RefactoringType.REMOVE_PARAMETER, new RemoveParameterDispatcher());
     }};
 
     /*
@@ -66,6 +68,10 @@ public class Matrix {
         put(RefactoringType.PUSH_DOWN_ATTRIBUTE, new PushDownFieldReceiver());
         put(RefactoringType.RENAME_PACKAGE, new RenamePackageReceiver());
         put(RefactoringType.RENAME_PARAMETER, new RenameParameterReceiver());
+        put(RefactoringType.ADD_PARAMETER, new AddParameterReceiver());
+        put(RefactoringType.REMOVE_PARAMETER, new RemoveParameterReceiver());
+        put(RefactoringType.REORDER_PARAMETER, new ReorderParameterReceiver());
+        put(RefactoringType.CHANGE_PARAMETER_TYPE, new ChangeParameterTypeReceiver());
     }};
 
     public Matrix(Project project) {
