@@ -18,14 +18,13 @@ public class AddParameterInlineMethodCell {
 
         MethodSignatureObject originalParameterMethodSignature = parameter.getOriginalMethod();
         MethodSignatureObject originalMethodSignature = method.getOriginalMethodSignature();
-        MethodSignatureObject destinationParameterMethodSignature = parameter.getDestinationMethod();
         MethodSignatureObject destinationMethodSignature = method.getDestinationMethodSignature();
 
         ParameterObject addedParameter = parameter.getParameterObject();
 
         // If the add parameter refactoring happens in the inlined method
         if(originalMethodClass.equals(originalParameterClass)
-                && destinationMethodSignature.equalsSignature(originalParameterMethodSignature)) {
+                && originalMethodSignature.equalsSignature(originalParameterMethodSignature)) {
             originalMethodSignature.updateParameterAtLocation(-1, addedParameter);
             ((InlineMethodObject) methodObject).setOriginalMethodSignature(originalMethodSignature);
 
@@ -33,7 +32,7 @@ public class AddParameterInlineMethodCell {
 
         // If the add parameter refactoring happens in the target method
         else if(originalMethodClass.equals(destinationParameterClass)
-                && originalMethodSignature.equalsSignature(destinationParameterMethodSignature)) {
+                && destinationMethodSignature.equalsSignature(originalParameterMethodSignature)) {
             destinationMethodSignature.updateParameterAtLocation(-1, addedParameter);
             ((InlineMethodObject) methodObject).setDestinationMethodSignature(destinationMethodSignature);
         }
