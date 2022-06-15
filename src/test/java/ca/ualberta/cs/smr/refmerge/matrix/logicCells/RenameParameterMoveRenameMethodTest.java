@@ -20,6 +20,7 @@ public class RenameParameterMoveRenameMethodTest extends LightJavaCodeInsightFix
         parameterList.add(parameterObject);
         parameterList.add(parameterObject2);
         MethodSignatureObject foo = new MethodSignatureObject(parameterList, "foo");
+        MethodSignatureObject bar2 = new MethodSignatureObject(parameterList, "bar");
         String originalClass = "A";
         String refactoredClass = "B";
         // Create bar(int value, int number)
@@ -29,14 +30,14 @@ public class RenameParameterMoveRenameMethodTest extends LightJavaCodeInsightFix
         parameterList.add(parameterObject);
         parameterList.add(parameterObject3);
         // Create foo(int value, int newNumber)
-        MethodSignatureObject foo2 = new MethodSignatureObject(parameterList, "foo");
+        MethodSignatureObject bar3 = new MethodSignatureObject(parameterList, "bar");
 
         // Create method refactoring A.foo(int value, int number) -> B.bar(int value, int number)
         MoveRenameMethodObject moveRenameMethodObject =
                 new MoveRenameMethodObject(originalClass, originalClass, foo, refactoredClass, refactoredClass, bar);
-        // Create parameter refactoring B.foo(int value, int number) -> B.foo(int value, int newNumber)
+        // Create parameter refactoring B.bar(int value, int number) -> B.bar(int value, int newNumber)
         RenameParameterObject renameParameterObject =
-                new RenameParameterObject(refactoredClass, refactoredClass, foo, foo2, parameterObject2, parameterObject3);
+                new RenameParameterObject(refactoredClass, refactoredClass, bar2, bar3, parameterObject2, parameterObject3);
         RenameParameterMoveRenameMethodCell.checkCombination(moveRenameMethodObject, renameParameterObject);
 
         Assert.assertEquals(renameParameterObject.getRefactoredClassName(), moveRenameMethodObject.getDestinationClassName());
