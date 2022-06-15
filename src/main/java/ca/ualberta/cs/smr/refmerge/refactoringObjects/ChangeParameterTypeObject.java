@@ -23,6 +23,23 @@ public class ChangeParameterTypeObject implements RefactoringObject {
     private String originalClass;
     private String destinationClass;
 
+
+    public ChangeParameterTypeObject(String originalClass, String destinationClass,
+                                     MethodSignatureObject originalMethod, MethodSignatureObject destinationMethod,
+                                     ParameterObject originalParameter, ParameterObject destinationParameter) {
+        this.refactoringType = RefactoringType.CHANGE_PARAMETER_TYPE;
+        this.refactoringDetail = "";
+
+        this.originalClass = originalClass;
+        this.destinationClass = destinationClass;
+        this.originalMethod = originalMethod;
+        this.destinationMethod = destinationMethod;
+        this.originalParameter = originalParameter;
+        this.destinationParameter = destinationParameter;
+
+    }
+
+
     public ChangeParameterTypeObject(Refactoring refactoring) {
         ChangeVariableTypeRefactoring ref = (ChangeVariableTypeRefactoring) refactoring;
         this.refactoringType = ref.getRefactoringType();
