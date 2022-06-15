@@ -1,13 +1,7 @@
 package ca.ualberta.cs.smr.refmerge.matrix.receivers;
 
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.ExtractMethodDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.MoveRenameMethodDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.RenamePackageDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.RenameParameterDispatcher;
-import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenameParameterExtractMethodCell;
-import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenameParameterMoveRenameMethodCell;
-import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenameParameterRenamePackageCell;
-import ca.ualberta.cs.smr.refmerge.matrix.logicCells.RenameParameterRenameParameterCell;
+import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.*;
+import ca.ualberta.cs.smr.refmerge.matrix.logicCells.*;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 
 public class RenameParameterReceiver extends Receiver {
@@ -58,6 +52,20 @@ public class RenameParameterReceiver extends Receiver {
         RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
         if(dispatcher.isSimplify()) {
             RenameParameterExtractMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
+            dispatcher.setRefactoringObject(dispatcherRefactoring);
+        }
+
+    }
+
+    /*
+     * If simplify is true, check for rename parameter / inline method. If it is false, there shouldn't be
+     * any conflicts.
+     */
+    @Override
+    public void receive(InlineMethodDispatcher dispatcher) {
+        RefactoringObject dispatcherRefactoring = dispatcher.getRefactoringObject();
+        if(dispatcher.isSimplify()) {
+            RenameParameterInlineMethodCell.checkCombination(dispatcherRefactoring, this.refactoringObject);
             dispatcher.setRefactoringObject(dispatcherRefactoring);
         }
 
