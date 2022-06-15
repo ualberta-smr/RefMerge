@@ -6,7 +6,6 @@ import ca.ualberta.cs.smr.refmerge.matrix.dispatcher.PushDownMethodDispatcher;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.ChangeParameterTypeMoveRenameMethodCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.ChangeParameterTypePullUpMethodCell;
 import ca.ualberta.cs.smr.refmerge.matrix.logicCells.ChangeParameterTypePushDownMethodCell;
-import ca.ualberta.cs.smr.refmerge.matrix.logicCells.ReorderParameterMoveRenameMethodCell;
 import ca.ualberta.cs.smr.refmerge.refactoringObjects.RefactoringObject;
 
 public class ChangeParameterTypeReceiver extends Receiver {
