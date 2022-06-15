@@ -41,6 +41,9 @@ public class RefactoringObjectUtils {
                 return new RenamePackageObject(refactoring);
             case RENAME_PARAMETER:
                 return new RenameParameterObject(refactoring);
+            // Only used for simplification logic currently. Needed for improving method level refactoring resilience
+            case ADD_PARAMETER:
+                return new AddParameterObject(refactoring);
 
         }
         return null;
@@ -51,7 +54,13 @@ public class RefactoringObjectUtils {
      */
     public static void insertRefactoringObject(RefactoringObject refactoringObject,
                                                ArrayList<RefactoringObject> refactoringObjects, boolean forReplay) {
-        int newRefactoringValue = refactoringObject.getRefactoringOrder().getOrder();
+        RefactoringOrder refactoringOrder = refactoringObject.getRefactoringOrder();
+        // If null, it is only used for combination/transitivity and will not be inverted or replayed
+        if(refactoringOrder == null) {
+            return;
+        }
+        int newRefactoringValue = refactoringOrder.getOrder();
+
         // Add the new refactoring object to the end of the list
         refactoringObjects.add(refactoringObject);
 
