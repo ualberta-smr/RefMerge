@@ -68,7 +68,7 @@ rename method.
 
 * Add the associated logic cells. The logic cells will be the combination of the new refactoring
 type and the currently covered types. When adding extract method, that gives us the extract method/
-rename method, extract method/rename class, and extract method/extract method.
+rename method, extract method/rename class, and extract method/extract method. All of the existing simplification logic can be found in the [simplification logic wiki](https://github.com/ualberta-smr/RefMerge/wiki/Simplification-Logic).
 
 * Determine if there is transitivity or if the refactorings can be combined and add the logic. 
 Extract method and rename method can have transitivity or be combined while extract method
@@ -86,7 +86,7 @@ class. They can also conflict if the extracted method and renamed method have th
 in classes with an inheritance relationship.
 
 * Add each logic check to the associated logic cell in `src/main/java/ca/ualberta/cs/smr/refmerge/matrix/logicCells`. For example, if we add `Rename Variable`, 
-we would create `RenameVariableRenameVariableCell.java` with the conflict and dependence logic. The wiki with the currently implemented logic is located [here](https://github.com/ualberta-smr/RefMerge/wiki/Matrix-Logic) 
+we would create `RenameVariableRenameVariableCell.java` with the conflict and dependence logic. The wiki with the currently implemented logic is located [here](https://github.com/ualberta-smr/RefMerge/wiki/Conflict-&-Dependence-Logic) 
 
 ### 4. Update logic matrix 
 
