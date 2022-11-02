@@ -115,3 +115,7 @@ the refactoring.
 
 The evaluation and instructions for replicating can be found in 
 `https://github.com/ualberta-smr/RefactoringAwareMerging`.
+
+## Refactoring Conflict & Simplification Logic
+
+We consider the interactions between each pair of refactorings and how these interactions can lead to a conflict or how they can result in a dependence relationship. We provide the conflict and dependence detection logic for each pair in the [conflict detection wiki](https://github.com/ualberta-smr/RefMerge/wiki/Conflict-&-Dependence-Logic). 
